@@ -1,176 +1,246 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Gear, GearDivider, CocktailIcon } from "@/components/SteampunkElements";
 
 export const metadata: Metadata = {
-  title: "About Us — Open Source Barware",
+  title: "About — Open Source Barware",
   description:
-    "Meet the team behind Open Source Barware. Built by Richard Jamison and Bill at Agave & Rye in downtown Cleveland.",
+    "The people behind Open Source Barware. Built by Richard Jamison and Bill at Agave & Rye, downtown Cleveland.",
 };
 
 export default function AboutPage() {
   return (
     <>
-      {/* Hero */}
-      <section className="bg-gradient-to-b from-[var(--deep-wood)] to-[var(--background)]">
-        <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Two Guys Who Got{" "}
-            <span className="text-[var(--amber)]">Tired of Counting</span>
+      {/* ── HERO ── */}
+      <section className="relative overflow-hidden">
+        <div className="absolute right-[-60px] top-[-20px] text-copper">
+          <Gear size={200} className="gear-spin opacity-15" />
+        </div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-6 pt-20 pb-12 md:pt-28 md:pb-16">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-[1px] bg-copper/40" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+              About
+            </span>
+          </div>
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-2xl">
+            <span className="copper-text">Two bartenders</span> who
+            <br />
+            got tired of counting
+            <br />
+            the same bottles every week.
           </h1>
-          <p className="text-lg text-[var(--foreground)]/70 max-w-2xl mx-auto leading-relaxed">
-            Open Source Barware started the way most good bar projects
-            do &mdash; over drinks, complaining about the same problems every
-            bar deals with.
-          </p>
         </div>
       </section>
 
-      {/* The Story */}
-      <section className="max-w-4xl mx-auto px-6 py-16">
-        <div className="prose prose-invert max-w-none">
-          <div className="bg-[var(--bar-top)] border border-[var(--copper)]/20 rounded-2xl p-8 md:p-12 mb-12">
-            <h2 className="text-2xl font-bold text-[var(--amber)] mb-6">
-              Why We&apos;re Doing This
-            </h2>
-            <div className="space-y-4 text-[var(--foreground)]/80 leading-relaxed">
+      <GearDivider />
+
+      {/* ── THE STORY ── */}
+      <section className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+          <div className="md:col-span-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-[1px] bg-copper/40" />
+              <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+                How It Started
+              </span>
+            </div>
+            <CocktailIcon className="mt-4 opacity-40" />
+          </div>
+          <div className="md:col-span-7 md:col-start-6">
+            <div className="space-y-5 text-text-muted leading-relaxed text-lg">
               <p>
-                If you&apos;ve ever worked behind a bar, you know the drill.
-                Close out, grab the clipboard, start counting. Tenths of bottles
-                on every shelf. Scribble it down. Go back to the office. Type it
-                all into a spreadsheet. Try to match it against POS sales. Watch
-                the numbers never quite add up. Repeat next week.
+                If you&rsquo;ve worked behind a bar, you know. The shift ends,
+                the guests leave, and instead of going home you&rsquo;re on your
+                knees behind the well, holding a bottle of Tito&rsquo;s up to
+                the light trying to decide if that&rsquo;s three-tenths or
+                four.
               </p>
               <p>
-                Over the years, companies figured out there was money in this
-                pain. So they built inventory guns that cost thousands. Monthly
-                subscription software that charges per location. Consulting
-                firms that&apos;ll do your counts for you &mdash; at a premium.
+                You scribble numbers on a count sheet. You walk to the back
+                office and type them into a spreadsheet that hasn&rsquo;t been
+                updated since someone else was bar manager. You try to match it
+                all against the POS report. The numbers never line up.
               </p>
               <p>
-                Here&apos;s the thing:{" "}
-                <span className="text-[var(--amber)] font-semibold">
-                  AI changed everything.
-                </span>{" "}
-                The tools to build a genuinely good inventory system are now
-                essentially free. So we did what any self-respecting bartender
-                would do &mdash; we built our own, and we&apos;re giving it
-                away.
+                Over the years, companies saw the pain and monetized it.
+                Inventory guns for $3,000. Monthly software at $200 a location.
+                Consultants who charge by the hour to do what you already know
+                how to do &mdash; just with a shinier clipboard.
               </p>
-              <p>
-                No subscriptions. No upsells. No &quot;premium tier.&quot; Just
-                free tools that work, built by people who actually do inventory.
+            </div>
+
+            <div className="mt-10 panel rounded-sm p-8">
+              <p className="font-serif text-xl text-cream leading-relaxed">
+                Then AI showed up. And suddenly, building genuinely good
+                inventory tools costs{" "}
+                <span className="copper-text font-bold">nothing</span>. So we
+                built them. And we&rsquo;re giving them away.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* The Team */}
-      <section className="bg-[var(--deep-wood)]/50 border-y border-[var(--copper)]/10">
-        <div className="max-w-4xl mx-auto px-6 py-16">
-          <h2 className="text-3xl font-bold text-center mb-12">
-            The <span className="text-[var(--amber)]">Team</span>
+      {/* ── THE PEOPLE ── dark section */}
+      <section className="relative bg-bg-panel border-y border-gear-border overflow-hidden grain">
+        <div className="absolute -right-10 bottom-[-40px] text-copper">
+          <Gear size={160} className="gear-spin-slow opacity-15" />
+        </div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-20 md:py-28">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="glow-dot" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-patina-light">
+              The Crew
+            </span>
+          </div>
+          <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-16">
+            <span className="copper-text">Who&rsquo;s behind the bar.</span>
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Richard */}
-            <div className="bg-[var(--bar-top)] border border-[var(--copper)]/20 rounded-2xl p-8">
-              <div className="text-5xl mb-4">🎯</div>
-              <h3 className="text-xl font-bold text-[var(--amber)] mb-1">
-                Richard Jamison
-              </h3>
-              <p className="text-sm text-[var(--whiskey)] mb-4">
-                Creator &amp; Developer
+            <div className="panel card-lift rounded-sm overflow-hidden">
+              <div className="img-placeholder aspect-[16/10] bg-gradient-to-br from-bg-card to-bg-warm">
+                <span className="text-xs tracking-widest text-text-light/30">
+                  PHOTO
+                </span>
+              </div>
+              <div className="p-8">
+                <h3 className="font-serif text-2xl copper-text mb-1">
+                  Richard Jamison
+                </h3>
+                <p className="text-[11px] tracking-[0.2em] uppercase text-patina-light mb-5">
+                  Creator &amp; Developer
+                </p>
+                <p className="text-text-muted leading-relaxed">
+                  Bar industry veteran turned entrepreneur and developer.
+                  Richard has done more inventory counts than he cares to
+                  admit &mdash; which is exactly why he built the machinery to
+                  make it painless. He brings the bartender&rsquo;s eye and the
+                  engineer&rsquo;s precision.
+                </p>
+              </div>
+            </div>
+
+            {/* Bill */}
+            <div className="panel card-lift rounded-sm overflow-hidden">
+              <div className="img-placeholder aspect-[16/10] bg-gradient-to-br from-bg-card to-bg-warm">
+                <span className="text-xs tracking-widest text-text-light/30">
+                  PHOTO
+                </span>
+              </div>
+              <div className="p-8">
+                <h3 className="font-serif text-2xl copper-text mb-1">
+                  Bill
+                </h3>
+                <p className="text-[11px] tracking-[0.2em] uppercase text-patina-light mb-5">
+                  General Manager, Agave &amp; Rye &mdash; Cleveland
+                </p>
+                <p className="text-text-muted leading-relaxed">
+                  Bill didn&rsquo;t just wish us luck. He opened his
+                  restaurant, gave us his bar, his team, and three weeks of
+                  real inventory sessions. That kind of partnership is the
+                  difference between tools that demo well and tools that
+                  actually work.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── AGAVE & RYE ── */}
+      <section className="max-w-6xl mx-auto px-6 py-20 md:py-28">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+          <div className="md:col-span-5">
+            <div className="panel rounded-sm overflow-hidden">
+              <div className="img-placeholder aspect-[4/3] bg-gradient-to-br from-bg-card to-bg-warm">
+                <span className="text-xs tracking-widest text-text-light/40">
+                  AGAVE &amp; RYE INTERIOR
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-text-light mt-3">
+              Agave &amp; Rye &mdash; Downtown Cleveland, Ohio
+            </p>
+          </div>
+          <div className="md:col-span-6 md:col-start-7">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-[1px] bg-copper/40" />
+              <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+                Our Testing Ground
+              </span>
+            </div>
+            <h2 className="font-serif text-3xl leading-tight mb-8">
+              <span className="copper-text">Agave &amp; Rye</span>
+            </h2>
+            <div className="space-y-5 text-text-muted leading-relaxed">
+              <p>
+                Agave &amp; Rye isn&rsquo;t just where we tested &mdash;
+                it&rsquo;s where we learned what actually holds up under
+                pressure. Real bar. Real rushes. Real inventory deadlines.
               </p>
-              <p className="text-[var(--foreground)]/70 leading-relaxed">
-                Entrepreneur and longtime bar industry veteran. Richard has done
-                more inventory counts than he can remember &mdash; which is
-                exactly why he built the tools to make it painless. He brings the
-                bartender perspective and the tech chops to make it real.
+              <p>
+                When we pitched a free, open-source inventory system, Bill said
+                yes immediately. Not because it was easy &mdash; letting
+                outsiders into your operation never is &mdash; but because he
+                understood the problem. Every bar deals with it.
+              </p>
+              <p>
+                One day a week for three weeks. Real counts. Real data. Real
+                feedback from bartenders who don&rsquo;t care about your fancy
+                features &mdash; they just want to go home on time.
               </p>
             </div>
 
-            {/* Bill / Agave & Rye */}
-            <div className="bg-[var(--bar-top)] border border-[var(--copper)]/20 rounded-2xl p-8">
-              <div className="text-5xl mb-4">🏪</div>
-              <h3 className="text-xl font-bold text-[var(--amber)] mb-1">
-                Bill &amp; the Agave &amp; Rye Team
-              </h3>
-              <p className="text-sm text-[var(--whiskey)] mb-4">
-                General Manager, Agave &amp; Rye &mdash; Downtown Cleveland
-              </p>
-              <p className="text-[var(--foreground)]/70 leading-relaxed">
-                Bill stepped up in a big way. He opened his restaurant so we
-                could build and test this system where it matters &mdash; on an
-                actual bar floor. Three weeks of real inventory sessions with his
-                team, proving every tool works before it ships.
+            <div className="mt-8 panel rounded-sm p-6">
+              <p className="text-cream font-serif text-lg italic">
+                &ldquo;If you&rsquo;re ever in downtown Cleveland, go support
+                them. Good people running a great spot. They earned their place
+                on this page.&rdquo;
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Agave & Rye Feature */}
-      <section className="max-w-4xl mx-auto px-6 py-16">
-        <div className="bg-[var(--bar-top)] border border-[var(--copper)]/20 rounded-2xl p-8 md:p-12">
-          <div className="flex items-start gap-4 mb-6">
-            <span className="text-4xl">🌵</span>
-            <div>
-              <h2 className="text-2xl font-bold text-[var(--amber)]">
-                Agave &amp; Rye
-              </h2>
-              <p className="text-[var(--whiskey)]">Downtown Cleveland, Ohio</p>
-            </div>
-          </div>
-          <div className="space-y-4 text-[var(--foreground)]/70 leading-relaxed">
-            <p>
-              Agave &amp; Rye isn&apos;t just our testing ground &mdash;
-              they&apos;re our proof that this works in the real world.
-            </p>
-            <p>
-              When we approached Bill about building an open-source inventory
-              system, he didn&apos;t hesitate. He gave us access to his bar, his
-              team, and his time. One day a week for three weeks, we worked
-              alongside his bar manager doing actual inventory, testing our tools
-              against their existing process, and refining everything until it
-              worked seamlessly.
-            </p>
-            <p>
-              That kind of partnership is rare, and we want to make sure Agave
-              &amp; Rye gets the recognition they deserve. If you&apos;re ever
-              in downtown Cleveland, go support them. They&apos;re good people
-              running a great spot.
-            </p>
-          </div>
-          <div className="mt-6 pt-6 border-t border-[var(--copper)]/10">
-            <p className="text-sm text-[var(--foreground)]/50">
-              Agave &amp; Rye is located in downtown Cleveland, Ohio. Known for
-              their creative tacos and extensive tequila &amp; mezcal selection.
-            </p>
-          </div>
-        </div>
-      </section>
+      <GearDivider />
 
-      {/* The Mission */}
-      <section className="bg-gradient-to-b from-[var(--background)] to-[var(--deep-wood)]">
-        <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-          <h2 className="text-3xl font-bold mb-6">
-            The <span className="text-[var(--amber)]">Mission</span>
+      {/* ── MISSION ── */}
+      <section className="relative overflow-hidden">
+        <div className="absolute left-[-40px] bottom-[-40px] text-copper">
+          <Gear size={140} className="gear-spin-slow opacity-10" />
+        </div>
+        <div className="relative z-10 max-w-3xl mx-auto px-6 py-20 md:py-28 text-center">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-copper/40" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+              The Mission
+            </span>
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-copper/40" />
+          </div>
+          <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-8">
+            <span className="copper-text">Free means free.</span>
           </h2>
-          <p className="text-lg text-[var(--foreground)]/70 max-w-2xl mx-auto leading-relaxed mb-4">
-            Every bar &mdash; from the dive on the corner to the craft cocktail
-            lounge downtown &mdash; deserves access to proper inventory tools.
-            Not everyone can afford $200/month software. Not everyone should have
-            to.
-          </p>
-          <p className="text-lg text-[var(--whiskey)] font-medium max-w-2xl mx-auto">
-            We&apos;re building this in the open, testing it in real restaurants,
-            and giving it to the industry for free. Period.
-          </p>
-          <div className="mt-10">
+          <div className="space-y-5 text-text-muted text-lg leading-relaxed max-w-xl mx-auto">
+            <p>
+              Every bar &mdash; from the dive on the corner to the craft
+              cocktail lounge downtown &mdash; deserves proper inventory tools.
+              Not everyone can afford $200/month software. We don&rsquo;t think
+              they should have to.
+            </p>
+            <p>
+              We build in the open. We test in real restaurants. We give the
+              results to the industry. No premium tier. No paywall. No strings.
+            </p>
+          </div>
+          <div className="mt-12">
             <Link
               href="/downloads"
-              className="inline-block bg-[var(--amber)] hover:bg-[var(--amber-dark)] text-black font-bold px-8 py-4 rounded-lg text-lg transition-all hover:scale-105"
+              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
             >
               Download the Free Tools
             </Link>

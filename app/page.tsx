@@ -1,185 +1,310 @@
 import Link from "next/link";
+import Image from "next/image";
+import {
+  Gear,
+  GearDivider,
+  PipeLine,
+  PipeNode,
+  BottleIcon,
+} from "@/components/SteampunkElements";
 
 export default function Home() {
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[var(--deep-wood)] via-[var(--bar-top)] to-[var(--background)]" />
-
-        <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-36 text-center">
-          <div className="text-6xl md:text-8xl mb-6">🥃</div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-            <span className="text-[var(--amber)]">Free</span> Bar Inventory
-            <br />
-            <span className="text-[var(--whiskey)]">
-              Built by Bartenders
-            </span>
-          </h1>
-          <p className="text-lg md:text-xl text-[var(--foreground)]/70 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Stop paying for overpriced inventory systems and clunky
-            spreadsheets. We built the tools we wished we had &mdash; and
-            we&apos;re giving them away for free. No subscriptions. No upsells.
-            Just count your bottles and go.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/downloads"
-              className="bg-[var(--amber)] hover:bg-[var(--amber-dark)] text-black font-bold px-8 py-4 rounded-lg text-lg transition-all hover:scale-105"
-            >
-              Download Free Tools
-            </Link>
-            <Link
-              href="/about"
-              className="border border-[var(--copper)] text-[var(--whiskey)] hover:bg-[var(--copper)]/10 font-semibold px-8 py-4 rounded-lg text-lg transition-colors"
-            >
-              Our Story
-            </Link>
-          </div>
+      {/* ── HERO ── */}
+      <section className="relative min-h-[85vh] flex items-center overflow-hidden grain">
+        {/* Hero photo */}
+        <Image
+          src="/images/hero.png"
+          alt="Bartender counting inventory"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-bg/90 via-bg/60 to-bg/30" />
+        <div className="absolute right-[-80px] top-[-40px] text-copper">
+          <Gear size={300} className="gear-spin opacity-40" />
         </div>
-      </section>
-
-      {/* The Problem */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            We Know the <span className="text-[var(--amber)]">Pain</span>
-          </h2>
-          <p className="text-[var(--foreground)]/60 max-w-xl mx-auto text-lg">
-            Every bartender has been there. End of night, clipboard in hand,
-            counting bottles by tenths.
-          </p>
+        <div className="absolute right-[100px] top-[120px] text-brass">
+          <Gear size={140} className="gear-spin-reverse opacity-30" />
+        </div>
+        <div className="absolute left-[-30px] bottom-[-30px] text-copper">
+          <Gear size={180} className="gear-spin-slow opacity-20" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <PainCard
-            emoji="📋"
-            title="The Clipboard Shuffle"
-            description="Counting bottles by tenths, scribbling on paper, then manually entering it all into a spreadsheet. Hours of your life, gone."
-          />
-          <PainCard
-            emoji="💸"
-            title="Expensive 'Solutions'"
-            description="Inventory guns cost thousands. Monthly software subscriptions add up. And they all want to lock you into their ecosystem."
-          />
-          <PainCard
-            emoji="😤"
-            title="Never Matches Up"
-            description="Your counts never quite match the POS sales. Shrinkage? Pour variance? Who knows &mdash; the spreadsheet sure doesn't tell you."
-          />
+        {/* Steam puffs */}
+        <div className="absolute right-[20%] top-[15%] pointer-events-none">
+          <div className="steam-puff w-4 h-4 rounded-full bg-cream/5 blur-md" />
         </div>
-      </section>
+        <div className="absolute right-[25%] top-[20%] pointer-events-none">
+          <div className="steam-puff-delay w-3 h-3 rounded-full bg-cream/4 blur-lg" />
+        </div>
 
-      {/* What We Built */}
-      <section className="bg-[var(--deep-wood)]/50 border-y border-[var(--copper)]/10">
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              What We <span className="text-[var(--amber)]">Built</span>
-            </h2>
-            <p className="text-[var(--foreground)]/60 max-w-xl mx-auto text-lg">
-              AI-powered tools that make inventory fast, accurate, and
-              actually useful.
+        {/* Content */}
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-24">
+          <div className="max-w-2xl">
+            {/* Pipe accent */}
+            <div className="flex items-center gap-3 mb-8">
+              <div className="glow-dot" />
+              <div className="h-[1px] w-16 bg-gradient-to-r from-patina to-transparent" />
+              <span className="text-[11px] tracking-[0.3em] uppercase text-patina-light font-medium">
+                Free &amp; Open Source
+              </span>
+            </div>
+
+            <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[1.05] mb-8">
+              <span className="copper-text">Bar inventory</span>
+              <br />
+              shouldn&rsquo;t cost
+              <br />
+              <span className="text-cream">you a thing.</span>
+            </h1>
+
+            <p className="text-text-muted text-lg md:text-xl leading-relaxed max-w-md mb-12">
+              We built the tools we wished existed, tested them in a real
+              restaurant, then gave them to the world. No subscriptions. No
+              vendor lock-in. Just count your bottles and go home.
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <FeatureCard
-              emoji="📊"
-              title="Smart Inventory Sheets"
-              description="Pre-built spreadsheets with formulas that calculate cost, usage, variance, and reorder points. Just enter your counts."
-            />
-            <FeatureCard
-              emoji="🤖"
-              title="AI Count Assistant"
-              description="Use your phone camera to snap bottles. AI reads the levels so you don't have to eyeball tenths at 2am."
-            />
-            <FeatureCard
-              emoji="📈"
-              title="Variance Tracking"
-              description="Compare your physical counts against POS sales automatically. Find where you're losing money, not just that you are."
-            />
-            <FeatureCard
-              emoji="🔓"
-              title="100% Open Source"
-              description="Every tool, every formula, every script &mdash; it's all yours. Fork it, modify it, improve it. No vendor lock-in, ever."
-            />
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/downloads"
+                className="group relative bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
+              >
+                <span className="relative z-10">Download Free Tools</span>
+              </Link>
+              <Link
+                href="/about"
+                className="border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
+              >
+                Read Our Story
+              </Link>
+            </div>
           </div>
+        </div>
+
+        {/* Bottom pipe accent */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-copper/30 to-transparent" />
+      </section>
+
+      {/* ── STATS STRIP ── */}
+      <section className="border-y border-gear-border bg-bg-panel">
+        <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+          <StatBlock number="$0" label="Cost, forever" />
+          <StatBlock number="6" label="Free tools" />
+          <StatBlock number="3" label="Weeks of field testing" />
+          <StatBlock number="100%" label="Open source" />
         </div>
       </section>
 
-      {/* How It's Being Built */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Built in a{" "}
-            <span className="text-[var(--amber)]">Real Bar</span>
-          </h2>
-          <p className="text-[var(--foreground)]/60 max-w-xl mx-auto text-lg">
-            Not in a Silicon Valley office. In a real restaurant, with real
-            bottles, counting real inventory.
-          </p>
-        </div>
-
-        <div className="bg-[var(--bar-top)] border border-[var(--copper)]/20 rounded-2xl p-8 md:p-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3 className="text-2xl font-bold text-[var(--amber)] mb-4">
-                Agave &amp; Rye, Downtown Cleveland
-              </h3>
-              <p className="text-[var(--foreground)]/70 leading-relaxed mb-4">
-                Our partner Bill, the General Manager of Agave &amp; Rye, opened
-                his doors so we could build this system the right way &mdash; on
-                the bar floor, not in a lab.
-              </p>
-              <p className="text-[var(--foreground)]/70 leading-relaxed mb-4">
-                Three weeks. One day a week. Working side by side with his bar
-                manager, doing real inventory, testing every tool against real
-                bottles and real numbers.
-              </p>
-              <p className="text-[var(--whiskey)] font-medium">
-                That&apos;s how you build something that actually works.
-              </p>
+      {/* ── THE PROBLEM ── */}
+      <section className="max-w-6xl mx-auto px-6 py-24 md:py-32">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+          <div className="md:col-span-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-[1px] bg-copper/40" />
+              <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+                The Problem
+              </span>
             </div>
-            <div className="flex flex-col gap-4">
-              <TimelineStep
-                step="Week 1"
-                title="Baseline & Count"
-                description="Full bar inventory count. Document every bottle, every category, every shelf position."
-              />
-              <TimelineStep
-                step="Week 2"
-                title="Build & Test"
-                description="Deploy the spreadsheet system. Run it alongside their existing process. Compare results."
-              />
-              <TimelineStep
-                step="Week 3"
-                title="Refine & Ship"
-                description="Fix what broke. Optimize what worked. Package it up and give it to the world."
-              />
+            <h2 className="font-serif text-3xl md:text-4xl leading-tight copper-text">
+              Every bartender
+              <br />
+              knows the drill.
+            </h2>
+          </div>
+          <div className="md:col-span-7 md:col-start-6">
+            <div className="space-y-5 text-text-muted leading-relaxed text-lg">
+              <p>
+                Close out. Grab the clipboard. Count every bottle by tenths.
+                Scribble numbers on paper. Walk to the office. Type it all into
+                a spreadsheet someone made in 2014. Try to reconcile against POS
+                sales. Watch it never add up. Repeat next week.
+              </p>
+              <p>
+                The bar industry has been doing this for decades. And companies
+                have profited from the pain &mdash; selling $3,000 inventory
+                guns, $200/month SaaS platforms, and consulting services that
+                charge by the bottle.
+              </p>
+              <p className="text-cream font-medium text-xl">
+                AI changed everything. Now we can build these tools for free.
+                So we did.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-gradient-to-b from-[var(--background)] to-[var(--deep-wood)]">
-        <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-          <div className="text-5xl mb-6">🍻</div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to{" "}
-            <span className="text-[var(--amber)]">Ditch the Pain?</span>
+      <GearDivider />
+
+      {/* ── WHAT WE BUILT ── tool cards with steampunk panels */}
+      <section className="max-w-6xl mx-auto px-6 py-20 md:py-28">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-[1px] bg-copper/40" />
+          <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+            The Workshop
+          </span>
+        </div>
+        <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-4 max-w-lg">
+          <span className="copper-text">Precision instruments</span> for the
+          craft.
+        </h2>
+        <p className="text-text-muted mb-16 max-w-lg">
+          Each tool built for a specific job. No bloat. No feature creep.
+          Just what you need behind the bar.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ToolCard
+            number="01"
+            title="Smart Inventory Sheets"
+            description="Pre-built spreadsheets that calculate cost, usage, variance, and reorder points. Plug in your counts — the gears do the rest."
+            icon={<BottleIcon />}
+          />
+          <ToolCard
+            number="02"
+            title="Variance Tracker"
+            description="Compare physical counts against POS sales. See exactly where you're losing money — by category, by bottle, by shift."
+            icon={<BottleIcon />}
+          />
+          <ToolCard
+            number="03"
+            title="AI Bottle Counter"
+            description="Snap a photo of your shelf. AI reads the bottle levels so you're not eyeballing tenths at 2am with bleary eyes."
+            icon={<BottleIcon />}
+          />
+          <ToolCard
+            number="04"
+            title="Product Database"
+            description="500+ common bar products pre-loaded. Bottle sizes, costs, standard pours. Skip the data entry, start counting."
+            icon={<BottleIcon />}
+          />
+        </div>
+      </section>
+
+      {/* ── BUILT IN A REAL BAR ── dark section */}
+      <section className="relative overflow-hidden bg-bg-panel border-y border-gear-border grain">
+        {/* Decorative gear */}
+        <div className="absolute -left-16 top-1/2 -translate-y-1/2 text-copper">
+          <Gear size={200} className="gear-spin-slow opacity-15" />
+        </div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-24 md:py-32">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+            {/* Image */}
+            <div className="md:col-span-5 order-2 md:order-1">
+              <div className="panel rounded-sm overflow-hidden">
+                <div className="img-placeholder aspect-[3/4] bg-gradient-to-br from-bg-card to-bg-warm">
+                  <span className="text-xs tracking-widest text-text-light/40">
+                    AGAVE &amp; RYE
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Text */}
+            <div className="md:col-span-6 md:col-start-7 order-1 md:order-2 flex flex-col justify-center">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="glow-dot" />
+                <span className="text-[10px] tracking-[0.3em] uppercase text-patina-light">
+                  Field Tested
+                </span>
+              </div>
+              <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-8">
+                <span className="copper-text">Forged on a bar floor,</span>
+                <br />
+                not in a lab.
+              </h2>
+              <p className="text-text-muted leading-relaxed mb-10">
+                Our partner Bill &mdash; General Manager of Agave &amp; Rye in
+                downtown Cleveland &mdash; opened his restaurant so we could
+                build this the right way. Real bottles. Real counts. Real
+                pressure.
+              </p>
+
+              <PipeLine>
+                <PipeNode active>
+                  <span className="text-[10px] font-mono tracking-wider text-copper block mb-1">
+                    WEEK 01
+                  </span>
+                  <span className="text-cream font-medium block">
+                    Count everything
+                  </span>
+                  <span className="text-text-muted text-sm">
+                    Full baseline. Every bottle, shelf, and category documented.
+                  </span>
+                </PipeNode>
+                <PipeNode>
+                  <span className="text-[10px] font-mono tracking-wider text-copper block mb-1">
+                    WEEK 02
+                  </span>
+                  <span className="text-cream font-medium block">
+                    Build and compare
+                  </span>
+                  <span className="text-text-muted text-sm">
+                    Deploy alongside their existing process. Validate every
+                    formula.
+                  </span>
+                </PipeNode>
+                <PipeNode>
+                  <span className="text-[10px] font-mono tracking-wider text-copper block mb-1">
+                    WEEK 03
+                  </span>
+                  <span className="text-cream font-medium block">
+                    Refine and ship
+                  </span>
+                  <span className="text-text-muted text-sm">
+                    Fix what broke. Optimize what worked. Release to the world.
+                  </span>
+                </PipeNode>
+              </PipeLine>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PULL QUOTE ── */}
+      <section className="max-w-3xl mx-auto px-6 py-20 md:py-28">
+        <blockquote className="pull-quote">
+          &ldquo;If you&rsquo;re going to build inventory tools, you better do
+          it standing behind a bar at 2am with a clipboard. Otherwise
+          you&rsquo;re just guessing.&rdquo;
+        </blockquote>
+        <p className="text-sm text-text-light mt-4 pl-7">
+          &mdash; The philosophy behind Open Source Barware
+        </p>
+      </section>
+
+      <GearDivider />
+
+      {/* ── CTA ── */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-bg via-bg-warm to-bg" />
+        <div className="absolute right-[10%] bottom-[-20px] text-copper">
+          <Gear size={100} className="gear-spin-slow opacity-15" />
+        </div>
+
+        <div className="relative z-10 max-w-3xl mx-auto px-6 py-20 md:py-28 text-center">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-copper/40" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+              Get Started
+            </span>
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-copper/40" />
+          </div>
+          <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-6">
+            <span className="copper-text">Grab the tools.</span> Start tonight.
           </h2>
-          <p className="text-[var(--foreground)]/60 text-lg mb-8 max-w-xl mx-auto">
-            Download our free inventory tools and start counting smarter
-            tonight. No signup required. No email capture. Just the goods.
+          <p className="text-text-muted text-lg mb-10 max-w-md mx-auto">
+            No signup. No email capture. No sales pitch. Click download and get
+            to work.
           </p>
           <Link
             href="/downloads"
-            className="inline-block bg-[var(--amber)] hover:bg-[var(--amber-dark)] text-black font-bold px-10 py-4 rounded-lg text-lg transition-all hover:scale-105"
+            className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
           >
-            Get the Free Tools
+            Download Free Tools
           </Link>
         </div>
       </section>
@@ -187,66 +312,38 @@ export default function Home() {
   );
 }
 
-function PainCard({
-  emoji,
-  title,
-  description,
-}: {
-  emoji: string;
-  title: string;
-  description: string;
-}) {
+function StatBlock({ number, label }: { number: string; label: string }) {
   return (
-    <div className="bg-[var(--bar-top)] border border-[var(--copper)]/15 rounded-xl p-6 hover:border-[var(--copper)]/30 transition-colors">
-      <div className="text-4xl mb-4">{emoji}</div>
-      <h3 className="text-xl font-bold text-[var(--whiskey)] mb-2">{title}</h3>
-      <p
-        className="text-[var(--foreground)]/60 leading-relaxed"
-        dangerouslySetInnerHTML={{ __html: description }}
-      />
+    <div className="text-center">
+      <div className="stat-number copper-text">{number}</div>
+      <div className="text-xs text-text-light tracking-wider uppercase mt-1">
+        {label}
+      </div>
     </div>
   );
 }
 
-function FeatureCard({
-  emoji,
+function ToolCard({
+  number,
   title,
   description,
+  icon,
 }: {
-  emoji: string;
+  number: string;
   title: string;
   description: string;
+  icon: React.ReactNode;
 }) {
   return (
-    <div className="bg-[var(--background)] border border-[var(--copper)]/15 rounded-xl p-6 hover:border-[var(--amber)]/30 transition-colors">
-      <div className="text-3xl mb-3">{emoji}</div>
-      <h3 className="text-xl font-bold text-[var(--amber)] mb-2">{title}</h3>
-      <p
-        className="text-[var(--foreground)]/60 leading-relaxed"
-        dangerouslySetInnerHTML={{ __html: description }}
-      />
-    </div>
-  );
-}
-
-function TimelineStep({
-  step,
-  title,
-  description,
-}: {
-  step: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex gap-4 items-start">
-      <div className="bg-[var(--amber)] text-black text-xs font-bold px-3 py-1 rounded-full shrink-0 mt-1">
-        {step}
+    <div className="panel card-lift rounded-sm p-8 relative rivets">
+      <div className="flex items-start justify-between mb-6">
+        <span className="text-xs font-mono text-text-light tracking-wider">
+          {number}
+        </span>
+        <div className="opacity-60">{icon}</div>
       </div>
-      <div>
-        <h4 className="font-bold text-[var(--foreground)] mb-1">{title}</h4>
-        <p className="text-sm text-[var(--foreground)]/60">{description}</p>
-      </div>
+      <h3 className="font-serif text-xl text-cream mb-3">{title}</h3>
+      <p className="text-text-muted leading-relaxed text-sm">{description}</p>
     </div>
   );
 }

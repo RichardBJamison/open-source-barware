@@ -1,53 +1,214 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f0f0f;
-  --foreground: #f5f5f0;
-  --amber: #f59e0b;
-  --amber-dark: #d97706;
-  --amber-light: #fbbf24;
-  --copper: #b87333;
-  --whiskey: #d4a574;
-  --deep-wood: #1a1208;
-  --bar-top: #2d1f0e;
+  --bg: #0d0b09;
+  --bg-warm: #141110;
+  --bg-panel: #1c1815;
+  --bg-card: #231f1b;
+  --text: #e8dfd4;
+  --text-muted: #a89b8c;
+  --text-light: #7a6e62;
+  --copper: #cd7f32;
+  --copper-bright: #e8943d;
+  --copper-dark: #8b5a2b;
+  --brass: #d4a843;
+  --brass-light: #e8c36a;
+  --patina: #4a7c6f;
+  --patina-light: #5e9e8f;
+  --rust: #8b4513;
+  --cream: #f5e6c8;
+  --ivory: #fdf4e3;
+  --wine: #722f37;
+  --wine-glow: #a8424e;
+  --gear-border: rgba(205,127,50,0.25);
+  --rivet: #8b7355;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-amber: var(--amber);
-  --color-amber-dark: var(--amber-dark);
-  --color-amber-light: var(--amber-light);
+  --color-bg: var(--bg);
+  --color-bg-warm: var(--bg-warm);
+  --color-bg-panel: var(--bg-panel);
+  --color-bg-card: var(--bg-card);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-light: var(--text-light);
   --color-copper: var(--copper);
-  --color-whiskey: var(--whiskey);
-  --color-deep-wood: var(--deep-wood);
-  --color-bar-top: var(--bar-top);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-copper-bright: var(--copper-bright);
+  --color-copper-dark: var(--copper-dark);
+  --color-brass: var(--brass);
+  --color-brass-light: var(--brass-light);
+  --color-patina: var(--patina);
+  --color-patina-light: var(--patina-light);
+  --color-rust: var(--rust);
+  --color-cream: var(--cream);
+  --color-ivory: var(--ivory);
+  --color-wine: var(--wine);
+  --color-wine-glow: var(--wine-glow);
+  --color-gear-border: var(--gear-border);
+  --color-rivet: var(--rivet);
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); }
+
+/* ── Grain overlay (aged film look) ── */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* ── Gear spin ── */
+@keyframes gear-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes gear-spin-reverse {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+.gear-spin { animation: gear-spin 20s linear infinite; }
+.gear-spin-reverse { animation: gear-spin-reverse 28s linear infinite; }
+.gear-spin-slow { animation: gear-spin 40s linear infinite; }
+
+/* ── Steam float ── */
+@keyframes steam {
+  0% { opacity: 0; transform: translateY(0) scale(1); }
+  50% { opacity: 0.15; }
+  100% { opacity: 0; transform: translateY(-40px) scale(1.5); }
+}
+.steam-puff {
+  animation: steam 4s ease-out infinite;
+}
+.steam-puff-delay { animation: steam 4s ease-out 1.5s infinite; }
+.steam-puff-slow { animation: steam 5s ease-out 3s infinite; }
+
+/* ── Copper gradient text ── */
+.copper-text {
+  background: linear-gradient(135deg, var(--copper-bright) 0%, var(--copper) 40%, var(--brass) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Custom scrollbar for that bar feel */
-::-webkit-scrollbar {
+/* ── Panel styles (riveted edges) ── */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--gear-border);
+  position: relative;
+}
+.panel::before {
+  content: "";
+  position: absolute;
+  top: 6px; left: 6px; right: 6px; bottom: 6px;
+  border: 1px solid rgba(205,127,50,0.08);
+  pointer-events: none;
+}
+
+/* ── Rivet dots ── */
+.rivets::after {
+  content: "";
+  position: absolute;
+  top: 8px; left: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--rivet) 0%, var(--copper-dark) 100%);
+  box-shadow:
+    calc(100% - 22px) 0 0 0 var(--rivet),
+    0 calc(100% - 22px) 0 0 var(--rivet),
+    calc(100% - 22px) calc(100% - 22px) 0 0 var(--rivet);
+}
+
+/* ── Card lift ── */
+.card-lift {
+  transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.card-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(205,127,50,0.12), 0 0 1px rgba(205,127,50,0.3);
+  border-color: var(--copper) !important;
+}
+
+/* ── Pull quote ── */
+.pull-quote {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  line-height: 1.35;
+  font-style: italic;
+  color: var(--cream);
+  border-left: 3px solid var(--copper);
+  padding-left: 1.5rem;
+}
+
+/* ── Divider with gear ── */
+.gear-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 3rem auto;
+  max-width: 200px;
+}
+.gear-divider::before,
+.gear-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gear-border), transparent);
+}
+
+/* ── Copper underline ── */
+.copper-underline {
+  position: relative;
+  display: inline;
+}
+.copper-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, var(--copper), var(--brass), var(--copper));
+}
+
+/* ── Glow dot (active indicator) ── */
+.glow-dot {
   width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--patina-light);
+  box-shadow: 0 0 8px var(--patina), 0 0 20px rgba(94,158,143,0.3);
 }
-::-webkit-scrollbar-track {
-  background: var(--deep-wood);
+
+/* ── Pipe connector lines ── */
+.pipe-line {
+  position: relative;
 }
-::-webkit-scrollbar-thumb {
-  background: var(--copper);
-  border-radius: 4px;
+.pipe-line::before {
+  content: "";
+  position: absolute;
+  left: 19px;
+  top: 44px;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--gear-border), transparent);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--amber);
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--copper-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--copper); }
+
+/* ── Stat number ── */
+.stat-number {
+  font-family: var(--font-serif);
+  font-size: 3.5rem;
+  line-height: 1;
 }

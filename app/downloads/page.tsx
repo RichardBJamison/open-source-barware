@@ -1,123 +1,148 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Gear, GearDivider, BottleIcon } from "@/components/SteampunkElements";
 
 export const metadata: Metadata = {
   title: "Free Downloads — Open Source Barware",
   description:
-    "Download free bar inventory tools. Spreadsheets, count sheets, variance calculators, and more. No signup required.",
+    "Download free bar inventory tools. Spreadsheets, variance calculators, bottle counters. No signup required.",
 };
 
 export default function DownloadsPage() {
   return (
     <>
-      {/* Hero */}
-      <section className="bg-gradient-to-b from-[var(--deep-wood)] to-[var(--background)]">
-        <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-          <div className="text-5xl mb-6">📦</div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Free <span className="text-[var(--amber)]">Downloads</span>
+      {/* ── HERO ── */}
+      <section className="relative overflow-hidden">
+        <div className="absolute right-[-40px] top-[-20px] text-copper">
+          <Gear size={160} className="gear-spin opacity-12" />
+        </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-6 pt-20 pb-12 md:pt-28 md:pb-16">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-[1px] bg-copper/40" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+              Downloads
+            </span>
+          </div>
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-xl mb-6">
+            <span className="copper-text">Take what you need.</span>
+            <br />
+            It&rsquo;s all free.
           </h1>
-          <p className="text-lg text-[var(--foreground)]/70 max-w-2xl mx-auto leading-relaxed">
-            Every tool is free. No email required. No signup wall. Click
-            download and get to work. We&apos;ll keep adding tools as we build
-            them.
+          <p className="text-text-muted text-lg max-w-lg leading-relaxed">
+            No signup wall. No email capture. No &ldquo;book a demo.&rdquo;
+            Click download and start counting smarter tonight.
           </p>
         </div>
       </section>
 
-      {/* Downloads Grid */}
-      <section className="max-w-5xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <GearDivider />
+
+      {/* ── TOOL CARDS ── */}
+      <section className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <DownloadCard
-            emoji="📊"
+            number="01"
             title="Bar Inventory Master Sheet"
-            description="Complete inventory spreadsheet with categories for liquor, beer, wine, and mixers. Pre-built formulas calculate total value, usage rate, and reorder alerts."
             format="XLSX"
+            description="Complete workbook with tabs for liquor, beer, wine, and mixers. Formulas calculate total value, usage rate, pour cost, and reorder alerts."
             status="coming-soon"
           />
-
           <DownloadCard
-            emoji="📋"
+            number="02"
             title="Quick Count Template"
-            description="Simplified count sheet for weekly spot checks. Print it, count it, done. Designed for speed &mdash; just the essentials."
             format="PDF + XLSX"
+            description="Stripped-down count sheet for weekly spot checks. Print it, grab a pen, count, done. Only the columns that matter."
             status="coming-soon"
           />
-
           <DownloadCard
-            emoji="📈"
+            number="03"
             title="Variance Calculator"
-            description="Plug in your counts and POS sales. The sheet calculates pour cost, shrinkage percentage, and flags problem categories automatically."
             format="XLSX"
+            description="Plug in physical counts and POS data. Calculates pour cost, shrinkage by category, flags problem products automatically."
             status="coming-soon"
           />
-
           <DownloadCard
-            emoji="🏷️"
-            title="Product Database Starter"
-            description="Pre-populated database of 500+ common bar products with bottle sizes, costs, and standard pours. Save hours of data entry."
+            number="04"
+            title="Product Database"
             format="CSV + XLSX"
+            description="500+ common bar products with bottle sizes, standard costs, and pour sizes. Import and skip the data entry."
             status="coming-soon"
           />
-
           <DownloadCard
-            emoji="🤖"
+            number="05"
             title="AI Bottle Counter"
-            description="Python script that uses your phone camera to estimate bottle levels. Snap a photo, get a count. Open source, runs locally."
             format="Python"
+            description="Open-source script using your phone camera to estimate fill levels. Runs locally — your data stays yours."
             status="coming-soon"
           />
-
           <DownloadCard
-            emoji="📱"
+            number="06"
             title="Mobile Count App"
-            description="Progressive web app for counting on your phone. Works offline, syncs when connected. Walk the bar with your phone instead of a clipboard."
             format="Web App"
+            description="Progressive web app for counting on your phone. Works offline behind the bar, syncs on WiFi. Replace the clipboard."
             status="coming-soon"
           />
         </div>
       </section>
 
-      {/* Roadmap */}
-      <section className="bg-[var(--deep-wood)]/50 border-y border-[var(--copper)]/10">
-        <div className="max-w-4xl mx-auto px-6 py-16">
-          <h2 className="text-3xl font-bold text-center mb-4">
-            Build <span className="text-[var(--amber)]">Roadmap</span>
+      {/* ── ROADMAP ── */}
+      <section className="relative bg-bg-panel border-y border-gear-border overflow-hidden grain">
+        <div className="absolute -left-12 top-1/2 -translate-y-1/2 text-copper">
+          <Gear size={180} className="gear-spin-slow opacity-12" />
+        </div>
+        <div className="absolute right-[-40px] bottom-[-40px] text-copper">
+          <Gear size={120} className="gear-spin-reverse opacity-10" />
+        </div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-20 md:py-28">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="glow-dot" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-patina-light">
+              Roadmap
+            </span>
+          </div>
+          <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-4">
+            <span className="copper-text">
+              Where we are. Where we&rsquo;re going.
+            </span>
           </h2>
-          <p className="text-center text-[var(--foreground)]/60 mb-12 max-w-xl mx-auto">
-            We&apos;re building these tools live at Agave &amp; Rye. Here&apos;s
-            what&apos;s happening and when.
+          <p className="text-text-muted mb-16 max-w-lg">
+            Everything is being built live at Agave &amp; Rye. Real testing,
+            real data, real feedback from working bartenders.
           </p>
 
-          <div className="space-y-6">
-            <RoadmapItem
-              phase="Phase 1 &mdash; Foundation"
-              timeline="Weeks 1-2"
-              status="in-progress"
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <PhaseCard
+              number="I"
+              title="Foundation"
+              timing="Weeks 1–2"
+              status="active"
               items={[
-                "Full inventory count at Agave & Rye",
-                "Build master spreadsheet with live data",
-                "Create quick count template",
-                "Document every shelf, category, and product",
+                "Full baseline inventory count",
+                "Master spreadsheet with live data",
+                "Quick count template",
+                "Product categorization system",
               ]}
             />
-            <RoadmapItem
-              phase="Phase 2 &mdash; Intelligence"
-              timeline="Week 3"
-              status="upcoming"
+            <PhaseCard
+              number="II"
+              title="Intelligence"
+              timing="Week 3"
+              status="next"
               items={[
-                "Variance calculator with POS integration",
-                "Product database with 500+ items",
+                "Variance calculator + POS matching",
+                "Product database (500+ items)",
                 "Reorder point formulas",
-                "Cost analysis per category",
+                "Category-level cost analysis",
               ]}
             />
-            <RoadmapItem
-              phase="Phase 3 &mdash; Automation"
-              timeline="Post-Launch"
+            <PhaseCard
+              number="III"
+              title="Automation"
+              timing="Post-Launch"
               status="planned"
               items={[
-                "AI bottle level reader (phone camera)",
+                "AI bottle level reader",
                 "Mobile progressive web app",
                 "POS data import tools",
                 "Multi-location support",
@@ -127,20 +152,31 @@ export default function DownloadsPage() {
         </div>
       </section>
 
-      {/* Contribute CTA */}
-      <section className="max-w-4xl mx-auto px-6 py-16 text-center">
-        <h2 className="text-3xl font-bold mb-4">
-          Want to <span className="text-[var(--amber)]">Contribute?</span>
-        </h2>
-        <p className="text-[var(--foreground)]/60 text-lg mb-8 max-w-xl mx-auto">
-          This is open source. If you&apos;re a bartender with ideas, a
-          developer who wants to help, or a bar owner who wants to test &mdash;
-          we want to hear from you.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      {/* ── CONTRIBUTE ── */}
+      <section className="relative overflow-hidden">
+        <div className="absolute right-[5%] bottom-0 text-copper">
+          <Gear size={80} className="gear-spin-slow opacity-10" />
+        </div>
+        <div className="relative z-10 max-w-3xl mx-auto px-6 py-20 md:py-28 text-center">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-copper/40" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+              Open Source
+            </span>
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-copper/40" />
+          </div>
+          <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-6">
+            <span className="copper-text">Built in the open.</span>
+            <br />
+            Contributions welcome.
+          </h2>
+          <p className="text-text-muted text-lg mb-10 max-w-md mx-auto">
+            Bartender with ideas? Developer who wants to help? Bar owner
+            who wants to test? This is a community project &mdash; jump in.
+          </p>
           <Link
             href="/about"
-            className="border border-[var(--copper)] text-[var(--whiskey)] hover:bg-[var(--copper)]/10 font-semibold px-8 py-4 rounded-lg text-lg transition-colors"
+            className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
           >
             Learn About the Project
           </Link>
@@ -151,92 +187,97 @@ export default function DownloadsPage() {
 }
 
 function DownloadCard({
-  emoji,
+  number,
   title,
-  description,
   format,
+  description,
   status,
 }: {
-  emoji: string;
+  number: string;
   title: string;
-  description: string;
   format: string;
+  description: string;
   status: "available" | "coming-soon";
 }) {
   return (
-    <div className="bg-[var(--bar-top)] border border-[var(--copper)]/15 rounded-2xl p-6 hover:border-[var(--copper)]/30 transition-colors flex flex-col">
-      <div className="flex items-start justify-between mb-4">
-        <span className="text-4xl">{emoji}</span>
-        <span className="text-xs font-mono bg-[var(--copper)]/20 text-[var(--whiskey)] px-2 py-1 rounded">
+    <div className="panel card-lift rounded-sm p-7 flex flex-col relative rivets">
+      <div className="flex items-start justify-between mb-5">
+        <span className="text-xs font-mono text-text-light tracking-wider">
+          {number}
+        </span>
+        <span className="text-[10px] font-mono tracking-wider text-copper border border-gear-border px-2 py-0.5">
           {format}
         </span>
       </div>
-      <h3 className="text-xl font-bold text-[var(--amber)] mb-2">{title}</h3>
-      <p
-        className="text-[var(--foreground)]/60 leading-relaxed mb-6 flex-1"
-        dangerouslySetInnerHTML={{ __html: description }}
-      />
+      <div className="mb-4 opacity-40">
+        <BottleIcon />
+      </div>
+      <h3 className="font-serif text-lg text-cream mb-3">{title}</h3>
+      <p className="text-text-muted text-sm leading-relaxed mb-8 flex-1">
+        {description}
+      </p>
       {status === "available" ? (
-        <button className="w-full bg-[var(--amber)] hover:bg-[var(--amber-dark)] text-black font-bold py-3 rounded-lg transition-colors">
+        <button className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.2)]">
           Download Free
         </button>
       ) : (
-        <div className="w-full bg-[var(--copper)]/10 border border-[var(--copper)]/20 text-[var(--whiskey)] font-medium py-3 rounded-lg text-center text-sm">
-          Coming Soon &mdash; Building at Agave &amp; Rye
+        <div className="w-full border border-gear-border text-text-light text-xs tracking-[0.2em] uppercase py-3 text-center">
+          Building at Agave &amp; Rye
         </div>
       )}
     </div>
   );
 }
 
-function RoadmapItem({
-  phase,
-  timeline,
+function PhaseCard({
+  number,
+  title,
+  timing,
   status,
   items,
 }: {
-  phase: string;
-  timeline: string;
-  status: "completed" | "in-progress" | "upcoming" | "planned";
+  number: string;
+  title: string;
+  timing: string;
+  status: "active" | "next" | "planned";
   items: string[];
 }) {
-  const statusStyles = {
-    completed: "bg-green-500/20 text-green-400 border-green-500/30",
-    "in-progress": "bg-[var(--amber)]/20 text-[var(--amber)] border-[var(--amber)]/30",
-    upcoming: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    planned: "bg-[var(--foreground)]/10 text-[var(--foreground)]/50 border-[var(--foreground)]/20",
-  };
-
-  const statusLabels = {
-    completed: "Done",
-    "in-progress": "In Progress",
-    upcoming: "Up Next",
-    planned: "Planned",
-  };
-
   return (
-    <div className="bg-[var(--bar-top)] border border-[var(--copper)]/15 rounded-xl p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-        <div>
-          <h3
-            className="text-lg font-bold text-[var(--foreground)]"
-            dangerouslySetInnerHTML={{ __html: phase }}
-          />
-          <p className="text-sm text-[var(--foreground)]/50">{timeline}</p>
-        </div>
+    <div className="panel rounded-sm p-8">
+      <div className="flex items-center gap-3 mb-5">
+        <span className="font-serif text-2xl copper-text">{number}</span>
+        {status === "active" && <div className="glow-dot" />}
+      </div>
+      <h3 className="font-serif text-xl text-cream mb-1">{title}</h3>
+      <div className="flex items-center gap-3 mb-6">
+        <span className="text-sm text-text-muted">{timing}</span>
         <span
-          className={`text-xs font-bold px-3 py-1 rounded-full border ${statusStyles[status]} w-fit`}
+          className={`text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 border ${
+            status === "active"
+              ? "text-patina-light border-patina/30"
+              : status === "next"
+              ? "text-copper border-gear-border"
+              : "text-text-light border-gear-border"
+          }`}
         >
-          {statusLabels[status]}
+          {status === "active"
+            ? "In Progress"
+            : status === "next"
+            ? "Up Next"
+            : "Planned"}
         </span>
       </div>
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {items.map((item, i) => (
           <li
             key={i}
-            className="text-[var(--foreground)]/60 text-sm flex items-start gap-2"
+            className="text-text-muted text-sm flex items-start gap-3"
           >
-            <span className="text-[var(--copper)] mt-0.5">&#9656;</span>
+            <span
+              className={`mt-1.5 block w-1.5 h-1.5 rounded-full shrink-0 ${
+                status === "active" ? "bg-patina-light" : "bg-copper/30"
+              }`}
+            />
             {item}
           </li>
         ))}

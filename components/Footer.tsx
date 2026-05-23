@@ -1,72 +1,68 @@
 import Link from "next/link";
+import { Gear, CocktailIcon } from "./SteampunkElements";
 
 export default function Footer() {
   return (
-    <footer className="bg-[var(--deep-wood)] border-t border-[var(--copper)]/20 mt-auto">
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="relative border-t border-gear-border mt-auto overflow-hidden">
+      {/* Decorative gears */}
+      <div className="absolute -right-10 -bottom-10 text-copper">
+        <Gear size={120} className="gear-spin-slow opacity-30" />
+      </div>
+      <div className="absolute -left-6 -top-6 text-copper">
+        <Gear size={60} className="gear-spin-reverse opacity-20" />
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {/* Brand */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-2xl">🍸</span>
-              <span className="text-lg font-bold text-[var(--amber)]">
+          <div className="md:col-span-5">
+            <div className="flex items-center gap-3 mb-4">
+              <CocktailIcon />
+              <span className="font-serif text-lg copper-text">
                 Open Source Barware
               </span>
             </div>
-            <p className="text-sm text-[var(--foreground)]/60 leading-relaxed">
-              Free bar inventory tools built by bartenders who got tired of
-              paying for spreadsheets. No subscriptions, no upsells, no
-              bullshit.
+            <p className="text-sm text-text-muted leading-relaxed max-w-sm">
+              Crafted by bartenders. Tested at Agave &amp; Rye, downtown
+              Cleveland. Given to the trade, no strings attached. Because good
+              tools shouldn&rsquo;t cost you a shift&rsquo;s worth of tips.
             </p>
           </div>
 
-          {/* Links */}
-          <div>
-            <h3 className="text-[var(--amber)] font-semibold mb-3 uppercase text-sm tracking-wider">
+          {/* Nav */}
+          <div className="md:col-span-3 md:col-start-7">
+            <span className="text-[10px] text-text-light tracking-[0.3em] uppercase block mb-4">
               Navigate
-            </h3>
-            <div className="flex flex-col gap-2">
-              <Link
-                href="/"
-                className="text-sm text-[var(--foreground)]/60 hover:text-[var(--amber)] transition-colors"
-              >
-                Home
-              </Link>
-              <Link
-                href="/about"
-                className="text-sm text-[var(--foreground)]/60 hover:text-[var(--amber)] transition-colors"
-              >
-                About Us
-              </Link>
-              <Link
-                href="/downloads"
-                className="text-sm text-[var(--foreground)]/60 hover:text-[var(--amber)] transition-colors"
-              >
-                Free Downloads
-              </Link>
+            </span>
+            <div className="flex flex-col gap-3">
+              <Link href="/" className="text-sm text-text-muted hover:text-copper transition-colors">Home</Link>
+              <Link href="/about" className="text-sm text-text-muted hover:text-copper transition-colors">About</Link>
+              <Link href="/downloads" className="text-sm text-text-muted hover:text-copper transition-colors">Downloads</Link>
             </div>
           </div>
 
-          {/* Built with */}
-          <div>
-            <h3 className="text-[var(--amber)] font-semibold mb-3 uppercase text-sm tracking-wider">
-              Built With
-            </h3>
-            <p className="text-sm text-[var(--foreground)]/60 leading-relaxed">
-              Built in the real world at{" "}
-              <span className="text-[var(--whiskey)]">Agave &amp; Rye</span>,
-              downtown Cleveland. Tested with real bottles, real counts, real
-              bartenders.
+          {/* Info */}
+          <div className="md:col-span-3">
+            <span className="text-[10px] text-text-light tracking-[0.3em] uppercase block mb-4">
+              Workshop
+            </span>
+            <p className="text-sm text-text-muted leading-relaxed">
+              A RBJP Holdings project.
+              <br />
+              Forged in Cleveland, Ohio.
+              <br />
+              Free forever.
             </p>
           </div>
         </div>
 
-        <div className="border-t border-[var(--copper)]/10 mt-8 pt-6 text-center text-xs text-[var(--foreground)]/40">
-          <p>
-            &copy; {new Date().getFullYear()} Open Source Barware &mdash; A{" "}
-            <span className="text-[var(--whiskey)]">RBJP Holdings</span>{" "}
-            project. Free forever.
+        <div className="border-t border-gear-border mt-12 pt-6 flex items-center justify-center gap-3">
+          <div className="w-1.5 h-1.5 rounded-full bg-copper/30" />
+          <p className="text-xs text-text-light">
+            &copy; {new Date().getFullYear()} Open Source Barware &mdash; All
+            tools are free and open source
           </p>
+          <div className="w-1.5 h-1.5 rounded-full bg-copper/30" />
         </div>
       </div>
     </footer>

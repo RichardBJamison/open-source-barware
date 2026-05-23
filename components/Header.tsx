@@ -2,83 +2,65 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { CocktailIcon } from "./SteampunkElements";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-[var(--deep-wood)]/95 backdrop-blur-sm border-b border-[var(--copper)]/20">
+    <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-sm border-b border-gear-border">
       <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
-          <span className="text-3xl" role="img" aria-label="cocktail">
-            🍸
-          </span>
+          <CocktailIcon className="group-hover:scale-110 transition-transform" />
           <div>
-            <span className="text-xl font-bold text-[var(--amber)] group-hover:text-[var(--amber-light)] transition-colors">
+            <span className="font-serif text-xl copper-text tracking-tight">
               Open Source Barware
             </span>
-            <span className="hidden sm:block text-xs text-[var(--whiskey)]/70 tracking-widest uppercase">
-              Free tools for the bar industry
+            <span className="hidden sm:block text-[10px] text-text-light tracking-[0.3em] uppercase">
+              Free Tools for the Trade
             </span>
           </div>
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop */}
+        <div className="hidden md:flex items-center gap-8 text-sm">
           <Link
             href="/"
-            className="text-[var(--foreground)]/80 hover:text-[var(--amber)] transition-colors font-medium"
+            className="text-text-muted hover:text-copper transition-colors tracking-wide"
           >
             Home
           </Link>
           <Link
             href="/about"
-            className="text-[var(--foreground)]/80 hover:text-[var(--amber)] transition-colors font-medium"
+            className="text-text-muted hover:text-copper transition-colors tracking-wide"
           >
             About
           </Link>
           <Link
             href="/downloads"
-            className="bg-[var(--amber)] hover:bg-[var(--amber-dark)] text-black font-bold px-5 py-2 rounded-lg transition-colors"
+            className="relative bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 tracking-wide transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.3)]"
           >
             Free Downloads
           </Link>
         </div>
 
-        {/* Mobile hamburger */}
+        {/* Mobile */}
         <button
-          className="md:hidden text-[var(--amber)] text-2xl"
+          className="md:hidden text-copper"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
-          {menuOpen ? "\u2715" : "\u2630"}
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            {menuOpen ? <path d="M18 6L6 18M6 6l12 12" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+          </svg>
         </button>
       </nav>
 
-      {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-[var(--deep-wood)] border-t border-[var(--copper)]/20 px-6 py-4 flex flex-col gap-4">
-          <Link
-            href="/"
-            onClick={() => setMenuOpen(false)}
-            className="text-[var(--foreground)]/80 hover:text-[var(--amber)] transition-colors font-medium"
-          >
-            Home
-          </Link>
-          <Link
-            href="/about"
-            onClick={() => setMenuOpen(false)}
-            className="text-[var(--foreground)]/80 hover:text-[var(--amber)] transition-colors font-medium"
-          >
-            About
-          </Link>
-          <Link
-            href="/downloads"
-            onClick={() => setMenuOpen(false)}
-            className="bg-[var(--amber)] hover:bg-[var(--amber-dark)] text-black font-bold px-5 py-2 rounded-lg transition-colors text-center"
-          >
-            Free Downloads
-          </Link>
+        <div className="md:hidden border-t border-gear-border px-6 py-6 bg-bg-warm flex flex-col gap-4 text-sm">
+          <Link href="/" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">Home</Link>
+          <Link href="/about" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">About</Link>
+          <Link href="/downloads" onClick={() => setMenuOpen(false)} className="bg-copper text-bg font-semibold px-6 py-2.5 tracking-wide text-center">Free Downloads</Link>
         </div>
       )}
     </header>
