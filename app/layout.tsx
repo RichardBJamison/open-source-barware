@@ -16,11 +16,25 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+const siteUrl = "https://opensourcebarware.com";
+const siteTitle = "Open Source Barware — Free Bar Inventory Tools";
+const siteDescription =
+  "The free bar inventory system built by bartenders, tested in a real restaurant. No subscriptions. No upsells. Just tools that work.";
+
 export const metadata: Metadata = {
-  title: "Open Source Barware — Free Bar Inventory Tools",
-  description:
-    "The free bar inventory system built by bartenders, tested in a real restaurant. No subscriptions. No upsells. Just tools that work.",
+  title: siteTitle,
+  description: siteDescription,
   keywords: [
+    "free bar inventory spreadsheet",
+    "bar inventory template free",
+    "pour cost calculator",
+    "free bartender tools",
+    "open source bar inventory",
+    "bartender resources",
+    "cocktail inventory management",
+    "bar inventory system free",
+    "liquor inventory spreadsheet",
+    "beverage cost calculator",
     "bar inventory",
     "free inventory system",
     "bartender tools",
@@ -28,6 +42,48 @@ export const metadata: Metadata = {
     "open source",
     "restaurant inventory",
     "beverage management",
+  ],
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    url: siteUrl,
+    siteName: "Open Source Barware",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "Open Source Barware",
+      url: siteUrl,
+      description: siteDescription,
+    },
+    {
+      "@type": "WebSite",
+      name: "Open Source Barware",
+      url: siteUrl,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${siteUrl}/?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
   ],
 };
 
@@ -39,6 +95,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="min-h-screen flex flex-col font-sans antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

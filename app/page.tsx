@@ -3,8 +3,6 @@ import Image from "next/image";
 import {
   Gear,
   GearDivider,
-  PipeLine,
-  PipeNode,
   BottleIcon,
 } from "@/components/SteampunkElements";
 
@@ -150,10 +148,24 @@ export default function Home() {
           <span className="copper-text">Precision instruments</span> for the
           craft.
         </h2>
-        <p className="text-text-muted mb-16 max-w-lg">
+        <p className="text-text-muted mb-12 max-w-lg">
           Each tool built for a specific job. No bloat. No feature creep.
           Just what you need behind the bar.
         </p>
+
+        {/* Workshop photo */}
+        <div className="relative rounded-sm overflow-hidden panel mb-16">
+          <div className="aspect-[21/9] relative">
+            <Image
+              src="/images/workshop.jpg"
+              alt="Craftsman workbench with bar tools, jiggers, and vintage measuring instruments"
+              fill
+              className="object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-bg/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-bg/40 to-transparent" />
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ToolCard
@@ -183,84 +195,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── BUILT IN A REAL BAR ── dark section */}
-      <section className="relative overflow-hidden bg-bg-panel border-y border-gear-border grain">
-        {/* Decorative gear */}
-        <div className="absolute -left-16 top-1/2 -translate-y-1/2 text-copper">
-          <Gear size={200} className="gear-spin-slow opacity-15" />
-        </div>
-
-        <div className="relative z-10 max-w-6xl mx-auto px-6 py-24 md:py-32">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
-            {/* Image */}
-            <div className="md:col-span-5 order-2 md:order-1">
-              <div className="panel rounded-sm overflow-hidden">
-                <div className="img-placeholder aspect-[3/4] bg-gradient-to-br from-bg-card to-bg-warm">
-                  <span className="text-xs tracking-widest text-text-light/40">
-                    AGAVE &amp; RYE
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Text */}
-            <div className="md:col-span-6 md:col-start-7 order-1 md:order-2 flex flex-col justify-center">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="glow-dot" />
-                <span className="text-[10px] tracking-[0.3em] uppercase text-patina-light">
-                  Field Tested
-                </span>
-              </div>
-              <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-8">
-                <span className="copper-text">Forged on a bar floor,</span>
-                <br />
-                not in a lab.
-              </h2>
-              <p className="text-text-muted leading-relaxed mb-10">
-                Our partner Bill &mdash; General Manager of Agave &amp; Rye in
-                downtown Cleveland &mdash; opened his restaurant so we could
-                build this the right way. Real bottles. Real counts. Real
-                pressure.
-              </p>
-
-              <PipeLine>
-                <PipeNode active>
-                  <span className="text-[10px] font-mono tracking-wider text-copper block mb-1">
-                    WEEK 01
-                  </span>
-                  <span className="text-cream font-medium block">
-                    Count everything
-                  </span>
-                  <span className="text-text-muted text-sm">
-                    Full baseline. Every bottle, shelf, and category documented.
-                  </span>
-                </PipeNode>
-                <PipeNode>
-                  <span className="text-[10px] font-mono tracking-wider text-copper block mb-1">
-                    WEEK 02
-                  </span>
-                  <span className="text-cream font-medium block">
-                    Build and compare
-                  </span>
-                  <span className="text-text-muted text-sm">
-                    Deploy alongside their existing process. Validate every
-                    formula.
-                  </span>
-                </PipeNode>
-                <PipeNode>
-                  <span className="text-[10px] font-mono tracking-wider text-copper block mb-1">
-                    WEEK 03
-                  </span>
-                  <span className="text-cream font-medium block">
-                    Refine and ship
-                  </span>
-                  <span className="text-text-muted text-sm">
-                    Fix what broke. Optimize what worked. Release to the world.
-                  </span>
-                </PipeNode>
-              </PipeLine>
-            </div>
-          </div>
+      {/* ── FIELD TESTED ── compact mention */}
+      <section className="bg-bg-panel border-y border-gear-border">
+        <div className="max-w-3xl mx-auto px-6 py-12 flex items-center gap-6">
+          <div className="h-12 w-[2px] bg-copper/40 shrink-0" />
+          <p className="text-text-muted leading-relaxed">
+            Field-tested at <span className="text-cream font-medium">Agave &amp; Rye</span> in
+            downtown Cleveland. Real bottles. Real counts. Real pressure.
+          </p>
         </div>
       </section>
 
@@ -300,12 +242,20 @@ export default function Home() {
             No signup. No email capture. No sales pitch. Click download and get
             to work.
           </p>
-          <Link
-            href="/downloads"
-            className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
-          >
-            Download Free Tools
-          </Link>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href="/downloads"
+              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
+            >
+              Download Free Tools
+            </Link>
+            <Link
+              href="/resources"
+              className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-10 py-4 text-sm tracking-wide transition-all"
+            >
+              Explore Community Resources
+            </Link>
+          </div>
         </div>
       </section>
     </>

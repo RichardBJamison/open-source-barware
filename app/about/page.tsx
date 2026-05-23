@@ -152,57 +152,50 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ── AGAVE & RYE ── */}
-      <section className="max-w-6xl mx-auto px-6 py-20 md:py-28">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-          <div className="md:col-span-5">
-            <div className="panel rounded-sm overflow-hidden">
-              <div className="img-placeholder aspect-[4/3] bg-gradient-to-br from-bg-card to-bg-warm">
-                <span className="text-xs tracking-widest text-text-light/40">
-                  AGAVE &amp; RYE INTERIOR
-                </span>
-              </div>
-            </div>
-            <p className="text-xs text-text-light mt-3">
-              Agave &amp; Rye &mdash; Downtown Cleveland, Ohio
+      {/* ── FIELD TESTED ── */}
+      <section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="max-w-2xl mx-auto flex items-start gap-6">
+          <div className="h-12 w-[2px] bg-copper/40 shrink-0 mt-1" />
+          <p className="text-text-muted leading-relaxed">
+            Every tool was field-tested at <span className="text-cream font-medium">Agave &amp; Rye</span> in
+            downtown Cleveland &mdash; three weeks of real counts, real data, and real
+            feedback from bartenders who just want to go home on time. If you&rsquo;re
+            ever in the neighborhood, go support them. Good people running a great spot.
+          </p>
+        </div>
+      </section>
+
+      {/* ── COMMUNITY ── */}
+      <section className="max-w-6xl mx-auto px-6 py-12 md:py-16">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-[1px] bg-copper/40" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+              Beyond the Tools
+            </span>
+          </div>
+          <h2 className="font-serif text-2xl md:text-3xl leading-tight mb-6">
+            <span className="copper-text">Built for the community.</span>
+          </h2>
+          <div className="space-y-5 text-text-muted leading-relaxed">
+            <p>
+              Open Source Barware isn&rsquo;t just free spreadsheets. We connect bartenders
+              with the organizations that support the craft &mdash; from the United States
+              Bartenders&rsquo; Guild to education programs and mental health resources
+              built specifically for hospitality workers.
+            </p>
+            <p>
+              The bar industry takes care of everyone else. We think it&rsquo;s time
+              someone built tools that take care of the bar industry.
             </p>
           </div>
-          <div className="md:col-span-6 md:col-start-7">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-[1px] bg-copper/40" />
-              <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
-                Our Testing Ground
-              </span>
-            </div>
-            <h2 className="font-serif text-3xl leading-tight mb-8">
-              <span className="copper-text">Agave &amp; Rye</span>
-            </h2>
-            <div className="space-y-5 text-text-muted leading-relaxed">
-              <p>
-                Agave &amp; Rye isn&rsquo;t just where we tested &mdash;
-                it&rsquo;s where we learned what actually holds up under
-                pressure. Real bar. Real rushes. Real inventory deadlines.
-              </p>
-              <p>
-                When we pitched a free, open-source inventory system, Bill said
-                yes immediately. Not because it was easy &mdash; letting
-                outsiders into your operation never is &mdash; but because he
-                understood the problem. Every bar deals with it.
-              </p>
-              <p>
-                One day a week for three weeks. Real counts. Real data. Real
-                feedback from bartenders who don&rsquo;t care about your fancy
-                features &mdash; they just want to go home on time.
-              </p>
-            </div>
-
-            <div className="mt-8 panel rounded-sm p-6">
-              <p className="text-cream font-serif text-lg italic">
-                &ldquo;If you&rsquo;re ever in downtown Cleveland, go support
-                them. Good people running a great spot. They earned their place
-                on this page.&rdquo;
-              </p>
-            </div>
+          <div className="mt-8">
+            <Link
+              href="/resources"
+              className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-3 text-sm tracking-wide transition-all"
+            >
+              Explore Community Resources
+            </Link>
           </div>
         </div>
       </section>
