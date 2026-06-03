@@ -33,20 +33,21 @@ export default function ComingSoonToast() {
         onClick={dismiss}
       />
 
-      {/* Modal */}
+      {/* Positioning wrapper — inline only, no Tailwind transforms */}
       <div
-        className={`
-          fixed z-50 w-[min(480px,90vw)]
-          panel rivets
-          transition-all duration-500 ease-out
-          ${dismissed ? "opacity-0 scale-95" : "opacity-100 scale-100"}
-        `}
         style={{
+          position: "fixed",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.8), 0 0 2px rgba(205,127,50,0.4)",
+          zIndex: 50,
+          width: "min(480px, 90vw)",
         }}
+      >
+      {/* Transition inner */}
+      <div
+        className={`panel rivets transition-opacity duration-500 ease-out ${dismissed ? "opacity-0" : "opacity-100"}`}
+        style={{ boxShadow: "0 24px 80px rgba(0,0,0,0.8), 0 0 2px rgba(205,127,50,0.4)" }}
       >
         {/* Top copper accent bar */}
         <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-copper to-transparent" />
@@ -103,6 +104,7 @@ export default function ComingSoonToast() {
             opensourcebarware.com &mdash; Est. 2026
           </p>
         </div>
+      </div>
       </div>
     </>
   );
