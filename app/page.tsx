@@ -106,7 +106,7 @@ export default function Home() {
               </span>
             </div>
             <h2 className="font-serif text-3xl md:text-4xl leading-tight copper-text">
-              Every bartender
+              Every bar manager
               <br />
               knows the drill.
             </h2>
