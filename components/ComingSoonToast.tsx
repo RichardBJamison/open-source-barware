@@ -74,8 +74,11 @@ export default function ComingSoonToast() {
           </div>
 
           {/* Headline */}
-          <p className="font-serif italic text-3xl text-cream leading-snug mb-4">
-            Three weeks out.
+          <p className="font-serif italic text-3xl text-cream leading-snug mb-1">
+            Launching June 27th.
+          </p>
+          <p className="text-[11px] tracking-[0.2em] uppercase text-copper mb-4">
+            Friday &mdash; three weeks out
           </p>
 
           {/* Divider */}
@@ -83,7 +86,7 @@ export default function ComingSoonToast() {
 
           {/* Body */}
           <p className="text-base text-text-muted leading-relaxed mb-6">
-            The full toolkit is nearly finished — inventory sheets, pour-cost
+            The full toolkit drops June 27th — inventory sheets, pour-cost
             calculator, variance tracker, and AI bottle counter. Built by
             bartenders, tested in a real restaurant. Free forever.
           </p>
@@ -93,7 +96,7 @@ export default function ComingSoonToast() {
             onClick={dismiss}
             className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
           >
-            Got it — I&rsquo;ll check back soon
+            Got it — I&rsquo;ll be back June 27th
           </button>
 
           <p className="text-[10px] text-text-light mt-4 text-center tracking-wide">
