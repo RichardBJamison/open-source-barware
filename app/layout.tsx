@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ComingSoonToast from "@/components/ComingSoonToast";
+
+const GA_MEASUREMENT_ID = "G-DQJKBWMM8H";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -88,8 +91,6 @@ const jsonLd = {
   ],
 };
 
-const GA_ID = "G-ZM3BBYW5PY";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -98,12 +99,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <head>
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`,
-          }}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
         />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased">
         <script
