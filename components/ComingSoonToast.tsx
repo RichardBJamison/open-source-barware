@@ -13,7 +13,7 @@ export default function ComingSoonToast() {
     if (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY)) {
       return;
     }
-    const timer = setTimeout(() => setVisible(true), 2200);
+    const timer = setTimeout(() => setVisible(true), 800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -37,12 +37,16 @@ export default function ComingSoonToast() {
       <div
         className={`
           fixed z-50 w-[min(480px,90vw)]
-          left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
           panel rivets
           transition-all duration-500 ease-out
           ${dismissed ? "opacity-0 scale-95" : "opacity-100 scale-100"}
         `}
-        style={{ boxShadow: "0 24px 80px rgba(0,0,0,0.8), 0 0 2px rgba(205,127,50,0.4)" }}
+        style={{
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          boxShadow: "0 24px 80px rgba(0,0,0,0.8), 0 0 2px rgba(205,127,50,0.4)",
+        }}
       >
         {/* Top copper accent bar */}
         <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-copper to-transparent" />
