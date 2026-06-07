@@ -59,9 +59,9 @@ export default function Home() {
             </h1>
 
             <p className="text-text-muted text-lg md:text-xl leading-relaxed max-w-md mb-12">
-              We built the tools we wished existed, tested them in a real
-              restaurant, then gave them to the world. No subscriptions. No
-              vendor lock-in. Just count your bottles and go home.
+              We have now created the tools we wished existed. They are
+              free for you &mdash; use your AI. No subscriptions. No vendor
+              lock-in. Just count your bottles and go home.
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -72,7 +72,7 @@ export default function Home() {
                 <span className="relative z-10">Download Free Tools</span>
               </Link>
               <Link
-                href="/about"
+                href="/downloads"
                 className="border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
               >
                 Read Our Story
@@ -149,8 +149,8 @@ export default function Home() {
           craft.
         </h2>
         <p className="text-text-muted mb-12 max-w-lg">
-          Each tool built for a specific job. No bloat. No feature creep.
-          Just what you need behind the bar.
+          We provide a simple system. Here you will find the free tools
+          and markdown for that system.
         </p>
 
         {/* Workshop photo */}
@@ -257,7 +257,7 @@ export default function Home() {
               Download Free Tools
             </Link>
             <Link
-              href="/resources"
+              href="/downloads"
               className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-10 py-4 text-sm tracking-wide transition-all"
             >
               Explore Community Resources
