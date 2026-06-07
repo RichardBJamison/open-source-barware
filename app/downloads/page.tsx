@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { Gear, GearDivider, BottleIcon } from "@/components/SteampunkElements";
+import DownloadButton from "@/components/DownloadButton";
 
 export const metadata: Metadata = {
   title: "Free Downloads — Open Source Barware",
@@ -208,7 +209,7 @@ function DownloadCard({
   description,
   status,
   href,
-  linkLabel = "Download Free",
+  linkLabel = "Launch App",
 }: {
   number: string;
   title: string;
@@ -239,13 +240,7 @@ function DownloadCard({
       </p>
       {status === "available" && href ? (
         isFileDownload ? (
-          <a
-            href={href}
-            download
-            className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.2)]"
-          >
-            {linkLabel}
-          </a>
+          <DownloadButton tool={{ number, title, format, href }} />
         ) : (
           <Link
             href={href}
