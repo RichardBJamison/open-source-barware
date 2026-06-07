@@ -26,11 +26,11 @@ export default function AboutPage() {
             </span>
           </div>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-2xl">
-            <span className="copper-text">Two bartenders</span> who
+            <span className="copper-text">Two industry friends</span> who
             <br />
-            got tired of counting
+            got tired of the struggle.
             <br />
-            the same bottles every week.
+            Now it&rsquo;s free to the world.
           </h1>
         </div>
       </section>
