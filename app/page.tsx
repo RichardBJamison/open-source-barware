@@ -5,20 +5,15 @@ import {
   GearDivider,
   BottleIcon,
 } from "@/components/SteampunkElements";
+import HeroVideo from "@/components/HeroVideo";
 
 export default function Home() {
   return (
     <>
       {/* ── HERO ── */}
       <section className="relative min-h-[50vh] flex items-center overflow-hidden grain">
-        {/* Hero photo */}
-        <Image
-          src="/images/hero.png"
-          alt="Bartender counting inventory"
-          fill
-          className="object-cover object-center"
-          priority
-        />
+        {/* Hero video */}
+        <HeroVideo />
         <div className="absolute inset-0 bg-gradient-to-r from-bg/90 via-bg/60 to-bg/30" />
         <div className="absolute right-[-80px] top-[-40px] text-copper">
           <Gear size={300} className="gear-spin opacity-40" />
