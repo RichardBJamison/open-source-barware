@@ -168,30 +168,38 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ToolCard
-            number="01"
-            title="Smart Inventory Sheets"
-            description="Pre-built spreadsheets that calculate cost, usage, variance, and reorder points. Plug in your counts — the gears do the rest."
-            icon={<BottleIcon />}
-          />
-          <ToolCard
-            number="02"
-            title="Variance Tracker"
-            description="Compare physical counts against POS sales. See exactly where you're losing money — by category, by bottle, by shift."
-            icon={<BottleIcon />}
-          />
-          <ToolCard
-            number="03"
-            title="AI Bottle Counter"
-            description="Snap a photo of your shelf. AI reads the bottle levels so you're not eyeballing tenths at 2am with bleary eyes."
-            icon={<BottleIcon />}
-          />
-          <ToolCard
-            number="04"
-            title="Product Database"
-            description="500+ common bar products pre-loaded. Bottle sizes, costs, standard pours. Skip the data entry, start counting."
-            icon={<BottleIcon />}
-          />
+          <Link href="/downloads" className="block">
+            <ToolCard
+              number="01"
+              title="Smart Inventory Sheets"
+              description="Pre-built spreadsheets that calculate cost, usage, variance, and reorder points. Plug in your counts — the gears do the rest."
+              icon={<BottleIcon />}
+            />
+          </Link>
+          <Link href="/downloads" className="block">
+            <ToolCard
+              number="02"
+              title="Variance Tracker"
+              description="Compare physical counts against POS sales. See exactly where you're losing money — by category, by bottle, by shift."
+              icon={<BottleIcon />}
+            />
+          </Link>
+          <Link href="/downloads" className="block">
+            <ToolCard
+              number="03"
+              title="AI Bottle Counter"
+              description="Snap a photo of your shelf. AI reads the bottle levels so you're not eyeballing tenths at 2am with bleary eyes."
+              icon={<BottleIcon />}
+            />
+          </Link>
+          <Link href="/downloads" className="block">
+            <ToolCard
+              number="04"
+              title="Product Database"
+              description="500+ common bar products pre-loaded. Bottle sizes, costs, standard pours. Skip the data entry, start counting."
+              icon={<BottleIcon />}
+            />
+          </Link>
         </div>
       </section>
 
