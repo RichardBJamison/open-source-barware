@@ -8,7 +8,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-sm border-b border-gear-border">
+    <header className="bg-bg border-b border-gear-border">
       <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link href="/" className="group">
           <Image
