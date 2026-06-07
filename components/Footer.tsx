@@ -23,6 +23,7 @@ export default function Footer() {
                 alt="Open Source Barware"
                 width={200}
                 height={113}
+                className="mix-blend-lighten"
               />
             </div>
             <p className="text-sm text-text-muted leading-relaxed max-w-sm">

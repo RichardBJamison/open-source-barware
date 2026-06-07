@@ -16,7 +16,7 @@ export default function Header() {
             alt="Open Source Barware"
             width={260}
             height={146}
-            className="group-hover:opacity-90 transition-opacity"
+            className="mix-blend-lighten group-hover:opacity-90 transition-opacity"
             priority
           />
         </Link>
