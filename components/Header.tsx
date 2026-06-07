@@ -14,8 +14,8 @@ export default function Header() {
           <Image
             src="/images/logo.png"
             alt="Open Source Barware"
-            width={260}
-            height={146}
+            width={299}
+            height={168}
             className="group-hover:opacity-90 transition-opacity"
             style={{ mixBlendMode: "lighten" }}
             priority
