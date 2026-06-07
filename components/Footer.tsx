@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Gear, CocktailIcon } from "./SteampunkElements";
+import Image from "next/image";
+import { Gear } from "./SteampunkElements";
 
 export default function Footer() {
   return (
@@ -16,10 +17,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {/* Brand */}
           <div className="md:col-span-5">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="font-sans font-black text-[20px] leading-none tracking-tight uppercase text-copper">Open</span>
-              <CocktailIcon size={20} />
-              <span className="font-sans font-black text-[20px] leading-none tracking-tight uppercase text-copper">Barware</span>
+            <div className="mb-4">
+              <Image
+                src="/images/logo.png"
+                alt="Open Source Barware"
+                width={200}
+                height={113}
+              />
             </div>
             <p className="text-sm text-text-muted leading-relaxed max-w-sm">
               Crafted by bartenders. Tested at Agave &amp; Rye, downtown

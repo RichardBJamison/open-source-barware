@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
-import { CocktailIcon } from "./SteampunkElements";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -10,10 +10,15 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-sm border-b border-gear-border">
       <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <span className="font-sans font-black text-[24px] leading-none tracking-tight uppercase text-copper">Open</span>
-          <CocktailIcon size={24} className="shrink-0 group-hover:scale-110 transition-transform" />
-          <span className="font-sans font-black text-[24px] leading-none tracking-tight uppercase text-copper">Barware</span>
+        <Link href="/" className="group">
+          <Image
+            src="/images/logo.png"
+            alt="Open Source Barware"
+            width={260}
+            height={146}
+            className="group-hover:opacity-90 transition-opacity"
+            priority
+          />
         </Link>
 
         {/* Desktop */}
