@@ -13,7 +13,7 @@ export default function Header() {
         <Link href="/" className="flex items-center gap-3 group">
           <CocktailIcon className="group-hover:scale-110 transition-transform shrink-0" />
           <div className="leading-none">
-            <div className="text-[10px] font-sans tracking-[0.35em] uppercase copper-text opacity-80 mb-0.5">
+            <div className="text-[14px] font-sans font-medium tracking-[0.2em] uppercase copper-text mb-0.5">
               open source
             </div>
             <div className="text-[22px] font-sans font-bold tracking-[0.1em] uppercase copper-text leading-none">

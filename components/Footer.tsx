@@ -19,7 +19,7 @@ export default function Footer() {
             <div className="flex items-center gap-3 mb-4">
               <CocktailIcon />
               <div className="leading-none">
-                <div className="text-[9px] font-sans tracking-[0.35em] uppercase copper-text opacity-80 mb-0.5">open source</div>
+                <div className="text-[13px] font-sans font-medium tracking-[0.2em] uppercase copper-text mb-0.5">open source</div>
                 <div className="text-lg font-sans font-bold tracking-[0.1em] uppercase copper-text leading-none">Barware</div>
               </div>
             </div>
