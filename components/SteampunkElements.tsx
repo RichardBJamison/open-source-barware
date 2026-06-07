@@ -135,10 +135,11 @@ export function PipeNode({
   );
 }
 
-export function CocktailIcon({ className = "" }: { className?: string }) {
+export function CocktailIcon({ className = "", size = 52 }: { className?: string; size?: number }) {
   const C = "#cd7f32"; // copper — hardcoded so SVG presentation attrs resolve in all browsers
+  const h = Math.round(size * 62 / 52);
   return (
-    <svg width="52" height="62" viewBox="0 0 52 62" fill="none" className={className}>
+    <svg width={size} height={h} viewBox="0 0 52 62" fill="none" className={className}>
       {/* Liquid fill */}
       <path d="M 2,8 L 26,38 L 50,8 Z" fill={C} opacity="0.09" />
 

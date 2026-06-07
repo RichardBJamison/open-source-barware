@@ -10,16 +10,10 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-sm border-b border-gear-border">
       <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
-          <CocktailIcon className="group-hover:scale-110 transition-transform shrink-0" />
-          <div className="leading-none">
-            <div className="text-[14px] font-sans font-medium tracking-[0.2em] uppercase copper-text mb-0.5">
-              open source
-            </div>
-            <div className="text-[22px] font-sans font-bold tracking-[0.1em] uppercase copper-text leading-none">
-              Barware
-            </div>
-          </div>
+        <Link href="/" className="flex items-center gap-2 group">
+          <span className="font-sans font-black text-[24px] leading-none tracking-tight uppercase text-copper">Open</span>
+          <CocktailIcon size={24} className="shrink-0 group-hover:scale-110 transition-transform" />
+          <span className="font-sans font-black text-[24px] leading-none tracking-tight uppercase text-copper">Barware</span>
         </Link>
 
         {/* Desktop */}
