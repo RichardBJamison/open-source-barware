@@ -137,54 +137,42 @@ export function PipeNode({
 
 export function CocktailIcon({ className = "" }: { className?: string }) {
   return (
-    <svg
-      width="48"
-      height="48"
-      viewBox="0 0 48 48"
-      fill="none"
-      className={className}
-    >
-      {/* Glass */}
-      <path
-        d="M12 8h24l-8 22h-8L12 8z"
-        stroke="var(--copper)"
-        strokeWidth="1.5"
-        fill="none"
-      />
-      {/* Liquid level */}
-      <path
-        d="M15.5 16h17l-5 14h-7l-5-14z"
-        fill="var(--copper)"
-        opacity="0.15"
-      />
+    <svg width="44" height="52" viewBox="0 0 44 52" fill="none" className={className}>
+      {/* Liquid fill */}
+      <path d="M 1,7 L 22,33 L 43,7 Z" fill="var(--copper)" opacity="0.08" />
+
+      {/* Rim */}
+      <line x1="1" y1="7" x2="43" y2="7" stroke="var(--copper)" strokeWidth="1.2" strokeLinecap="round" />
+      {/* Bowl — left side */}
+      <line x1="1" y1="7" x2="22" y2="33" stroke="var(--copper)" strokeWidth="1.2" strokeLinecap="round" />
+      {/* Bowl — right side */}
+      <line x1="43" y1="7" x2="22" y2="33" stroke="var(--copper)" strokeWidth="1.2" strokeLinecap="round" />
+
+      {/* Inner bowl depth lines */}
+      <line x1="7" y1="7" x2="22" y2="31.5" stroke="var(--copper)" strokeWidth="0.5" strokeLinecap="round" opacity="0.4" />
+      <line x1="37" y1="7" x2="22" y2="31.5" stroke="var(--copper)" strokeWidth="0.5" strokeLinecap="round" opacity="0.4" />
+
       {/* Stem */}
-      <line
-        x1="24"
-        y1="30"
-        x2="24"
-        y2="40"
-        stroke="var(--copper)"
-        strokeWidth="1.5"
-      />
+      <line x1="22" y1="33" x2="22" y2="44" stroke="var(--copper)" strokeWidth="1.2" strokeLinecap="round" />
       {/* Base */}
-      <line
-        x1="18"
-        y1="40"
-        x2="30"
-        y2="40"
-        stroke="var(--copper)"
-        strokeWidth="1.5"
-      />
-      {/* Garnish */}
-      <circle
-        cx="32"
-        cy="10"
-        r="3"
-        stroke="var(--brass)"
-        strokeWidth="1"
-        fill="var(--brass)"
-        opacity="0.2"
-      />
+      <line x1="12" y1="44" x2="32" y2="44" stroke="var(--copper)" strokeWidth="1.5" strokeLinecap="round" />
+
+      {/* Cocktail pick — extends from lower-left (past rim) through bowl to upper-right */}
+      {/* Line equation: y = 27 - (23/40)*(x-1), crossing left rim ~(14,20), right rim ~(36,7) */}
+      <line x1="1" y1="27" x2="41" y2="4" stroke="var(--copper)" strokeWidth="1" strokeLinecap="round" opacity="0.9" />
+
+      {/* Decorative loop at upper-right end of pick */}
+      <circle cx="41" cy="4" r="2.2" stroke="var(--copper)" strokeWidth="0.9" fill="none" opacity="0.9" />
+
+      {/* Olive 1 — on pick, just outside left rim of bowl */}
+      {/* pick at x=8: y≈23 */}
+      <circle cx="8" cy="23" r="3" stroke="var(--copper)" strokeWidth="1" fill="none" />
+      <circle cx="8" cy="23" r="1.1" fill="var(--copper)" opacity="0.65" />
+
+      {/* Olive 2 — on pick, inside bowl left quadrant */}
+      {/* pick at x=14: y≈19.5 */}
+      <circle cx="14" cy="19.5" r="3" stroke="var(--copper)" strokeWidth="1" fill="none" />
+      <circle cx="14" cy="19.5" r="1.1" fill="var(--copper)" opacity="0.65" />
     </svg>
   );
 }

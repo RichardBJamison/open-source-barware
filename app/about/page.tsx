@@ -25,12 +25,16 @@ export default function AboutPage() {
               About
             </span>
           </div>
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-2xl">
-            <span className="copper-text">Two industry friends</span> who
-            <br />
-            got tired of the struggle.
-            <br />
-            Now it&rsquo;s free to the world.
+          <h1 className="font-serif max-w-3xl">
+            <span className="block text-4xl md:text-5xl lg:text-6xl copper-text leading-tight mb-3">
+              Two industry friends,
+            </span>
+            <span className="block text-2xl md:text-3xl lg:text-4xl text-cream leading-snug mb-3">
+              just tired of watching the struggle.
+            </span>
+            <span className="block text-xl md:text-2xl text-patina-light font-serif italic leading-snug">
+              Now it&rsquo;s free to the world.
+            </span>
           </h1>
         </div>
       </section>

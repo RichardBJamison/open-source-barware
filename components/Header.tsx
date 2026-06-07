@@ -11,14 +11,14 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-sm border-b border-gear-border">
       <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
-          <CocktailIcon className="group-hover:scale-110 transition-transform" />
-          <div>
-            <span className="font-serif text-xl copper-text tracking-tight">
-              Open Source Barware
-            </span>
-            <span className="hidden sm:block text-[10px] text-text-light tracking-[0.3em] uppercase">
-              Free Tools for the Trade
-            </span>
+          <CocktailIcon className="group-hover:scale-110 transition-transform shrink-0" />
+          <div className="leading-none">
+            <div className="text-[10px] font-sans tracking-[0.35em] uppercase copper-text opacity-80 mb-0.5">
+              open source
+            </div>
+            <div className="text-[22px] font-sans font-bold tracking-[0.1em] uppercase copper-text leading-none">
+              Barware
+            </div>
           </div>
         </Link>
 
