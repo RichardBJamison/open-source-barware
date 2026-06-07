@@ -251,26 +251,23 @@ export default function DownloadPreviewModal({
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — no blur to prevent GPU glitch */}
       <div
-        className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
+        className="fixed inset-0 z-40 bg-black/75"
         onClick={onClose}
       />
 
-      {/* Modal */}
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
-      >
+      {/* Modal — flex column with sticky CTA footer */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="panel w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
-          style={{ boxShadow: "0 32px 100px rgba(0,0,0,0.9), 0 0 3px rgba(205,127,50,0.3)" }}
+          className="panel w-full max-w-2xl pointer-events-auto flex flex-col"
+          style={{ maxHeight: "85vh", boxShadow: "0 32px 100px rgba(0,0,0,0.9), 0 0 3px rgba(205,127,50,0.3)" }}
         >
-          {/* Top copper accent */}
-          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-copper to-transparent" />
+          {/* Top copper accent — fixed */}
+          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-copper to-transparent shrink-0" />
 
-          {/* Header */}
-          <div className="flex items-start justify-between px-7 pt-6 pb-4 border-b border-gear-border">
+          {/* Header — fixed */}
+          <div className="flex items-start justify-between px-7 pt-6 pb-4 border-b border-gear-border shrink-0">
             <div className="flex items-start gap-3">
               <div className="text-copper shrink-0 mt-0.5">
                 <Gear size={18} className="gear-spin-slow" />
@@ -287,42 +284,45 @@ export default function DownloadPreviewModal({
             </button>
           </div>
 
-          {/* Beta notice */}
-          <div className="mx-7 mt-5 flex items-start gap-3 p-4 border border-[rgba(232,192,80,0.2)] bg-[rgba(232,192,80,0.04)] rounded-sm">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 mt-0.5">
-              <path d="M8 2L14 13H2L8 2Z" stroke="#e8c050" strokeWidth="1.2" fill="none" />
-              <line x1="8" y1="7" x2="8" y2="10" stroke="#e8c050" strokeWidth="1.2" />
-              <circle cx="8" cy="11.5" r="0.7" fill="#e8c050" />
-            </svg>
-            <div>
-              <div className="text-[10px] font-semibold text-[#e8c050] tracking-[0.15em] uppercase mb-1">Live Testing at Agave &amp; Rye</div>
-              <p className="text-xs text-text-muted leading-relaxed">
-                These tools are being tested in a real bar right now. You&rsquo;re getting an early build.
-                It works — we&rsquo;re just still counting bottles to prove it. Feedback welcome.
-              </p>
+          {/* Scrollable content */}
+          <div className="overflow-y-auto flex-1 min-h-0 px-7 py-5 space-y-4">
+            {/* Beta notice */}
+            <div className="flex items-start gap-3 p-4 border border-[rgba(232,192,80,0.2)] bg-[rgba(232,192,80,0.04)] rounded-sm">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 mt-0.5">
+                <path d="M8 2L14 13H2L8 2Z" stroke="#e8c050" strokeWidth="1.2" fill="none" />
+                <line x1="8" y1="7" x2="8" y2="10" stroke="#e8c050" strokeWidth="1.2" />
+                <circle cx="8" cy="11.5" r="0.7" fill="#e8c050" />
+              </svg>
+              <div>
+                <div className="text-[10px] font-semibold text-[#e8c050] tracking-[0.15em] uppercase mb-1">Live Testing at Agave &amp; Rye</div>
+                <p className="text-xs text-text-muted leading-relaxed">
+                  These tools are being tested in a real bar right now. You&rsquo;re getting an early build.
+                  It works — we&rsquo;re just still counting bottles to prove it. Feedback welcome.
+                </p>
+              </div>
             </div>
+
+            {/* Tagline */}
+            {preview && (
+              <p className="text-sm text-text-muted leading-relaxed">{preview.tagline}</p>
+            )}
+
+            {/* Mockup */}
+            {preview && (
+              <div>
+                <div className="text-[9px] tracking-[0.2em] uppercase text-text-light mb-2 flex items-center gap-2">
+                  <span className="inline-block w-4 h-[1px] bg-copper/30" />
+                  Preview
+                </div>
+                <div className="overflow-hidden rounded-sm border border-gear-border">
+                  {preview.mockup}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Tagline */}
-          {preview && (
-            <p className="px-7 mt-4 text-sm text-text-muted leading-relaxed">{preview.tagline}</p>
-          )}
-
-          {/* Mockup screenshot */}
-          {preview && (
-            <div className="px-7 mt-4">
-              <div className="text-[9px] tracking-[0.2em] uppercase text-text-light mb-2 flex items-center gap-2">
-                <span className="inline-block w-4 h-[1px] bg-copper/30" />
-                Preview
-              </div>
-              <div className="overflow-hidden rounded-sm border border-gear-border">
-                {preview.mockup}
-              </div>
-            </div>
-          )}
-
-          {/* CTA */}
-          <div className="px-7 pt-5 pb-7 flex flex-col gap-3 mt-2">
+          {/* CTA footer — always visible */}
+          <div className="shrink-0 px-7 py-5 border-t border-gear-border flex flex-col gap-3">
             <button
               onClick={onConfirm}
               className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3.5 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"

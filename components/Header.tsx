@@ -16,7 +16,8 @@ export default function Header() {
             alt="Open Source Barware"
             width={260}
             height={146}
-            className="mix-blend-lighten group-hover:opacity-90 transition-opacity"
+            className="group-hover:opacity-90 transition-opacity"
+            style={{ mixBlendMode: "lighten" }}
             priority
           />
         </Link>
