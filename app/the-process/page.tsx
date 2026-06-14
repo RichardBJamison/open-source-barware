@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Gear, GearDivider, PipeLine, PipeNode } from "@/components/SteampunkElements";
 
 export const metadata = {
@@ -11,7 +10,7 @@ const steps = [
   {
     number: "01",
     title: "Download the Prompt",
-    body: "Grab the master project prompt from our downloads page. It's a single text file. This file is the entire system.",
+    body: "Download the master project prompt — one Markdown file. This file is the entire system. Open it, copy everything, paste it into your AI project.",
   },
   {
     number: "02",
@@ -95,12 +94,13 @@ export default function TheProcess() {
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <Link
-              href="/downloads"
+            <a
+              href="/downloads/master-prompt.md"
+              download="open-source-barware-inventory-prompt.md"
               className="bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
             >
               Download the Prompt — Free
-            </Link>
+            </a>
             <a
               href="#how-it-works"
               className="border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
@@ -178,12 +178,13 @@ export default function TheProcess() {
           </PipeLine>
 
           <div className="mt-12 text-center">
-            <Link
-              href="/downloads"
+            <a
+              href="/downloads/master-prompt.md"
+              download="open-source-barware-inventory-prompt.md"
               className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
             >
               Download the Free Prompt
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -331,12 +332,13 @@ export default function TheProcess() {
           <p className="text-text-muted max-w-md mx-auto mb-10">
             Download the prompt, set up your AI project, and run your first count. Takes about an hour to get live.
           </p>
-          <Link
-            href="/downloads"
+          <a
+            href="/downloads/master-prompt.md"
+            download="open-source-barware-inventory-prompt.md"
             className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-12 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_40px_rgba(205,127,50,0.3)]"
           >
             Get the Free Inventory System
-          </Link>
+          </a>
         </div>
       </section>
 
