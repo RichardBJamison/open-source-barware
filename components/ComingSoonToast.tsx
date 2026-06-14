@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Gear } from "@/components/SteampunkElements";
 
-const STORAGE_KEY = "osb-coming-soon-v3";
+const STORAGE_KEY = "osb-welcome-v5";
 
 export default function ComingSoonToast() {
   const [visible, setVisible] = useState(false);
@@ -41,7 +41,7 @@ export default function ComingSoonToast() {
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 50,
-          width: "min(480px, 90vw)",
+          width: "min(520px, 90vw)",
         }}
       >
       {/* Transition inner */}
@@ -54,13 +54,13 @@ export default function ComingSoonToast() {
 
         <div className="px-8 py-8">
           {/* Header row */}
-          <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="flex items-start justify-between gap-4 mb-5">
             <div className="flex items-center gap-3">
               <div className="text-copper shrink-0">
                 <Gear size={20} className="gear-spin-slow" />
               </div>
               <span className="text-[10px] tracking-[0.35em] uppercase text-text-light">
-                In the Workshop
+                The doors are open
               </span>
             </div>
             <button
@@ -76,32 +76,39 @@ export default function ComingSoonToast() {
 
           {/* Headline */}
           <p className="font-serif italic text-3xl text-cream leading-snug mb-1">
-            Launching June 27th.
+            Welcome in.
           </p>
-          <p className="text-[11px] tracking-[0.2em] uppercase text-copper mb-4">
-            Friday &mdash; three weeks out
+          <p className="text-[11px] tracking-[0.2em] uppercase text-copper mb-5">
+            Free to the world &mdash; Independence Day 2026
           </p>
 
           {/* Divider */}
-          <div className="h-[1px] w-12 bg-copper/40 mb-4" />
+          <div className="h-[1px] w-12 bg-copper/40 mb-5" />
 
           {/* Body */}
-          <p className="text-base text-text-muted leading-relaxed mb-6">
-            The full toolkit drops June 27th — inventory sheets, pour-cost
-            calculator, variance tracker, and AI bottle counter. Built by
-            bartenders, tested in a real restaurant. Free forever.
+          <p className="text-base text-text-muted leading-relaxed mb-4">
+            Everything you see is built, and it&rsquo;s yours to explore.
+            Inventory sheets, pour-cost calculators, variance trackers,
+            community resources &mdash; poke around, try things out, make
+            yourself at home.
+          </p>
+          <p className="text-sm text-cream/80 leading-relaxed mb-6">
+            The official launch is <span className="text-copper font-semibold">July 4th</span> &mdash;
+            because free tools for every bar in America felt right on
+            Independence Day. Until then, the workshop is open and
+            we&rsquo;d love your feedback.
           </p>
 
           {/* CTA */}
           <button
             onClick={dismiss}
-            className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
+            className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3.5 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
           >
-            Got it — I&rsquo;ll be back June 27th
+            Come on in
           </button>
 
           <p className="text-[10px] text-text-light mt-4 text-center tracking-wide">
-            opensourcebarware.com &mdash; Est. 2026
+            opensourcebarware.com &mdash; Free &amp; open source, forever
           </p>
         </div>
       </div>

@@ -135,56 +135,43 @@ export function PipeNode({
   );
 }
 
-export function CocktailIcon({ className = "" }: { className?: string }) {
+export function CocktailIcon({ className = "", size = 52 }: { className?: string; size?: number }) {
+  const C = "#cd7f32"; // copper — hardcoded so SVG presentation attrs resolve in all browsers
+  const h = Math.round(size * 62 / 52);
   return (
-    <svg
-      width="48"
-      height="48"
-      viewBox="0 0 48 48"
-      fill="none"
-      className={className}
-    >
-      {/* Glass */}
-      <path
-        d="M12 8h24l-8 22h-8L12 8z"
-        stroke="var(--copper)"
-        strokeWidth="1.5"
-        fill="none"
-      />
-      {/* Liquid level */}
-      <path
-        d="M15.5 16h17l-5 14h-7l-5-14z"
-        fill="var(--copper)"
-        opacity="0.15"
-      />
+    <svg width={size} height={h} viewBox="0 0 52 62" fill="none" className={className}>
+      {/* Liquid fill */}
+      <path d="M 2,8 L 26,38 L 50,8 Z" fill={C} opacity="0.09" />
+
+      {/* Rim */}
+      <line x1="2" y1="8" x2="50" y2="8" stroke={C} strokeWidth="1.5" strokeLinecap="round" />
+      {/* Bowl — left side */}
+      <line x1="2" y1="8" x2="26" y2="38" stroke={C} strokeWidth="1.5" strokeLinecap="round" />
+      {/* Bowl — right side */}
+      <line x1="50" y1="8" x2="26" y2="38" stroke={C} strokeWidth="1.5" strokeLinecap="round" />
+
+      {/* Inner bowl depth lines */}
+      <line x1="9" y1="8" x2="26" y2="36" stroke={C} strokeWidth="0.7" strokeLinecap="round" opacity="0.4" />
+      <line x1="43" y1="8" x2="26" y2="36" stroke={C} strokeWidth="0.7" strokeLinecap="round" opacity="0.4" />
+
       {/* Stem */}
-      <line
-        x1="24"
-        y1="30"
-        x2="24"
-        y2="40"
-        stroke="var(--copper)"
-        strokeWidth="1.5"
-      />
+      <line x1="26" y1="38" x2="26" y2="52" stroke={C} strokeWidth="1.5" strokeLinecap="round" />
       {/* Base */}
-      <line
-        x1="18"
-        y1="40"
-        x2="30"
-        y2="40"
-        stroke="var(--copper)"
-        strokeWidth="1.5"
-      />
-      {/* Garnish */}
-      <circle
-        cx="32"
-        cy="10"
-        r="3"
-        stroke="var(--brass)"
-        strokeWidth="1"
-        fill="var(--brass)"
-        opacity="0.2"
-      />
+      <line x1="14" y1="52" x2="38" y2="52" stroke={C} strokeWidth="1.8" strokeLinecap="round" />
+
+      {/* Cocktail pick — lower-left through bowl to upper-right */}
+      <line x1="2" y1="31" x2="48" y2="5" stroke={C} strokeWidth="1.1" strokeLinecap="round" opacity="0.9" />
+
+      {/* Pick decorative loop (upper-right, past rim) */}
+      <circle cx="48" cy="5" r="2.6" stroke={C} strokeWidth="1" fill="none" opacity="0.9" />
+
+      {/* Olive 1 — on pick, just outside left rim */}
+      <circle cx="9" cy="27" r="3.5" stroke={C} strokeWidth="1.1" fill="none" />
+      <circle cx="9" cy="27" r="1.3" fill={C} opacity="0.7" />
+
+      {/* Olive 2 — on pick, inside bowl left */}
+      <circle cx="16" cy="23" r="3.5" stroke={C} strokeWidth="1.1" fill="none" />
+      <circle cx="16" cy="23" r="1.3" fill={C} opacity="0.7" />
     </svg>
   );
 }

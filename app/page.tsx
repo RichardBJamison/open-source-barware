@@ -5,20 +5,15 @@ import {
   GearDivider,
   BottleIcon,
 } from "@/components/SteampunkElements";
+import HeroVideo from "@/components/HeroVideo";
 
 export default function Home() {
   return (
     <>
       {/* ── HERO ── */}
       <section className="relative min-h-[50vh] flex items-center overflow-hidden grain">
-        {/* Hero photo */}
-        <Image
-          src="/images/hero.png"
-          alt="Bartender counting inventory"
-          fill
-          className="object-cover object-center"
-          priority
-        />
+        {/* Hero video */}
+        <HeroVideo />
         <div className="absolute inset-0 bg-gradient-to-r from-bg/90 via-bg/60 to-bg/30" />
         <div className="absolute right-[-80px] top-[-40px] text-copper">
           <Gear size={300} className="gear-spin opacity-40" />
@@ -59,9 +54,9 @@ export default function Home() {
             </h1>
 
             <p className="text-text-muted text-lg md:text-xl leading-relaxed max-w-md mb-12">
-              We built the tools we wished existed, tested them in a real
-              restaurant, then gave them to the world. No subscriptions. No
-              vendor lock-in. Just count your bottles and go home.
+              We have now created the tools we wished existed. They are
+              free for you &mdash; use your AI. No subscriptions. No vendor
+              lock-in. Just count your bottles and go home.
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -72,7 +67,7 @@ export default function Home() {
                 <span className="relative z-10">Download Free Tools</span>
               </Link>
               <Link
-                href="/about"
+                href="/downloads"
                 className="border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
               >
                 Read Our Story
@@ -149,8 +144,8 @@ export default function Home() {
           craft.
         </h2>
         <p className="text-text-muted mb-12 max-w-lg">
-          Each tool built for a specific job. No bloat. No feature creep.
-          Just what you need behind the bar.
+          We provide a simple system. Here you will find the free tools
+          and markdown for that system.
         </p>
 
         {/* Workshop photo */}
@@ -168,30 +163,38 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ToolCard
-            number="01"
-            title="Smart Inventory Sheets"
-            description="Pre-built spreadsheets that calculate cost, usage, variance, and reorder points. Plug in your counts — the gears do the rest."
-            icon={<BottleIcon />}
-          />
-          <ToolCard
-            number="02"
-            title="Variance Tracker"
-            description="Compare physical counts against POS sales. See exactly where you're losing money — by category, by bottle, by shift."
-            icon={<BottleIcon />}
-          />
-          <ToolCard
-            number="03"
-            title="AI Bottle Counter"
-            description="Snap a photo of your shelf. AI reads the bottle levels so you're not eyeballing tenths at 2am with bleary eyes."
-            icon={<BottleIcon />}
-          />
-          <ToolCard
-            number="04"
-            title="Product Database"
-            description="500+ common bar products pre-loaded. Bottle sizes, costs, standard pours. Skip the data entry, start counting."
-            icon={<BottleIcon />}
-          />
+          <Link href="/downloads" className="block">
+            <ToolCard
+              number="01"
+              title="Smart Inventory Sheets"
+              description="Pre-built spreadsheets that calculate cost, usage, variance, and reorder points. Plug in your counts — the gears do the rest."
+              icon={<BottleIcon />}
+            />
+          </Link>
+          <Link href="/downloads" className="block">
+            <ToolCard
+              number="02"
+              title="Variance Tracker"
+              description="Compare physical counts against POS sales. See exactly where you're losing money — by category, by bottle, by shift."
+              icon={<BottleIcon />}
+            />
+          </Link>
+          <Link href="/downloads" className="block">
+            <ToolCard
+              number="03"
+              title="AI Bottle Counter"
+              description="Snap a photo of your shelf. AI reads the bottle levels so you're not eyeballing tenths at 2am with bleary eyes."
+              icon={<BottleIcon />}
+            />
+          </Link>
+          <Link href="/downloads" className="block">
+            <ToolCard
+              number="04"
+              title="Product Database"
+              description="500+ common bar products pre-loaded. Bottle sizes, costs, standard pours. Skip the data entry, start counting."
+              icon={<BottleIcon />}
+            />
+          </Link>
         </div>
       </section>
 
@@ -257,7 +260,7 @@ export default function Home() {
               Download Free Tools
             </Link>
             <Link
-              href="/resources"
+              href="/downloads"
               className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-10 py-4 text-sm tracking-wide transition-all"
             >
               Explore Community Resources

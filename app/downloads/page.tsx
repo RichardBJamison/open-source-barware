@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { Gear, GearDivider, BottleIcon } from "@/components/SteampunkElements";
+import DownloadButton from "@/components/DownloadButton";
 
 export const metadata: Metadata = {
   title: "Free Downloads — Open Source Barware",
@@ -54,28 +55,32 @@ export default function DownloadsPage() {
             title="Bar Inventory Master Sheet"
             format="XLSX"
             description="Complete workbook with tabs for liquor, beer, wine, and mixers. Formulas calculate total value, usage rate, pour cost, and reorder alerts."
-            status="coming-soon"
+            status="available"
+            href="/downloads/Bar-Inventory-Master.xlsx"
           />
           <DownloadCard
             number="02"
             title="Quick Count Template"
             format="PDF + XLSX"
             description="Stripped-down count sheet for weekly spot checks. Print it, grab a pen, count, done. Only the columns that matter."
-            status="coming-soon"
+            status="available"
+            href="/downloads/Quick-Count-Sheet.xlsx"
           />
           <DownloadCard
             number="03"
             title="Variance Calculator"
             format="XLSX"
             description="Plug in physical counts and POS data. Calculates pour cost, shrinkage by category, flags problem products automatically."
-            status="coming-soon"
+            status="available"
+            href="/downloads/Variance-Calculator.xlsx"
           />
           <DownloadCard
             number="04"
             title="Product Database"
             format="CSV + XLSX"
             description="500+ common bar products with bottle sizes, standard costs, and pour sizes. Import and skip the data entry."
-            status="coming-soon"
+            status="available"
+            href="/downloads/Product-Database.xlsx"
           />
           <DownloadCard
             number="05"
@@ -89,7 +94,9 @@ export default function DownloadsPage() {
             title="Mobile Count App"
             format="Web App"
             description="Progressive web app for counting on your phone. Works offline behind the bar, syncs on WiFi. Replace the clipboard."
-            status="coming-soon"
+            status="available"
+            href="/inventory"
+            linkLabel="Launch App"
           />
         </div>
       </section>
@@ -201,13 +208,19 @@ function DownloadCard({
   format,
   description,
   status,
+  href,
+  linkLabel = "Launch App",
 }: {
   number: string;
   title: string;
   format: string;
   description: string;
   status: "available" | "coming-soon";
+  href?: string;
+  linkLabel?: string;
 }) {
+  const isFileDownload = href?.startsWith("/downloads/");
+
   return (
     <div className="panel card-lift rounded-sm p-7 flex flex-col relative rivets">
       <div className="flex items-start justify-between mb-5">
@@ -225,10 +238,17 @@ function DownloadCard({
       <p className="text-text-muted text-sm leading-relaxed mb-8 flex-1">
         {description}
       </p>
-      {status === "available" ? (
-        <button className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.2)]">
-          Download Free
-        </button>
+      {status === "available" && href ? (
+        isFileDownload ? (
+          <DownloadButton tool={{ number, title, format, href }} />
+        ) : (
+          <Link
+            href={href}
+            className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.2)]"
+          >
+            {linkLabel}
+          </Link>
+        )
       ) : (
         <div className="w-full border border-gear-border text-text-light text-xs tracking-[0.2em] uppercase py-3 text-center">
           Building at Agave &amp; Rye

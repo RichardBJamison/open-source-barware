@@ -25,12 +25,16 @@ export default function AboutPage() {
               About
             </span>
           </div>
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-2xl">
-            <span className="copper-text">Two bartenders</span> who
-            <br />
-            got tired of counting
-            <br />
-            the same bottles every week.
+          <h1 className="font-serif max-w-3xl">
+            <span className="block text-4xl md:text-5xl lg:text-6xl copper-text leading-tight mb-3">
+              Two industry friends,
+            </span>
+            <span className="block text-2xl md:text-3xl lg:text-4xl text-cream leading-snug mb-3">
+              just tired of watching the struggle.
+            </span>
+            <span className="block text-xl md:text-2xl text-patina-light font-serif italic leading-snug">
+              Now it&rsquo;s free to the world.
+            </span>
           </h1>
         </div>
       </section>
@@ -111,7 +115,7 @@ export default function AboutPage() {
             <span className="copper-text">Who&rsquo;s behind the bar.</span>
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Richard */}
             <div className="panel card-lift rounded-sm overflow-hidden">
               <div className="img-placeholder aspect-[16/10] bg-gradient-to-br from-bg-card to-bg-warm">
@@ -145,7 +149,7 @@ export default function AboutPage() {
               </div>
               <div className="p-8">
                 <h3 className="font-serif text-2xl copper-text mb-1">
-                  Bill
+                  Bill McLaughlin
                 </h3>
                 <p className="text-[11px] tracking-[0.2em] uppercase text-patina-light mb-5">
                   General Manager, Agave &amp; Rye &mdash; Cleveland
@@ -156,6 +160,29 @@ export default function AboutPage() {
                   real inventory sessions. That kind of partnership is the
                   difference between tools that demo well and tools that
                   actually work.
+                </p>
+              </div>
+            </div>
+
+            {/* Nitto */}
+            <div className="panel card-lift rounded-sm overflow-hidden">
+              <div className="img-placeholder aspect-[16/10] bg-gradient-to-br from-bg-card to-bg-warm">
+                <span className="text-xs tracking-widest text-text-light/30">
+                  PHOTO
+                </span>
+              </div>
+              <div className="p-8">
+                <h3 className="font-serif text-2xl copper-text mb-1">
+                  Nitto
+                </h3>
+                <p className="text-[11px] tracking-[0.2em] uppercase text-patina-light mb-5">
+                  Bartender &amp; Bar Manager, Agave &amp; Rye &mdash; Cleveland
+                </p>
+                <p className="text-text-muted leading-relaxed">
+                  The blind mouse. Nitto is doing the first live test run
+                  completely solo &mdash; no hand-holding from Bill or Richard.
+                  If these tools work for him, they work for everyone. That&rsquo;s
+                  how you really kick the tires.
                 </p>
               </div>
             </div>

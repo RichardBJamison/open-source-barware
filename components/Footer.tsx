@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Gear, CocktailIcon } from "./SteampunkElements";
+import Image from "next/image";
+import { Gear } from "./SteampunkElements";
 
 export default function Footer() {
   return (
@@ -16,11 +17,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {/* Brand */}
           <div className="md:col-span-5">
-            <div className="flex items-center gap-3 mb-4">
-              <CocktailIcon />
-              <span className="font-serif text-lg copper-text">
-                Open Source Barware
-              </span>
+            <div className="mb-4">
+              <Image
+                src="/images/logo.png"
+                alt="Open Source Barware"
+                width={200}
+                height={113}
+                style={{ mixBlendMode: "lighten" }}
+              />
             </div>
             <p className="text-sm text-text-muted leading-relaxed max-w-sm">
               Crafted by bartenders. Tested at Agave &amp; Rye, downtown
@@ -40,6 +44,7 @@ export default function Footer() {
               <Link href="/about" className="text-sm text-text-muted hover:text-copper transition-colors">About</Link>
               <Link href="/resources" className="text-sm text-text-muted hover:text-copper transition-colors">Resources</Link>
               <Link href="/downloads" className="text-sm text-text-muted hover:text-copper transition-colors">Downloads</Link>
+              <Link href="/inventory" className="text-sm text-text-muted hover:text-copper transition-colors">App</Link>
             </div>
           </div>
 
