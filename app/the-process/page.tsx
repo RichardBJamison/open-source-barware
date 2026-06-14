@@ -19,7 +19,7 @@ const steps = [
     title: "Open Your AI and Create a Project",
     emoji: "🤖",
     body: "Open Claude (claude.ai), ChatGPT (chat.openai.com), or Grok. Look for a section called \"Projects\" in the sidebar or menu. Create a new project and give it a name like \"Bar Inventory\" or the name of your bar. A Project is like a saved workspace — it remembers everything you tell it, every single time you come back.",
-    tip: "If you don't see \"Projects,\" make sure you're logged into a paid account. Free accounts may not have this feature.",
+    tip: "If you don't see \"Projects,\" don't worry — you can still use the system. Just paste the prompt at the very top of any new conversation before you start. It works the same way, you'll just need to paste it again next time.",
     platforms: [
       { name: "Claude", path: "Left sidebar → Projects → New Project" },
       { name: "ChatGPT", path: "Left sidebar → Projects → New Project" },
@@ -93,7 +93,7 @@ const steps = [
 ];
 
 const whatYouNeed = [
-  { item: "Claude, ChatGPT, or Grok — any paid plan", detail: "Free tiers usually don't include Projects. Any basic paid plan works." },
+  { item: "Claude, ChatGPT, or Grok — free or paid", detail: "Free accounts work. If your free account doesn't have Projects, you can paste the prompt at the start of any conversation and it still works." },
   { item: "A smartphone with a notes app", detail: "Apple Notes, Google Keep, Notion — anything with voice-to-text built in." },
   { item: "Your weekly delivery invoices", detail: "Paper photos or PDF emails from your distributor both work." },
   { item: "A weekly sales report from your POS", detail: "Toast, Square, Aloha, Lightspeed — any export format is fine." },
@@ -382,7 +382,7 @@ export default function TheProcess() {
           >
             Get the Free Inventory System
           </a>
-          <p className="text-text-light text-sm mt-5">Free forever · Works with Claude, ChatGPT, and Grok · No account needed to download</p>
+          <p className="text-text-light text-sm mt-5">Free forever · Works with Claude, ChatGPT, and Grok — free or paid · No account needed to download</p>
         </div>
       </section>
 
