@@ -24,24 +24,10 @@ export default function Header() {
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-8 text-sm">
-          <Link
-            href="/"
-            className="text-text-muted hover:text-copper transition-colors tracking-wide"
-          >
-            Home
-          </Link>
-          <Link
-            href="/about"
-            className="text-text-muted hover:text-copper transition-colors tracking-wide"
-          >
-            About
-          </Link>
-          <Link
-            href="/resources"
-            className="text-text-muted hover:text-copper transition-colors tracking-wide"
-          >
-            Resources
-          </Link>
+          <Link href="/" className="text-text-muted hover:text-copper transition-colors tracking-wide">Home</Link>
+          <Link href="/the-process" className="text-text-muted hover:text-copper transition-colors tracking-wide">The Process</Link>
+          <Link href="/about" className="text-text-muted hover:text-copper transition-colors tracking-wide">About</Link>
+          <Link href="/resources" className="text-text-muted hover:text-copper transition-colors tracking-wide">Resources</Link>
           <Link
             href="/downloads"
             className="relative bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 tracking-wide transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.3)]"
@@ -65,6 +51,7 @@ export default function Header() {
       {menuOpen && (
         <div className="md:hidden border-t border-gear-border px-6 py-6 bg-bg-warm flex flex-col gap-4 text-sm">
           <Link href="/" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">Home</Link>
+          <Link href="/the-process" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">The Process</Link>
           <Link href="/about" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">About</Link>
           <Link href="/resources" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">Resources</Link>
           <Link href="/downloads" onClick={() => setMenuOpen(false)} className="bg-copper text-bg font-semibold px-6 py-2.5 tracking-wide text-center">Free Downloads</Link>

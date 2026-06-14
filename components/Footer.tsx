@@ -36,6 +36,7 @@ export default function Footer() {
             </span>
             <div className="flex flex-col gap-3">
               <Link href="/" className="text-sm text-text-muted hover:text-copper transition-colors">Home</Link>
+              <Link href="/the-process" className="text-sm text-text-muted hover:text-copper transition-colors">The Process</Link>
               <Link href="/about" className="text-sm text-text-muted hover:text-copper transition-colors">About</Link>
               <Link href="/resources" className="text-sm text-text-muted hover:text-copper transition-colors">Resources</Link>
               <Link href="/downloads" className="text-sm text-text-muted hover:text-copper transition-colors">Downloads</Link>
