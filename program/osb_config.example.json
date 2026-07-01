@@ -1,0 +1,26 @@
+{
+  "bar_name": "",
+  "install_slug": "main",
+  "server_url": "http://localhost:5052",
+  "phase": "welcome",
+  "ai_provider": "",
+  "ai_api_key_set": false,
+  "api_connection_status": "not-started",
+  "map_approved": false,
+  "first_count_complete": false,
+  "cycle": {
+    "interval_days": 7,
+    "label": "Inventory cycle",
+    "anchor_day": "monday",
+    "timezone": "America/New_York"
+  },
+  "metrics_default_window": "current_cycle",
+  "metrics_windows": [
+    "current_cycle",
+    "last_cycle",
+    "last_3_cycles",
+    "last_30_days",
+    "last_90_days",
+    "custom"
+  ]
+}

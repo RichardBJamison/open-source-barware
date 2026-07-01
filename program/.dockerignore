@@ -1,0 +1,12 @@
+__pycache__
+*.pyc
+.DS_Store
+.git
+.gitignore
+data/
+osb_config.json
+localhost+1.pem
+localhost+1-key.pem
+HANDOFF.md
+install.sh
+osb_config.example.json

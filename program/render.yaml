@@ -1,0 +1,11 @@
+# Optional Render deploy — connect this repo in Render Dashboard → New Web Service
+services:
+  - type: web
+    name: open-source-bar-program
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 120 server:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"

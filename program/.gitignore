@@ -1,0 +1,8 @@
+osb_config.json
+data/
+__pycache__/
+*.pyc
+localhost+1.pem
+localhost+1-key.pem
+.DS_Store
+.vercel

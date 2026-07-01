@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Open Source Bar Program — Home Base</title>
+  <link rel="stylesheet" href="/static/css/app.css" />
+</head>
+<body data-app="home">
+  <div class="demo-ribbon">The Open Source Bar Program · Live demo — field-tested at Agave &amp; Rye</div>
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <label for="barSwitcher" class="sidebar-bar-label">Active bar</label>
+        <select id="barSwitcher" class="bar-switcher"></select>
+        <div class="subbrand" id="sidebarCycleLabel">Inventory cycle</div>
+      </div>
+      <nav class="sidebar-nav">
+        <button type="button" class="sidebar-link active" data-view="dashboard">Dashboard</button>
+        <button type="button" class="sidebar-link" data-view="spreadsheets">Spreadsheets</button>
+        <button type="button" class="sidebar-link" data-view="inhouse">In-house inventory</button>
+        <button type="button" class="sidebar-link" data-view="inputs">Weekly inputs</button>
+        <button type="button" class="sidebar-link" data-view="settings">Settings</button>
+      </nav>
+      <div class="sidebar-foot">
+        <span class="subbrand">Home base</span>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <!-- Dashboard -->
+      <section class="admin-view active" data-view="dashboard">
+        <header class="view-header">
+          <h1>Home base</h1>
+          <p>Metrics respect your cycle length — 7 days, 9 days, or whatever you set in Settings.</p>
+        </header>
+        <div class="panel">
+          <div class="row" style="margin-top:0;">
+            <div>
+              <label for="metricsWindow">Metrics timeframe</label>
+              <select id="metricsWindow"></select>
+            </div>
+            <div>
+              <label for="metricsFrom">Custom from (optional)</label>
+              <input id="metricsFrom" type="date" />
+            </div>
+            <div>
+              <label for="metricsTo">Custom to (optional)</label>
+              <input id="metricsTo" type="date" />
+            </div>
+          </div>
+          <p id="metricsBounds" class="field-hint" style="margin-top:8px;"></p>
+          <div id="metricsGrid" class="metrics-grid"></div>
+        </div>
+        <div class="panel">
+          <h2>Quick links</h2>
+          <div class="nav-grid">
+            <button type="button" class="nav-card nav-card-btn" data-goto="inhouse">
+              <strong>In-house inventory</strong>
+              <span>What is still on hand after the last count</span>
+            </button>
+            <button type="button" class="nav-card nav-card-btn" data-goto="spreadsheets">
+              <strong>Spreadsheets</strong>
+              <span>Full workbook — numbers, variance, costs</span>
+            </button>
+            <button type="button" class="nav-card nav-card-btn" data-goto="inputs">
+              <strong>Weekly inputs</strong>
+              <span>Count, invoices, POS for this cycle</span>
+            </button>
+            <button type="button" class="nav-card nav-card-btn" data-goto="settings">
+              <strong>Settings</strong>
+              <span>Customizations and API management</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Spreadsheets placeholder -->
+      <section class="admin-view hidden" data-view="spreadsheets">
+        <header class="view-header">
+          <h1>Spreadsheets</h1>
+          <p>Full workbook view — products, locations, par, counts, variance. (Building next.)</p>
+        </header>
+        <div class="panel placeholder-panel">
+          <p>Your approved bar map and cycle data will drive the live workbook here.</p>
+        </div>
+      </section>
+
+      <!-- In-house placeholder -->
+      <section class="admin-view hidden" data-view="inhouse">
+        <header class="view-header">
+          <h1>In-house inventory</h1>
+          <p>Category rooms: liquor, beer, wine, mixers — dry goods reserved for later.</p>
+        </header>
+        <div class="nav-grid">
+          <div class="nav-card"><strong>Liquor</strong><span>Coming soon</span></div>
+          <div class="nav-card"><strong>Beer</strong><span>Coming soon</span></div>
+          <div class="nav-card"><strong>Wine</strong><span>Coming soon</span></div>
+          <div class="nav-card"><strong>Mixers</strong><span>Coming soon</span></div>
+          <div class="nav-card"><strong>Dry goods</strong><span>Reserved</span></div>
+        </div>
+      </section>
+
+      <!-- Weekly inputs placeholder -->
+      <section class="admin-view hidden" data-view="inputs">
+        <header class="view-header">
+          <h1>Weekly inputs</h1>
+          <p>Count, invoice pictures, and POS downloads for the active cycle window.</p>
+        </header>
+        <div class="panel placeholder-panel">
+          <p>Weekly packet staging builds in the next slice.</p>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section class="admin-view hidden" data-view="settings">
+        <header class="view-header">
+          <h1>Settings</h1>
+          <p>Customizations for your operation and API management for your AI provider.</p>
+        </header>
+
+        <div class="settings-grid">
+          <div class="panel">
+            <h2>Your bars</h2>
+            <p class="field-hint" style="margin-top:0;margin-bottom:16px;">
+              Each bar has its own station map and inventory. Switch active bar in the sidebar, or add a new one.
+            </p>
+            <div id="settingsBarsList" class="bars-list"></div>
+            <div class="actions">
+              <button type="button" class="btn btn-primary" id="btnAddBar">+ Add another bar</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Customizations</h2>
+            <p class="field-hint" style="margin-top:0;margin-bottom:16px;">
+              Bar identity and inventory rhythm. Changes apply to the next cycle window.
+            </p>
+            <label for="settBarName">Bar name</label>
+            <input id="settBarName" type="text" />
+            <label for="settCycleLabel">Cycle label</label>
+            <input id="settCycleLabel" type="text" placeholder="e.g. Weekly beverage inventory" />
+            <div class="row">
+              <div>
+                <label for="settCycleDays">Cycle length (days)</label>
+                <input id="settCycleDays" type="number" min="1" max="90" />
+              </div>
+              <div>
+                <label for="settAnchorDay">Week starts on</label>
+                <select id="settAnchorDay">
+                  <option value="monday">Monday</option>
+                  <option value="tuesday">Tuesday</option>
+                  <option value="wednesday">Wednesday</option>
+                  <option value="thursday">Thursday</option>
+                  <option value="friday">Friday</option>
+                  <option value="saturday">Saturday</option>
+                  <option value="sunday">Sunday</option>
+                </select>
+              </div>
+            </div>
+            <label for="settTimezone">Timezone</label>
+            <input id="settTimezone" type="text" placeholder="e.g. America/New_York or Europe/Berlin" />
+            <label for="settMetricsWindow">Default metrics window</label>
+            <select id="settMetricsWindow"></select>
+            <div class="actions">
+              <button type="button" class="btn btn-primary" id="btnSaveCustomizations">Save customizations</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>API management</h2>
+            <p class="field-hint" style="margin-top:0;margin-bottom:16px;">
+              Connect or update the AI provider that powers reconciliation and reports.
+            </p>
+            <div class="api-status-row">
+              <span>Status</span>
+              <span id="apiStatusBadge" class="status-badge">—</span>
+            </div>
+            <label for="settAiProvider">AI provider</label>
+            <select id="settAiProvider">
+              <option value="">Not selected</option>
+              <option value="claude">Claude</option>
+              <option value="chatgpt">ChatGPT</option>
+              <option value="grok">Grok</option>
+              <option value="other">Other</option>
+            </select>
+            <label for="settApiKey">API key</label>
+            <input id="settApiKey" type="password" placeholder="Paste new key to connect or replace" autocomplete="off" />
+            <div class="actions actions-trio">
+              <button type="button" class="btn btn-primary" id="btnSaveApi">Save API connection</button>
+              <a class="btn btn-secondary" href="/help/api-key" target="_blank" rel="noopener">Where to find it</a>
+              <button type="button" class="btn btn-ghost" id="btnClearApi">Remove key</button>
+            </div>
+            <p id="settingsStatus" class="status"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/static/js/osb-app.js"></script>
+</body>
+</html>

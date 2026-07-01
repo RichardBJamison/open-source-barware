@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Open Source Bar Program — Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+</head>
+<body data-app="setup">
+  <div class="demo-ribbon">The Open Source Bar Program · Live demo — field-tested at Agave &amp; Rye</div>
+  <div class="shell setup-shell">
+    <header class="header setup-header">
+      <div class="setup-eyebrow">First-Time Setup</div>
+      <div class="brand">The Open Source Bar Program</div>
+      <div class="subbrand">Inventory setup · Caterpillar walkthrough</div>
+    </header>
+
+    <div id="stepIndicator" class="step-indicator" aria-label="Setup progress"></div>
+    <div id="phaseRail" class="phase-rail hidden" aria-hidden="true"></div>
+
+    <!-- welcome -->
+    <section class="panel wizard-panel" data-step="welcome">
+      <h2 class="wizard-title">Welcome — let's map your bar</h2>
+      <p class="wizard-lead">
+        This program lives in Chrome on your computer. We guide you step by step the first time.
+        When setup is done, you land in your <strong>home base</strong> — the dashboard you return to every cycle.
+      </p>
+      <ul class="guide-list compact">
+        <li>Name your bar and build your station map — plug-and-play</li>
+        <li>Walk the bar by voice — placement only, not quantities yet</li>
+        <li>Reconcile into a spreadsheet you can audit and correct</li>
+        <li>Approve the map, run your first count, then open home base</li>
+      </ul>
+      <div class="info-box dictation-box">
+        <p class="info-title">Better voice notes = less cleanup later</p>
+        <p class="info-body">
+          Built-in phone dictation (iPhone Notes, Android keyboard) works, but it garbles brand names,
+          bottle sizes, and fast bar-room speech — especially on a ladder with music in the background.
+        </p>
+        <p class="info-body" style="margin-top:10px;">
+          <strong>Wispr Flow</strong> (iPhone/Mac) is built for this: hold a button, talk naturally, export clean text.
+          Strong alternatives: <strong>VoiceInk</strong> (Mac, open source),
+          <strong>Whisperboard</strong> or <strong>TypeWhisper</strong> (iPhone, on-device).
+          Any of these beat raw phone mic for a full back-bar walk.
+        </p>
+        <p class="info-body dictation-foot" style="margin-top:10px;">
+          No special app required — but if your first upload looks rough, try one of the above before your next bar.
+        </p>
+      </div>
+      <p class="field-hint ai-hint">
+        AI connection is optional during setup — connect anytime under <strong>Settings → API management</strong>.
+      </p>
+      <div class="setup-nav">
+        <span></span>
+        <button class="btn btn-primary" id="btnWelcomeNext" type="button">Begin setup</button>
+      </div>
+    </section>
+
+    <!-- name_bar -->
+    <section class="panel wizard-panel hidden" data-step="name_bar">
+      <p class="step-eyebrow">Step 1 · Get started</p>
+      <h2 class="wizard-title text-center">Your Operation</h2>
+      <p class="wizard-lead text-center">
+        You can run as many bars as you need — dining room, patio, event station. Each gets its own page
+        to build wells and stations. You name each bar on the next step.
+      </p>
+      <p class="field-hint text-center">
+        Planning a voice walk? A dedicated dictation app (Wispr Flow, VoiceInk, Whisperboard) saves hours of cleanup
+        compared to speaking straight into Apple Notes.
+      </p>
+      <label for="cycleDays" class="inline-label">Inventory cycle (days) — shared across all bars</label>
+      <input id="cycleDays" type="number" min="1" max="90" value="7" />
+      <div class="setup-nav">
+        <button class="btn btn-secondary" type="button" data-go="welcome">← Back</button>
+        <button class="btn btn-primary" id="btnNameContinue" type="button">Continue</button>
+      </div>
+    </section>
+
+    <!-- build_bar -->
+    <section class="panel wizard-panel hidden" data-step="build_bar">
+      <p class="step-eyebrow">Step 2 · Build your bar</p>
+      <div class="build-bar-name-header">
+        <span class="build-bar-label">Build Your Bar</span>
+        <input
+          id="buildBarName"
+          type="text"
+          class="build-bar-name-input"
+          placeholder="Name this bar — e.g. Main Dining, Patio, Event Bar"
+          autocomplete="organization"
+        />
+      </div>
+      <p class="wizard-lead text-center">
+        This whole page is <strong>one bar</strong> — every station below belongs to it. Starter templates
+        run wells first, then back bar, then coolers. Reorder, rename, remove, or add your own.
+      </p>
+      <div class="build-bars-toolbar">
+        <div id="buildBarTabs" class="build-bar-tabs" aria-label="Bars you are building"></div>
+        <div class="build-bars-actions">
+          <button class="btn btn-secondary btn-sm" id="btnCreateAdditionalBar" type="button">+ Create additional bar</button>
+          <button class="btn btn-ghost btn-sm bar-delete-btn" id="btnDeleteBar" type="button">Delete this bar</button>
+        </div>
+      </div>
+      <div class="template-legend">
+        <span class="station-badge badge-well">well</span> Main · Service · Point
+        <span class="station-badge badge-backbar">back bar</span> Main · Point · Service
+        <span class="station-badge badge-walkin">walk in</span> Wine · Beer · Walk-in
+      </div>
+      <div id="stationList" class="station-list"></div>
+      <div class="template-actions">
+        <button class="btn btn-ghost btn-sm" id="btnResetTemplates" type="button">Reset starter templates</button>
+      </div>
+      <div class="add-station-box">
+        <p class="box-label">Add a Station</p>
+        <div class="add-station-row">
+          <input id="newStationName" type="text" placeholder="Station name..." />
+          <select id="newStationType">
+            <option value="well">Well</option>
+            <option value="back-bar">Back Bar</option>
+            <option value="storage">Storage</option>
+            <option value="walk-in">Walk-in</option>
+          </select>
+          <button class="btn btn-add" id="btnAddStation" type="button">+ Add</button>
+        </div>
+      </div>
+      <div class="setup-nav setup-nav-trio">
+        <button class="btn btn-secondary" type="button" data-go="name_bar">← Back</button>
+        <a class="btn btn-secondary" href="/help/standard-setups" target="_blank" rel="noopener">Learn Standard Setups</a>
+        <button class="btn btn-primary" id="btnBuildContinue" type="button">Continue</button>
+      </div>
+    </section>
+
+    <!-- voice_walk -->
+    <section class="panel wizard-panel hidden" data-step="voice_walk">
+      <p class="step-eyebrow">Step 3: Walk</p>
+      <p class="step-subtitle">Walk the bar</p>
+      <div class="walk-bar-header">
+        <div class="walk-bar-title-wrap">
+          <h2 id="walkBarTitle" class="walk-bar-name-display">Your Bar</h2>
+          <p id="walkBarCounter" class="walk-bar-counter"></p>
+        </div>
+        <button class="btn btn-secondary btn-sm hidden" id="btnNextWalkBar" type="button">Next Bar →</button>
+      </div>
+      <p class="wizard-lead text-center">
+        Each station you mapped belongs to <strong id="walkBarNameInline">this bar</strong> only.
+        Upload or paste your walk notes below.
+      </p>
+      <input type="file" id="voiceNotesFile" class="hidden" accept=".txt,.text,.md,.markdown,.rtf,.note,text/plain,text/markdown,text/rtf" />
+      <div id="walkUnparsed">
+        <div class="info-box">
+          <p class="info-title">How it works</p>
+          <p class="info-body">
+            <strong>Easiest option:</strong> Use <strong>Upload Notes</strong> below to upload notes from your phone.
+            Speak into <strong>iPhone Notes</strong>, <strong>Google Keep</strong>, <strong>Samsung Notes</strong>,
+            or any app that exports <code>.txt</code> or <code>.md</code> — then transfer the file to this computer and upload.
+          </p>
+          <p class="info-body" style="margin-top:10px;">
+            Or paste your voice notes directly in the box. Say each station name, then every product on that station.
+          </p>
+          <div class="example-box">
+            <p class="box-label">Example</p>
+            <p class="example-text">
+              "Well one: Tito's vodka, Ketel One, Tanqueray gin… Back Bar Top Shelf: Patron Silver, Don Julio 1942…"
+            </p>
+            <p class="example-text example-warning" style="margin-top:10px;">
+              If you don't know what to say here, go back to Step 2 — you need your station map before you can walk the bar.
+            </p>
+          </div>
+        </div>
+        <div class="info-box parse-expect-box">
+          <p class="info-title">What happens when you upload</p>
+          <p class="info-body">
+            Real bar walks are messy — and that's expected. Fast speech, ladder work, and phone transcription
+            turn "Herradura Reposado 1L" into something unrecognizable. The first pass is a <strong>draft placement</strong>,
+            not a perfect inventory list.
+          </p>
+          <p class="info-body" style="margin-top:10px;">
+            Bottle sizes default to <code>750ml</code> until you correct them. Brand names may land on the wrong station
+            or split into fragments. You'll fix names, sizes, and categories in the next steps — and again on the road
+            every cycle. Upload is the starting line, not the finish.
+          </p>
+        </div>
+        <textarea id="voiceNotes" placeholder="Or paste your voice notes here…"></textarea>
+        <div class="actions walk-actions">
+          <button class="btn btn-ghost" id="btnToggleManual" type="button">Or add bottles manually</button>
+          <div class="upload-notes-wrap">
+            <button class="btn btn-primary" id="btnUploadNotes" type="button">Upload Notes</button>
+            <p class="upload-formats">
+              Accepts <code>.txt</code> · <code>.md</code> · <code>.markdown</code> · <code>.rtf</code><br />
+              iPhone Notes · Google Keep · Samsung Notes · plain-text exports<br />
+              <span class="upload-formats-tip">From iPhone Notes, export as Markdown or .txt (not PDF).</span>
+            </p>
+          </div>
+          <button class="btn btn-secondary" id="btnVoiceDraft" type="button">Save draft</button>
+        </div>
+      </div>
+      <div id="walkParsed" class="hidden">
+        <div class="walk-review-gate">
+          <div class="parse-expect-banner">
+            <strong>Stop — review your map before you continue.</strong>
+            We turned your voice notes into a draft list. Names will be wrong. Sizes will default to 750ml.
+            You must clean this up here (or in a spreadsheet) before moving on.
+          </div>
+          <div class="size-shape-warning">
+            <strong>Bottle sizes are the #1 mistake.</strong>
+            Many liter bottles look like 750s (and vice versa). If you said "liter" or "leader" in your notes,
+            check every row — wrong size breaks your inventory math later.
+          </div>
+          <div class="parse-summary">
+            <span class="glow-dot"></span>
+            <span id="parseSummaryText"></span>
+            <button class="btn btn-ghost btn-sm" id="btnReparse" type="button">Upload again</button>
+          </div>
+          <p class="review-path-label">Choose how you want to fix this:</p>
+          <div class="review-path-picker" role="tablist">
+            <button type="button" class="review-path-card active" data-review-path="screen" role="tab" aria-selected="true">
+              <span class="review-path-title">Fix on this screen</span>
+              <span class="review-path-desc">Spreadsheet-style table — edit names, stations, and sizes row by row. Works on phone (scroll sideways).</span>
+            </button>
+            <button type="button" class="review-path-card" data-review-path="spreadsheet" role="tab" aria-selected="false">
+              <span class="review-path-title">Use Excel or Google Sheets</span>
+              <span class="review-path-desc">Download our .csv, fix everything in the app you already know, then import it back.</span>
+            </button>
+          </div>
+          <div id="walkReviewScreen" class="walk-review-panel" role="tabpanel">
+            <div class="walk-review-toolbar">
+              <span id="walkReviewProgress" class="walk-review-progress"></span>
+              <button class="btn btn-ghost btn-sm" id="btnMarkSizesReviewed" type="button">I've checked every size</button>
+            </div>
+            <div class="walk-review-table-wrap scroll-panel">
+              <table class="walk-review-table" id="walkReviewTable">
+                <thead>
+                  <tr>
+                    <th>What we heard</th>
+                    <th>Product name</th>
+                    <th>Station</th>
+                    <th>Size</th>
+                    <th>OK?</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="walkReviewBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="walkReviewSpreadsheet" class="walk-review-panel hidden" role="tabpanel">
+            <div class="info-box">
+              <p class="info-title">Spreadsheet workflow</p>
+              <ol class="spreadsheet-steps">
+                <li><strong>Download</strong> the correction sheet (.csv opens in Excel, Numbers, or Google Sheets).</li>
+                <li>Edit <code>product_name</code>, <code>station</code>, and <code>size</code>. Set <code>size_verified</code> to <code>yes</code> when you're sure.</li>
+                <li><strong>Import</strong> the saved file below — we match rows by <code>bottle_id</code>.</li>
+              </ol>
+              <p class="info-body dictation-foot">Keep the header row. Don't delete the <code>bottle_id</code> column.</p>
+            </div>
+            <div class="walk-review-sheet-actions">
+              <button class="btn btn-primary" id="btnDownloadWalkCsv" type="button">Download correction sheet (.csv)</button>
+              <button class="btn btn-secondary" id="btnImportWalkCsv" type="button">Import corrected sheet</button>
+              <input type="file" id="walkCsvFile" class="hidden" accept=".csv,.txt,text/csv" />
+            </div>
+          </div>
+          <div class="walk-review-stuck">
+            <p>
+              <strong>Can't figure this out?</strong> Download the sheet and hand it to a manager.
+              Or continue with our best guess — you'll fix it again in Step 5 Review (not ideal, but it works).
+            </p>
+            <button class="btn btn-ghost btn-sm" id="btnWalkReviewSkip" type="button">Continue with defaults — I'll fix later</button>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btnToggleManual2" type="button">+ Add a bottle manually</button>
+      </div>
+      <div id="manualAddBox" class="add-station-box hidden">
+        <p class="box-label">Add a Bottle</p>
+        <div class="manual-bottle-row">
+          <input id="manualBottleName" type="text" placeholder="Product name..." />
+          <select id="manualBottleStation"></select>
+          <select id="manualBottleCategory">
+            <option value="spirits">Spirits</option>
+            <option value="vodka">Vodka</option>
+            <option value="gin">Gin</option>
+            <option value="rum">Rum</option>
+            <option value="tequila">Tequila</option>
+            <option value="whiskey">Whiskey</option>
+            <option value="scotch">Scotch</option>
+            <option value="cognac">Cognac</option>
+            <option value="liqueur">Liqueur</option>
+            <option value="beer">Beer</option>
+            <option value="wine">Wine</option>
+            <option value="mixer">Mixer</option>
+          </select>
+          <button class="btn btn-add" id="btnManualBottle" type="button">+</button>
+        </div>
+      </div>
+      <div class="setup-nav">
+        <button class="btn btn-secondary" type="button" data-go="build_bar">← Back</button>
+        <button class="btn btn-primary" id="btnWalkContinue" type="button" disabled>Review your map first</button>
+      </div>
+    </section>
+
+    <!-- reconcile -->
+    <section class="panel wizard-panel hidden" data-step="reconcile">
+      <p class="step-eyebrow">Step 4 · Reconcile</p>
+      <h2 class="wizard-title">Reconcile Your Map</h2>
+      <p class="wizard-lead">
+        We'll turn your walk into an auditable draft map and spreadsheet with intentional blanks for anything unclear.
+        With AI connected, reconciliation gets smarter — otherwise we use what you parsed.
+      </p>
+      <div id="reconcilePreview" class="reconcile-preview"></div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnReconcile" type="button">Run reconciliation</button>
+      </div>
+      <div class="setup-nav">
+        <button class="btn btn-secondary" type="button" data-go="voice_walk">← Back</button>
+        <button class="btn btn-secondary" type="button" data-go="map_review">Next step →</button>
+      </div>
+    </section>
+
+    <!-- map_review -->
+    <section class="panel wizard-panel hidden" data-step="map_review">
+      <p class="step-eyebrow">Step 5 · Review</p>
+      <h2 class="wizard-title text-center">Review &amp; Confirm</h2>
+      <p class="wizard-lead text-center">
+        Here's your complete inventory map for <span id="reviewBarName" class="review-bar-name"></span>. Edit anything that needs fixing.
+      </p>
+      <div id="reviewStats" class="review-stats"></div>
+      <div id="bottleGroupsReview" class="bottle-groups scroll-panel review-panel"></div>
+      <div class="setup-nav">
+        <button class="btn btn-secondary" type="button" data-go="reconcile">← Back</button>
+        <button class="btn btn-primary" id="btnApproveMap" type="button">Map approved — start counting</button>
+      </div>
+    </section>
+
+    <!-- first_count -->
+    <section class="panel wizard-panel hidden" data-step="first_count">
+      <p class="step-eyebrow">Step 6 · Count</p>
+      <h2 class="wizard-title">First Live Inventory Count</h2>
+      <p class="wizard-lead">
+        Count quantities and bottle levels against the approved map. This becomes your baseline for every future cycle.
+      </p>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnFirstCountDone" type="button">First count complete</button>
+      </div>
+      <div class="setup-nav">
+        <button class="btn btn-secondary" type="button" data-go="map_review">← Back</button>
+        <span class="setup-nav-hint">Finish here to open home base.</span>
+      </div>
+    </section>
+
+    <p class="status" id="status"></p>
+  </div>
+  <script src="/static/js/osb-app.js"></script>
+</body>
+</html>
