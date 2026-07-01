@@ -130,6 +130,8 @@ Confirm scripts in `package.json` before relying on these commands.
   mobile horizontal overflow, no mobile text overflow, and no fresh console
   warnings/errors. The about-page story image is marked `loading="eager"` after
   a dev-server LCP warning.
+- 2026-07-01 CODEX: Fixed `/about` field-tested copy spacing so "Agave & Rye in"
+  does not render as "Ryein" and changed the final CTA to "Download the Program."
 
 ## Known issues
 

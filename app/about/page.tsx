@@ -177,7 +177,7 @@ export default function AboutPage() {
         <div className="max-w-2xl mx-auto flex items-start gap-6">
           <div className="h-12 w-[2px] bg-copper/40 shrink-0 mt-1" />
           <p className="text-text-muted leading-relaxed">
-            Every tool was field-tested at <span className="text-cream font-medium">Agave &amp; Rye</span> in
+            Every tool was field-tested at <span className="text-cream font-medium">Agave &amp; Rye</span>{" "}in
             downtown Cleveland &mdash; three weeks of real counts, real data, and real
             feedback from bartenders who just want to go home on time. If you&rsquo;re
             ever in the neighborhood, go support them. Good people running a great spot.
@@ -255,7 +255,7 @@ export default function AboutPage() {
               href="/downloads"
               className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
             >
-              Download the Free Tools
+              Download the Program
             </Link>
           </div>
         </div>
