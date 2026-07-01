@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { Gear, GearDivider, CocktailIcon } from "@/components/SteampunkElements";
+import { Gear, GearDivider } from "@/components/SteampunkElements";
 
 export const metadata: Metadata = {
   title: "About — Open Source Barware",

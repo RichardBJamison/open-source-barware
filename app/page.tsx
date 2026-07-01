@@ -7,6 +7,36 @@ import {
 } from "@/components/SteampunkElements";
 import HeroVideo from "@/components/HeroVideo";
 
+const primaryCtaClass =
+  "group relative inline-flex w-full items-center justify-center bg-copper px-8 py-4 text-center text-sm font-semibold tracking-wide text-bg transition-all hover:bg-copper-bright hover:shadow-[0_0_30px_rgba(205,127,50,0.25)] sm:w-[210px]";
+
+const workshopTools = [
+  {
+    number: "01",
+    title: "Smart Inventory Sheets",
+    description:
+      "Pre-built spreadsheets that calculate cost, usage, variance, and reorder points.",
+  },
+  {
+    number: "02",
+    title: "Variance Tracker",
+    description:
+      "Compare physical counts against POS sales by category, bottle, and shift.",
+  },
+  {
+    number: "03",
+    title: "AI Bottle Counter",
+    description:
+      "Snap a shelf photo and let AI read bottle levels from the image.",
+  },
+  {
+    number: "04",
+    title: "Product Database",
+    description:
+      "500+ common bar products with bottle sizes, costs, and standard pours.",
+  },
+];
+
 export default function Home() {
   return (
     <>
@@ -61,16 +91,22 @@ export default function Home() {
 
             <div className="flex flex-wrap gap-4">
               <Link
-                href="/downloads"
-                className="group relative bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
+                href="/the-process"
+                className={primaryCtaClass}
               >
-                <span className="relative z-10">Download Free Tools</span>
+                <span className="relative z-10">Learn This System</span>
               </Link>
               <Link
-                href="/downloads"
+                href="/about"
                 className="border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
               >
                 Read Our Story
+              </Link>
+              <Link
+                href="/downloads"
+                className={primaryCtaClass}
+              >
+                <span className="relative z-10">Download Free Tools</span>
               </Link>
             </div>
           </div>
@@ -162,40 +198,58 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Link href="/downloads" className="block">
-            <ToolCard
-              number="01"
-              title="Smart Inventory Sheets"
-              description="Pre-built spreadsheets that calculate cost, usage, variance, and reorder points. Plug in your counts — the gears do the rest."
-              icon={<BottleIcon />}
-            />
-          </Link>
-          <Link href="/downloads" className="block">
-            <ToolCard
-              number="02"
-              title="Variance Tracker"
-              description="Compare physical counts against POS sales. See exactly where you're losing money — by category, by bottle, by shift."
-              icon={<BottleIcon />}
-            />
-          </Link>
-          <Link href="/downloads" className="block">
-            <ToolCard
-              number="03"
-              title="AI Bottle Counter"
-              description="Snap a photo of your shelf. AI reads the bottle levels so you're not eyeballing tenths at 2am with bleary eyes."
-              icon={<BottleIcon />}
-            />
-          </Link>
-          <Link href="/downloads" className="block">
-            <ToolCard
-              number="04"
-              title="Product Database"
-              description="500+ common bar products pre-loaded. Bottle sizes, costs, standard pours. Skip the data entry, start counting."
-              icon={<BottleIcon />}
-            />
-          </Link>
-        </div>
+        <Link
+          href="/downloads"
+          aria-label="Download the complete Open Source Barware toolkit"
+          className="group block panel card-lift rounded-sm p-6 md:p-8 relative rivets focus:outline-none focus-visible:ring-2 focus-visible:ring-copper/70"
+        >
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between mb-8">
+            <div>
+              <span className="text-xs font-mono text-text-light tracking-wider">
+                01-04
+              </span>
+              <h3 className="font-serif text-2xl md:text-3xl text-cream mt-5 mb-3 group-hover:text-copper transition-colors">
+                One free toolkit, four instruments inside.
+              </h3>
+              <p className="text-text-muted leading-relaxed max-w-2xl">
+                All four pieces below are bundled together as one free download
+                for the full inventory workflow.
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-copper">
+              <span className="text-sm font-semibold tracking-wide text-copper">
+                Download Free Tools
+              </span>
+              <div className="opacity-70 group-hover:opacity-100 transition-opacity">
+                <BottleIcon />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px border border-copper/25 bg-copper/20">
+            {workshopTools.map((tool) => (
+              <div
+                key={tool.number}
+                className="min-h-[132px] bg-bg-panel/95 p-6 md:p-7"
+              >
+                <div className="flex items-start justify-between gap-4 mb-5">
+                  <span className="text-xs font-mono text-text-light tracking-wider">
+                    {tool.number}
+                  </span>
+                  <div className="text-copper opacity-50">
+                    <BottleIcon />
+                  </div>
+                </div>
+                <h4 className="font-serif text-xl text-cream mb-2">
+                  {tool.title}
+                </h4>
+                <p className="text-text-muted leading-relaxed text-sm">
+                  {tool.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Link>
       </section>
 
       {/* ── FIELD TESTED ── image-backed mention */}
@@ -279,31 +333,6 @@ function StatBlock({ number, label }: { number: string; label: string }) {
       <div className="text-xs text-text-light tracking-wider uppercase mt-1">
         {label}
       </div>
-    </div>
-  );
-}
-
-function ToolCard({
-  number,
-  title,
-  description,
-  icon,
-}: {
-  number: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="panel card-lift rounded-sm p-8 relative rivets">
-      <div className="flex items-start justify-between mb-6">
-        <span className="text-xs font-mono text-text-light tracking-wider">
-          {number}
-        </span>
-        <div className="opacity-60">{icon}</div>
-      </div>
-      <h3 className="font-serif text-xl text-cream mb-3">{title}</h3>
-      <p className="text-text-muted leading-relaxed text-sm">{description}</p>
     </div>
   );
 }

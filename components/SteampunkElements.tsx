@@ -5,6 +5,7 @@ export function Gear({
   size?: number;
   className?: string;
 }) {
+  const fmt = (value: number) => Number(value.toFixed(3)).toString();
   const teeth = 12;
   const outerR = size / 2;
   const innerR = outerR * 0.7;
@@ -23,14 +24,14 @@ export function Gear({
     const r1 = innerR;
     const r2 = outerR + toothDepth;
 
-    const x1 = cx + r1 * Math.cos(angle1);
-    const y1 = cy + r1 * Math.sin(angle1);
-    const x2 = cx + r2 * Math.cos(angle2);
-    const y2 = cy + r2 * Math.sin(angle2);
-    const x3 = cx + r2 * Math.cos(angle3);
-    const y3 = cy + r2 * Math.sin(angle3);
-    const x4 = cx + r1 * Math.cos(angle4);
-    const y4 = cy + r1 * Math.sin(angle4);
+    const x1 = fmt(cx + r1 * Math.cos(angle1));
+    const y1 = fmt(cy + r1 * Math.sin(angle1));
+    const x2 = fmt(cx + r2 * Math.cos(angle2));
+    const y2 = fmt(cy + r2 * Math.sin(angle2));
+    const x3 = fmt(cx + r2 * Math.cos(angle3));
+    const y3 = fmt(cy + r2 * Math.sin(angle3));
+    const x4 = fmt(cx + r1 * Math.cos(angle4));
+    const y4 = fmt(cy + r1 * Math.sin(angle4));
 
     if (i === 0) path += `M ${x1} ${y1} `;
     path += `L ${x2} ${y2} L ${x3} ${y3} L ${x4} ${y4} `;
@@ -47,18 +48,18 @@ export function Gear({
     >
       <path d={path} fill="currentColor" opacity="0.15" />
       <circle
-        cx={cx}
-        cy={cy}
-        r={holeR}
+        cx={fmt(cx)}
+        cy={fmt(cy)}
+        r={fmt(holeR)}
         fill="var(--bg, #0d0b09)"
         stroke="currentColor"
         strokeWidth="1"
         opacity="0.2"
       />
       <circle
-        cx={cx}
-        cy={cy}
-        r={holeR * 0.4}
+        cx={fmt(cx)}
+        cy={fmt(cy)}
+        r={fmt(holeR * 0.4)}
         fill="currentColor"
         opacity="0.1"
       />
@@ -67,6 +68,8 @@ export function Gear({
 }
 
 export function GearDivider() {
+  const fmt = (value: number) => Number(value.toFixed(3)).toString();
+
   return (
     <div className="gear-divider">
       <svg width="20" height="20" viewBox="0 0 20 20" className="gear-spin-slow">
@@ -75,10 +78,10 @@ export function GearDivider() {
         {[0, 60, 120, 180, 240, 300].map((angle) => (
           <line
             key={angle}
-            x1={10 + 5 * Math.cos((angle * Math.PI) / 180)}
-            y1={10 + 5 * Math.sin((angle * Math.PI) / 180)}
-            x2={10 + 9 * Math.cos((angle * Math.PI) / 180)}
-            y2={10 + 9 * Math.sin((angle * Math.PI) / 180)}
+            x1={fmt(10 + 5 * Math.cos((angle * Math.PI) / 180))}
+            y1={fmt(10 + 5 * Math.sin((angle * Math.PI) / 180))}
+            x2={fmt(10 + 9 * Math.cos((angle * Math.PI) / 180))}
+            y2={fmt(10 + 9 * Math.sin((angle * Math.PI) / 180))}
             stroke="var(--copper)"
             strokeWidth="2"
             opacity="0.3"

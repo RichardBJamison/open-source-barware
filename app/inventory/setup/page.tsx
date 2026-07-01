@@ -2,6 +2,12 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  saveBar,
+  type Bar as StoredBar,
+  type Bottle as StoredBottle,
+  type Station as StoredStation,
+} from '@/lib/inventory-store';
 import { Gear, GearDivider } from '@/components/SteampunkElements';
 
 /* ─── Types ─── */
@@ -23,26 +29,16 @@ interface Bottle {
   parLevel: number;
 }
 
-interface Bar {
-  name: string;
-  stations: Station[];
-  bottles: Bottle[];
-}
-
-/* ─── Storage helpers (mock until lib/inventory-store exists) ─── */
-function saveBar(bar: Bar): void {
-  try {
-    localStorage.setItem('osb_bar', JSON.stringify(bar));
-  } catch {
-    // silent fail in SSR / quota exceeded
-  }
-}
-
 /* ─── Utilities ─── */
 let _uid = 0;
 function uid(): string {
   _uid += 1;
   return `id_${Date.now()}_${_uid}`;
+}
+
+function toStoredStationType(type: StationType): StoredStation['type'] {
+  if (type === 'backbar') return 'back-bar';
+  return type;
 }
 
 const STATION_TYPE_MAP: Record<string, StationType> = {
@@ -1116,10 +1112,35 @@ export default function SetupWizard() {
   const goBack = () => setStep((s) => Math.max(s - 1, 1));
 
   const handleFinish = () => {
-    const bar: Bar = {
+    const now = new Date().toISOString();
+    const storedStations: StoredStation[] = stations.map((station) => {
+      const stationBottles: StoredBottle[] = bottles
+        .filter((bottle) => bottle.stationId === station.id)
+        .map((bottle) => ({
+          id: bottle.id,
+          name: bottle.name,
+          category: bottle.category,
+          currentLevel: 1,
+          parLevel: bottle.parLevel,
+          size: bottle.size,
+          costPerBottle: 0,
+        }));
+
+      return {
+        id: station.id,
+        name: station.name,
+        type: toStoredStationType(station.type),
+        bottles: stationBottles,
+      };
+    });
+
+    const bar: StoredBar = {
+      id: uid(),
       name: barName,
-      stations,
-      bottles,
+      stations: storedStations,
+      lastCountDate: null,
+      createdAt: now,
+      updatedAt: now,
     };
     saveBar(bar);
     router.push('/inventory');

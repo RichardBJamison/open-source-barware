@@ -26,6 +26,23 @@ const NAV_ITEMS = [
     ),
   },
   {
+    href: "/inventory/inputs",
+    label: "Inputs",
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      >
+        <path d="M3 3h12v12H3z" />
+        <path d="M6 6h6M6 9h6M6 12h3" />
+      </svg>
+    ),
+  },
+  {
     href: "/inventory/count",
     label: "New Count",
     icon: (

@@ -1,69 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import {
+  generateId,
+  getBar,
+  saveBar,
+  type Bar,
+  type Bottle,
+  type Station,
+} from '@/lib/inventory-store';
 
-// ── Types ──
-interface Bottle {
-  id: string;
-  name: string;
-  category: string;
-  currentLevel: number; // 0.0 - 1.0
-  parLevel: number;     // 0.0 - 1.0
-  size: string;         // e.g. "750ml", "1L"
-  costPerBottle: number;
-}
-
-interface Station {
-  id: string;
-  name: string;
-  type: 'well' | 'back-bar' | 'service' | 'storage' | 'beer' | 'wine';
-  bottles: Bottle[];
-}
-
-interface Bar {
-  id: string;
-  name: string;
-  stations: Station[];
-  lastCountDate: string | null;
-}
-
-interface InventoryCount {
-  id: string;
-  date: string;
-  entries: CountEntry[];
-}
-
-interface CountEntry {
-  bottleId: string;
-  bottleName: string;
-  stationId: string;
-  previousLevel: number;
-  countedLevel: number;
-}
-
-// ── LocalStorage helpers ──
-const STORAGE_PREFIX = 'osb_';
-
-function getBar(): Bar | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}bar`);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-}
-
-function saveBar(bar: Bar): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(`${STORAGE_PREFIX}bar`, JSON.stringify(bar));
-}
-
-function getCounts(): InventoryCount[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}counts`);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+function useHydrated() {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
 }
 
 // ── Station type icons ──
@@ -73,6 +26,7 @@ function StationIcon({ type }: { type: Station['type'] }) {
     'back-bar': '\u2728', // sparkles
     service: '\u2615',    // coffee/service
     storage: '\u{1F4E6}', // package
+    'walk-in': '\u2744',  // snowflake
     beer: '\u{1F37A}',    // beer
     wine: '\u{1F377}',    // wine
   };
@@ -138,95 +92,15 @@ function CategoryBadge({ category }: { category: string }) {
   );
 }
 
-// ── Demo data seeder ──
-function seedDemoBar(): Bar {
-  const demo: Bar = {
-    id: 'bar-1',
-    name: 'Main Bar',
-    lastCountDate: new Date().toISOString().split('T')[0],
-    stations: [
-      {
-        id: 'well-1',
-        name: 'Well 1',
-        type: 'well',
-        bottles: [
-          { id: 'b1', name: "Tito's Vodka", category: 'Vodka', currentLevel: 0.6, parLevel: 0.5, size: '1L', costPerBottle: 18 },
-          { id: 'b2', name: 'Tanqueray Gin', category: 'Gin', currentLevel: 0.3, parLevel: 0.5, size: '1L', costPerBottle: 22 },
-          { id: 'b3', name: 'Bacardi Silver', category: 'Rum', currentLevel: 0.1, parLevel: 0.4, size: '1L', costPerBottle: 14 },
-          { id: 'b4', name: 'Jim Beam', category: 'Bourbon', currentLevel: 0.7, parLevel: 0.5, size: '1L', costPerBottle: 16 },
-          { id: 'b5', name: 'Jose Cuervo', category: 'Tequila', currentLevel: 0.4, parLevel: 0.5, size: '1L', costPerBottle: 19 },
-        ],
-      },
-      {
-        id: 'well-2',
-        name: 'Well 2',
-        type: 'well',
-        bottles: [
-          { id: 'b6', name: 'Stolichnaya', category: 'Vodka', currentLevel: 0.2, parLevel: 0.5, size: '1L', costPerBottle: 17 },
-          { id: 'b7', name: 'Jameson', category: 'Whiskey', currentLevel: 0.8, parLevel: 0.5, size: '750ml', costPerBottle: 24 },
-          { id: 'b8', name: 'Captain Morgan', category: 'Rum', currentLevel: 0.5, parLevel: 0.5, size: '1L', costPerBottle: 15 },
-        ],
-      },
-      {
-        id: 'back-1',
-        name: 'Back Bar - Top Shelf',
-        type: 'back-bar',
-        bottles: [
-          { id: 'b9', name: 'Grey Goose', category: 'Vodka', currentLevel: 0.9, parLevel: 0.4, size: '750ml', costPerBottle: 32 },
-          { id: 'b10', name: 'Hendricks Gin', category: 'Gin', currentLevel: 0.5, parLevel: 0.4, size: '750ml', costPerBottle: 34 },
-          { id: 'b11', name: 'Patron Silver', category: 'Tequila', currentLevel: 0.3, parLevel: 0.4, size: '750ml', costPerBottle: 42 },
-          { id: 'b12', name: 'Woodford Reserve', category: 'Bourbon', currentLevel: 0.6, parLevel: 0.4, size: '750ml', costPerBottle: 36 },
-          { id: 'b13', name: 'Macallan 12', category: 'Scotch', currentLevel: 0.2, parLevel: 0.3, size: '750ml', costPerBottle: 58 },
-          { id: 'b14', name: 'Clase Azul', category: 'Tequila', currentLevel: 0.7, parLevel: 0.3, size: '750ml', costPerBottle: 120 },
-        ],
-      },
-      {
-        id: 'service-1',
-        name: 'Service Bar',
-        type: 'service',
-        bottles: [
-          { id: 'b15', name: 'Triple Sec', category: 'Liqueur', currentLevel: 0.4, parLevel: 0.5, size: '1L', costPerBottle: 9 },
-          { id: 'b16', name: 'Kahlua', category: 'Liqueur', currentLevel: 0.6, parLevel: 0.4, size: '750ml', costPerBottle: 22 },
-          { id: 'b17', name: 'Baileys', category: 'Liqueur', currentLevel: 0.1, parLevel: 0.4, size: '750ml', costPerBottle: 26 },
-          { id: 'b18', name: 'Campari', category: 'Amaro', currentLevel: 0.8, parLevel: 0.3, size: '750ml', costPerBottle: 28 },
-        ],
-      },
-      {
-        id: 'storage-1',
-        name: 'Back Storage',
-        type: 'storage',
-        bottles: [
-          { id: 'b19', name: "Tito's Vodka (backup)", category: 'Vodka', currentLevel: 1.0, parLevel: 0.5, size: '1L', costPerBottle: 18 },
-          { id: 'b20', name: 'Tanqueray Gin (backup)', category: 'Gin', currentLevel: 1.0, parLevel: 0.5, size: '1L', costPerBottle: 22 },
-          { id: 'b21', name: 'Bacardi Silver (backup)', category: 'Rum', currentLevel: 1.0, parLevel: 0.5, size: '1L', costPerBottle: 14 },
-        ],
-      },
-    ],
-  };
-  saveBar(demo);
-  return demo;
-}
-
 // ── Main Dashboard ──
 export default function DashboardPage() {
-  const [bar, setBar] = useState<Bar | null>(null);
+  const hydrated = useHydrated();
+  const [barOverride, setBarOverride] = useState<Bar | null>(null);
   const [expandedStations, setExpandedStations] = useState<Set<string>>(new Set());
-  const [mounted, setMounted] = useState(false);
+  const bar = barOverride ?? (hydrated ? getBar() : null);
+  const allBottles = useMemo(() => (bar ? bar.stations.flatMap((s) => s.bottles) : []), [bar]);
 
-  useEffect(() => {
-    setMounted(true);
-    let loaded = getBar();
-    if (!loaded) {
-      loaded = seedDemoBar();
-    }
-    setBar(loaded);
-    // Expand first station by default on mobile
-    if (loaded.stations.length > 0) {
-      setExpandedStations(new Set([loaded.stations[0].id]));
-    }
-  }, []);
-
-  if (!mounted || !bar) {
+  if (!hydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-text-muted animate-pulse">Loading inventory...</div>
@@ -234,8 +108,23 @@ export default function DashboardPage() {
     );
   }
 
+  if (!bar) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 text-center">
+        <div className="panel rounded-sm p-8 sm:p-12 rivets">
+          <p className="text-text-muted mb-4">No bar is configured on this device yet.</p>
+          <Link
+            href="/inventory/setup"
+            className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 text-sm tracking-wide transition-all"
+          >
+            Set Up Your Bar
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   // ── Stats calculations ──
-  const allBottles = bar.stations.flatMap((s) => s.bottles);
   const totalProducts = allBottles.length;
   const totalValue = allBottles.reduce((sum, b) => sum + b.costPerBottle * b.currentLevel, 0);
   const belowPar = allBottles.filter((b) => b.currentLevel < b.parLevel).length;
@@ -282,7 +171,7 @@ export default function DashboardPage() {
               const stationId = bar.stations[0]?.id;
               if (!stationId) return;
               const newBottle: Bottle = {
-                id: `b-${Date.now()}`,
+                id: generateId('bottle'),
                 name,
                 category,
                 currentLevel: 1.0,
@@ -297,7 +186,7 @@ export default function DashboardPage() {
                 ),
               };
               saveBar(updated);
-              setBar(updated);
+              setBarOverride(updated);
             }}
             className="border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-5 py-2.5 text-sm tracking-wide transition-all"
           >
@@ -418,11 +307,11 @@ export default function DashboardPage() {
                 ...bar,
                 stations: [
                   ...bar.stations,
-                  { id: `s-${Date.now()}`, name, type: 'well' as const, bottles: [] },
+                  { id: generateId('station'), name, type: 'well' as const, bottles: [] },
                 ],
               };
               saveBar(updated);
-              setBar(updated);
+              setBarOverride(updated);
             }}
             className="bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 text-sm tracking-wide transition-all"
           >

@@ -2,13 +2,141 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { Gear, GearDivider, BottleIcon } from "@/components/SteampunkElements";
-import DownloadButton from "@/components/DownloadButton";
 
 export const metadata: Metadata = {
-  title: "Free Downloads — Open Source Barware",
+  title: "Toolkit Guide — Open Source Barware",
   description:
-    "Download free bar inventory tools. Spreadsheets, variance calculators, bottle counters. No signup required.",
+    "Learn how each Open Source Barware inventory tool fits inside the Chrome-side bar inventory program.",
 };
+
+const toolGuides = [
+  {
+    number: "01",
+    title: "Bar Inventory Master Sheet",
+    format: "XLS",
+    id: "bar-inventory-master-sheet",
+    description:
+      "The main workbook view for liquor, beer, wine, mixers, costs, par levels, usage, and reorder signals.",
+    chromeFit:
+      "Inside the Chrome program, this is the spreadsheet brain behind the admin panel. Setup builds the first version from the approved bar map, then each cycle updates it with counts, invoices, and POS exports.",
+    looksLike: [
+      "Tabs for liquor, beer, wine, mixers, and future dry goods",
+      "Rows organized by physical location: wells, back bar, coolers, storage, and liquor room",
+      "Columns for product, bottle size, par, opening count, purchases, closing count, cost, and variance",
+    ],
+    process: [
+      "The customer maps the bar by voice during setup.",
+      "The system turns that map into the first XLS workbook.",
+      "After the customer audits and approves it, the workbook becomes the source for weekly reporting.",
+    ],
+  },
+  {
+    number: "02",
+    title: "Quick Count Template",
+    format: "PDF + XLS",
+    id: "quick-count-template",
+    description:
+      "A printable walk sheet for fast weekly counting when the manager wants paper in hand.",
+    chromeFit:
+      "The Chrome program generates the template from the latest approved inventory map, so it changes when the bar layout, product list, or categories change.",
+    looksLike: [
+      "A simple print sheet ordered by the customer's real walking route",
+      "Blank count fields beside each bottle, shelf, well, cooler, and storage area",
+      "A matching XLS version so paper counts can be entered back into the program",
+    ],
+    process: [
+      "Print or open the sheet before walking the bar.",
+      "Count by the same left-to-right route used during setup.",
+      "Enter the results into Weekly Inputs so the admin panel updates the cycle.",
+    ],
+  },
+  {
+    number: "03",
+    title: "Variance Calculator",
+    format: "XLS",
+    id: "variance-calculator",
+    description:
+      "The calculation layer that compares inventory movement against POS sales and delivery invoices.",
+    chromeFit:
+      "Variance becomes part of the admin panel. Weekly Inputs feeds it with three things: the count, invoice pictures, and POS downloads.",
+    looksLike: [
+      "Opening inventory plus invoice purchases minus ending inventory",
+      "POS sales imported by the same weekly cycle",
+      "Category, bottle, and shift-level flags for unexplained gaps",
+    ],
+    process: [
+      "Upload invoice photos from the inventory period.",
+      "Upload the POS sales export for the same dates.",
+      "The system compares expected usage against actual count movement and updates the report.",
+    ],
+  },
+  {
+    number: "04",
+    title: "Product Database",
+    format: "CSV + XLS",
+    id: "product-database",
+    description:
+      "The product reference table that keeps names, bottle sizes, categories, aliases, and costs consistent.",
+    chromeFit:
+      "The database lives inside the program so voice notes, invoices, POS exports, and spreadsheet rows all resolve to the same product identity.",
+    looksLike: [
+      "Common bar products with category, bottle size, pour size, and cost fields",
+      "Alias matching for voice transcription and invoice naming differences",
+      "Customer-specific additions created during setup and weekly corrections",
+    ],
+    process: [
+      "The setup flow starts with a standard product list.",
+      "Customer products are matched or added as the first bar map is reconciled.",
+      "Future invoice and count inputs update the database when new products appear.",
+    ],
+  },
+  {
+    number: "05",
+    title: "AI Bottle Counter",
+    format: "Vision",
+    id: "ai-bottle-counter",
+    description:
+      "A guided photo-assisted counting feature for estimating bottle fill levels when visual review is faster than typing.",
+    chromeFit:
+      "This is a feature inside the Chrome program, not a separate script. It supports the count workflow when the customer takes shelf or bottle pictures.",
+    looksLike: [
+      "A photo intake step connected to the approved location map",
+      "AI estimates that still ask the manager to confirm uncertain bottles",
+      "Corrections that feed back into the inventory count for that cycle",
+    ],
+    process: [
+      "Open the count flow for a mapped section.",
+      "Take or upload the shelf image.",
+      "Confirm the fill estimates before they update the weekly count.",
+    ],
+  },
+  {
+    number: "06",
+    title: "Mobile Count App",
+    format: "Web App",
+    id: "mobile-count-app",
+    description:
+      "The phone-friendly counting surface for walking the bar without carrying a laptop.",
+    chromeFit:
+      "This is the mobile side of the same Chrome/admin program. It follows the approved map and sends weekly counts back into the dashboard.",
+    looksLike: [
+      "A section-by-section count screen ordered by the real bar walk",
+      "Large tap targets for bottle level, cases, loose bottles, and notes",
+      "A final review before the count becomes part of the weekly cycle",
+    ],
+    process: [
+      "Choose the section you are counting.",
+      "Enter bottle levels or case counts as you walk.",
+      "Submit the count into Weekly Inputs for reconciliation.",
+    ],
+  },
+];
+
+const weeklyInputs = [
+  "Enter your inventory count this week",
+  "Enter your invoice pictures",
+  "Enter your POS downloads",
+];
 
 export default function DownloadsPage() {
   return (
@@ -30,17 +158,18 @@ export default function DownloadsPage() {
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-[1px] bg-copper/40" />
             <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
-              Downloads
+              Toolkit Guide
             </span>
           </div>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-xl mb-6">
-            <span className="copper-text">Take what you need.</span>
+            <span className="copper-text">What lives inside</span>
             <br />
-            It&rsquo;s all free.
+            the Chrome program.
           </h1>
           <p className="text-text-muted text-lg max-w-lg leading-relaxed">
-            No signup wall. No email capture. No &ldquo;book a demo.&rdquo;
-            Click download and start counting smarter tonight.
+            These are not separate products anymore. They are pieces of the
+            same inventory program: setup, spreadsheets, weekly inputs,
+            variance, product matching, and mobile counting.
           </p>
         </div>
       </section>
@@ -50,54 +179,126 @@ export default function DownloadsPage() {
       {/* ── TOOL CARDS ── */}
       <section className="max-w-6xl mx-auto px-6 py-10 md:py-14">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <DownloadCard
-            number="01"
-            title="Bar Inventory Master Sheet"
-            format="XLSX"
-            description="Complete workbook with tabs for liquor, beer, wine, and mixers. Formulas calculate total value, usage rate, pour cost, and reorder alerts."
-            status="available"
-            href="/downloads/Bar-Inventory-Master.xlsx"
-          />
-          <DownloadCard
-            number="02"
-            title="Quick Count Template"
-            format="PDF + XLSX"
-            description="Stripped-down count sheet for weekly spot checks. Print it, grab a pen, count, done. Only the columns that matter."
-            status="available"
-            href="/downloads/Quick-Count-Sheet.xlsx"
-          />
-          <DownloadCard
-            number="03"
-            title="Variance Calculator"
-            format="XLSX"
-            description="Plug in physical counts and POS data. Calculates pour cost, shrinkage by category, flags problem products automatically."
-            status="available"
-            href="/downloads/Variance-Calculator.xlsx"
-          />
-          <DownloadCard
-            number="04"
-            title="Product Database"
-            format="CSV + XLSX"
-            description="500+ common bar products with bottle sizes, standard costs, and pour sizes. Import and skip the data entry."
-            status="available"
-            href="/downloads/Product-Database.xlsx"
-          />
-          <DownloadCard
-            number="05"
-            title="AI Bottle Counter"
-            format="Python"
-            description="Open-source script using your phone camera to estimate fill levels. Runs locally — your data stays yours."
-            status="coming-soon"
-          />
-          <DownloadCard
-            number="06"
-            title="Mobile Count App"
-            format="Web App"
-            description="Progressive web app for counting on your phone. Works offline behind the bar, syncs on WiFi. Replace the clipboard."
-            status="available"
-            href="/inventory"
-            linkLabel="Launch App"
-          />
+          {toolGuides.map((tool) => (
+            <DownloadCard key={tool.id} tool={tool} />
+          ))}
+        </div>
+      </section>
+
+      {/* ── TOOL DETAILS ── */}
+      <section className="border-y border-gear-border bg-bg-panel">
+        <div className="max-w-6xl mx-auto px-6 py-12 md:py-16">
+          <div className="max-w-3xl mb-12">
+            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">
+              Learn More
+            </p>
+            <h2 className="font-serif text-3xl md:text-4xl text-cream mb-4">
+              Each piece has a job inside the program.
+            </h2>
+            <p className="text-text-muted leading-relaxed">
+              The customer downloads one Chrome-side system. These sections
+              explain what each part looks like, how it works, and how it feeds
+              the admin panel after the weekly inputs are entered.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {toolGuides.map((tool) => (
+              <article
+                key={tool.id}
+                id={tool.id}
+                className="panel rounded-sm p-6 md:p-8 scroll-mt-28"
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div className="lg:col-span-4">
+                    <div className="flex items-start justify-between gap-4 mb-5">
+                      <span className="text-xs font-mono text-text-light tracking-wider">
+                        {tool.number}
+                      </span>
+                      <span className="text-[10px] font-mono tracking-wider text-copper border border-gear-border px-2 py-0.5">
+                        {tool.format}
+                      </span>
+                    </div>
+                    <div className="mb-5 opacity-40">
+                      <BottleIcon />
+                    </div>
+                    <h3 className="font-serif text-2xl text-cream mb-4">
+                      {tool.title}
+                    </h3>
+                    <p className="text-text-muted text-sm leading-relaxed">
+                      {tool.chromeFit}
+                    </p>
+                  </div>
+
+                  <div className="lg:col-span-4">
+                    <p className="text-[10px] tracking-[0.25em] uppercase text-copper mb-4">
+                      What It Looks Like
+                    </p>
+                    <ul className="space-y-3">
+                      {tool.looksLike.map((item) => (
+                        <li key={item} className="flex gap-3 text-sm text-text-muted leading-relaxed">
+                          <span className="text-copper shrink-0">-</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="lg:col-span-4">
+                    <p className="text-[10px] tracking-[0.25em] uppercase text-copper mb-4">
+                      How It Works
+                    </p>
+                    <ol className="space-y-3">
+                      {tool.process.map((item, i) => (
+                        <li key={item} className="flex gap-3 text-sm text-text-muted leading-relaxed">
+                          <span className="font-mono text-copper text-xs mt-0.5">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── WEEKLY INPUTS ── */}
+      <section className="max-w-6xl mx-auto px-6 py-12 md:py-16">
+        <div className="panel rounded-sm p-6 md:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+            <div className="md:col-span-5">
+              <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">
+                Admin Panel
+              </p>
+              <h2 className="font-serif text-3xl text-cream mb-4">
+                Weekly Inputs drive the updates.
+              </h2>
+              <p className="text-text-muted leading-relaxed">
+                The admin panel now needs an Inputs area. Each week the manager
+                enters the count, invoice pictures, and POS downloads in one
+                place so the system can update inventory, variance, and reports.
+              </p>
+            </div>
+            <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {weeklyInputs.map((input) => (
+                <div key={input} className="border border-gear-border bg-bg/50 p-4">
+                  <p className="text-sm text-cream leading-snug">{input}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-8">
+            <Link
+              href="/inventory/inputs"
+              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_24px_rgba(205,127,50,0.25)]"
+            >
+              View Weekly Inputs
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -123,8 +324,9 @@ export default function DownloadsPage() {
             </span>
           </h2>
           <p className="text-text-muted mb-16 max-w-lg">
-            Everything is being built live at Agave &amp; Rye. Real testing,
-            real data, real feedback from working bartenders.
+            The public page is moving away from standalone downloads and toward
+            one Chrome-side application with an admin panel, weekly inputs, and
+            guided inventory intelligence.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -203,57 +405,33 @@ export default function DownloadsPage() {
 }
 
 function DownloadCard({
-  number,
-  title,
-  format,
-  description,
-  status,
-  href,
-  linkLabel = "Launch App",
+  tool,
 }: {
-  number: string;
-  title: string;
-  format: string;
-  description: string;
-  status: "available" | "coming-soon";
-  href?: string;
-  linkLabel?: string;
+  tool: (typeof toolGuides)[number];
 }) {
-  const isFileDownload = href?.startsWith("/downloads/");
-
   return (
     <div className="panel card-lift rounded-sm p-7 flex flex-col relative rivets">
       <div className="flex items-start justify-between mb-5">
         <span className="text-xs font-mono text-text-light tracking-wider">
-          {number}
+          {tool.number}
         </span>
         <span className="text-[10px] font-mono tracking-wider text-copper border border-gear-border px-2 py-0.5">
-          {format}
+          {tool.format}
         </span>
       </div>
       <div className="mb-4 opacity-40">
         <BottleIcon />
       </div>
-      <h3 className="font-serif text-lg text-cream mb-3">{title}</h3>
+      <h3 className="font-serif text-lg text-cream mb-3">{tool.title}</h3>
       <p className="text-text-muted text-sm leading-relaxed mb-8 flex-1">
-        {description}
+        {tool.description}
       </p>
-      {status === "available" && href ? (
-        isFileDownload ? (
-          <DownloadButton tool={{ number, title, format, href }} />
-        ) : (
-          <Link
-            href={href}
-            className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.2)]"
-          >
-            {linkLabel}
-          </Link>
-        )
-      ) : (
-        <div className="w-full border border-gear-border text-text-light text-xs tracking-[0.2em] uppercase py-3 text-center">
-          Building at Agave &amp; Rye
-        </div>
-      )}
+      <Link
+        href={`#${tool.id}`}
+        className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.2)]"
+      >
+        Learn More
+      </Link>
     </div>
   );
 }

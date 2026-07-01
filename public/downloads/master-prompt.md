@@ -396,5 +396,50 @@ These calculations are for internal operational use only. They are not financial
 
 ---
 
+## Structured Inventory Output (Sheet Sync Block)
+
+After producing the final weekly report, always output a machine-readable sync block at the very end. This block is used to update the inventory spreadsheet and the Chrome dashboard automatically.
+
+Output it exactly in this format — no extra text inside the block:
+
+```json
+OSB_SYNC_v1
+{
+  "bar": "[Bar name from setup]",
+  "week_ending": "[Closing inventory date — YYYY-MM-DD]",
+  "generated": "[ISO timestamp]",
+  "inventory": [
+    {
+      "product": "[Exact product name from master list]",
+      "category": "[Red Wine | White Wine | Beer | Spirits | Cordial | NA | Other]",
+      "back_bar": [decimal or null],
+      "wells": [decimal or null],
+      "liquor_room": [decimal or null],
+      "status": "[ok | low | missing | flagged]",
+      "flag": "[short flag description or null]"
+    }
+  ],
+  "summary": {
+    "total_products": [integer],
+    "flagged": [integer],
+    "low": [integer],
+    "missing_count": [integer]
+  }
+}
+OSB_SYNC_END
+```
+
+Rules for the sync block:
+- Use `null` for any location where the product was not counted or not stocked there.
+- `status: "low"` means the product is below par level if par is set, or below 0.5 bottles in the well/back bar.
+- `status: "missing"` means the product is in the master list but was not found in the count at all.
+- `status: "flagged"` means there is an unresolved uncertainty — transcription issue, size mismatch, or invoice conflict.
+- `status: "ok"` for everything else.
+- Do not include products from the master list that were not expected this period (e.g., seasonal items marked inactive).
+- Always output the sync block even if the report has unresolved flags. Include `"status": "flagged"` on affected items so the dashboard can show them.
+- The sync block comes after the full weekly report, not before it.
+
+---
+
 *Open Source Barware — Free forever. opensourcebarware.com*
-*v1.0 — Built for Agave and Rye, June 2026*
+*v1.1 — Sheet sync output added June 2026*

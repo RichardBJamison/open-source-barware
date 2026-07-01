@@ -1,64 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import {
+  getBar,
+  getCounts,
+  type CountEntry,
+  type InventoryCount,
+} from '@/lib/inventory-store';
 
-// ── Types ──
-interface Bottle {
-  id: string;
-  name: string;
-  category: string;
-  currentLevel: number;
-  parLevel: number;
-  size: string;
-  costPerBottle: number;
-}
-
-interface Station {
-  id: string;
-  name: string;
-  type: 'well' | 'back-bar' | 'service' | 'storage' | 'beer' | 'wine';
-  bottles: Bottle[];
-}
-
-interface Bar {
-  id: string;
-  name: string;
-  stations: Station[];
-  lastCountDate: string | null;
-}
-
-interface CountEntry {
-  bottleId: string;
-  bottleName: string;
-  stationId: string;
-  previousLevel: number;
-  countedLevel: number;
-}
-
-interface InventoryCount {
-  id: string;
-  date: string;
-  entries: CountEntry[];
-}
-
-// ── LocalStorage helpers ──
-const STORAGE_PREFIX = 'osb_';
-
-function getBar(): Bar | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}bar`);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-}
-
-function getCounts(): InventoryCount[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}counts`);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+function useHydrated() {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
 }
 
 // ── Variance helpers ──
@@ -80,18 +36,12 @@ function formatVariance(prev: number, current: number): string {
 
 // ── Main History Page ──
 export default function HistoryPage() {
-  const [counts, setCounts] = useState<InventoryCount[]>([]);
-  const [bar, setBar] = useState<Bar | null>(null);
+  const hydrated = useHydrated();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const counts = hydrated ? getCounts() : [];
+  const bar = hydrated ? getBar() : null;
 
-  useEffect(() => {
-    setMounted(true);
-    setCounts(getCounts());
-    setBar(getBar());
-  }, []);
-
-  if (!mounted) {
+  if (!hydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-text-muted animate-pulse">Loading...</div>

@@ -1,20 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { hasInventoryData } from "@/lib/inventory-store";
 import { AppButton, AppPanel } from "@/components/AppUI";
 import { Gear, BottleIcon, SteamPuffs } from "@/components/SteampunkElements";
 
+function useHydrated() {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
+}
+
 export default function InventoryPage() {
   const router = useRouter();
-  const [hasData, setHasData] = useState<boolean | null>(null);
+  const hydrated = useHydrated();
+  const hasData = hydrated ? hasInventoryData() : null;
 
   useEffect(() => {
-    setHasData(hasInventoryData());
-  }, []);
+    if (hydrated && hasData) {
+      router.replace("/inventory/dashboard");
+    }
+  }, [hasData, hydrated, router]);
 
-  // Loading state while checking localStorage
   if (hasData === null) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -23,16 +33,12 @@ export default function InventoryPage() {
     );
   }
 
-  // Has existing data: show dashboard summary
   if (hasData) {
     return <DashboardRedirect />;
   }
 
-  // No data: welcome screen
   return <WelcomeScreen onStart={() => router.push("/inventory/setup")} />;
 }
-
-// ── Dashboard placeholder (shown when data exists) ──
 
 function DashboardRedirect() {
   return (
@@ -101,17 +107,15 @@ function DashboardRedirect() {
 
       <AppPanel className="text-center py-12">
         <p className="text-text-muted mb-2">
-          Dashboard will populate with live data as you add counts.
+          Opening your dashboard.
         </p>
         <p className="text-text-light text-sm">
-          Start a new count or add bottles to your stations.
+          Your inventory map is loaded in this browser.
         </p>
       </AppPanel>
     </div>
   );
 }
-
-// ── Welcome screen (no data yet) ──
 
 function WelcomeScreen({ onStart }: { onStart: () => void }) {
   return (

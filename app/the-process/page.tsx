@@ -1,103 +1,166 @@
 import { Gear, GearDivider, PipeLine, PipeNode } from "@/components/SteampunkElements";
 
 export const metadata = {
-  title: "The Process — Open Source Barware",
+  title: "System Build Report — Open Source Barware",
   description:
-    "Step-by-step guide to the Open Source Barware AI inventory system. Set up once, count weekly by voice, upload your invoices and POS report, and let AI do the math.",
+    "Audit-ready breakdown of the Chrome-side Open Source Barware inventory program, guided setup flow, admin panel, and weekly inventory workflow.",
 };
+
+const reportBlocks = [
+  {
+    label: "Product Form",
+    title: "One Chrome-side customer program",
+    body: "The customer starts with one download from the site. Opening it sets up the Open Source Barware control panel in Chrome and explains how to pin or reopen it from the browser bar.",
+  },
+  {
+    label: "Lifecycle",
+    title: "Caterpillar to butterfly",
+    body: "The first version the customer sees is a setup guide. After provider setup, bar mapping, reconciliation, and approval, it becomes the permanent admin home base.",
+  },
+  {
+    label: "Operating Spine",
+    title: "Voice notes, spreadsheets, AI, and reports",
+    body: "The system accepts voice-transcribed bar walks, builds a spreadsheet-backed inventory map, uses the chosen AI provider for interpretation, then produces cycle reports and dashboard updates.",
+  },
+];
+
+const adminModules = [
+  {
+    title: "Home Base",
+    body: "Shows last inventory date, current count cycle, improvement trend, variance direction, and quick links into the rest of the system.",
+  },
+  {
+    title: "Spreadsheet View",
+    body: "A clean Excel-style area for the full workbook: products, locations, par levels, costs, counts, deliveries, and reconciliation math.",
+  },
+  {
+    title: "In-House Inventory",
+    body: "A live view of what should still be in the building after the latest approved count and reconciliation cycle.",
+  },
+  {
+    title: "Category Rooms",
+    body: "Subpages for liquor, beer, wine, mixers, and a reserved dry-goods area so the system can grow without being rebuilt.",
+  },
+  {
+    title: "Cycle Reports",
+    body: "Compares cycle to cycle: betterments, losses, sales movement, usage changes, and items that need manager attention.",
+  },
+  {
+    title: "Setup and Provider",
+    body: "Stores setup progress, selected AI provider, API connection status, and the correction queue for unclear products or locations.",
+  },
+];
+
+const setupChecks = [
+  "AI provider selected before inventory intake begins",
+  "API key waypoint completed without storing secret values in reports or handoffs",
+  "Every well, back bar, cooler, shelf, and room receives a named location",
+  "Bottle sizes and product names are confirmed before the first workbook is approved",
+  "Blank spaces are intentionally left for missing bottles and customer corrections",
+  "Stage two cannot start until the first inventory map is reviewed and accepted",
+];
+
+const auditQuestions = [
+  "Confirm whether the first download is packaged as a Chrome extension, local Chrome app, or installable browser shortcut.",
+  "Decide which AI providers are supported at launch and how API keys are stored locally.",
+  "Decide whether Excel files are generated locally in the program or produced by the AI and imported back into the panel.",
+  "Define the first POS export formats to support before direct POS integrations are considered.",
+  "Choose the backup and restore path for a customer who changes computers.",
+];
 
 const steps = [
   {
     number: "01",
-    title: "Download the Prompt File",
-    emoji: "⬇️",
-    body: "Click the download button on this page. You'll get a single file called a Markdown file — think of it like a text document. That file contains all the instructions that turn your AI into a bar inventory system. You don't need to understand what's inside it. You just need to copy it.",
-    tip: "It will download to your phone or computer just like any other file. Find it in your Downloads folder.",
+    title: "Download the Chrome Setup",
+    emoji: "01",
+    body: "The customer downloads one setup package from the site. When opened, it establishes the Open Source Barware program inside Chrome and shows the customer how to return to it from the browser bar.",
+    tip: "This first form is the caterpillar: simple, guided, and focused only on getting the system installed and ready.",
   },
   {
     number: "02",
-    title: "Open Your AI and Create a Project",
-    emoji: "🤖",
-    body: "Open Claude (claude.ai), ChatGPT (chat.openai.com), or Grok. Look for a section called \"Projects\" in the sidebar or menu. Create a new project and give it a name like \"Bar Inventory\" or the name of your bar. A Project is like a saved workspace — it remembers everything you tell it, every single time you come back.",
-    tip: "If you don't see \"Projects,\" don't worry — you can still use the system. Just paste the prompt at the very top of any new conversation before you start. It works the same way, you'll just need to paste it again next time.",
+    title: "Choose the AI Provider",
+    emoji: "02",
+    body: "Before inventory is entered, the setup asks which AI system will power interpretation and reporting. It then points the customer to the correct API key location for that provider and confirms the connection is ready.",
+    tip: "The program needs the connection, but secret values should never be copied into public reports, handoffs, or support notes.",
     platforms: [
-      { name: "Claude", path: "Left sidebar → Projects → New Project" },
-      { name: "ChatGPT", path: "Left sidebar → Projects → New Project" },
-      { name: "Grok", path: "Use a saved conversation or workspace feature" },
+      { name: "Claude", path: "Provider choice and API key waypoint" },
+      { name: "ChatGPT", path: "Provider choice and API key waypoint" },
+      { name: "Grok", path: "Provider choice and API key waypoint" },
     ],
   },
   {
     number: "03",
-    title: "Paste the Prompt Into Your Project",
-    emoji: "📋",
-    body: "Open the file you downloaded in step 1. Select all the text (press Ctrl+A on Windows or Cmd+A on Mac) and copy it. Now go back to your AI project. Find the section called \"Project Instructions\" or \"System Prompt\" or \"Customize\" — it's usually under a settings or gear icon inside your project. Paste everything you copied in there. Save it.",
-    tip: "You only do this once. After you paste it, your AI project is permanently loaded with the inventory system. You never have to do this step again.",
+    title: "Map the Bar by Voice",
+    emoji: "03",
+    body: "The customer walks the physical bar and speaks the placement of products into a notes app. This first pass is not a quantity count. It builds the location map: wells, back bar, storage shelves, liquor room, beer, wine, coolers, mixers, and future dry goods.",
+    tip: "The route matters: left to right, row by row, shelf by shelf, the same way a person would read a page.",
   },
   {
     number: "04",
-    title: "Let the AI Walk You Through Your Bar Setup",
-    emoji: "🗺️",
-    body: "Now open a conversation inside your project and just say: \"I'm ready to set up my bar.\" The AI will take it from there. It will ask you questions one section at a time — your bar wells, your back bar, your liquor room, your wine storage. For each section it will ask what products you carry, what size bottles (750ml vs 1 liter — this matters for the math), and how they're organized. Answer as you go. This usually takes 30 to 60 minutes the first time.",
-    tip: "When setup is done, the AI will summarize your full inventory map. Copy that summary and save it in a note on your phone. If anything ever resets, you can paste it back in and pick up exactly where you left off.",
+    title: "Upload the Setup Notes",
+    emoji: "04",
+    body: "The customer uploads the first voice notes into the welcome stage. The system parses the spoken walk, organizes it by location, and flags anything that sounds unclear, duplicated, missing, or out of order.",
+    tip: "Messy speech is expected. The program should ask before guessing on brand names, bottle sizes, or locations.",
   },
   {
     number: "05",
-    title: "Count Your Inventory by Voice — Every Week",
-    emoji: "🎙️",
-    body: "Once a week, grab your phone and open your favorite notes app — Apple Notes, Google Keep, Notion, anything with voice-to-text. Hit the microphone button and walk your bar. Speak naturally as you count each section. For bottles in your wells and back bar, say the product name and how full it is — \"half bottle,\" \"point four,\" \"full bottle.\" For your liquor room, count by the case plus loose bottles. Don't worry about perfect pronunciation or spelling — the AI is built to understand messy voice notes.",
+    title: "Reconcile the First Map",
+    emoji: "05",
+    body: "The system turns the setup notes into an Excel-style workbook and a readable confirmation sheet. It leaves blank spaces for missing placements, uncertain bottles, and corrections the customer needs to make while walking the bar again.",
     example: {
-      label: "Here's what it sounds like:",
+      label: "Setup speech example:",
       lines: [
-        "Well one — Patron silver half bottle, Casa Migos blanco point four, Don Julio full bottle",
-        "Well two — Titos half, Bacardi three quarters, Jack Daniels full bottle",
-        "Liquor room — Patron silver two cases three bottles, Titos one case, Jack Daniels six bottles",
+        "Well one, row one, bottle one left to right: Titos 750, Ketel One liter, Captain Morgan 750",
+        "Back bar, top shelf left to right: Casamigos Blanco 750, Cointreau 750, Don Julio Blanco 750",
+        "Liquor room, tequila shelf: Patron Silver, Espolon Blanco, Herradura Reposado",
       ],
     },
-    tip: "Walk the same route every week. Left to right, section by section. Consistency makes it faster and the AI gets better at knowing your bar.",
+    tip: "The first workbook is not final until the customer audits it against the real room.",
   },
   {
     number: "06",
-    title: "Export Your Notes and Upload Them",
-    emoji: "📤",
-    body: "When you're done counting, export your note as a file. In Apple Notes or Google Keep, look for a share or export option and choose PDF or text. In Notion, export as Markdown or PDF. Go back to your AI project, open a new conversation, and upload that file. Just drag it in or tap the paperclip icon. Type something like \"Here is my weekly inventory count\" and hit send. The AI will read through it, clean up any transcription issues, and ask you about anything it's not sure about.",
-    tip: "If you can't figure out how to export, you can also just copy and paste the text directly from your notes app into the chat. It works the same way.",
+    title: "Walk the Audit Sheet",
+    emoji: "06",
+    body: "The customer prints the sheet or opens it on a phone and walks the bar again. They confirm placements, fill blank spaces, correct bottle names, and mark anything that belongs in a different section.",
+    tip: "This is the major check-and-balance step: the software learns the bar, but the human verifies the room.",
   },
   {
     number: "07",
-    title: "Photograph and Upload Your Invoices",
-    emoji: "🧾",
-    body: "Take photos of every delivery invoice from the past week with your phone camera. Don't stress about perfect lighting — just make sure the text is readable. Upload each photo directly into the AI conversation. The AI will read every line item, pull out the product names and quantities, and match them to your inventory. If it can't read something clearly, it will tell you exactly what it missed and ask you to confirm rather than guessing.",
-    tip: "You can upload multiple invoice photos at once. If you have PDF invoices from your distributor email, those work even better — just download them and attach them.",
+    title: "Approve Corrections",
+    emoji: "07",
+    body: "Corrections are entered back into the setup flow. The system rebuilds the workbook, confirms bottle sizes and categories, and asks for approval before allowing the customer into the first real inventory count.",
+    tip: "Approval is the gate between setup and operation.",
   },
   {
     number: "08",
-    title: "Upload Your POS Sales Report",
-    emoji: "📊",
-    body: "Log into your point-of-sale system — Toast, Square, Aloha, Lightspeed, whatever you use. Pull the weekly sales report for the same period as your inventory count. Export it as a PDF or spreadsheet and upload it to the AI conversation. The AI will use your sales numbers to calculate what you should have used versus what actually disappeared. This is how it finds the gaps.",
-    tip: "Not sure how to pull a sales report from your POS? Most systems have it under Reports → Sales Summary → by date range. If you're stuck, ask your POS support team to show you once.",
+    title: "Run the First Live Inventory",
+    emoji: "08",
+    body: "Now the customer performs the first actual inventory count. This time they count quantities and bottle levels against the approved map, then upload invoices and a POS sales report for the same cycle.",
+    tip: "The map gives the count structure. The weekly count gives the numbers.",
   },
   {
     number: "09",
-    title: "Answer the AI's Questions",
-    emoji: "💬",
-    body: "Before it calculates anything, the AI will pause and ask you a few things. It might ask about bottle sizes it wasn't sure about. It might ask if you had any comps, staff drinks, spillage, or free rounds this week — those get subtracted from the math before anything gets flagged. It might flag a brand name it wasn't sure it read correctly. Answer each question. This is the step that makes the report accurate. The more honest you are here, the cleaner your numbers will be.",
-    tip: "Be honest about comps and staff drinks. The system isn't here to get anyone in trouble — it's here to give you accurate numbers. Unexplained variance that's actually just Tuesday's staff shift drink shouldn't show up as a red flag.",
+    title: "Open the Admin Home Base",
+    emoji: "09",
+    body: "After setup and first reconciliation, the dashboard becomes the butterfly. The customer lands on a home base showing last inventory, cycle status, sales movement, variance movement, and links into spreadsheets, reports, and in-house inventory.",
+    tip: "The home base should feel like hospitality: calm, clear, and useful the moment the manager opens it.",
   },
   {
     number: "10",
-    title: "Get Your Weekly Report",
-    emoji: "📋",
-    body: "Once you've confirmed everything, the AI produces your full weekly beverage inventory report. You'll see every product with its opening count, what was delivered, what's left, and what was actually used. It compares that to your sales and flags anything that doesn't add up — by severity, with a recommended action for each one. High-severity flags mean something significant is off. Low-severity means minor discrepancies worth keeping an eye on. The whole report is clean, readable, and ready to hand to your owner or manager.",
-    tip: "Copy the report and save it somewhere — a Google Doc, an email to yourself, a folder on your phone. You'll want to reference last week's closing numbers as next week's opening numbers.",
+    title: "Repeat the Cycle",
+    emoji: "10",
+    body: "Every cycle updates the same home base: inventory position, spending, usage, variance, sales trends, and betterments from cycle to cycle. The customer can also drill into liquor, beer, wine, mixers, and later dry goods.",
+    tip: "The long-term value is not one report. It is the manager seeing whether the bar is getting cleaner or messier each cycle.",
   },
 ];
 
 const whatYouNeed = [
-  { item: "Claude, ChatGPT, or Grok — free or paid", detail: "Free accounts work. If your free account doesn't have Projects, you can paste the prompt at the start of any conversation and it still works." },
-  { item: "A smartphone with a notes app", detail: "Apple Notes, Google Keep, Notion — anything with voice-to-text built in." },
-  { item: "Your weekly delivery invoices", detail: "Paper photos or PDF emails from your distributor both work." },
-  { item: "A weekly sales report from your POS", detail: "Toast, Square, Aloha, Lightspeed — any export format is fine." },
-  { item: "30–60 minutes for your first setup", detail: "One time only. After that, weekly count takes 10–20 minutes." },
+  { item: "Google Chrome", detail: "The customer program lives in Chrome, similar in spirit to the existing OVLP POP pattern." },
+  { item: "One setup download", detail: "The site provides one installer or package that opens the guided setup experience." },
+  { item: "An AI provider and API key", detail: "The setup needs a chosen provider before it can interpret notes, invoices, and reports." },
+  { item: "A smartphone with voice notes", detail: "Apple Notes, Google Keep, Notion, or any voice-to-text note system can capture the bar walk." },
+  { item: "Invoices and POS reports", detail: "These are not stage-one setup materials, but they become part of the first live inventory cycle." },
+  { item: "Time for the first audit pass", detail: "The first setup should expect a careful walk, workbook review, corrections, and final approval." },
 ];
 
 export default function TheProcess() {
@@ -125,36 +188,115 @@ export default function TheProcess() {
           </div>
 
           <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl leading-tight mb-8">
-            <span className="copper-text">Your AI subscription</span>
+            <span className="copper-text">The Chrome control panel</span>
             <br />
-            <span className="text-cream">is now your inventory software.</span>
+            <span className="text-cream">becomes the inventory system.</span>
           </h1>
 
           <p className="text-text-muted text-xl leading-relaxed max-w-2xl mx-auto mb-6">
-            Open Source Barware gives you a single prompt file that turns Claude, ChatGPT, or Grok
-            into a full bar inventory system. You walk your bar by voice. Upload your invoices.
-            The AI does all the math and hands you a clean report.
+            Open Source Barware starts as one Chrome-side setup program. The
+            customer opens it, connects their chosen AI provider, walks the bar
+            by voice, audits the first workbook, then graduates into a permanent
+            admin home base.
           </p>
 
-          <p className="text-text-muted text-lg leading-relaxed max-w-2xl mx-auto mb-12">
-            No app to download. No software to buy. No subscription. No data sent to us.
-            Just your AI doing the work — with instructions we wrote for it.
+          <p className="text-text-muted text-lg leading-relaxed max-w-2xl mx-auto">
+            This page is the report version of that build: product shape,
+            setup stages, dashboard modules, checks, and open decisions.
           </p>
+        </div>
+      </section>
 
-          <div className="flex flex-wrap gap-4 justify-center">
-            <a
-              href="/downloads/master-prompt.md"
-              download="open-source-barware-inventory-prompt.md"
-              className="bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-base tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.35)]"
-            >
-              Download the Prompt — Free
-            </a>
-            <a
-              href="#how-it-works"
-              className="border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-10 py-4 text-base tracking-wide transition-all"
-            >
-              See How It Works ↓
-            </a>
+      {/* ── SYSTEM BUILD REPORT ── */}
+      <section id="system-report" className="border-b border-gear-border bg-bg-warm">
+        <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+          <div className="max-w-3xl mb-12">
+            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">
+              Build Report
+            </p>
+            <h2 className="font-serif text-4xl md:text-5xl text-cream mb-5">
+              Overall product view
+            </h2>
+            <p className="text-text-muted leading-relaxed text-lg">
+              The product is not four separate downloads. It is one customer
+              program that starts in setup mode and matures into an operating
+              dashboard after the customer approves the first inventory map.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            {reportBlocks.map((block) => (
+              <article key={block.label} className="panel p-6 md:p-7">
+                <p className="text-[10px] tracking-[0.25em] uppercase text-copper mb-5">
+                  {block.label}
+                </p>
+                <h3 className="font-serif text-2xl text-cream mb-4">
+                  {block.title}
+                </h3>
+                <p className="text-text-muted text-sm leading-relaxed">
+                  {block.body}
+                </p>
+              </article>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="panel p-6 md:p-8 lg:col-span-7">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="glow-dot" />
+                <p className="text-[11px] tracking-[0.3em] uppercase text-patina-light">
+                  Admin Home Base
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-px border border-copper/20 bg-copper/20">
+                {adminModules.map((module) => (
+                  <div key={module.title} className="bg-bg-panel/95 p-5">
+                    <h4 className="font-serif text-xl text-cream mb-2">
+                      {module.title}
+                    </h4>
+                    <p className="text-text-muted text-sm leading-relaxed">
+                      {module.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <aside className="panel p-6 md:p-8 lg:col-span-5">
+              <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-5">
+                Checks and Gates
+              </p>
+              <ul className="space-y-4">
+                {setupChecks.map((check, i) => (
+                  <li key={check} className="flex gap-4 text-sm text-text-muted leading-relaxed">
+                    <span className="font-mono text-copper text-xs mt-0.5">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span>{check}</span>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          </div>
+
+          <div className="panel p-6 md:p-8 mt-6">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+              <div className="max-w-sm">
+                <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">
+                  Open Decisions
+                </p>
+                <h3 className="font-serif text-3xl text-cream">
+                  Items to audit before build
+                </h3>
+              </div>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                {auditQuestions.map((question) => (
+                  <li key={question} className="border border-gear-border bg-bg/50 p-4 text-sm text-text-muted leading-relaxed">
+                    {question}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -163,9 +305,9 @@ export default function TheProcess() {
       <section className="border-b border-gear-border bg-bg-panel">
         <div className="max-w-4xl mx-auto px-6 py-16 md:py-20">
           <div className="text-center mb-12">
-            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">Before You Start</p>
-            <h2 className="font-serif text-4xl text-cream mb-4">What you need</h2>
-            <p className="text-text-muted">No special hardware. No IT person. Just these five things.</p>
+            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">Before Setup</p>
+            <h2 className="font-serif text-4xl text-cream mb-4">What the customer needs</h2>
+            <p className="text-text-muted">The first setup is guided, but it still needs these inputs.</p>
           </div>
           <ul className="flex flex-col gap-5">
             {whatYouNeed.map((item, i) => (
@@ -187,11 +329,12 @@ export default function TheProcess() {
       <section id="how-it-works" className="border-b border-gear-border bg-bg-warm">
         <div className="max-w-4xl mx-auto px-6 py-16 md:py-24">
           <div className="text-center mb-16">
-            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">Step by Step</p>
-            <h2 className="font-serif text-4xl md:text-5xl text-cream mb-4">How it works</h2>
+            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">Setup Flow</p>
+            <h2 className="font-serif text-4xl md:text-5xl text-cream mb-4">From setup guide to admin panel</h2>
             <p className="text-text-muted max-w-xl mx-auto">
-              Follow these steps in order. Each one is explained so you can't get lost.
-              If you've never used AI before, that's fine — this is written for you.
+              The product should walk the customer through each stage, confirm
+              each checkpoint, and only unlock the full dashboard once the
+              inventory map is approved.
             </p>
           </div>
 
@@ -246,13 +389,12 @@ export default function TheProcess() {
 
           <div className="mt-14 text-center">
             <a
-              href="/downloads/master-prompt.md"
-              download="open-source-barware-inventory-prompt.md"
+              href="#system-report"
               className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-12 py-4 text-base tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
             >
-              Download the Free Prompt — Start Today
+              Return to the Build Report
             </a>
-            <p className="text-text-light text-sm mt-4">Free forever. No account required to download.</p>
+            <p className="text-text-light text-sm mt-4">Use this structure to audit the system before we build the Chrome program.</p>
           </div>
         </div>
       </section>
@@ -261,10 +403,11 @@ export default function TheProcess() {
       <section className="border-b border-gear-border">
         <div className="max-w-4xl mx-auto px-6 py-16 md:py-24">
           <div className="text-center mb-12">
-            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">Real Example</p>
-            <h2 className="font-serif text-4xl md:text-5xl text-cream mb-4">What messy sounds like. What clean looks like.</h2>
+            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">Setup Intake Example</p>
+            <h2 className="font-serif text-4xl md:text-5xl text-cream mb-4">What the first bar walk sounds like</h2>
             <p className="text-text-muted max-w-xl mx-auto">
-              This is what actually happens when you speak into your phone and upload it. The AI handles the mess so you don't have to.
+              The first spoken pass creates the map of what products live where.
+              Quantity counts happen later, after this layout has been audited.
             </p>
           </div>
 
@@ -275,20 +418,20 @@ export default function TheProcess() {
                 <span className="text-[11px] tracking-[0.3em] uppercase text-patina-light">What You Say Into Your Phone</span>
               </div>
               <div className="font-mono text-sm text-text-muted leading-loose bg-bg/60 p-4 rounded border border-gear-border">
-                <p className="text-text-light mb-1">Well one —</p>
-                <p>Patron silver half bottle</p>
-                <p>Casa Migos blanco point four</p>
-                <p>Espolon half</p>
-                <p>Don Ho full bottle</p>
-                <p>Cointreau half bottle</p>
+                <p className="text-text-light mb-1">Main well, row one —</p>
+                <p>Bottle one left to right: Titos 750</p>
+                <p>Ketel One liter</p>
+                <p>Captain Morgan 750</p>
+                <p>Casamigos Blanco 750</p>
+                <p>Cointreau 750</p>
+                <p className="text-text-light mt-3 mb-1">Back bar, top shelf —</p>
+                <p>Left to right: Don Julio Blanco, Espolon, Herradura</p>
                 <p className="text-text-light mt-3 mb-1">Liquor room —</p>
-                <p>Patron silver two cases three bottles</p>
-                <p>Titos one case</p>
-                <p>Jack Daniels six bottles</p>
-                <p>Heradura reposado one case two bottles</p>
+                <p>Tequila shelf: Patron Silver, Casamigos, Don Julio</p>
+                <p>Vodka shelf: Titos, Ketel One, Grey Goose</p>
               </div>
               <p className="text-xs text-text-light mt-4 italic">
-                "Don Ho" is what voice-to-text heard. That's fine. The AI knows.
+                The first pass records placement, not quantities.
               </p>
             </div>
 
@@ -298,27 +441,26 @@ export default function TheProcess() {
                 <span className="text-[11px] tracking-[0.3em] uppercase text-brass-light">What the AI Gives You Back</span>
               </div>
               <div className="text-sm text-text-muted leading-relaxed bg-bg/60 p-4 rounded border border-gear-border">
-                <p className="text-text-light text-xs uppercase tracking-wider mb-3">Well 1 — Confirmed ✓</p>
+                <p className="text-text-light text-xs uppercase tracking-wider mb-3">Main Well — Draft Map</p>
                 <div className="space-y-1 mb-4">
-                  <p>Patrón Silver — <span className="text-copper font-mono">0.5</span></p>
-                  <p>Casamigos Blanco — <span className="text-copper font-mono">0.4</span></p>
-                  <p>Espolòn Blanco — <span className="text-copper font-mono">0.5</span></p>
-                  <p>Don Julio Blanco — <span className="text-copper font-mono">1.0</span> <span className="text-text-light text-xs">(matched "Don Ho")</span></p>
-                  <p>Cointreau — <span className="text-copper font-mono">0.5</span></p>
+                  <p>Row 1, Slot 1 — <span className="text-copper font-mono">Tito&apos;s 750ml</span></p>
+                  <p>Row 1, Slot 2 — <span className="text-copper font-mono">Ketel One 1L</span></p>
+                  <p>Row 1, Slot 3 — <span className="text-copper font-mono">Captain Morgan 750ml</span></p>
+                  <p>Row 1, Slot 4 — <span className="text-copper font-mono">Casamigos Blanco 750ml</span></p>
+                  <p>Row 1, Slot 5 — <span className="text-copper font-mono">Cointreau 750ml</span></p>
                 </div>
-                <p className="text-text-light text-xs uppercase tracking-wider mb-3 border-t border-gear-border pt-3">Liquor Room — Confirmed ✓</p>
+                <p className="text-text-light text-xs uppercase tracking-wider mb-3 border-t border-gear-border pt-3">Liquor Room — Draft Map</p>
                 <div className="space-y-1 mb-4">
-                  <p>Patrón Silver — <span className="text-copper font-mono">27 btl</span> <span className="text-text-light text-xs">(2 cases + 3)</span></p>
-                  <p>Tito's — <span className="text-copper font-mono">12 btl</span></p>
-                  <p>Jack Daniel's — <span className="text-copper font-mono">6 btl</span></p>
-                  <p>Herradura Reposado — <span className="text-copper font-mono">14 btl</span> <span className="text-text-light text-xs">(1 case + 2)</span></p>
+                  <p>Tequila Shelf — <span className="text-copper font-mono">Patron, Casamigos, Don Julio</span></p>
+                  <p>Vodka Shelf — <span className="text-copper font-mono">Tito&apos;s, Ketel One, Grey Goose</span></p>
+                  <p>Reserved Blank — <span className="text-copper font-mono">Add missing shelf item</span></p>
                 </div>
                 <div className="border-t border-gear-border pt-3 bg-rust/10 -mx-4 px-4 py-3 rounded-b text-xs text-rust">
-                  ⚑ One question before I calculate: Cointreau — do you carry 750ml or 1 liter?
+                  Flag: confirm whether Cointreau belongs in the well or back bar.
                 </div>
               </div>
               <p className="text-xs text-text-light mt-4 italic">
-                One question, then it runs the full report. That's it.
+                The output becomes an audit sheet before the first live count.
               </p>
             </div>
           </div>
@@ -332,24 +474,29 @@ export default function TheProcess() {
         <div className="max-w-4xl mx-auto px-6 py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
             <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">Your Data</p>
-            <h2 className="font-serif text-3xl text-cream mb-5">We see nothing.</h2>
+            <h2 className="font-serif text-3xl text-cream mb-5">Provider-connected, customer-owned.</h2>
             <p className="text-text-muted leading-relaxed mb-4">
-              Everything you upload — invoices, POS reports, inventory counts — goes directly into your own AI account. We built the instructions. We don't have a server. We can't see your data. It never touches us.
+              The intended program connects the customer&apos;s Chrome-side
+              control panel to their chosen AI provider. Inventory notes,
+              invoices, POS reports, and workbook outputs belong to the
+              customer&apos;s operating environment.
             </p>
             <p className="text-text-muted leading-relaxed">
-              Your privacy depends on the AI provider you use. Read their privacy policy if your business has strict data rules.
+              API keys and provider credentials must be treated as sensitive
+              setup data. Secret values should not appear in exports, support
+              notes, handoffs, or reports.
             </p>
           </div>
           <div>
-            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">Be Aware</p>
-            <h2 className="font-serif text-3xl text-cream mb-5">Good to know.</h2>
+            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">Build Constraints</p>
+            <h2 className="font-serif text-3xl text-cream mb-5">Keep these in scope.</h2>
             <ul className="flex flex-col gap-4">
               {[
-                "AI can struggle to read handwritten or crumpled invoices — photograph them flat in good light",
-                "Voice transcription sometimes mishears brand names — the AI flags these and asks before calculating",
-                "Your first setup takes 30–60 minutes — budget time for it",
-                "Always save a local copy of your inventory map — AI projects can occasionally reset",
-                "This report is for operations only — it's not a legal or tax document",
+                "The setup flow must not skip provider selection and API connection",
+                "The first walk maps placement before it counts quantities",
+                "Every unclear brand, bottle size, and location needs a correction queue",
+                "The first workbook needs an approval gate before live inventory starts",
+                "The admin panel must leave room for mixers and future dry goods",
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-text-muted">
                   <span className="text-copper flex-shrink-0 mt-0.5">—</span>
@@ -369,20 +516,21 @@ export default function TheProcess() {
         <div className="relative max-w-4xl mx-auto px-6 py-20 md:py-28 text-center">
           <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-6">Ready when you are</p>
           <h2 className="font-serif text-4xl md:text-5xl text-cream mb-6 max-w-2xl mx-auto">
-            Download the prompt.<br />
-            <span className="copper-text">Your AI does the rest.</span>
+            Audit the blueprint.<br />
+            <span className="copper-text">Then build the Chrome program.</span>
           </h2>
           <p className="text-text-muted max-w-md mx-auto mb-10 text-lg">
-            One file. Paste it once. Walk your bar every week. Get a report that tells you exactly what's happening to your inventory.
+            This report turns the raw product direction into a buildable shape:
+            setup wizard, AI provider connection, inventory map, admin home
+            base, and cycle reporting.
           </p>
           <a
-            href="/downloads/master-prompt.md"
-            download="open-source-barware-inventory-prompt.md"
+            href="#system-report"
             className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-14 py-5 text-base tracking-wide transition-all hover:shadow-[0_0_40px_rgba(205,127,50,0.3)]"
           >
-            Get the Free Inventory System
+            Back to Build Report
           </a>
-          <p className="text-text-light text-sm mt-5">Free forever · Works with Claude, ChatGPT, and Grok — free or paid · No account needed to download</p>
+          <p className="text-text-light text-sm mt-5">Audit first. Build second. Keep the customer setup guided the whole way.</p>
         </div>
       </section>
 

@@ -1,76 +1,23 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import {
+  generateId,
+  getBar,
+  saveBar,
+  saveCount,
+  type Bottle,
+  type CountEntry,
+  type InventoryCount,
+} from '@/lib/inventory-store';
 
-// ── Types ──
-interface Bottle {
-  id: string;
-  name: string;
-  category: string;
-  currentLevel: number;
-  parLevel: number;
-  size: string;
-  costPerBottle: number;
-}
-
-interface Station {
-  id: string;
-  name: string;
-  type: 'well' | 'back-bar' | 'service' | 'storage' | 'beer' | 'wine';
-  bottles: Bottle[];
-}
-
-interface Bar {
-  id: string;
-  name: string;
-  stations: Station[];
-  lastCountDate: string | null;
-}
-
-interface CountEntry {
-  bottleId: string;
-  bottleName: string;
-  stationId: string;
-  previousLevel: number;
-  countedLevel: number;
-}
-
-interface InventoryCount {
-  id: string;
-  date: string;
-  entries: CountEntry[];
-}
-
-// ── LocalStorage helpers ──
-const STORAGE_PREFIX = 'osb_';
-
-function getBar(): Bar | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}bar`);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-}
-
-function saveBar(bar: Bar): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(`${STORAGE_PREFIX}bar`, JSON.stringify(bar));
-}
-
-function saveCount(count: InventoryCount): void {
-  if (typeof window === 'undefined') return;
-  const counts = getCounts();
-  counts.unshift(count);
-  localStorage.setItem(`${STORAGE_PREFIX}counts`, JSON.stringify(counts));
-}
-
-function getCounts(): InventoryCount[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}counts`);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+function useHydrated() {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
 }
 
 // ── Voice/text parser ──
@@ -228,8 +175,8 @@ const QUICK_LEVELS = [
 
 // ── Main Count Page ──
 export default function CountPage() {
-  const [bar, setBar] = useState<Bar | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const hydrated = useHydrated();
+  const [barOverride, setBarOverride] = useState<ReturnType<typeof getBar>>(null);
   const [mode, setMode] = useState<'voice' | 'manual'>('voice');
   const [voiceText, setVoiceText] = useState('');
   const [parsedItems, setParsedItems] = useState<ParsedItem[]>([]);
@@ -242,26 +189,12 @@ export default function CountPage() {
   // Completion state
   const [saved, setSaved] = useState(false);
   const [summary, setSummary] = useState<{ counted: number; belowPar: number; needReorder: number } | null>(null);
+  const bar = barOverride ?? (hydrated ? getBar() : null);
 
-  useEffect(() => {
-    setMounted(true);
-    const loaded = getBar();
-    setBar(loaded);
-    if (loaded) {
-      // Initialize manual levels from current levels
-      const levels: Record<string, number> = {};
-      for (const station of loaded.stations) {
-        for (const bottle of station.bottles) {
-          levels[bottle.id] = bottle.currentLevel;
-        }
-      }
-      setManualLevels(levels);
-    }
-  }, []);
-
-  const allBottles = bar
-    ? bar.stations.flatMap((s) => s.bottles.map((b) => ({ bottle: b, stationId: s.id })))
-    : [];
+  const allBottles = useMemo(
+    () => (bar ? bar.stations.flatMap((s) => s.bottles.map((b) => ({ bottle: b, stationId: s.id }))) : []),
+    [bar]
+  );
 
   const handleProcessNotes = useCallback(() => {
     if (!voiceText.trim() || !bar) return;
@@ -301,7 +234,7 @@ export default function CountPage() {
 
     const now = new Date();
     const count: InventoryCount = {
-      id: `count-${Date.now()}`,
+      id: generateId('count'),
       date: now.toISOString(),
       entries,
     };
@@ -317,7 +250,7 @@ export default function CountPage() {
       }),
     }));
     saveBar(updatedBar);
-    setBar(updatedBar);
+    setBarOverride(updatedBar);
 
     const belowPar = entries.filter((e) => {
       const b = allBottles.find((ab) => ab.bottle.id === e.bottleId);
@@ -329,7 +262,7 @@ export default function CountPage() {
     setSaved(true);
   }, [bar, mode, showParsed, parsedItems, allBottles, manualLevels]);
 
-  if (!mounted) {
+  if (!hydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-text-muted animate-pulse">Loading...</div>
