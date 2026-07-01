@@ -1,7 +1,7 @@
 # Open Source Barware — Handoff
 
 *Last updated: 2026-07-01 | agent: CODEX | project ID: `open-source-barware`*
-*Status: active / local trial workflow foundation verified*
+*Status: active / local trial workflow foundation and customer process page verified*
 
 ## Purpose
 
@@ -37,10 +37,14 @@ an admin home base.
   `lib/inventory-store.ts`. The store normalizes older localStorage shapes,
   setup saves the nested station/bottle map used by the dashboard, dashboard no
   longer seeds fake demo data, and counts save through the same store.
-- `/the-process` now reads as a System Build Report for the next product shape:
-  one Chrome-side setup download, guided provider/API setup, first bar-map
-  reconciliation, admin home base, inventory category areas, checks/gates, and
-  open audit decisions. The hero no longer includes same-page jump CTA buttons.
+- `/the-process` is now customer-forward "kitchen table" copy for the Chrome-side
+  program: one Chrome-side program, caterpillar-to-butterfly setup, voice notes,
+  spreadsheet view, AI home base, checks/gates, weekly inputs, and simple
+  cycle reporting. It no longer presents open internal build decisions.
+- `/about` now frames the origin story around monthly inventory dread for the
+  person responsible for a bar, and uses a compact commemorative credit panel
+  instead of large photo/profile cards. Hirado Junior is listed with nickname
+  "Nito."
 - Home hero CTAs now read, left to right: "Learn This System" (`/the-process`),
   "Read Our Story" (`/about`), and "Download Free Tools" (`/downloads`). The
   two orange CTAs share one sizing/style class.
@@ -113,6 +117,19 @@ Confirm scripts in `package.json` before relying on these commands.
   and inventory admin pages; fresh reload of `/inventory/dashboard` had no new
   browser console errors/warnings after deterministic gear SVG fix and
   `data-scroll-behavior="smooth"` marker.
+- 2026-07-01 CODEX: Rewrote `/the-process` as customer-facing kitchen table
+  explanation; `npm run lint`, `npm run build`, and `git diff --check` passed.
+  Browser checks for `/the-process` confirmed required customer-language present,
+  old Build Report/Open Decisions labels absent, no desktop/mobile horizontal
+  overflow, no mobile text overflow, and no fresh console warnings/errors after
+  disabling final CTA prefetch.
+- 2026-07-01 CODEX: Updated `/about` from screenshot feedback; `npm run lint`,
+  `npm run build`, and `git diff --check` passed. Browser checks confirmed the
+  new monthly-inventory-dread copy, compact no-photo credit panel, Hirado Junior
+  "Nito" naming, removal of old PHOTO/Nitto/behind-the-bar copy, no desktop or
+  mobile horizontal overflow, no mobile text overflow, and no fresh console
+  warnings/errors. The about-page story image is marked `loading="eager"` after
+  a dev-server LCP warning.
 
 ## Known issues
 
@@ -123,16 +140,14 @@ Confirm scripts in `package.json` before relying on these commands.
   app behavior is local browser storage plus AI handoff packet staging.
 - Invoice/POS file staging stores metadata and notes locally; it does not yet
   persist file bytes or parse files without an AI/provider handoff.
-- Repository currently has pre-existing uncommitted changes in `AGENTS.md` and
-  `public/downloads/master-prompt.md`; inspect `git status` before editing.
 - The global welcome toast can appear over the inventory setup flow on a fresh
   browser profile; consider suppressing it for `/inventory/*`.
 
 ## Open work
 
-1. Audit the `/the-process` System Build Report and confirm product decisions:
-   Chrome extension vs local Chrome app/shortcut, provider list, API key storage,
-   workbook generation path, POS export scope, and backup/restore path.
+1. Continue implementation from the customer-forward process page into the
+   actual Chrome-side setup/home base: provider list, API key storage, workbook
+   generation path, POS export scope, and backup/restore path.
 2. Deploy the current local build to production after review so the public site
    matches the Chrome-program/product direction now in the repo.
 3. Add provider/API connection and file parsing behind `/inventory/settings` and

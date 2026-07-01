@@ -6,7 +6,7 @@ import { Gear, GearDivider } from "@/components/SteampunkElements";
 export const metadata: Metadata = {
   title: "About — Open Source Barware",
   description:
-    "The people behind Open Source Barware. Built by Richard Jamison and Bill at Agave & Rye, downtown Cleveland.",
+    "The story behind Open Source Barware, built from real monthly inventory pressure inside a working restaurant.",
 };
 
 export default function AboutPage() {
@@ -27,10 +27,10 @@ export default function AboutPage() {
           </div>
           <h1 className="font-serif max-w-3xl">
             <span className="block text-4xl md:text-5xl lg:text-6xl copper-text leading-tight mb-3">
-              Two industry friends,
+              A real bar problem,
             </span>
             <span className="block text-2xl md:text-3xl lg:text-4xl text-cream leading-snug mb-3">
-              just tired of watching the struggle.
+              built with the people living it.
             </span>
             <span className="block text-xl md:text-2xl text-patina-light font-serif italic leading-snug">
               Now it&rsquo;s free to the world.
@@ -57,6 +57,7 @@ export default function AboutPage() {
                   src="/images/copper-glass.png"
                   alt="Copper bar tools and glassware on a slate surface"
                   fill
+                  loading="eager"
                   className="object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-bg/60 via-transparent to-bg/20" />
@@ -66,23 +67,23 @@ export default function AboutPage() {
           <div className="md:col-span-7 md:col-start-6">
             <div className="space-y-5 text-text-muted leading-relaxed text-lg">
               <p>
-                If you&rsquo;ve worked behind a bar, you know. The shift ends,
-                the guests leave, and instead of going home you&rsquo;re on your
-                knees behind the well, holding a bottle of Tito&rsquo;s up to
-                the light trying to decide if that&rsquo;s three-tenths or
-                four.
+                If you&rsquo;ve been in charge of a bar, you know the last
+                day of the month does not just show up. It looms. Either you
+                push inventory to the last possible minute and drag yourself
+                in early for a couple-hour count, no matter what day of the
+                week it lands on, or the system is so oversized and half-broken
+                that a simple count turns into a two-day project before anyone
+                trusts the numbers.
               </p>
               <p>
-                You scribble numbers on a count sheet. You walk to the back
-                office and type them into a spreadsheet that hasn&rsquo;t been
-                updated since someone else was bar manager. You try to match it
-                all against the POS report. The numbers never line up.
-              </p>
-              <p>
-                Over the years, companies saw the pain and monetized it.
-                Inventory guns for $3,000. Monthly software at $200 a location.
-                Consultants who charge by the hour to do what you already know
-                how to do &mdash; just with a shinier clipboard.
+                Worse, sometimes the person asking for perfect numbers has
+                never had to walk the room themselves. They want every answer,
+                but there is no workable process underneath the demand, so the
+                count never really gets done right. Open Source Barware is
+                meant to cure those ills: make setup clear, make the count
+                repeatable, connect invoices and POS to the same window, and
+                give the team a home base that turns inventory from dread into
+                a rhythm.
               </p>
             </div>
 
@@ -104,87 +105,68 @@ export default function AboutPage() {
           <Gear size={160} className="gear-spin-slow opacity-15" />
         </div>
 
-        <div className="relative z-10 max-w-6xl mx-auto px-6 py-12 md:py-16">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="glow-dot" />
-            <span className="text-[10px] tracking-[0.3em] uppercase text-patina-light">
-              The Crew
-            </span>
-          </div>
-          <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-16">
-            <span className="copper-text">Who&rsquo;s behind the bar.</span>
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Richard */}
-            <div className="panel card-lift rounded-sm overflow-hidden">
-              <div className="img-placeholder aspect-[16/10] bg-gradient-to-br from-bg-card to-bg-warm">
-                <span className="text-xs tracking-widest text-text-light/30">
-                  PHOTO
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-10 md:py-12">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-8">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="glow-dot" />
+                <span className="text-[10px] tracking-[0.3em] uppercase text-patina-light">
+                  A Small Credit
                 </span>
               </div>
-              <div className="p-8">
-                <h3 className="font-serif text-2xl copper-text mb-1">
+              <h2 className="font-serif text-3xl md:text-4xl leading-tight">
+                <span className="copper-text">Built with the room.</span>
+              </h2>
+            </div>
+            <p className="text-text-muted leading-relaxed max-w-xl">
+              A quiet thank-you to the people who put real counts, real
+              pressure, and real restaurant feedback into the system.
+            </p>
+          </div>
+
+          <div className="panel rounded-sm p-6 md:p-7">
+            <div className="grid grid-cols-1 md:grid-cols-3 md:divide-x divide-y md:divide-y-0 divide-gear-border/80">
+              <article className="py-5 first:pt-0 md:py-0 md:pr-7">
+                <h3 className="font-serif text-2xl copper-text mb-2">
                   Richard Jamison
                 </h3>
-                <p className="text-[11px] tracking-[0.2em] uppercase text-patina-light mb-5">
+                <p className="text-[10px] tracking-[0.2em] uppercase text-patina-light mb-4">
                   Creator &amp; Developer
                 </p>
                 <p className="text-text-muted leading-relaxed">
-                  Bar industry veteran turned entrepreneur and developer.
-                  Richard has done more inventory counts than he cares to
-                  admit &mdash; which is exactly why he built the machinery to
-                  make it painless. He brings the bartender&rsquo;s eye and the
-                  engineer&rsquo;s precision.
+                  Bar industry veteran turned entrepreneur and developer. He
+                  brings the bartender&rsquo;s eye and the engineer&rsquo;s
+                  precision to making inventory less painful.
                 </p>
-              </div>
-            </div>
+              </article>
 
-            {/* Bill */}
-            <div className="panel card-lift rounded-sm overflow-hidden">
-              <div className="img-placeholder aspect-[16/10] bg-gradient-to-br from-bg-card to-bg-warm">
-                <span className="text-xs tracking-widest text-text-light/30">
-                  PHOTO
-                </span>
-              </div>
-              <div className="p-8">
-                <h3 className="font-serif text-2xl copper-text mb-1">
+              <article className="py-5 md:py-0 md:px-7">
+                <h3 className="font-serif text-2xl copper-text mb-2">
                   Bill McLaughlin
                 </h3>
-                <p className="text-[11px] tracking-[0.2em] uppercase text-patina-light mb-5">
-                  General Manager, Agave &amp; Rye &mdash; Cleveland
+                <p className="text-[10px] tracking-[0.2em] uppercase text-patina-light mb-4">
+                  General Manager, Agave &amp; Rye - Cleveland
                 </p>
                 <p className="text-text-muted leading-relaxed">
-                  Bill didn&rsquo;t just wish us luck. He opened his
-                  restaurant, gave us his bar, his team, and three weeks of
-                  real inventory sessions. That kind of partnership is the
-                  difference between tools that demo well and tools that
-                  actually work.
+                  Bill opened his restaurant, his bar, his team, and three
+                  weeks of real inventory sessions. That is how the tools got
+                  tested against the real room.
                 </p>
-              </div>
-            </div>
+              </article>
 
-            {/* Nitto */}
-            <div className="panel card-lift rounded-sm overflow-hidden">
-              <div className="img-placeholder aspect-[16/10] bg-gradient-to-br from-bg-card to-bg-warm">
-                <span className="text-xs tracking-widest text-text-light/30">
-                  PHOTO
-                </span>
-              </div>
-              <div className="p-8">
-                <h3 className="font-serif text-2xl copper-text mb-1">
-                  Nitto
+              <article className="py-5 last:pb-0 md:py-0 md:pl-7">
+                <h3 className="font-serif text-2xl copper-text mb-2">
+                  Hirado Junior <span className="text-cream">&ldquo;Nito&rdquo;</span>
                 </h3>
-                <p className="text-[11px] tracking-[0.2em] uppercase text-patina-light mb-5">
-                  Bartender &amp; Bar Manager, Agave &amp; Rye &mdash; Cleveland
+                <p className="text-[10px] tracking-[0.2em] uppercase text-patina-light mb-4">
+                  Bartender &amp; Bar Manager, Agave &amp; Rye - Cleveland
                 </p>
                 <p className="text-text-muted leading-relaxed">
-                  The blind mouse. Nitto is doing the first live test run
-                  completely solo &mdash; no hand-holding from Bill or Richard.
-                  If these tools work for him, they work for everyone. That&rsquo;s
-                  how you really kick the tires.
+                  Everybody calls him Nito. He is doing the first live test run
+                  solo, with no hand-holding; if it works for him in the room,
+                  it is ready to earn its keep.
                 </p>
-              </div>
+              </article>
             </div>
           </div>
         </div>
