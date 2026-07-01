@@ -6,7 +6,7 @@ import { Gear, GearDivider } from "@/components/SteampunkElements";
 export const metadata: Metadata = {
   title: "Free Bartender Resources & Community — Open Source Barware",
   description:
-    "Free bartender resources, bartender community links, free cocktail recipes, and bar industry tools. Organizations, education, mental health support, and open source tools for bar professionals.",
+    "Free bartender resources, bartender community links, free cocktail recipes, and the open source bar inventory program built for bar professionals.",
 };
 
 export default function ResourcesPage() {
@@ -35,7 +35,7 @@ export default function ResourcesPage() {
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-xl mb-6">
             <span className="copper-text">People first.</span>
             <br />
-            Tools second.
+            Program second.
           </h1>
           <p className="text-text-muted text-lg max-w-lg leading-relaxed">
             The organizations, educators, and support networks that make this
@@ -184,27 +184,28 @@ export default function ResourcesPage() {
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-copper/40" />
             <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
-              Open Source &amp; Free Tools
+              Open Source &amp; Free Program
             </span>
             <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-copper/40" />
           </div>
           <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-6">
-            <span className="copper-text">Free tools.</span>
+            <span className="copper-text">One free program.</span>
             <br />
             Built by bartenders.
           </h2>
           <p className="text-text-muted text-lg mb-4 max-w-md mx-auto">
             Inventory sheets, variance calculators, bottle counters &mdash; all
-            free, no signup required. Built and tested at Agave &amp; Rye.
+            inside one free program, no signup required. Built and tested at
+            Agave &amp; Rye.
           </p>
           <p className="text-text-muted text-sm mb-10 max-w-md mx-auto">
-            Know a free tool bartenders should have? Let us know.
+            Know a feature bartenders should have? Let us know.
           </p>
           <Link
             href="/downloads"
             className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
           >
-            Browse Free Downloads
+            Download the Program
           </Link>
         </div>
       </section>

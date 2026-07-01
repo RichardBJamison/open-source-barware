@@ -550,7 +550,7 @@ export default function TheProcess() {
               prefetch={false}
               className="inline-block border border-copper/40 text-copper hover:bg-copper/10 font-semibold px-10 py-4 text-base tracking-wide transition-all"
             >
-              See the Free Tools
+              Download the Program
             </Link>
           </div>
           <p className="text-text-light text-sm mt-5">

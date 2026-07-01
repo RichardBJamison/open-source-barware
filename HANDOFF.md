@@ -23,9 +23,9 @@ an admin home base.
 - Next.js App Router, TypeScript, Tailwind.
 - Existing pages include home, the-process, downloads, about, resources, and
   inventory screens.
-- `/downloads` is now a toolkit guide instead of a direct-download grid. The
-  six cards say "Learn More" and jump to explainer sections for how each tool
-  fits inside the Chrome-side program.
+- `/downloads` is now a program guide instead of a direct-download grid. The
+  cards say "Learn More" and jump to explainer sections for how each feature
+  fits inside the one Chrome-side program.
 - `/inventory/inputs` now exists as the admin-panel Weekly Inputs page with
   local draft fields for period dates, count notes, invoice file staging, POS
   file staging, notes, and a copyable AI reconciliation packet. The inventory
@@ -46,11 +46,10 @@ an admin home base.
   instead of large photo/profile cards. Hirado Junior is listed with nickname
   "Nito."
 - Home hero CTAs now read, left to right: "Learn This System" (`/the-process`),
-  "Read Our Story" (`/about`), and "Download Free Tools" (`/downloads`). The
+  "Read Our Story" (`/about`), and "Download the Program" (`/downloads`). The
   two orange CTAs share one sizing/style class.
-- Home Workshop section now uses one large `/downloads` CTA panel with four
-  separated internal tool tags, instead of four separate links that all point to
-  the same page.
+- Public CTA language now frames Open Source Barware as one free program/app
+  rather than multiple downloads, toolkits, or apps.
 - The latest Three-Way run on 2026-06-14 completed Codex and Grok responses;
   Claude/Reeve timed out.
 - The working `.meta` status is `partial`.
@@ -132,6 +131,14 @@ Confirm scripts in `package.json` before relying on these commands.
   a dev-server LCP warning.
 - 2026-07-01 CODEX: Fixed `/about` field-tested copy spacing so "Agave & Rye in"
   does not render as "Ryein" and changed the final CTA to "Download the Program."
+- 2026-07-01 CODEX: Updated public CTA/navigation language from "Free Downloads"
+  and "Download Free Tools" to one-program language: "Free Program" and
+  "Download the Program." Field-tested copy now refers to the program rather
+  than "every tool."
+- 2026-07-01 CODEX: Broadened one-program language across public pages,
+  metadata, header/footer, legacy download buttons, and the program guide.
+  "Mobile Count App" is now "Mobile Count View." `npm run lint`,
+  `npm run build`, and `git diff --check` passed.
 
 ## Known issues
 

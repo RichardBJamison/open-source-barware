@@ -84,7 +84,7 @@ export default function Home() {
             </h1>
 
             <p className="text-text-muted text-lg md:text-xl leading-relaxed max-w-md mb-12">
-              We have now created the tools we wished existed. They are
+              We have now created the program we wished existed. It is
               free for you &mdash; use your AI. No subscriptions. No vendor
               lock-in. Just count your bottles and go home.
             </p>
@@ -106,7 +106,7 @@ export default function Home() {
                 href="/downloads"
                 className={primaryCtaClass}
               >
-                <span className="relative z-10">Download Free Tools</span>
+                <span className="relative z-10">Download the Program</span>
               </Link>
             </div>
           </div>
@@ -120,7 +120,7 @@ export default function Home() {
       <section className="border-y border-gear-border bg-bg-panel">
         <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
           <StatBlock number="$0" label="Cost, forever" />
-          <StatBlock number="6" label="Free tools" />
+          <StatBlock number="1" label="Free program" />
           <StatBlock number="3" label="Weeks of field testing" />
           <StatBlock number="100%" label="Open source" />
         </div>
@@ -157,7 +157,7 @@ export default function Home() {
                 charge by the bottle.
               </p>
               <p className="text-cream font-medium text-xl">
-                AI changed everything. Now we can build these tools for free.
+                AI changed everything. Now we can build this program for free.
                 So we did.
               </p>
             </div>
@@ -167,7 +167,7 @@ export default function Home() {
 
       <GearDivider />
 
-      {/* ── WHAT WE BUILT ── tool cards with steampunk panels */}
+      {/* ── WHAT WE BUILT ── program card with steampunk panels */}
       <section className="max-w-6xl mx-auto px-6 py-12 md:py-16">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-8 h-[1px] bg-copper/40" />
@@ -180,8 +180,8 @@ export default function Home() {
           craft.
         </h2>
         <p className="text-text-muted mb-12 max-w-lg">
-          We provide a simple system. Here you will find the free tools
-          and markdown for that system.
+          We provide one simple system. Here you will find the free program
+          and the markdown that explains how it works.
         </p>
 
         {/* Workshop photo */}
@@ -200,7 +200,7 @@ export default function Home() {
 
         <Link
           href="/downloads"
-          aria-label="Download the complete Open Source Barware toolkit"
+          aria-label="Download the complete Open Source Barware program"
           className="group block panel card-lift rounded-sm p-6 md:p-8 relative rivets focus:outline-none focus-visible:ring-2 focus-visible:ring-copper/70"
         >
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between mb-8">
@@ -209,16 +209,16 @@ export default function Home() {
                 01-04
               </span>
               <h3 className="font-serif text-2xl md:text-3xl text-cream mt-5 mb-3 group-hover:text-copper transition-colors">
-                One free toolkit, four instruments inside.
+                One free program, the full workflow inside.
               </h3>
               <p className="text-text-muted leading-relaxed max-w-2xl">
-                All four pieces below are bundled together as one free download
-                for the full inventory workflow.
+                The pieces below live inside one free program for the full
+                inventory workflow.
               </p>
             </div>
             <div className="flex items-center gap-4 text-copper">
               <span className="text-sm font-semibold tracking-wide text-copper">
-                Download Free Tools
+                Download the Program
               </span>
               <div className="opacity-70 group-hover:opacity-100 transition-opacity">
                 <BottleIcon />
@@ -264,7 +264,7 @@ export default function Home() {
         <div className="relative z-10 max-w-3xl mx-auto px-6 py-16 flex items-center gap-6">
           <div className="h-12 w-[2px] bg-copper/40 shrink-0" />
           <p className="text-text-muted leading-relaxed">
-            Field-tested at <span className="text-cream font-medium">Agave &amp; Rye</span> in
+            The program was field-tested at <span className="text-cream font-medium">Agave &amp; Rye</span> in
             downtown Cleveland. Real bottles. Real counts. Real pressure.
           </p>
         </div>
@@ -273,7 +273,7 @@ export default function Home() {
       {/* ── PULL QUOTE ── */}
       <section className="max-w-3xl mx-auto px-6 py-12 md:py-16">
         <blockquote className="pull-quote">
-          &ldquo;If you&rsquo;re going to build inventory tools, you better do
+          &ldquo;If you&rsquo;re going to build an inventory program, you better do
           it standing behind a bar at 2am with a clipboard. Otherwise
           you&rsquo;re just guessing.&rdquo;
         </blockquote>
@@ -300,18 +300,18 @@ export default function Home() {
             <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-copper/40" />
           </div>
           <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-6">
-            <span className="copper-text">Grab the tools.</span> Start tonight.
+            <span className="copper-text">Open the program.</span> Start tonight.
           </h2>
           <p className="text-text-muted text-lg mb-10 max-w-md mx-auto">
-            No signup. No email capture. No sales pitch. Click download and get
-            to work.
+            No signup. No email capture. No sales pitch. Download the program
+            and get to work.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               href="/downloads"
               className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
             >
-              Download Free Tools
+              Download the Program
             </Link>
             <Link
               href="/downloads"

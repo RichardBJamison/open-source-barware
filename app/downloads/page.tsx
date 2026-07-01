@@ -4,9 +4,9 @@ import type { Metadata } from "next";
 import { Gear, GearDivider, BottleIcon } from "@/components/SteampunkElements";
 
 export const metadata: Metadata = {
-  title: "Toolkit Guide — Open Source Barware",
+  title: "Program Guide — Open Source Barware",
   description:
-    "Learn how each Open Source Barware inventory tool fits inside the Chrome-side bar inventory program.",
+    "Learn how each Open Source Barware inventory feature fits inside the Chrome-side bar inventory program.",
 };
 
 const toolGuides = [
@@ -112,8 +112,8 @@ const toolGuides = [
   },
   {
     number: "06",
-    title: "Mobile Count App",
-    format: "Web App",
+    title: "Mobile Count View",
+    format: "Mobile",
     id: "mobile-count-app",
     description:
       "The phone-friendly counting surface for walking the bar without carrying a laptop.",
@@ -158,7 +158,7 @@ export default function DownloadsPage() {
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-[1px] bg-copper/40" />
             <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
-              Toolkit Guide
+              Program Guide
             </span>
           </div>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-xl mb-6">
@@ -361,7 +361,7 @@ export default function DownloadsPage() {
               status="planned"
               items={[
                 "AI bottle level reader",
-                "Mobile progressive web app",
+      "Mobile counting view",
                 "POS data import tools",
                 "Multi-location support",
               ]}

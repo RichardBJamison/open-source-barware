@@ -26,7 +26,7 @@ export default function DownloadButton({ tool }: { tool: ToolPreview }) {
         onClick={() => setOpen(true)}
         className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.2)]"
       >
-        Download Free
+        Download the Program
       </button>
       {open && (
         <DownloadPreviewModal

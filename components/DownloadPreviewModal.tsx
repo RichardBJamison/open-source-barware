@@ -296,7 +296,7 @@ export default function DownloadPreviewModal({
               <div>
                 <div className="text-[10px] font-semibold text-[#e8c050] tracking-[0.15em] uppercase mb-1">Live Testing at Agave &amp; Rye</div>
                 <p className="text-xs text-text-muted leading-relaxed">
-                  These tools are being tested in a real bar right now. You&rsquo;re getting an early build.
+                  This program is being tested in a real bar right now. You&rsquo;re getting an early build.
                   It works — we&rsquo;re just still counting bottles to prove it. Feedback welcome.
                 </p>
               </div>
@@ -327,7 +327,7 @@ export default function DownloadPreviewModal({
               onClick={onConfirm}
               className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3.5 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
             >
-              Download Free — {tool.format}
+              Download the Program
             </button>
             <p className="text-[10px] text-text-light text-center tracking-wide">
               No signup. No email. Free forever. &mdash; opensourcebarware.com

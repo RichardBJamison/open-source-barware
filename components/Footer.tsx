@@ -28,8 +28,8 @@ export default function Footer() {
             </div>
             <p className="text-sm text-text-muted leading-relaxed max-w-sm">
               Crafted by bartenders. Tested at Agave &amp; Rye, downtown
-              Cleveland. Given to the trade, no strings attached. Because good
-              tools shouldn&rsquo;t cost you a shift&rsquo;s worth of tips.
+              Cleveland. Given to the trade, no strings attached. Because a good
+              program shouldn&rsquo;t cost you a shift&rsquo;s worth of tips.
             </p>
           </div>
 
@@ -43,7 +43,7 @@ export default function Footer() {
               <Link href="/the-process" className="text-sm text-text-muted hover:text-copper transition-colors">The Process</Link>
               <Link href="/about" className="text-sm text-text-muted hover:text-copper transition-colors">About</Link>
               <Link href="/resources" className="text-sm text-text-muted hover:text-copper transition-colors">Resources</Link>
-              <Link href="/downloads" className="text-sm text-text-muted hover:text-copper transition-colors">Downloads</Link>
+              <Link href="/downloads" className="text-sm text-text-muted hover:text-copper transition-colors">Program</Link>
               <Link href="/inventory" className="text-sm text-text-muted hover:text-copper transition-colors">App</Link>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function Footer() {
           <div className="w-1.5 h-1.5 rounded-full bg-copper/30" />
           <p className="text-xs text-text-light">
             &copy; {new Date().getFullYear()} Open Source Barware &mdash; All
-            tools are free and open source
+            the program is free and open source
           </p>
           <div className="w-1.5 h-1.5 rounded-full bg-copper/30" />
         </div>

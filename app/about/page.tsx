@@ -90,9 +90,9 @@ export default function AboutPage() {
             <div className="mt-10 panel rounded-sm p-8">
               <p className="font-serif text-xl text-cream leading-relaxed">
                 Then AI showed up. And suddenly, building genuinely good
-                inventory tools costs{" "}
+                inventory program costs{" "}
                 <span className="copper-text font-bold">nothing</span>. So we
-                built them. And we&rsquo;re giving them away.
+                built it. And we&rsquo;re giving it away.
               </p>
             </div>
           </div>
@@ -149,7 +149,7 @@ export default function AboutPage() {
                 </p>
                 <p className="text-text-muted leading-relaxed">
                   Bill opened his restaurant, his bar, his team, and three
-                  weeks of real inventory sessions. That is how the tools got
+                  weeks of real inventory sessions. That is how the program got
                   tested against the real room.
                 </p>
               </article>
@@ -177,7 +177,7 @@ export default function AboutPage() {
         <div className="max-w-2xl mx-auto flex items-start gap-6">
           <div className="h-12 w-[2px] bg-copper/40 shrink-0 mt-1" />
           <p className="text-text-muted leading-relaxed">
-            Every tool was field-tested at <span className="text-cream font-medium">Agave &amp; Rye</span>{" "}in
+            The program was field-tested at <span className="text-cream font-medium">Agave &amp; Rye</span>{" "}in
             downtown Cleveland &mdash; three weeks of real counts, real data, and real
             feedback from bartenders who just want to go home on time. If you&rsquo;re
             ever in the neighborhood, go support them. Good people running a great spot.
@@ -191,7 +191,7 @@ export default function AboutPage() {
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-[1px] bg-copper/40" />
             <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
-              Beyond the Tools
+              Beyond the Program
             </span>
           </div>
           <h2 className="font-serif text-2xl md:text-3xl leading-tight mb-6">
@@ -206,7 +206,7 @@ export default function AboutPage() {
             </p>
             <p>
               The bar industry takes care of everyone else. We think it&rsquo;s time
-              someone built tools that take care of the bar industry.
+              someone built a program that takes care of the bar industry.
             </p>
           </div>
           <div className="mt-8">
@@ -241,7 +241,7 @@ export default function AboutPage() {
           <div className="space-y-5 text-text-muted text-lg leading-relaxed max-w-xl mx-auto">
             <p>
               Every bar &mdash; from the dive on the corner to the craft
-              cocktail lounge downtown &mdash; deserves proper inventory tools.
+              cocktail lounge downtown &mdash; deserves a proper inventory system.
               Not everyone can afford $200/month software. We don&rsquo;t think
               they should have to.
             </p>

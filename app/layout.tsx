@@ -21,9 +21,9 @@ const playfair = Playfair_Display({
 });
 
 const siteUrl = "https://opensourcebarware.com";
-const siteTitle = "Open Source Barware — Free Bar Inventory Tools";
+const siteTitle = "Open Source Barware — Free Bar Inventory Program";
 const siteDescription =
-  "The free bar inventory system built by bartenders, tested in a real restaurant. No subscriptions. No upsells. Just tools that work.";
+  "The free bar inventory program built by bartenders, tested in a real restaurant. No subscriptions. No upsells. Just a system that works.";
 
 export const metadata: Metadata = {
   title: siteTitle,
