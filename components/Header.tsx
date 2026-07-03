@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
+import SignMarqueeLights from "@/components/SignMarqueeLights";
 
 // Slightly oranger than the copper button (#cd7f32) — less blue channel, more vivid
 const LOGO_ORANGE = "#d4821a";
@@ -32,44 +34,50 @@ function MartiniGlass() {
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const isDojo = pathname?.startsWith("/inventory");
+
+  const logo = (
+    <div className="flex items-center gap-3.5 py-1.5 px-2">
+      <MartiniGlass />
+      <div className="flex flex-col gap-1">
+        {/* Wordmark */}
+        <div
+          className="flex items-center gap-1.5"
+          style={{
+            fontFamily: "var(--font-inter)",
+            fontWeight: 700,
+            fontSize: "1.15rem",
+            letterSpacing: "0.1em",
+            color: LOGO_ORANGE,
+          }}
+        >
+          <span>OPEN S</span>
+          <span style={{ fontSize: "0.9rem", opacity: 0.85, fontWeight: 400 }}>{"<>"}</span>
+          <span>BARWARE</span>
+        </div>
+        {/* Tagline — white, sized up 25% vs original small PNG text */}
+        <span
+          style={{
+            fontFamily: "var(--font-inter)",
+            fontSize: "0.7rem",
+            letterSpacing: "0.18em",
+            color: "#f5e6c8",
+            fontWeight: 400,
+            textTransform: "lowercase",
+          }}
+        >
+          free, open-source program for the trade
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <header className="bg-bg border-b border-gear-border">
       <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link href="/" className="group opacity-100 hover:opacity-90 transition-opacity">
-          <div className="flex items-center gap-3.5">
-            <MartiniGlass />
-            <div className="flex flex-col gap-1">
-              {/* Wordmark */}
-              <div
-                className="flex items-center gap-1.5"
-                style={{
-                  fontFamily: "var(--font-inter)",
-                  fontWeight: 700,
-                  fontSize: "1.15rem",
-                  letterSpacing: "0.1em",
-                  color: LOGO_ORANGE,
-                }}
-              >
-                <span>OPEN S</span>
-                <span style={{ fontSize: "0.9rem", opacity: 0.85, fontWeight: 400 }}>{"<>"}</span>
-                <span>BARWARE</span>
-              </div>
-              {/* Tagline — white, sized up 25% vs original small PNG text */}
-              <span
-                style={{
-                  fontFamily: "var(--font-inter)",
-                  fontSize: "0.7rem",
-                  letterSpacing: "0.18em",
-                  color: "#f5e6c8",
-                  fontWeight: 400,
-                  textTransform: "lowercase",
-                }}
-              >
-                free, open-source program for the trade
-              </span>
-            </div>
-          </div>
+          {isDojo ? <SignMarqueeLights>{logo}</SignMarqueeLights> : logo}
         </Link>
 
         {/* Desktop */}
@@ -78,7 +86,7 @@ export default function Header() {
           <Link href="/the-process" className="text-text-muted hover:text-copper transition-colors tracking-wide">The Process</Link>
           <Link href="/about" className="text-text-muted hover:text-copper transition-colors tracking-wide">About</Link>
           <Link href="/resources" className="text-text-muted hover:text-copper transition-colors tracking-wide">Resources</Link>
-          <Link href="/inventory" className="text-text-muted hover:text-copper transition-colors tracking-wide">App</Link>
+          <Link href="/inventory" className="text-text-muted hover:text-copper transition-colors tracking-wide">The Dojo</Link>
           <Link
             href="/downloads"
             className="relative bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 tracking-wide transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.3)]"
@@ -105,7 +113,7 @@ export default function Header() {
           <Link href="/the-process" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">The Process</Link>
           <Link href="/about" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">About</Link>
           <Link href="/resources" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">Resources</Link>
-          <Link href="/inventory" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">App</Link>
+          <Link href="/inventory" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">The Dojo</Link>
           <Link href="/downloads" onClick={() => setMenuOpen(false)} className="bg-copper text-bg font-semibold px-6 py-2.5 tracking-wide text-center">Free Program</Link>
         </div>
       )}

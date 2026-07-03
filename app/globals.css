@@ -177,6 +177,114 @@ body { background: var(--bg); color: var(--text); }
   background: linear-gradient(to right, var(--copper), var(--brass), var(--copper));
 }
 
+/* ── Sign marquee lights (header logo chase) ── */
+.sign-marquee-lights {
+  inset: -6px -10px;
+}
+
+.sign-marquee-bulb {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle at 35% 30%,
+    #fdf4e3 0%,
+    #e8c36a 38%,
+    #b98a5b 100%
+  );
+  opacity: 0.14;
+  animation: sign-marquee-chase ease-in-out infinite;
+  will-change: opacity, transform, box-shadow;
+}
+
+.sign-marquee-bulb-reverse {
+  animation-name: sign-marquee-chase-reverse;
+}
+
+@keyframes sign-marquee-chase {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: translate(-50%, -50%) scale(0.72);
+    box-shadow: 0 0 0 transparent;
+  }
+  5% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.95);
+    box-shadow:
+      0 0 4px rgba(232, 196, 150, 0.45),
+      0 0 10px rgba(185, 138, 91, 0.22);
+  }
+  9% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.12);
+    box-shadow:
+      0 0 6px rgba(253, 244, 227, 0.95),
+      0 0 14px rgba(232, 196, 150, 0.75),
+      0 0 24px rgba(168, 120, 79, 0.35);
+  }
+  16% {
+    opacity: 0.18;
+    transform: translate(-50%, -50%) scale(0.82);
+    box-shadow: 0 0 2px rgba(185, 138, 91, 0.15);
+  }
+}
+
+@keyframes sign-marquee-chase-reverse {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: translate(-50%, -50%) scale(0.68);
+    box-shadow: 0 0 0 transparent;
+  }
+  7% {
+    opacity: 0.48;
+    transform: translate(-50%, -50%) scale(0.9);
+    box-shadow:
+      0 0 3px rgba(232, 196, 150, 0.35),
+      0 0 8px rgba(185, 138, 91, 0.18);
+  }
+  12% {
+    opacity: 0.88;
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow:
+      0 0 5px rgba(253, 244, 227, 0.8),
+      0 0 12px rgba(232, 196, 150, 0.55),
+      0 0 20px rgba(168, 120, 79, 0.28);
+  }
+  20% {
+    opacity: 0.14;
+    transform: translate(-50%, -50%) scale(0.78);
+    box-shadow: 0 0 2px rgba(185, 138, 91, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sign-marquee-bulb {
+    animation: none;
+    opacity: 0.28;
+    box-shadow: 0 0 4px rgba(185, 138, 91, 0.25);
+  }
+}
+
+/* ── About page: canvas brighten pass over painted sign bulbs ── */
+.drink-sign-canvas-wrap {
+  position: absolute;
+  left: 51.46%;
+  top: 76.94%;
+  width: 36.82%;
+  height: 5.71%;
+  z-index: 4;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.drink-sign-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* ── Glow dot (active indicator) ── */
 .glow-dot {
   width: 8px;

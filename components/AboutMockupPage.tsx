@@ -1,16 +1,33 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
+import { startAboutSignLights } from "@/lib/about-sign-lights";
 
 const navHotspots = [
   { label: "Home", href: "/", className: "nav-home" },
   { label: "The Process", href: "/the-process", className: "nav-process" },
   { label: "About", href: "/about", className: "nav-about" },
   { label: "Resources", href: "/resources", className: "nav-resources" },
-  { label: "App", href: "/inventory", className: "nav-app" },
+  { label: "The Dojo", href: "/inventory", className: "nav-app" },
   { label: "Free Program", href: "/downloads", className: "nav-free" },
 ];
 
 export default function AboutMockupPage() {
+  const signWrapRef = useRef<HTMLDivElement>(null);
+  const signCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const wrap = signWrapRef.current;
+    const canvas = signCanvasRef.current;
+    if (!wrap || !canvas) return;
+
+    return startAboutSignLights(wrap, canvas);
+  }, []);
+
   return (
     <div className="osb-about-mockup">
       <style>{`
@@ -44,6 +61,8 @@ export default function AboutMockupPage() {
           width: 100%;
           height: auto;
           user-select: none;
+          position: relative;
+          z-index: 1;
         }
 
         .osb-hotspot {
@@ -110,6 +129,23 @@ export default function AboutMockupPage() {
           height: 9.4%;
         }
 
+        .drink-sign-canvas-wrap {
+          position: absolute;
+          left: 51.46%;
+          top: 76.94%;
+          width: 36.82%;
+          height: 5.71%;
+          z-index: 4;
+          pointer-events: none;
+          mix-blend-mode: screen;
+        }
+
+        .drink-sign-canvas {
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
+
         .osb-sr-copy {
           position: absolute;
           width: 1px;
@@ -159,6 +195,10 @@ export default function AboutMockupPage() {
             width={1024}
             height={1106}
           />
+
+          <div ref={signWrapRef} className="drink-sign-canvas-wrap" aria-hidden="true">
+            <canvas ref={signCanvasRef} className="drink-sign-canvas" />
+          </div>
 
           <a
             className="osb-hotspot support-button"
