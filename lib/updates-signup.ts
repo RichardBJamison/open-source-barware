@@ -6,6 +6,8 @@ export interface UpdatesSignupPayload {
   email: string;
   city: string;
   state: string;
+  programUpdates?: boolean;
+  hiddenBarTour?: boolean;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -114,6 +116,8 @@ export async function submitUpdatesSignup(
         city: payload.city.trim(),
         state: payload.state.trim().toUpperCase(),
         source: "program-setup",
+        programUpdates: payload.programUpdates ?? true,
+        hiddenBarTour: payload.hiddenBarTour ?? false,
       }),
     });
 

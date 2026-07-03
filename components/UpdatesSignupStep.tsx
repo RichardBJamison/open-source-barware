@@ -26,6 +26,7 @@ export default function UpdatesSignupStep({
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [optIn, setOptIn] = useState(true);
+  const [tourOptIn, setTourOptIn] = useState(false);
   const [status, setStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,14 +36,20 @@ export default function UpdatesSignupStep({
   };
 
   const join = async () => {
-    if (!optIn) {
+    if (!optIn && !tourOptIn) {
       skip();
       return;
     }
 
     setSubmitting(true);
     setStatus("");
-    const result = await submitUpdatesSignup({ email, city, state });
+    const result = await submitUpdatesSignup({
+      email,
+      city,
+      state,
+      programUpdates: optIn,
+      hiddenBarTour: tourOptIn,
+    });
     setSubmitting(false);
 
     if (!result.ok) {
@@ -154,6 +161,19 @@ export default function UpdatesSignupStep({
             <span className="text-sm text-text-muted leading-relaxed">
               Yes — email me only when Open Source Barware ships new additions.
               No marketing blasts while we build.
+            </span>
+          </label>
+
+          <label className="flex items-start gap-3 border border-gear-border bg-bg/40 px-4 py-3 rounded-sm cursor-pointer">
+            <input
+              type="checkbox"
+              checked={tourOptIn}
+              onChange={(e) => setTourOptIn(e.target.checked)}
+              className="mt-1"
+            />
+            <span className="text-sm text-text-muted leading-relaxed">
+              Email me when World Hidden Bar Tours go online. Invite me to the
+              discovery run of your city.
             </span>
           </label>
         </div>

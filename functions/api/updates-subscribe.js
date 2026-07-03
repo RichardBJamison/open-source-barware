@@ -1,6 +1,8 @@
 const DEFAULT_LOCATION_ID = "bNT4wp0nukIQdBJbQDaa";
 const GHL_BASE = "https://services.leadconnectorhq.com";
-const UPDATE_TAGS = ["osb-program-updates", "osb-setup-signup"];
+const SETUP_TAG = "osb-setup-signup";
+const PROGRAM_UPDATES_TAG = "osb-program-updates";
+const HIDDEN_BAR_TOUR_TAG = "osb-hidden-bar-tour";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -50,6 +52,8 @@ export async function onRequestPost(context) {
     .trim()
     .toUpperCase();
   const source = String(payload.source || "program-setup").trim();
+  const programUpdates = payload.programUpdates !== false;
+  const hiddenBarTour = Boolean(payload.hiddenBarTour);
 
   if (!isValidEmail(email)) {
     return jsonResponse({ error: "A valid email is required." }, 400);
@@ -60,13 +64,23 @@ export async function onRequestPost(context) {
   if (!state) {
     return jsonResponse({ error: "State is required." }, 400);
   }
+  if (!programUpdates && !hiddenBarTour) {
+    return jsonResponse(
+      { error: "Select at least one email preference." },
+      400
+    );
+  }
+
+  const tags = [SETUP_TAG];
+  if (programUpdates) tags.push(PROGRAM_UPDATES_TAG);
+  if (hiddenBarTour) tags.push(HIDDEN_BAR_TOUR_TAG);
 
   const body = {
     locationId,
     email,
     city,
     state,
-    tags: UPDATE_TAGS,
+    tags,
     source,
     country: "US",
   };
@@ -96,10 +110,21 @@ export async function onRequestPost(context) {
       return jsonResponse({ error: detail }, ghlResponse.status === 401 ? 503 : 502);
     }
 
+    let message = "You are on the list.";
+    if (programUpdates && hiddenBarTour) {
+      message =
+        "You are on the release list and the Hidden Bar Tour invite list for your city.";
+    } else if (hiddenBarTour) {
+      message =
+        "We will email you when World Hidden Bar Tours go online and invite you to your city's discovery run.";
+    } else {
+      message =
+        "You are on the release list. We only email when new additions ship.";
+    }
+
     return jsonResponse({
       ok: true,
-      message:
-        "You are on the release list. We only email when new additions ship.",
+      message,
       contactId: ghlData?.contact?.id || ghlData?.id || null,
     });
   } catch (error) {

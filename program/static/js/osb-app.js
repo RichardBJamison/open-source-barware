@@ -384,9 +384,12 @@ function validateUpdatesSignup({ email, city, state }) {
   return null;
 }
 
-async function submitUpdatesSignup({ email, city, state }) {
+async function submitUpdatesSignup({ email, city, state, programUpdates, hiddenBarTour }) {
   const error = validateUpdatesSignup({ email, city, state });
   if (error) return { ok: false, message: error };
+  if (!programUpdates && !hiddenBarTour) {
+    return { ok: false, message: "Select at least one email preference." };
+  }
 
   try {
     const response = await fetch(UPDATES_SUBSCRIBE_URL, {
@@ -397,6 +400,8 @@ async function submitUpdatesSignup({ email, city, state }) {
         city: city.trim(),
         state: state.trim().toUpperCase(),
         source: "chrome-program-setup",
+        programUpdates: programUpdates ?? true,
+        hiddenBarTour: Boolean(hiddenBarTour),
       }),
     });
     const data = await response.json().catch(() => ({}));
@@ -1388,7 +1393,8 @@ async function initSetup() {
 
   document.getElementById("btnUpdatesJoin")?.addEventListener("click", async () => {
     const optIn = document.getElementById("updatesOptIn")?.checked;
-    if (!optIn) {
+    const tourOptIn = document.getElementById("updatesTourOptIn")?.checked;
+    if (!optIn && !tourOptIn) {
       setUpdatesSignupStatus("skipped");
       await advanceFromUpdatesSignup();
       return;
@@ -1402,7 +1408,13 @@ async function initSetup() {
     if (joinBtn) joinBtn.disabled = true;
     if (statusEl) statusEl.textContent = "";
 
-    const result = await submitUpdatesSignup({ email, city, state });
+    const result = await submitUpdatesSignup({
+      email,
+      city,
+      state,
+      programUpdates: optIn,
+      hiddenBarTour: tourOptIn,
+    });
     if (joinBtn) joinBtn.disabled = false;
 
     if (!result.ok) {
