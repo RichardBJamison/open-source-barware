@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Gear,
-  GearDivider,
+
   BottleIcon,
 } from "@/components/SteampunkElements";
 import HeroVideo from "@/components/HeroVideo";
@@ -299,27 +299,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── PULL QUOTE ── */}
-      <section className="max-w-3xl mx-auto px-6 py-12 md:py-16">
-        <blockquote className="pull-quote">
-          &ldquo;If you help enough people get what they need, the universe will
-          provide what you need.&rdquo;
-        </blockquote>
-        <p className="text-sm text-text-light mt-4 pl-7">
-          &mdash; The philosophy behind Open Source Barware
-        </p>
-      </section>
-
-      <GearDivider />
-
-      {/* ── CTA ── */}
+      {/* ── PULL QUOTE + CTA ── */}
       <section className="relative overflow-hidden">
+        <div className="relative z-10 max-w-3xl mx-auto px-6 pt-10 pb-4 md:pt-12">
+          <blockquote className="pull-quote">
+            &ldquo;If you help enough people get what they need, the universe will
+            provide what you need.&rdquo;
+          </blockquote>
+          <p className="text-sm text-text-light mt-4 pl-7">
+            &mdash; The philosophy behind Open Source Barware
+          </p>
+        </div>
         <div className="absolute inset-0 bg-gradient-to-b from-bg via-bg-warm to-bg" />
         <div className="absolute right-[10%] bottom-[-20px] text-copper">
           <Gear size={100} className="gear-spin-slow opacity-15" />
         </div>
 
-        <div className="relative z-10 max-w-3xl mx-auto px-6 py-12 md:py-16 text-center">
+        <div className="relative z-10 max-w-3xl mx-auto px-6 pb-12 md:pb-16 pt-2 text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-copper/40" />
             <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
