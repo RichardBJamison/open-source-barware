@@ -1,7 +1,27 @@
 /* Open Source Barware — Chrome program client */
 
+const UPDATES_SIGNUP_STORAGE_KEY = "osb_updates_signup";
+const UPDATES_SUBSCRIBE_URL = "https://opensourcebarware.com/api/updates-subscribe";
+
+const US_STATES = [
+  ["AL", "Alabama"], ["AK", "Alaska"], ["AZ", "Arizona"], ["AR", "Arkansas"],
+  ["CA", "California"], ["CO", "Colorado"], ["CT", "Connecticut"], ["DE", "Delaware"],
+  ["DC", "District of Columbia"], ["FL", "Florida"], ["GA", "Georgia"], ["HI", "Hawaii"],
+  ["ID", "Idaho"], ["IL", "Illinois"], ["IN", "Indiana"], ["IA", "Iowa"],
+  ["KS", "Kansas"], ["KY", "Kentucky"], ["LA", "Louisiana"], ["ME", "Maine"],
+  ["MD", "Maryland"], ["MA", "Massachusetts"], ["MI", "Michigan"], ["MN", "Minnesota"],
+  ["MS", "Mississippi"], ["MO", "Missouri"], ["MT", "Montana"], ["NE", "Nebraska"],
+  ["NV", "Nevada"], ["NH", "New Hampshire"], ["NJ", "New Jersey"], ["NM", "New Mexico"],
+  ["NY", "New York"], ["NC", "North Carolina"], ["ND", "North Dakota"], ["OH", "Ohio"],
+  ["OK", "Oklahoma"], ["OR", "Oregon"], ["PA", "Pennsylvania"], ["RI", "Rhode Island"],
+  ["SC", "South Carolina"], ["SD", "South Dakota"], ["TN", "Tennessee"], ["TX", "Texas"],
+  ["UT", "Utah"], ["VT", "Vermont"], ["VA", "Virginia"], ["WA", "Washington"],
+  ["WV", "West Virginia"], ["WI", "Wisconsin"], ["WY", "Wyoming"],
+];
+
 const SETUP_FLOW = [
   "welcome",
+  "updates_signup",
   "name_bar",
   "build_bar",
   "voice_walk",
@@ -12,6 +32,7 @@ const SETUP_FLOW = [
 
 const STEP_LABELS = {
   welcome: "Start",
+  updates_signup: "Updates",
   name_bar: "Name",
   build_bar: "Build",
   voice_walk: "Walk",
@@ -271,7 +292,9 @@ const OSB = {
 function renderStepIndicator(phases, current) {
   const el = document.getElementById("stepIndicator");
   if (!el) return;
-  const setupPhases = phases.filter((p) => p.id !== "butterfly" && p.id !== "welcome");
+  const setupPhases = phases.filter(
+    (p) => p.id !== "butterfly" && p.id !== "welcome" && p.id !== "updates_signup"
+  );
   const idx = setupPhases.findIndex((p) => p.id === current);
   const curIdx = current === "welcome" ? -1 : idx;
 
@@ -339,6 +362,83 @@ function showOnly(id) {
   document.querySelectorAll("[data-step]").forEach((n) => {
     n.classList.toggle("hidden", n.dataset.step !== id);
   });
+}
+
+function getUpdatesSignupStatus() {
+  const value = localStorage.getItem(UPDATES_SIGNUP_STORAGE_KEY);
+  return value === "subscribed" || value === "skipped" ? value : "";
+}
+
+function setUpdatesSignupStatus(status) {
+  if (!status) localStorage.removeItem(UPDATES_SIGNUP_STORAGE_KEY);
+  else localStorage.setItem(UPDATES_SIGNUP_STORAGE_KEY, status);
+}
+
+function validateUpdatesSignup({ email, city, state }) {
+  const trimmedEmail = (email || "").trim();
+  const trimmedCity = (city || "").trim();
+  const trimmedState = (state || "").trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) return "Enter a valid email address.";
+  if (!trimmedCity || trimmedCity.length < 2) return "Enter your city.";
+  if (!trimmedState) return "Select your state.";
+  return null;
+}
+
+async function submitUpdatesSignup({ email, city, state }) {
+  const error = validateUpdatesSignup({ email, city, state });
+  if (error) return { ok: false, message: error };
+
+  try {
+    const response = await fetch(UPDATES_SUBSCRIBE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        city: city.trim(),
+        state: state.trim().toUpperCase(),
+        source: "chrome-program-setup",
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return {
+        ok: false,
+        message: data.error || data.message || "Could not save your signup. Try again in a moment.",
+      };
+    }
+    setUpdatesSignupStatus("subscribed");
+    return {
+      ok: true,
+      message: data.message || "You are on the list. We only email when new releases ship.",
+    };
+  } catch {
+    return { ok: false, message: "Network error — check your connection and try again." };
+  }
+}
+
+function populateUpdatesStateSelect() {
+  const select = document.getElementById("updatesState");
+  if (!select || select.options.length > 1) return;
+  US_STATES.forEach(([abbr, name]) => {
+    const opt = document.createElement("option");
+    opt.value = abbr;
+    opt.textContent = name;
+    select.appendChild(opt);
+  });
+}
+
+function renderUpdatesSignupStep() {
+  populateUpdatesStateSelect();
+  const subscribed = getUpdatesSignupStatus() === "subscribed";
+  const form = document.getElementById("updatesSignupForm");
+  const already = document.getElementById("updatesAlreadySubscribed");
+  if (form) form.classList.toggle("hidden", subscribed);
+  if (already) already.classList.toggle("hidden", !subscribed);
+}
+
+async function advanceFromUpdatesSignup() {
+  await OSB.advancePhase("name_bar");
+  await initSetup();
 }
 
 function setStatus(msg, id = "status") {
@@ -1238,6 +1338,9 @@ async function initSetup() {
   barState = normalizeBar(await OSB.getBar(seed));
   if (cfg.bar_name && !barState.name) barState.name = cfg.bar_name;
 
+  if (data.phase === "updates_signup") {
+    renderUpdatesSignupStep();
+  }
   if (data.phase === "build_bar") {
     allBars = data.bars || [];
     const buildNameEl = document.getElementById("buildBarName");
@@ -1270,8 +1373,45 @@ async function initSetup() {
   });
 
   document.getElementById("btnWelcomeNext")?.addEventListener("click", async () => {
-    await OSB.advancePhase("name_bar");
+    await OSB.advancePhase("updates_signup");
     await initSetup();
+  });
+
+  document.getElementById("btnUpdatesSkip")?.addEventListener("click", async () => {
+    setUpdatesSignupStatus("skipped");
+    await advanceFromUpdatesSignup();
+  });
+
+  document.getElementById("btnUpdatesContinue")?.addEventListener("click", async () => {
+    await advanceFromUpdatesSignup();
+  });
+
+  document.getElementById("btnUpdatesJoin")?.addEventListener("click", async () => {
+    const optIn = document.getElementById("updatesOptIn")?.checked;
+    if (!optIn) {
+      setUpdatesSignupStatus("skipped");
+      await advanceFromUpdatesSignup();
+      return;
+    }
+
+    const email = document.getElementById("updatesEmail")?.value || "";
+    const city = document.getElementById("updatesCity")?.value || "";
+    const state = document.getElementById("updatesState")?.value || "";
+    const statusEl = document.getElementById("updatesStatus");
+    const joinBtn = document.getElementById("btnUpdatesJoin");
+    if (joinBtn) joinBtn.disabled = true;
+    if (statusEl) statusEl.textContent = "";
+
+    const result = await submitUpdatesSignup({ email, city, state });
+    if (joinBtn) joinBtn.disabled = false;
+
+    if (!result.ok) {
+      if (statusEl) statusEl.textContent = result.message;
+      return;
+    }
+
+    if (statusEl) statusEl.textContent = result.message;
+    window.setTimeout(() => advanceFromUpdatesSignup(), 700);
   });
 
   document.getElementById("btnNameContinue")?.addEventListener("click", async () => {

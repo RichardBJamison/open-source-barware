@@ -59,6 +59,13 @@ an admin home base.
   `lib/inventory-store.ts` (dojo-prefixed on web). Setup remains at
   `/inventory/setup` for the caterpillar path; the Dojo nav skips straight to the
   finished admin shell.
+- **Release-list signup (optional, step 1 of setup):** collects email + city +
+  state at the start of caterpillar setup (Dojo wizard and Chrome program).
+  Submissions POST to `/api/updates-subscribe` (Cloudflare Pages Function) →
+  GHL contact upsert with tags `osb-program-updates` and `osb-setup-signup`.
+  Skip is remembered in localStorage; subscribers only get emailed on new
+  releases. Requires `GHL_API_TOKEN` (+ optional `GHL_LOCATION_ID`) in Cloudflare
+  Pages environment variables.
 - `/about` story section credits **Richard B. Jamison**, removes Hirado/Nito from
   "Who is behind it," and adds **What's next** (World Hidden Bar Tour, Miami
   September, wine inventory/forum/library roadmap).
@@ -106,7 +113,10 @@ an admin home base.
 - `lib/dojo-seed.ts` — Agave & Rye demo bar/counts/settings
 - `components/DojoWelcomeModal.tsx` — first-run Dojo welcome overlay
 - `components/SteampunkKarateGuy.tsx` — welcome illustration
-- `app/inventory/setup/page.tsx` — first-run bar map wizard
+- `app/inventory/setup/page.tsx` — first-run bar map wizard (5 steps; updates opt-in first)
+- `components/UpdatesSignupStep.tsx` — optional release-list form
+- `lib/updates-signup.ts` — validation + subscribe client (`osb_dojo_updates_signup`)
+- `functions/api/updates-subscribe.js` — GHL upsert endpoint (Pages Function)
 - `app/inventory/dashboard/page.tsx` — local admin inventory dashboard
 - `app/inventory/inputs/page.tsx` — local weekly intake packet staging
 - `app/inventory/settings/page.tsx` — provider/cycle/local backup controls
@@ -253,6 +263,10 @@ Confirm scripts in `package.json` before relying on these commands.
   mail status: Forward Email verifies for `opensourcebarware.com`; Thunderbird
   IMAP/SMTP migration still open. Manual `wrangler pages deploy` blocked without
   `CLOUDFLARE_API_TOKEN`; Cloudflare dashboard login required for UI retry.
+- 2026-07-03 GROK: Wired optional release-list signup at setup step 1 (Dojo +
+  Chrome program). `npm run lint` (0 errors) and `npm run build` passed.
+  Production subscribe API needs `GHL_API_TOKEN` in Cloudflare Pages env before
+  live signups succeed.
 
 ## Known issues
 
@@ -281,23 +295,26 @@ Confirm scripts in `package.json` before relying on these commands.
 
 ## Open work
 
-1. Deploy latest `main` (Dojo + About + GPL compliance) to Cloudflare Pages and
+1. Set Cloudflare Pages env `GHL_API_TOKEN` (location `bNT4wp0nokIQdBJbQDaa`
+   default in function) so `/api/updates-subscribe` accepts signups; then deploy
+   latest `main` and verify live `/inventory/setup` step 1 + API 200.
+2. Deploy latest `main` (Dojo + About + GPL compliance) to Cloudflare Pages and
    verify live `/inventory` welcome + demo dashboard.
-2. Continue implementation from the customer-forward process page into the
+3. Continue implementation from the customer-forward process page into the
    actual Chrome-side setup/home base: provider list, API key storage, workbook
    generation path, POS export scope, and backup/restore path.
-3. Add provider/API connection and file parsing behind `/inventory/settings` and
+4. Add provider/API connection and file parsing behind `/inventory/settings` and
    `/inventory/inputs`, preserving local-secret handling.
-4. Convert the approved report into implementation tickets for the Chrome-side
+5. Convert the approved report into implementation tickets for the Chrome-side
    setup program and admin home base.
-5. Review the existing Three-Way outputs and align/retire any prompt-only scope
+6. Review the existing Three-Way outputs and align/retire any prompt-only scope
    that conflicts with the Chrome program direction.
-6. Build backup restore/import, workbook export, and POS/invoice parser paths.
-7. Finish the mail migration: create the real alias/mailbox path for
+7. Build backup restore/import, workbook export, and POS/invoice parser paths.
+8. Finish the mail migration: create the real alias/mailbox path for
    `richard@opensourcebarware.com` in Forward Email, generate its password,
    and replace the Gmail identity stopgap in Thunderbird with direct
    IMAP/SMTP.
-8. Repeat the same hosted-mail setup for `resonantwebdesign.com`, then decide
+9. Repeat the same hosted-mail setup for `resonantwebdesign.com`, then decide
    whether `me@richardbjamison.com` should stay forwarding-only or be upgraded
    into a real Thunderbird mailbox on Forward Email.
 
@@ -308,5 +325,6 @@ cd "/Users/richardjamison/Documents/New project/open-source-barware"
 git pull origin main
 npm run dev
 # Dojo: http://localhost:3000/inventory
+# Setup signup step: http://localhost:3000/inventory/setup
 npm run lint && npm run build
 ```

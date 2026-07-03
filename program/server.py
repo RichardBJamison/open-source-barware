@@ -37,6 +37,7 @@ _BARS_FILE = os.path.join(_DATA, "bars.json")
 
 PHASES = (
     "welcome",
+    "updates_signup",
     "name_bar",
     "build_bar",
     "voice_walk",
@@ -48,6 +49,7 @@ PHASES = (
 
 PHASE_LABELS = {
     "welcome": "Welcome",
+    "updates_signup": "Updates",
     "name_bar": "Name",
     "build_bar": "Build bar",
     "voice_walk": "Walk",

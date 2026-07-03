@@ -59,6 +59,50 @@
       </div>
     </section>
 
+    <!-- updates_signup -->
+    <section class="panel wizard-panel hidden" data-step="updates_signup">
+      <p class="step-eyebrow">Optional</p>
+      <h2 class="wizard-title text-center">Stay on the release list</h2>
+      <p class="wizard-lead text-center">
+        We are still building this program. Join the update list and we will
+        <strong>only email you when new additions ship</strong> — scale import,
+        notifications, full liquor and wine inventory, Hidden Bar Tour news, and
+        everything else on the roadmap. No marketing blasts while we build.
+      </p>
+      <div id="updatesAlreadySubscribed" class="info-box hidden">
+        <p class="info-body">You are already on the list. We only email when new releases ship.</p>
+        <div class="setup-nav" style="margin-top:16px">
+          <span></span>
+          <button class="btn btn-primary" id="btnUpdatesContinue" type="button">Continue setup</button>
+        </div>
+      </div>
+      <div id="updatesSignupForm">
+        <label for="updatesEmail" class="inline-label">Email</label>
+        <input id="updatesEmail" type="email" placeholder="you@yourbar.com" autocomplete="email" />
+        <div class="updates-location-row">
+          <div>
+            <label for="updatesCity" class="inline-label">City</label>
+            <input id="updatesCity" type="text" placeholder="Cleveland" autocomplete="address-level2" />
+          </div>
+          <div>
+            <label for="updatesState" class="inline-label">State</label>
+            <select id="updatesState">
+              <option value="">Select state</option>
+            </select>
+          </div>
+        </div>
+        <label class="updates-optin">
+          <input id="updatesOptIn" type="checkbox" checked />
+          <span>Yes — email me only when Open Source Barware ships new additions.</span>
+        </label>
+        <p id="updatesStatus" class="field-hint text-center" role="status"></p>
+        <div class="setup-nav">
+          <button class="btn btn-secondary" id="btnUpdatesSkip" type="button">Skip for now</button>
+          <button class="btn btn-primary" id="btnUpdatesJoin" type="button">Join the release list</button>
+        </div>
+      </div>
+    </section>
+
     <!-- name_bar -->
     <section class="panel wizard-panel hidden" data-step="name_bar">
       <p class="step-eyebrow">Step 1 · Get started</p>
@@ -74,7 +118,7 @@
       <label for="cycleDays" class="inline-label">Inventory cycle (days) — shared across all bars</label>
       <input id="cycleDays" type="number" min="1" max="90" value="7" />
       <div class="setup-nav">
-        <button class="btn btn-secondary" type="button" data-go="welcome">← Back</button>
+        <button class="btn btn-secondary" type="button" data-go="updates_signup">← Back</button>
         <button class="btn btn-primary" id="btnNameContinue" type="button">Continue</button>
       </div>
     </section>

@@ -9,6 +9,7 @@ import {
   type Station as StoredStation,
 } from '@/lib/inventory-store';
 import { Gear, GearDivider } from '@/components/SteampunkElements';
+import UpdatesSignupStep from '@/components/UpdatesSignupStep';
 
 /* ─── Types ─── */
 type StationType = 'well' | 'backbar' | 'storage' | 'walk-in';
@@ -97,10 +98,11 @@ const DEFAULT_STATIONS: Omit<Station, 'id'>[] = [
 
 /* ─── Step indicator ─── */
 const STEPS = [
-  { num: 1, label: 'Name' },
-  { num: 2, label: 'Map' },
-  { num: 3, label: 'Walk' },
-  { num: 4, label: 'Review' },
+  { num: 1, label: 'Updates' },
+  { num: 2, label: 'Name' },
+  { num: 3, label: 'Map' },
+  { num: 4, label: 'Walk' },
+  { num: 5, label: 'Review' },
 ];
 
 function StepIndicator({ current }: { current: number }) {
@@ -1108,7 +1110,7 @@ export default function SetupWizard() {
   );
   const [bottles, setBottles] = useState<Bottle[]>([]);
 
-  const goNext = () => setStep((s) => Math.min(s + 1, 4));
+  const goNext = () => setStep((s) => Math.min(s + 1, 5));
   const goBack = () => setStep((s) => Math.max(s - 1, 1));
 
   const handleFinish = () => {
@@ -1175,14 +1177,15 @@ export default function SetupWizard() {
             animation: 'fadeSlideIn 0.4s ease-out',
           }}
         >
-          {step === 1 && (
+          {step === 1 && <UpdatesSignupStep onNext={goNext} />}
+          {step === 2 && (
             <Step1
               barName={barName}
               setBarName={setBarName}
               onNext={goNext}
             />
           )}
-          {step === 2 && (
+          {step === 3 && (
             <Step2
               stations={stations}
               setStations={setStations}
@@ -1190,7 +1193,7 @@ export default function SetupWizard() {
               onBack={goBack}
             />
           )}
-          {step === 3 && (
+          {step === 4 && (
             <Step3
               stations={stations}
               bottles={bottles}
@@ -1199,7 +1202,7 @@ export default function SetupWizard() {
               onBack={goBack}
             />
           )}
-          {step === 4 && (
+          {step === 5 && (
             <Step4
               barName={barName}
               stations={stations}
