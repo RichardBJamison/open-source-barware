@@ -357,37 +357,19 @@ export default function Home() {
 }
 
 function ProblemHourglass() {
-  const edgeFade =
-    "radial-gradient(ellipse at 50% 54%, black 0%, black 58%, rgba(0,0,0,0.88) 74%, transparent 100%)";
-
   return (
-    <div
-      aria-hidden="true"
-      className="relative overflow-hidden rounded-sm bg-[#100c08] p-3 shadow-[inset_0_0_42px_rgba(168,120,79,0.08),0_24px_70px_rgba(0,0,0,0.36)]"
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_68%,rgba(168,120,79,0.24),transparent_42%),radial-gradient(circle_at_48%_16%,rgba(215,193,145,0.12),transparent_34%),linear-gradient(135deg,rgba(45,102,94,0.12),transparent_46%)]" />
-      <div className="absolute -left-12 top-16 h-44 w-44 rounded-full bg-patina/10 blur-3xl" />
-      <div className="absolute bottom-8 left-1/2 h-28 w-44 -translate-x-1/2 rounded-full bg-copper/20 blur-2xl" />
+    <div aria-hidden="true" className="relative">
+      <div className="pointer-events-none absolute left-1/2 top-[58%] h-36 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-copper/15 blur-3xl" />
 
-      <div className="relative z-10 mx-auto max-w-[255px]">
-        <Image
-          src="/images/landing-hourglass.png"
-          alt=""
-          width={314}
-          height={466}
-          className="h-auto w-full opacity-95 drop-shadow-[0_18px_30px_rgba(0,0,0,0.45)] saturate-[0.9] sepia-[0.12] contrast-[1.08]"
-          style={{
-            WebkitMaskImage: edgeFade,
-            maskImage: edgeFade,
-          }}
-        />
-      </div>
+      <Image
+        src="/images/landing-hourglass.png"
+        alt=""
+        width={398}
+        height={386}
+        className="relative z-10 mx-auto h-auto w-full max-w-[280px] opacity-95 drop-shadow-[0_20px_36px_rgba(0,0,0,0.42)] saturate-[0.92] sepia-[0.1] contrast-[1.06]"
+      />
 
-      <div className="pointer-events-none absolute inset-0 z-20 bg-[radial-gradient(ellipse_at_center,transparent_44%,rgba(13,11,9,0.64)_100%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-20 bg-gradient-to-b from-bg-panel/80 via-bg-panel/30 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-gradient-to-t from-bg-panel via-bg-panel/55 to-transparent" />
-
-      <div className="relative z-30 -mt-2 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.28em] text-text-light">
+      <div className="relative z-10 mt-3 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.28em] text-text-light">
         <span className="h-px w-8 bg-copper/30" />
         <span>Get Your Time Back</span>
         <span className="h-px w-8 bg-copper/30" />
