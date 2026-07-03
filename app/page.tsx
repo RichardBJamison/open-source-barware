@@ -170,10 +170,8 @@ export default function Home() {
                 AI changed everything. Now we can build this program for free.
                 So we did.
               </p>
-              <p>
-                <Link href="/manifesto" className="text-copper hover:text-copper-bright transition-colors copper-underline">
-                  Read the full manifesto
-                </Link>
+              <p className="sr-only">
+                <Link href="/manifesto">Read the full manifesto</Link>
               </p>
             </div>
           </div>
