@@ -64,9 +64,11 @@ export default function AboutMockupPage() {
         .osb-hotspot {
           position: absolute;
           display: block;
+          z-index: 4;
           color: transparent;
           text-decoration: none;
           outline: none;
+          pointer-events: auto;
         }
 
         .osb-hotspot:focus-visible {
@@ -123,6 +125,15 @@ export default function AboutMockupPage() {
           top: 75.4%;
           width: 42.8%;
           height: 9.4%;
+        }
+
+        /* Legacy sign bulb overlay — keep the Ko-fi hotspot static. */
+        .drink-sign-canvas-wrap,
+        .drink-sign-canvas,
+        .about-sign-lights {
+          display: none !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
         }
 
         .osb-timeline-entry {
