@@ -1,5 +1,5 @@
-export const LAUNCH_MS = new Date("2026-07-04T00:00:00-04:00").getTime();
-export const LAUNCH_LABEL = "July 4";
+export const LAUNCH_MS = new Date("2026-07-04T12:00:00-04:00").getTime();
+export const LAUNCH_LABEL = "July 4 at noon";
 
 type LaunchOptions = {
   preview?: boolean;
@@ -21,7 +21,7 @@ export function isLaunched(now = Date.now(), opts: LaunchOptions = {}) {
   return now >= LAUNCH_MS;
 }
 
-/** Pre-launch welcome overlay — show before go-live, hide after July 4. */
+/** Pre-launch welcome overlay — show before go-live, hide after July 4 at noon. */
 export function shouldShowPreLaunchOverlay(
   now = Date.now(),
   opts: LaunchOptions = {},
@@ -38,4 +38,22 @@ export function shouldShowPreLaunchOverlay(
 
 export function areDownloadsUnlocked(now = Date.now(), opts: LaunchOptions = {}) {
   return isLaunched(now, opts);
+}
+
+export function getLaunchCountdown(now = Date.now()) {
+  const remaining = Math.max(LAUNCH_MS - now, 0);
+  const totalSeconds = Math.floor(remaining / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return {
+    remaining,
+    days,
+    hours,
+    minutes,
+    seconds,
+    finished: remaining === 0,
+  };
 }

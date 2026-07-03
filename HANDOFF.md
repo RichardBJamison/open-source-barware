@@ -35,6 +35,9 @@ an admin home base.
   `SOURCE-OFFER.md`, `open-source-barware-download-package.zip`, and
   `open-source-barware-source.zip`. Legacy direct raw-file Cloudflare redirects
   point spreadsheet/prompt URLs to the licensed package zip.
+- The July launch popup now counts down to **July 4 at noon** with a compact
+  timer inside the release overlay, and the launch gate uses the same noon
+  timestamp everywhere else.
 - Root `LICENSE`, `NOTICE.md`, `README.md`, and `package.json` declare
   GPL-3.0-or-later. `npm run package:compliance` regenerates the package and
   source zips from non-ignored working-tree files, and `npm run build` now
@@ -267,6 +270,11 @@ Confirm scripts in `package.json` before relying on these commands.
   Chrome program). `npm run lint` (0 errors) and `npm run build` passed.
   Production subscribe API needs `GHL_API_TOKEN` in Cloudflare Pages env before
   live signups succeed.
+- 2026-07-03 CODEX: Updated the July launch popup to count down to **July 4 at
+  noon**. Verification passed: `npm run build` (including `package:compliance`)
+  succeeded, the launch gate now uses `2026-07-04T12:00:00-04:00`, the popup
+  shows a compact live countdown, and the release overlay auto-dismisses after
+  the timer hits zero.
 
 ## Known issues
 
@@ -293,9 +301,10 @@ Confirm scripts in `package.json` before relying on these commands.
   app behavior is local browser storage plus AI handoff packet staging.
 - Invoice/POS file staging stores metadata and notes locally; it does not yet
   persist file bytes or parse files without an AI/provider handoff.
-- The global July 4 launch overlay can still appear over `/inventory/*` on fresh
-  profiles when `NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY=true` or pre-launch date logic
-  fires; consider suppressing site-wide overlays inside The Dojo.
+- The global July 4-at-noon launch overlay can still appear over `/inventory/*`
+  on fresh profiles when `NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY=true` or
+  pre-launch date logic fires; consider suppressing site-wide overlays inside
+  The Dojo.
 
 ## Open work
 

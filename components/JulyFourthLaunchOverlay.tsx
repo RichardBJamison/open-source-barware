@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import FireworksCanvas from "@/components/FireworksCanvas";
 import {
   LAUNCH_LABEL,
+  getLaunchCountdown,
   shouldShowPreLaunchOverlay,
 } from "@/lib/launch-gate";
 
@@ -23,6 +24,7 @@ export default function JulyFourthLaunchOverlay() {
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [, setClockTick] = useState(0);
 
   const forceOverlay =
     process.env.NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY === "true";
@@ -37,6 +39,19 @@ export default function JulyFourthLaunchOverlay() {
       localStorage.setItem(STORAGE_KEY, "1");
     }
   }, [previewParam, forceOverlay]);
+
+  useEffect(() => {
+    if (!visible || dismissed) return;
+    const timer = window.setInterval(() => setClockTick((tick) => tick + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [visible, dismissed]);
+
+  const countdown = getLaunchCountdown(Date.now());
+
+  useEffect(() => {
+    if (!visible || dismissed || !countdown.finished) return;
+    dismiss();
+  }, [visible, dismissed, countdown.finished, dismiss]);
 
   useEffect(() => {
     if (pathname?.startsWith("/inventory")) return;
@@ -160,8 +175,23 @@ export default function JulyFourthLaunchOverlay() {
             workshop, read the process, and try the inventory sandbox.
           </p>
 
+          <div className="mt-6 rounded-sm border border-white/10 bg-black/25 px-4 py-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-copper-bright">
+              Launch timer
+            </p>
+            <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+              <TimeBlock value={countdown.days} label="Days" />
+              <TimeBlock value={countdown.hours} label="Hours" />
+              <TimeBlock value={countdown.minutes} label="Mins" />
+              <TimeBlock value={countdown.seconds} label="Secs" />
+            </div>
+            <p className="mt-3 text-xs uppercase tracking-[0.2em] text-text-light">
+              Noon tomorrow. Then the doors open.
+            </p>
+          </div>
+
           <p className="mt-6 font-serif text-xl italic text-copper-bright">
-            Come back on the Fourth to grab the program. ✨
+            Come back tomorrow at noon to grab the program. ✨
           </p>
 
           <button
@@ -199,6 +229,19 @@ export default function JulyFourthLaunchOverlay() {
         <p className="mt-6 text-[11px] tracking-[0.25em] text-white/40 uppercase">
           opensourcebarware.com
         </p>
+      </div>
+    </div>
+  );
+}
+
+function TimeBlock({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="rounded-sm border border-white/8 bg-white/5 px-2 py-3">
+      <div className="font-serif text-2xl leading-none text-cream">
+        {value.toString().padStart(2, "0")}
+      </div>
+      <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-text-light">
+        {label}
       </div>
     </div>
   );
