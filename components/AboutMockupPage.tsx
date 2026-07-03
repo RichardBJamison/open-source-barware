@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { startAboutSignLights } from "@/lib/about-sign-lights";
 
 const navHotspots = [
   { label: "Home", href: "/", className: "nav-home" },
@@ -15,25 +14,14 @@ const navHotspots = [
 ];
 
 export default function AboutMockupPage() {
-  const signWrapRef = useRef<HTMLDivElement>(null);
-  const signCanvasRef = useRef<HTMLCanvasElement>(null);
+  const storyRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (window.location.hash === "#story" || window.location.hash === "") {
       requestAnimationFrame(() => {
-        signWrapRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+        storyRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
       });
     }
-  }, []);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const wrap = signWrapRef.current;
-    const canvas = signCanvasRef.current;
-    if (!wrap || !canvas) return;
-
-    return startAboutSignLights(wrap, canvas);
   }, []);
 
   return (
@@ -137,23 +125,6 @@ export default function AboutMockupPage() {
           height: 9.4%;
         }
 
-        .drink-sign-canvas-wrap {
-          position: absolute;
-          left: 49.9%;
-          top: 75.9%;
-          width: 41.6%;
-          height: 10.05%;
-          z-index: 4;
-          pointer-events: none;
-        }
-
-        .drink-sign-canvas {
-          display: block;
-          width: 100%;
-          height: 100%;
-          mix-blend-mode: screen;
-        }
-
         .osb-sr-copy {
           position: absolute;
           width: 1px;
@@ -244,7 +215,12 @@ export default function AboutMockupPage() {
           </div>
         </section>
 
-        <section className="osb-plate" id="story" aria-label="Open Source Barware story and support section">
+        <section
+          ref={storyRef}
+          className="osb-plate"
+          id="story"
+          aria-label="Open Source Barware story and support section"
+        >
           <Image
             src="/images/osb-about-middle-bottom-approved.png"
             alt="Open Source Barware story section with timeline, Miami hidden bar tours panel, and buy us a drink support panel"
@@ -252,10 +228,6 @@ export default function AboutMockupPage() {
             height={1106}
             priority
           />
-
-          <div ref={signWrapRef} className="drink-sign-canvas-wrap" aria-hidden="true">
-            <canvas ref={signCanvasRef} className="drink-sign-canvas" />
-          </div>
 
           <a
             className="osb-hotspot support-button"
