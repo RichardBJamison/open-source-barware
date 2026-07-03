@@ -65,7 +65,7 @@ export default function Footer() {
               Workshop
             </span>
             <p className="text-sm text-text-muted leading-relaxed">
-              A RBJP Holdings project.
+              A Richard B. Jamison project.
               <br />
               Forged in Cleveland, Ohio.
               <br />
