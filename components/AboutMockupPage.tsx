@@ -136,6 +136,64 @@ export default function AboutMockupPage() {
           pointer-events: none !important;
         }
 
+        .osb-credit-role-wrap {
+          position: absolute;
+          z-index: 3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
+          height: 2.4%;
+          width: 27%;
+          background: linear-gradient(180deg, #15120f 0%, #100e0b 100%);
+        }
+
+        .osb-credit-role-richard {
+          left: 7.2%;
+          top: 83.5%;
+        }
+
+        .osb-credit-role-bill {
+          left: 36.5%;
+          top: 83.5%;
+        }
+
+        .osb-credit-role-nito {
+          left: 65.8%;
+          top: 83.5%;
+        }
+
+        .osb-credit-role-text {
+          font-family: var(--font-inter), system-ui, sans-serif;
+          font-size: clamp(0.48rem, 0.82vw, 0.6rem);
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: #8f8474;
+          font-weight: 500;
+        }
+
+        @media (max-width: 720px) {
+          .osb-credit-role-wrap {
+            height: 2.8%;
+            width: 29%;
+          }
+
+          .osb-credit-role-richard {
+            left: 5%;
+            top: 84.2%;
+          }
+
+          .osb-credit-role-bill {
+            left: 35.5%;
+            top: 84.2%;
+          }
+
+          .osb-credit-role-nito {
+            left: 66%;
+            top: 84.2%;
+          }
+        }
+
         .osb-sr-copy {
           position: absolute;
           width: 1px;
@@ -216,12 +274,26 @@ export default function AboutMockupPage() {
             />
           ))}
 
+          <div className="osb-credit-role-wrap osb-credit-role-richard" aria-hidden="true">
+            <span className="osb-credit-role-text">Founder</span>
+          </div>
+          <div className="osb-credit-role-wrap osb-credit-role-bill" aria-hidden="true">
+            <span className="osb-credit-role-text">Project Host</span>
+          </div>
+          <div className="osb-credit-role-wrap osb-credit-role-nito" aria-hidden="true">
+            <span className="osb-credit-role-text">Test Pilot</span>
+          </div>
+
           <div className="osb-sr-copy">
             <h1>A real bar problem, built with the people living it.</h1>
             <p>Now it is free to the world.</p>
             <p>
               Open Source Barware is a free, open-source bar inventory system built around real bar
               work, real counts, and the people living the problem.
+            </p>
+            <p>
+              Credits: Richard Jamison, Founder; Bill McLaughlin, Project Host; Hirado Junior
+              &ldquo;Nito&rdquo;, Test Pilot.
             </p>
           </div>
         </section>
