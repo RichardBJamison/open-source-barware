@@ -299,9 +299,8 @@ export default function Home() {
       {/* ── PULL QUOTE ── */}
       <section className="max-w-3xl mx-auto px-6 py-12 md:py-16">
         <blockquote className="pull-quote">
-          &ldquo;If you&rsquo;re going to build an inventory program, you better do
-          it standing behind a bar at 2am with a clipboard. Otherwise
-          you&rsquo;re just guessing.&rdquo;
+          &ldquo;If you help enough people get what they need, the universe will
+          provide what you need.&rdquo;
         </blockquote>
         <p className="text-sm text-text-light mt-4 pl-7">
           &mdash; The philosophy behind Open Source Barware
