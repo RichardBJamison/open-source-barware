@@ -248,6 +248,11 @@ Confirm scripts in `package.json` before relying on these commands.
   Verification passed: targeted `eslint` on Dojo files, `npm run build`, local
   dev at `http://localhost:3000/inventory`, browser opened for Richard review.
   Pushed to GitHub `main` in this session.
+- 2026-07-03 GROK: Added root `wrangler.toml` for Cloudflare Pages (`out/`
+  export) and pushed `148b0e5` to trigger production rebuild. Updated HANDOFF
+  mail status: Forward Email verifies for `opensourcebarware.com`; Thunderbird
+  IMAP/SMTP migration still open. Manual `wrangler pages deploy` blocked without
+  `CLOUDFLARE_API_TOKEN`; Cloudflare dashboard login required for UI retry.
 
 ## Known issues
 
