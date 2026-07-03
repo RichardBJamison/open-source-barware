@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Gear } from "@/components/SteampunkElements";
 
-const STORAGE_KEY = "osb-welcome-v5";
+const STORAGE_KEY = "osb-welcome-v6";
 
 export default function ComingSoonToast() {
   const [visible, setVisible] = useState(false);
@@ -29,24 +29,16 @@ export default function ComingSoonToast() {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-500 ${dismissed ? "opacity-0" : "opacity-100"}`}
+        className={`fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${dismissed ? "opacity-0" : "opacity-100"}`}
         onClick={dismiss}
       />
 
-      {/* Positioning wrapper — top center, just below header */}
+      {/* Centered modal — must sit above mockup pages and inventory chrome */}
       <div
-        style={{
-          position: "fixed",
-          top: "90px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 50,
-          width: "min(520px, 90vw)",
-        }}
+        className="fixed inset-0 z-[210] flex items-center justify-center p-4 pointer-events-none"
       >
-      {/* Transition inner */}
       <div
-        className={`panel rivets transition-opacity duration-500 ease-out ${dismissed ? "opacity-0" : "opacity-100"}`}
+        className={`panel rivets pointer-events-auto w-full max-w-[520px] transition-opacity duration-500 ease-out ${dismissed ? "opacity-0" : "opacity-100"}`}
         style={{ boxShadow: "0 24px 80px rgba(0,0,0,0.8), 0 0 2px rgba(205,127,50,0.4)" }}
       >
         {/* Top copper accent bar */}
