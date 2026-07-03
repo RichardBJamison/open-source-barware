@@ -304,6 +304,17 @@ body { background: var(--bg); color: var(--text); }
 }
 
 /* ── July 4th launch overlay ── */
+.july4-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.july4-scroll::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .july4-overlay {
   background: radial-gradient(
     ellipse at 50% 0%,

@@ -107,7 +107,7 @@ export default function JulyFourthLaunchOverlay() {
       </div>
 
       <div
-        className="relative z-[205] mx-auto flex h-full max-h-screen w-full max-w-4xl flex-col items-center justify-center overflow-y-auto px-5 py-20 text-center sm:px-8"
+        className="july4-scroll relative z-[205] mx-auto flex h-full max-h-screen w-full max-w-4xl flex-col items-center justify-center overflow-y-auto px-5 py-20 text-center sm:px-8"
         onClick={(e) => e.stopPropagation()}
       >
         <p className="july4-badge mb-6">🎆 You&rsquo;re early! 🎆</p>
