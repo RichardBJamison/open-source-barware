@@ -157,10 +157,8 @@ export default function Home() {
           <div className="md:col-span-7 lg:col-span-6 lg:col-start-7">
             <div className="max-w-2xl space-y-5 text-text-muted leading-relaxed text-lg">
               <p>
-                Close out. Grab the clipboard. Count every bottle by tenths.
-                Scribble numbers on paper. Walk to the office. Type it all into
-                a spreadsheet someone made in 2014. Try to reconcile against POS
-                sales. Watch it never add up. Repeat next week.
+                End of the calendar month. Grab a barback &amp; clipboard.
+                Repeat next month.
               </p>
               <p>
                 The bar industry has been doing this for decades. And companies
