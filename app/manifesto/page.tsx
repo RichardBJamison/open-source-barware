@@ -141,32 +141,6 @@ export default function ManifestoPage() {
         </div>
       </section>
 
-      {/* ── FIELD TESTED ── */}
-      <section className="max-w-4xl mx-auto px-6 py-14 md:py-20">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-[1px] bg-copper/40" />
-          <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
-            Field-Tested, Not Focus-Grouped
-          </span>
-        </div>
-        <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-6 max-w-2xl">
-          Built at the bar. <span className="copper-text">Tested at the bar.</span>
-        </h2>
-        <p className="text-text-muted leading-relaxed max-w-2xl text-lg mb-6">
-          Open Source Barware started in the USBG Cleveland chapter, then
-          spent three weeks running for real at Agave &amp; Rye in downtown
-          Cleveland &mdash; real bottles, real counts, real closing-shift
-          pressure. Nothing shipped that we hadn&rsquo;t used ourselves at
-          2am with a clipboard in hand.
-        </p>
-        <p className="text-text-muted leading-relaxed max-w-2xl text-lg">
-          If a feature didn&rsquo;t survive a Friday night, it didn&rsquo;t
-          make it into the program.
-        </p>
-      </section>
-
-      <GearDivider />
-
       {/* ── WHY IT STAYS FREE ── */}
       <section className="relative bg-bg-panel border-y border-gear-border overflow-hidden grain">
         <div className="absolute -left-12 top-1/2 -translate-y-1/2 text-copper">
