@@ -7,15 +7,15 @@
   --cream: #e8e0d4;
   --text-muted: #8b95a8;
   --text-light: #5c6578;
-  --copper: #cd7f32;
-  --copper-bright: #e8a04c;
-  --brass: #b5a642;
+  --copper: #a8784f;
+  --copper-bright: #b88958;
+  --brass: #c7a76b;
   --patina: #4a7c6f;
   --patina-light: #6fa896;
   --wine: #6b2d3c;
   --wine-glow: #c45c6a;
-  --gear-border: rgba(205, 127, 50, 0.18);
-  --border: rgba(205, 127, 50, 0.22);
+  --gear-border: rgba(168, 120, 79, 0.18);
+  --border: rgba(168, 120, 79, 0.22);
   --font-serif: "Playfair Display", Georgia, serif;
   --font-sans: system-ui, -apple-system, sans-serif;
 }
@@ -225,14 +225,14 @@ a { color: var(--copper-bright); }
 
 .bar-diagram-station.main {
   color: var(--copper-bright);
-  border-color: rgba(205, 127, 50, 0.45);
-  background: rgba(205, 127, 50, 0.12);
+  border-color: rgba(168, 120, 79, 0.45);
+  background: rgba(168, 120, 79, 0.12);
 }
 
 .bar-diagram-station.service {
   color: var(--brass);
-  border-color: rgba(181, 166, 66, 0.45);
-  background: rgba(181, 166, 66, 0.12);
+  border-color: rgba(199, 167, 107, 0.45);
+  background: rgba(199, 167, 107, 0.12);
 }
 
 .bar-diagram-station.point {
@@ -249,7 +249,7 @@ a { color: var(--copper-bright); }
 .phase-pill.active {
   border-color: var(--copper);
   color: var(--copper-bright);
-  background: rgba(205, 127, 50, 0.12);
+  background: rgba(168, 120, 79, 0.12);
 }
 
 .phase-pill.done {
@@ -517,13 +517,13 @@ code {
 
 .sidebar-link:hover {
   color: var(--copper-bright);
-  background: rgba(205, 127, 50, 0.06);
+  background: rgba(168, 120, 79, 0.06);
 }
 
 .sidebar-link.active {
   color: var(--copper-bright);
   border-left-color: var(--copper);
-  background: rgba(205, 127, 50, 0.1);
+  background: rgba(168, 120, 79, 0.1);
 }
 
 .sidebar-foot { padding-top: 16px; border-top: 1px solid var(--border); }
@@ -606,7 +606,7 @@ code {
 .status-badge.warn {
   color: var(--copper-bright);
   border-color: var(--copper);
-  background: rgba(205, 127, 50, 0.12);
+  background: rgba(168, 120, 79, 0.12);
 }
 
 .status-badge.muted {
@@ -630,7 +630,7 @@ code {
 .wizard-panel {
   background: var(--bg-card);
   border: 1px solid var(--gear-border);
-  box-shadow: inset 0 1px 0 rgba(205, 127, 50, 0.06);
+  box-shadow: inset 0 1px 0 rgba(168, 120, 79, 0.06);
 }
 
 .wizard-title {
@@ -701,8 +701,8 @@ code {
 .step-node.active {
   border-color: var(--copper);
   color: var(--copper-bright);
-  background: rgba(205, 127, 50, 0.15);
-  box-shadow: 0 0 14px rgba(205, 127, 50, 0.25);
+  background: rgba(168, 120, 79, 0.15);
+  box-shadow: 0 0 14px rgba(168, 120, 79, 0.25);
 }
 
 .step-node.done {
@@ -782,7 +782,7 @@ code {
   transition: border-color 0.15s;
 }
 
-.station-card:hover { border-color: rgba(205, 127, 50, 0.35); }
+.station-card:hover { border-color: rgba(168, 120, 79, 0.35); }
 
 .station-reorder {
   display: flex;
@@ -841,8 +841,8 @@ code {
   flex-shrink: 0;
 }
 
-.badge-well { color: var(--copper); border-color: rgba(205, 127, 50, 0.35); background: rgba(205, 127, 50, 0.12); }
-.badge-backbar { color: var(--brass); border-color: rgba(181, 166, 66, 0.35); background: rgba(181, 166, 66, 0.12); }
+.badge-well { color: var(--copper); border-color: rgba(168, 120, 79, 0.35); background: rgba(168, 120, 79, 0.12); }
+.badge-backbar { color: var(--brass); border-color: rgba(199, 167, 107, 0.35); background: rgba(199, 167, 107, 0.12); }
 .badge-storage { color: var(--patina-light); border-color: rgba(74, 124, 111, 0.35); background: rgba(74, 124, 111, 0.12); }
 .badge-walkin { color: var(--wine-glow); border-color: rgba(107, 45, 60, 0.45); background: rgba(107, 45, 60, 0.2); }
 
@@ -893,14 +893,14 @@ code {
 }
 
 .btn-add {
-  background: rgba(205, 127, 50, 0.18);
-  border: 1px solid rgba(205, 127, 50, 0.35);
+  background: rgba(168, 120, 79, 0.18);
+  border: 1px solid rgba(168, 120, 79, 0.35);
   color: var(--copper-bright);
   padding: 10px 16px;
   white-space: nowrap;
 }
 
-.btn-add:hover { background: rgba(205, 127, 50, 0.28); }
+.btn-add:hover { background: rgba(168, 120, 79, 0.28); }
 
 .btn-sm { font-size: 0.78rem; padding: 8px 12px; }
 
@@ -939,8 +939,8 @@ code {
   text-transform: uppercase;
   padding: 8px 12px;
   color: var(--cream);
-  background: linear-gradient(90deg, rgba(107, 45, 60, 0.85), rgba(205, 127, 50, 0.75), rgba(107, 45, 60, 0.85));
-  border-bottom: 1px solid rgba(205, 127, 50, 0.35);
+  background: linear-gradient(90deg, rgba(107, 45, 60, 0.85), rgba(168, 120, 79, 0.75), rgba(107, 45, 60, 0.85));
+  border-bottom: 1px solid rgba(168, 120, 79, 0.35);
 }
 
 .step-subtitle {
@@ -1018,7 +1018,7 @@ code {
 
 .dictation-box {
   margin-top: 18px;
-  border-color: rgba(205, 127, 50, 0.35);
+  border-color: rgba(168, 120, 79, 0.35);
 }
 
 .dictation-foot {
@@ -1055,8 +1055,8 @@ code {
   font-size: 0.82rem;
   line-height: 1.5;
   color: var(--cream);
-  background: rgba(205, 127, 50, 0.14);
-  border: 1px solid rgba(205, 127, 50, 0.45);
+  background: rgba(168, 120, 79, 0.14);
+  border: 1px solid rgba(168, 120, 79, 0.45);
   border-radius: 6px;
 }
 
@@ -1090,11 +1090,11 @@ code {
   transition: border-color 0.15s, background 0.15s;
 }
 
-.review-path-card:hover { border-color: rgba(205, 127, 50, 0.45); }
+.review-path-card:hover { border-color: rgba(168, 120, 79, 0.45); }
 
 .review-path-card.active {
   border-color: var(--copper-bright);
-  background: rgba(205, 127, 50, 0.1);
+  background: rgba(168, 120, 79, 0.1);
 }
 
 .review-path-title {
@@ -1143,7 +1143,7 @@ code {
 .walk-review-table th,
 .walk-review-table td {
   padding: 8px 10px;
-  border-bottom: 1px solid rgba(205, 127, 50, 0.12);
+  border-bottom: 1px solid rgba(168, 120, 79, 0.12);
   vertical-align: middle;
 }
 
@@ -1272,7 +1272,7 @@ code {
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  border-bottom: 1px solid rgba(205, 127, 50, 0.12);
+  border-bottom: 1px solid rgba(168, 120, 79, 0.12);
   background: rgba(17, 24, 34, 0.5);
 }
 
@@ -1284,7 +1284,7 @@ code {
   align-items: center;
   gap: 10px;
   padding: 8px 14px;
-  border-bottom: 1px solid rgba(205, 127, 50, 0.08);
+  border-bottom: 1px solid rgba(168, 120, 79, 0.08);
   font-size: 0.85rem;
 }
 
@@ -1457,7 +1457,7 @@ code {
 .bar-card:hover,
 .bar-card.active {
   border-color: var(--copper);
-  background: rgba(205, 127, 50, 0.06);
+  background: rgba(168, 120, 79, 0.06);
 }
 
 .bar-card-name {
@@ -1508,7 +1508,7 @@ code {
 .build-bar-name-input:focus {
   outline: none;
   border-color: var(--copper);
-  box-shadow: 0 0 18px rgba(205, 127, 50, 0.15);
+  box-shadow: 0 0 18px rgba(168, 120, 79, 0.15);
 }
 
 .build-bar-name-input::placeholder {
@@ -1555,7 +1555,7 @@ code {
 .build-bar-tab.active {
   border-color: var(--copper);
   color: var(--copper-bright);
-  background: rgba(205, 127, 50, 0.12);
+  background: rgba(168, 120, 79, 0.12);
 }
 
 .wizard-lead strong {

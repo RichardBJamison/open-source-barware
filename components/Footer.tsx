@@ -47,6 +47,7 @@ export default function Footer() {
               <Link href="/manifesto" className="text-sm text-text-muted hover:text-copper transition-colors">Manifesto</Link>
               <Link href="/resources" className="text-sm text-text-muted hover:text-copper transition-colors">Resources</Link>
               <Link href="/downloads" className="text-sm text-text-muted hover:text-copper transition-colors">Program</Link>
+              <Link href="/open-source-compliance" className="text-sm text-text-muted hover:text-copper transition-colors">Compliance</Link>
               <Link href="/inventory" className="text-sm text-text-muted hover:text-copper transition-colors">The Dojo</Link>
             </div>
           </div>
@@ -73,12 +74,18 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gear-border mt-12 pt-6 flex items-center justify-center gap-3">
+        <div className="border-t border-gear-border mt-12 pt-6 flex flex-wrap items-center justify-center gap-3 text-center">
           <div className="w-1.5 h-1.5 rounded-full bg-copper/30" />
           <p className="text-xs text-text-light">
             &copy; {new Date().getFullYear()} Open Source Barware &mdash; All
-            the program is free and open source
+            the program is free and open source under GPLv3
           </p>
+          <Link
+            href="/open-source-compliance"
+            className="text-xs text-copper hover:text-copper-bright transition-colors"
+          >
+            License and source
+          </Link>
           <div className="w-1.5 h-1.5 rounded-full bg-copper/30" />
         </div>
       </div>

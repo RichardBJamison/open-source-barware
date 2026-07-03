@@ -118,7 +118,7 @@ function StepIndicator({ current }: { current: number }) {
                   w-10 h-10 rounded-full flex items-center justify-center text-sm font-mono
                   border-2 transition-all duration-500
                   ${isActive
-                    ? 'border-copper bg-copper/20 text-copper shadow-[0_0_16px_rgba(205,127,50,0.3)]'
+                    ? 'border-copper bg-copper/20 text-copper shadow-[0_0_16px_rgba(168,120,79,0.3)]'
                     : isDone
                       ? 'border-patina bg-patina/20 text-patina-light'
                       : 'border-gear-border bg-bg-card text-text-light'
@@ -247,7 +247,7 @@ function Step1({
               w-full bg-bg-warm border border-gear-border rounded-sm px-5 py-4
               text-cream font-serif text-xl text-center
               placeholder:text-text-light/50 placeholder:font-sans placeholder:text-base
-              focus:outline-none focus:border-copper focus:shadow-[0_0_20px_rgba(205,127,50,0.15)]
+              focus:outline-none focus:border-copper focus:shadow-[0_0_20px_rgba(168,120,79,0.15)]
               transition-all duration-300
             "
             autoFocus
@@ -263,7 +263,7 @@ function Step1({
             bg-copper hover:bg-copper-bright disabled:bg-bg-card disabled:text-text-light disabled:border-gear-border
             text-bg font-semibold px-10 py-3.5 text-sm tracking-wide
             transition-all duration-300 disabled:cursor-not-allowed
-            hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]
+            hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]
           "
         >
           Continue
@@ -482,7 +482,7 @@ function Step2({
             disabled={stations.length === 0}
             className="
               bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-3 text-sm tracking-wide
-              transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]
+              transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]
               disabled:bg-bg-card disabled:text-text-light disabled:cursor-not-allowed
             "
           >
@@ -657,7 +657,7 @@ function Step3({
                 w-full bg-bg border border-gear-border rounded-sm px-5 py-4
                 text-cream text-sm leading-relaxed
                 placeholder:text-text-light/40
-                focus:outline-none focus:border-copper/50 focus:shadow-[0_0_20px_rgba(205,127,50,0.1)]
+                focus:outline-none focus:border-copper/50 focus:shadow-[0_0_20px_rgba(168,120,79,0.1)]
                 transition-all duration-300 resize-y
               "
             />
@@ -674,7 +674,7 @@ function Step3({
                 disabled={!rawText.trim()}
                 className="
                   bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-3 text-sm tracking-wide
-                  transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]
+                  transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]
                   disabled:bg-bg-card disabled:text-text-light disabled:cursor-not-allowed
                   flex items-center gap-2
                 "
@@ -835,7 +835,7 @@ function Step3({
             onClick={onNext}
             className="
               bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-3 text-sm tracking-wide
-              transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]
+              transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]
             "
           >
             Continue
@@ -1079,7 +1079,7 @@ function Step4({
             onClick={onFinish}
             className="
               relative bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide
-              transition-all hover:shadow-[0_0_40px_rgba(205,127,50,0.35)]
+              transition-all hover:shadow-[0_0_40px_rgba(168,120,79,0.35)]
               group
             "
           >

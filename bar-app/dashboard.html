@@ -83,7 +83,7 @@ body{
 .panel::before{
   content:"";position:absolute;
   top:6px;left:6px;right:6px;bottom:6px;
-  border:1px solid rgba(205,127,50,0.08);
+  border:1px solid rgba(160,180,204,0.08);
   pointer-events:none;
 }
 
@@ -103,7 +103,7 @@ body{
 .card-lift{transition:transform 0.35s ease,box-shadow 0.35s ease,border-color 0.35s ease}
 .card-lift:hover{
   transform:translateY(-4px);
-  box-shadow:0 16px 48px rgba(205,127,50,0.12),0 0 1px rgba(205,127,50,0.3);
+  box-shadow:0 16px 48px rgba(160,180,204,0.12),0 0 1px rgba(160,180,204,0.3);
   border-color:var(--copper)!important;
 }
 
@@ -138,7 +138,7 @@ body{
 }
 .btn-copper:hover{
   background:var(--copper-bright);
-  box-shadow:0 0 30px rgba(205,127,50,0.25);
+  box-shadow:0 0 30px rgba(160,180,204,0.25);
 }
 .btn-copper:disabled{opacity:0.4;cursor:not-allowed}
 .btn-copper:disabled:hover{background:var(--copper);box-shadow:none}
@@ -149,7 +149,7 @@ body{
   padding:12px 28px;font-size:14px;letter-spacing:0.03em;
   transition:all 0.3s ease;
 }
-.btn-outline:hover{color:var(--copper);border-color:rgba(205,127,50,0.5)}
+.btn-outline:hover{color:var(--copper);border-color:rgba(160,180,204,0.5)}
 
 .btn-sm{padding:8px 16px;font-size:12px}
 .btn-xs{padding:4px 12px;font-size:11px}
@@ -164,7 +164,7 @@ body{
 }
 .input:focus{
   border-color:var(--copper);
-  box-shadow:0 0 0 3px rgba(205,127,50,0.15);
+  box-shadow:0 0 0 3px rgba(160,180,204,0.15);
 }
 .input::placeholder{color:var(--text-light)}
 
@@ -176,7 +176,7 @@ body{
 }
 .textarea:focus{
   border-color:var(--copper);
-  box-shadow:0 0 0 3px rgba(205,127,50,0.15);
+  box-shadow:0 0 0 3px rgba(160,180,204,0.15);
 }
 
 .select{
@@ -195,20 +195,20 @@ body{
   font-size:10px;letter-spacing:0.08em;text-transform:uppercase;
   border-radius:2px;font-weight:600;
 }
-.badge-well{background:rgba(205,127,50,0.15);color:var(--copper-bright)}
-.badge-backbar{background:rgba(212,168,67,0.15);color:var(--brass)}
+.badge-well{background:rgba(160,180,204,0.15);color:var(--copper-bright)}
+.badge-backbar{background:rgba(184,196,212,0.15);color:var(--brass)}
 .badge-storage{background:rgba(74,124,111,0.15);color:var(--patina-light)}
 .badge-walkin{background:rgba(114,47,55,0.15);color:var(--wine-glow)}
 .badge-category{
   display:inline-block;padding:2px 8px;
   font-size:10px;letter-spacing:0.05em;
   border-radius:2px;
-  background:rgba(205,127,50,0.1);color:var(--text-muted);
+  background:rgba(160,180,204,0.1);color:var(--text-muted);
 }
 
 /* ── Gauge bar ── */
 .gauge-track{
-  height:8px;background:var(--bg);border:1px solid rgba(205,127,50,0.12);
+  height:8px;background:var(--bg);border:1px solid rgba(160,180,204,0.12);
   position:relative;overflow:visible;
 }
 .gauge-fill{
@@ -278,7 +278,7 @@ body{
 .topbar-logo{font-size:13px;letter-spacing:0.2em;font-weight:600}
 .topbar-version{
   font-size:10px;padding:2px 8px;
-  background:rgba(205,127,50,0.12);color:var(--copper);
+  background:rgba(160,180,204,0.12);color:var(--copper);
   letter-spacing:0.05em;
 }
 .topbar-clock{font-size:12px;color:var(--text-light);font-variant-numeric:tabular-nums}
@@ -307,7 +307,7 @@ body{
   background:var(--bg-card);border:1px solid var(--gear-border);
   margin-bottom:8px;transition:border-color 0.3s ease;
 }
-.station-panel:hover{border-color:rgba(205,127,50,0.4)}
+.station-panel:hover{border-color:rgba(160,180,204,0.4)}
 .station-header{
   padding:16px 20px;cursor:pointer;
   display:flex;align-items:center;justify-content:space-between;
@@ -326,10 +326,10 @@ body{
 /* ── Bottle row ── */
 .bottle-row{
   display:flex;align-items:center;gap:12px;
-  padding:10px 20px;border-top:1px solid rgba(205,127,50,0.08);
+  padding:10px 20px;border-top:1px solid rgba(160,180,204,0.08);
   transition:background 0.2s ease;
 }
-.bottle-row:hover{background:rgba(205,127,50,0.03)}
+.bottle-row:hover{background:rgba(160,180,204,0.03)}
 .bottle-name{font-size:14px;color:var(--cream);min-width:140px;flex-shrink:0}
 .bottle-gauge{flex:1;min-width:120px;max-width:260px}
 .bottle-level{font-size:12px;color:var(--text-muted);min-width:40px;text-align:right}
@@ -337,7 +337,7 @@ body{
 
 /* ── Alert bar ── */
 .alert-bar{
-  background:rgba(205,127,50,0.08);border-top:1px solid var(--gear-border);
+  background:rgba(160,180,204,0.08);border-top:1px solid var(--gear-border);
   padding:12px 24px;position:fixed;bottom:0;left:0;right:0;z-index:99;
   display:flex;align-items:center;gap:12px;
   font-size:13px;color:var(--brass);
@@ -377,7 +377,7 @@ body{
 .station-item{
   display:flex;align-items:center;gap:12px;
   padding:12px 16px;background:var(--bg-panel);
-  border:1px solid rgba(205,127,50,0.1);
+  border:1px solid rgba(160,180,204,0.1);
   margin-bottom:6px;transition:all 0.3s ease;
 }
 .station-item:hover{border-color:var(--gear-border)}
@@ -398,11 +398,11 @@ body{
 .parse-group-title{
   font-family:'Playfair Display',Georgia,serif;
   font-size:16px;color:var(--cream);margin-bottom:12px;
-  padding-bottom:8px;border-bottom:1px solid rgba(205,127,50,0.1);
+  padding-bottom:8px;border-bottom:1px solid rgba(160,180,204,0.1);
 }
 .parse-item{
   display:flex;align-items:center;gap:12px;
-  padding:8px 12px;border:1px solid rgba(205,127,50,0.08);
+  padding:8px 12px;border:1px solid rgba(160,180,204,0.08);
   margin-bottom:4px;background:var(--bg-panel);
 }
 .parse-item.unmatched{border-color:rgba(168,66,78,0.3);background:rgba(114,47,55,0.06)}
@@ -418,7 +418,7 @@ body{
 }
 .count-bottle{
   display:flex;align-items:center;gap:16px;
-  padding:16px 0;border-bottom:1px solid rgba(205,127,50,0.08);
+  padding:16px 0;border-bottom:1px solid rgba(160,180,204,0.08);
 }
 .count-quick-btns{display:flex;gap:4px}
 .count-quick-btn{
@@ -435,7 +435,7 @@ body{
   background:var(--bg-card);border:1px solid var(--gear-border);
   margin-bottom:8px;transition:border-color 0.3s ease;
 }
-.history-entry:hover{border-color:rgba(205,127,50,0.4)}
+.history-entry:hover{border-color:rgba(160,180,204,0.4)}
 .history-header{
   padding:16px 20px;cursor:pointer;
   display:flex;align-items:center;justify-content:space-between;
@@ -443,7 +443,7 @@ body{
 .history-body{max-height:0;overflow:hidden;transition:max-height 0.4s ease}
 .history-entry.expanded .history-body{max-height:5000px}
 .history-entry.expanded .chevron{transform:rotate(180deg)}
-.variance-row{padding:8px 20px;display:flex;align-items:center;gap:12px;border-top:1px solid rgba(205,127,50,0.06)}
+.variance-row{padding:8px 20px;display:flex;align-items:center;gap:12px;border-top:1px solid rgba(160,180,204,0.06)}
 .variance-row.significant{background:rgba(114,47,55,0.08)}
 
 /* ── Tabs ── */
@@ -479,7 +479,7 @@ body{
 }
 .modal::before{
   content:"";position:absolute;top:6px;left:6px;right:6px;bottom:6px;
-  border:1px solid rgba(205,127,50,0.08);pointer-events:none;
+  border:1px solid rgba(160,180,204,0.08);pointer-events:none;
 }
 
 /* ── Welcome ── */
@@ -491,11 +491,11 @@ body{
 
 /* ── Misc ── */
 .instructions-box{
-  background:var(--bg-panel);border:1px solid rgba(205,127,50,0.1);
+  background:var(--bg-panel);border:1px solid rgba(160,180,204,0.1);
   padding:16px;font-size:13px;color:var(--text-muted);line-height:1.7;
 }
 .instructions-box code{
-  background:rgba(205,127,50,0.08);padding:2px 6px;
+  background:rgba(160,180,204,0.08);padding:2px 6px;
   color:var(--cream);font-size:12px;
 }
 .summary-popup{text-align:center;padding:24px}
@@ -1402,7 +1402,7 @@ function renderReview() {
     const bottles = state.bottles.filter(b => b.station_id === station.id);
     const badgeCls = 'badge-' + station.type;
     html += `<div class="station-panel expanded" style="margin-bottom:12px">
-      <div style="padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(205,127,50,0.08)">
+      <div style="padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(160,180,204,0.08)">
         <span class="serif" style="font-size:16px;color:var(--cream)">${escHtml(station.name)}</span>
         <span class="badge ${badgeCls}">${station.type}</span>
         <span class="text-light" style="font-size:12px">${bottles.length} items</span>

@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Open Source Barware
 
-## Getting Started
+Open Source Barware is a free, open-source bar inventory project for hospitality teams. It includes the public Next.js site, browser-based inventory sandbox, downloadable spreadsheet/prompt assets, and the in-progress local Chrome-side program under `program/`.
 
-First, run the development server:
+## What is included
+
+- `app/` and `components/` - the public Next.js App Router site.
+- `lib/` - shared site and inventory-state helpers.
+- `public/downloads/` - user-facing spreadsheet/prompt downloads plus GPL compliance files.
+- `program/` - local Flask/Chrome program scaffold for the customer-side inventory app.
+- `bar-app/` - legacy local inventory implementation.
+
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Build and lint:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Download Compliance
 
-## Learn More
+Website downloads are distributed under the GNU General Public License version 3 or later. The downloadable package must include:
 
-To learn more about Next.js, take a look at the following resources:
+- `LICENSE.txt` - the GPLv3 license text.
+- `README.md` - package contents and modification notice.
+- `NOTICE.md` - copyright and warranty notice.
+- `SOURCE-OFFER.md` - where to get the corresponding source.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Regenerate the public download package and source archive with:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run package:compliance
+```
 
-## Deploy on Vercel
+`npm run build` runs that packaging step automatically before the static export.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+That command creates:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `public/downloads/open-source-barware-download-package.zip`
+- `public/downloads/open-source-barware-source.zip`
+
+The source archive is built from tracked and non-ignored working-tree files and excludes generated archives, local environment files, runtime state, build output, `node_modules`, and private configuration.
+
+## License
+
+Copyright (C) 2026 Open Source Barware contributors.
+
+Open Source Barware is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+Open Source Barware is distributed without warranty. See `LICENSE` for the full license text.

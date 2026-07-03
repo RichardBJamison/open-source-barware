@@ -139,6 +139,9 @@ const weeklyInputs = [
   "Enter your POS downloads",
 ];
 
+const downloadPackageHref = "/downloads/open-source-barware-download-package.zip";
+const sourceArchiveHref = "/downloads/open-source-barware-source.zip";
+
 export default function DownloadsPage() {
   return (
     <>
@@ -176,6 +179,76 @@ export default function DownloadsPage() {
       </section>
 
       <GearDivider />
+
+      {/* ── GPL PACKAGE ── */}
+      <section className="max-w-6xl mx-auto px-6 pt-10 md:pt-14">
+        <div className="panel rounded-sm p-6 md:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="lg:col-span-6">
+              <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">
+                GPL Download
+              </p>
+              <h2 className="font-serif text-3xl text-cream mb-4">
+                Program files, license, and source stay together.
+              </h2>
+              <p className="text-text-muted leading-relaxed">
+                The public package includes the editable spreadsheet templates,
+                AI prompt, GPL license text, source offer, and notices. The
+                corresponding source archive sits beside it for anyone who
+                wants to inspect, modify, or redistribute the project.
+              </p>
+            </div>
+            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <a
+                href={downloadPackageHref}
+                download
+                className="border border-gear-border bg-bg/50 p-5 transition-colors hover:border-copper/50"
+              >
+                <span className="block text-[10px] tracking-[0.25em] uppercase text-copper mb-3">
+                  Package
+                </span>
+                <span className="block text-sm text-cream leading-snug">
+                  Download program files with GPL notices
+                </span>
+              </a>
+              <a
+                href={sourceArchiveHref}
+                download
+                className="border border-gear-border bg-bg/50 p-5 transition-colors hover:border-copper/50"
+              >
+                <span className="block text-[10px] tracking-[0.25em] uppercase text-copper mb-3">
+                  Source
+                </span>
+                <span className="block text-sm text-cream leading-snug">
+                  Download corresponding source archive
+                </span>
+              </a>
+              <a
+                href="/downloads/LICENSE.txt"
+                className="border border-gear-border bg-bg/50 p-5 transition-colors hover:border-copper/50"
+              >
+                <span className="block text-[10px] tracking-[0.25em] uppercase text-copper mb-3">
+                  License
+                </span>
+                <span className="block text-sm text-cream leading-snug">
+                  Read the GNU GPLv3 license text
+                </span>
+              </a>
+              <Link
+                href="/open-source-compliance"
+                className="border border-gear-border bg-bg/50 p-5 transition-colors hover:border-copper/50"
+              >
+                <span className="block text-[10px] tracking-[0.25em] uppercase text-copper mb-3">
+                  Notice
+                </span>
+                <span className="block text-sm text-cream leading-snug">
+                  View compliance and redistribution notes
+                </span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── TOOL CARDS ── */}
       <section className="max-w-6xl mx-auto px-6 py-10 md:py-14">
@@ -295,7 +368,7 @@ export default function DownloadsPage() {
           <div className="mt-8">
             <Link
               href="/inventory/inputs"
-              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_24px_rgba(205,127,50,0.25)]"
+              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_24px_rgba(168,120,79,0.25)]"
             >
               View Weekly Inputs
             </Link>
@@ -437,7 +510,7 @@ function DownloadCard({
       </p>
       <Link
         href={`#${tool.id}`}
-        className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.2)]"
+        className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(168,120,79,0.2)]"
       >
         Learn More
       </Link>

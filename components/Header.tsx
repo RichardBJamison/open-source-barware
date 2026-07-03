@@ -5,8 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import SignMarqueeLights from "@/components/SignMarqueeLights";
 
-// Slightly oranger than the copper button (#cd7f32) — less blue channel, more vivid
-const LOGO_ORANGE = "#d4821a";
+const LOGO_COPPER = "#b88958";
 
 function MartiniGlass() {
   return (
@@ -14,20 +13,20 @@ function MartiniGlass() {
       {/* Bowl */}
       <path
         d="M4 6 L48 6 L26 38 Z"
-        stroke={LOGO_ORANGE}
+        stroke={LOGO_COPPER}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       {/* Stem */}
-      <line x1="26" y1="38" x2="26" y2="54" stroke={LOGO_ORANGE} strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="26" y1="38" x2="26" y2="54" stroke={LOGO_COPPER} strokeWidth="1.5" strokeLinecap="round" />
       {/* Base */}
-      <line x1="12" y1="54" x2="40" y2="54" stroke={LOGO_ORANGE} strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="12" y1="54" x2="40" y2="54" stroke={LOGO_COPPER} strokeWidth="1.5" strokeLinecap="round" />
       {/* Olive pick */}
-      <line x1="7" y1="15" x2="20" y2="26" stroke={LOGO_ORANGE} strokeWidth="1" strokeLinecap="round" />
+      <line x1="7" y1="15" x2="20" y2="26" stroke={LOGO_COPPER} strokeWidth="1" strokeLinecap="round" />
       {/* Olive */}
-      <circle cx="6" cy="14" r="4" stroke={LOGO_ORANGE} strokeWidth="1.2" fill="none" />
-      <circle cx="6" cy="14" r="1.5" fill={LOGO_ORANGE} />
+      <circle cx="6" cy="14" r="4" stroke={LOGO_COPPER} strokeWidth="1.2" fill="none" />
+      <circle cx="6" cy="14" r="1.5" fill={LOGO_COPPER} />
     </svg>
   );
 }
@@ -49,7 +48,7 @@ export default function Header() {
             fontWeight: 700,
             fontSize: "1.15rem",
             letterSpacing: "0.1em",
-            color: LOGO_ORANGE,
+            color: LOGO_COPPER,
           }}
         >
           <span>OPEN S</span>
@@ -89,7 +88,7 @@ export default function Header() {
           <Link href="/inventory" className="text-text-muted hover:text-copper transition-colors tracking-wide">The Dojo</Link>
           <Link
             href="/downloads"
-            className="relative bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 tracking-wide transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.3)]"
+            className="relative bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 tracking-wide transition-all hover:shadow-[0_0_20px_rgba(168,120,79,0.3)]"
           >
             Free Program
           </Link>

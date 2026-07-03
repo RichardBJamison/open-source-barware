@@ -8,11 +8,11 @@
   --text: #e8dfd4;
   --text-muted: #a89b8c;
   --text-light: #7a6e62;
-  --copper: #cd7f32;
-  --copper-bright: #e8943d;
-  --copper-dark: #8b5a2b;
-  --brass: #d4a843;
-  --brass-light: #e8c36a;
+  --copper: #a8784f;
+  --copper-bright: #b88958;
+  --copper-dark: #6f4b32;
+  --brass: #c7a76b;
+  --brass-light: #d7c191;
   --patina: #4a7c6f;
   --patina-light: #5e9e8f;
   --rust: #8b4513;
@@ -20,8 +20,8 @@
   --ivory: #fdf4e3;
   --wine: #722f37;
   --wine-glow: #a8424e;
-  --gear-border: rgba(205,127,50,0.25);
-  --rivet: #8b7355;
+  --gear-border: rgba(168,120,79,0.25);
+  --rivet: #766553;
 }
 
 @theme inline {
@@ -107,7 +107,7 @@ body { background: var(--bg); color: var(--text); }
   content: "";
   position: absolute;
   top: 6px; left: 6px; right: 6px; bottom: 6px;
-  border: 1px solid rgba(205,127,50,0.08);
+  border: 1px solid rgba(168,120,79,0.08);
   pointer-events: none;
 }
 
@@ -131,7 +131,7 @@ body { background: var(--bg); color: var(--text); }
 }
 .card-lift:hover {
   transform: translateY(-6px);
-  box-shadow: 0 16px 48px rgba(205,127,50,0.12), 0 0 1px rgba(205,127,50,0.3);
+  box-shadow: 0 16px 48px rgba(168,120,79,0.12), 0 0 1px rgba(168,120,79,0.3);
   border-color: var(--copper) !important;
 }
 
@@ -189,8 +189,8 @@ body { background: var(--bg); color: var(--text); }
   background: radial-gradient(
     circle at 35% 30%,
     #fdf4e3 0%,
-    #e8c36a 38%,
-    #b98a5b 100%
+    #d7c191 38%,
+    #9d7654 100%
   );
   opacity: 0.14;
   animation: sign-marquee-chase ease-in-out infinite;

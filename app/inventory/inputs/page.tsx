@@ -198,7 +198,7 @@ export default function InventoryInputsPage() {
             </p>
             <Link
               href={card.href}
-              className="block w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.2)]"
+              className="block w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(168,120,79,0.2)]"
             >
               {card.action}
             </Link>

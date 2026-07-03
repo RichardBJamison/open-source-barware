@@ -1,39 +1,47 @@
 export const SIGN_FRAME = {
-  left: 51.46,
-  top: 76.94,
-  right: 88.28,
-  bottom: 82.65,
+  left: 49.9,
+  top: 75.9,
+  right: 91.5,
+  bottom: 85.95,
 };
 
-const TOP_COUNT = 16;
-const SIDE_COUNT = 4;
-const BOTTOM_COUNT = 16;
-export const CHASE_MS = 12_000;
+const TOP_COUNT = 22;
+const SIDE_COUNT = 5;
+const BOTTOM_COUNT = 22;
+export const CHASE_MS = 6_400;
 
 export type BulbPoint = { x: number; y: number };
 
 export function frameBulbPositions(): BulbPoint[] {
-  const { left, top, right, bottom } = SIGN_FRAME;
-  const width = right - left;
-  const height = bottom - top;
   const bulbs: BulbPoint[] = [];
-
-  const toLocal = (leftPct: number, topPct: number) => ({
-    x: (leftPct - left) / width,
-    y: (topPct - top) / height,
-  });
+  const left = 0.035;
+  const right = 0.965;
+  const top = 0.08;
+  const bottom = 0.9;
 
   for (let i = 0; i < TOP_COUNT; i++) {
-    bulbs.push(toLocal(left + (i / (TOP_COUNT - 1)) * width, top));
+    bulbs.push({
+      x: left + (i / (TOP_COUNT - 1)) * (right - left),
+      y: top,
+    });
   }
   for (let i = 1; i <= SIDE_COUNT; i++) {
-    bulbs.push(toLocal(right, top + (i / (SIDE_COUNT + 1)) * height));
+    bulbs.push({
+      x: right,
+      y: top + (i / (SIDE_COUNT + 1)) * (bottom - top),
+    });
   }
   for (let i = 0; i < BOTTOM_COUNT; i++) {
-    bulbs.push(toLocal(right - (i / (BOTTOM_COUNT - 1)) * width, bottom));
+    bulbs.push({
+      x: right - (i / (BOTTOM_COUNT - 1)) * (right - left),
+      y: bottom,
+    });
   }
   for (let i = 1; i <= SIDE_COUNT; i++) {
-    bulbs.push(toLocal(left, bottom - (i / (SIDE_COUNT + 1)) * height));
+    bulbs.push({
+      x: left,
+      y: bottom - (i / (SIDE_COUNT + 1)) * (bottom - top),
+    });
   }
 
   return bulbs;
@@ -49,9 +57,9 @@ export function pulseIntensity(
   let delta = cyclePos - phase;
   if (delta < 0) delta += 1;
 
-  if (delta < 0.08) return delta / 0.08;
-  if (delta < 0.14) return 1 - (delta - 0.08) / 0.06;
-  if (delta < 0.22) return Math.max(0, 0.55 * (1 - (delta - 0.14) / 0.08));
+  if (delta < 0.045) return delta / 0.045;
+  if (delta < 0.1) return 1 - (delta - 0.045) / 0.055;
+  if (delta < 0.18) return Math.max(0, 0.5 * (1 - (delta - 0.1) / 0.08));
   return 0;
 }
 
@@ -62,11 +70,11 @@ export function dimIntensity(
   total: number,
 ): number {
   const phase = bulbIndex / total;
-  let delta = cyclePos - phase - 0.1;
+  let delta = cyclePos - phase - 0.08;
   if (delta < 0) delta += 1;
-  if (delta > 0.45) return 0;
-  if (delta < 0.07) return delta / 0.07;
-  if (delta < 0.14) return 1 - (delta - 0.07) / 0.07;
+  if (delta > 0.34) return 0;
+  if (delta < 0.06) return delta / 0.06;
+  if (delta < 0.13) return 1 - (delta - 0.06) / 0.07;
   return 0;
 }
 
@@ -81,12 +89,10 @@ export function startAboutSignLights(
   if (!sourceImg) return () => undefined;
 
   const bulbs = frameBulbPositions();
-  const { left, top, right, bottom } = SIGN_FRAME;
-  const frameW = right - left;
-  const frameH = bottom - top;
   const startTime = performance.now();
   let frame = 0;
   let running = true;
+  let booted = false;
 
   const supportsFilter = (() => {
     const probe = document.createElement("canvas").getContext("2d");
@@ -99,7 +105,7 @@ export function startAboutSignLights(
     }
   })();
 
-  const tick = (now: number) => {
+  const draw = (now: number) => {
     if (!running) return;
 
     const w = wrap.clientWidth;
@@ -130,7 +136,8 @@ export function startAboutSignLights(
       const scaleX = sourceImg.naturalWidth / displayW;
       const scaleY = sourceImg.naturalHeight / displayH;
       const cyclePos = ((now - startTime) % CHASE_MS) / CHASE_MS;
-      const patchR = Math.max(6, Math.min(w, h) * 0.11);
+      const patchR = Math.max(4, Math.min(w, h) * 0.095);
+      const bulbR = Math.max(2.4, Math.min(w, h) * 0.045);
 
       const drawBulbPatch = (
         bulb: BulbPoint,
@@ -139,8 +146,8 @@ export function startAboutSignLights(
         brightness: number,
         glow: number,
       ) => {
-        const pctLeft = left + bulb.x * frameW;
-        const pctTop = top + bulb.y * frameH;
+        const pctLeft = SIGN_FRAME.left + bulb.x * (SIGN_FRAME.right - SIGN_FRAME.left);
+        const pctTop = SIGN_FRAME.top + bulb.y * (SIGN_FRAME.bottom - SIGN_FRAME.top);
         const imgCx = (pctLeft / 100) * displayW;
         const imgCy = (pctTop / 100) * displayH;
         const sx = imgCx * scaleX - patchR * scaleX;
@@ -190,6 +197,45 @@ export function startAboutSignLights(
         }
 
         ctx.restore();
+
+        const warmth = Math.max(0, Math.min(1, glow));
+        const baseAlpha = 0.28 + warmth * 0.72;
+        const litRadius = bulbR * (1 + warmth * 0.42);
+        const core = ctx.createRadialGradient(
+          cx - litRadius * 0.25,
+          cy - litRadius * 0.25,
+          0,
+          cx,
+          cy,
+          litRadius,
+        );
+        core.addColorStop(0, `rgba(255, 247, 215, ${baseAlpha})`);
+        core.addColorStop(0.38, `rgba(255, 196, 85, ${0.36 + warmth * 0.46})`);
+        core.addColorStop(1, `rgba(112, 57, 18, ${0.1 + warmth * 0.1})`);
+
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        ctx.fillStyle = core;
+        ctx.beginPath();
+        ctx.arc(cx, cy, litRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (warmth > 0.05) {
+          const glowRadius = litRadius * (3 + warmth * 2);
+          const chaseGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
+          chaseGlow.addColorStop(0, `rgba(255, 233, 166, ${0.58 * warmth})`);
+          chaseGlow.addColorStop(0.4, `rgba(255, 154, 38, ${0.28 * warmth})`);
+          chaseGlow.addColorStop(1, "rgba(255, 116, 20, 0)");
+          ctx.fillStyle = chaseGlow;
+          ctx.fillRect(
+            cx - glowRadius,
+            cy - glowRadius,
+            glowRadius * 2,
+            glowRadius * 2,
+          );
+        }
+        ctx.globalCompositeOperation = "source-over";
+        ctx.restore();
       };
 
       for (let i = 0; i < bulbs.length; i++) {
@@ -207,11 +253,17 @@ export function startAboutSignLights(
         }
       }
     }
+  };
 
+  const tick = (now: number) => {
+    draw(now);
     frame = requestAnimationFrame(tick);
   };
 
   const boot = async () => {
+    if (booted) return;
+    booted = true;
+
     if ("decode" in sourceImg) {
       try {
         await sourceImg.decode();
@@ -220,12 +272,11 @@ export function startAboutSignLights(
       }
     }
     if (!running) return;
-    tick(performance.now());
     frame = requestAnimationFrame(tick);
   };
 
   const resizeObserver = new ResizeObserver(() => {
-    tick(performance.now());
+    draw(performance.now());
   });
   resizeObserver.observe(wrap);
   resizeObserver.observe(sourceImg);
@@ -233,7 +284,7 @@ export function startAboutSignLights(
   if (sourceImg.complete) {
     void boot();
   } else {
-    sourceImg.addEventListener("load", () => void boot(), { once: true });
+    sourceImg.addEventListener("load", boot, { once: true });
   }
 
   return () => {

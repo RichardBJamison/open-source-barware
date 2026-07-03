@@ -139,10 +139,10 @@ export default function AboutMockupPage() {
 
         .drink-sign-canvas-wrap {
           position: absolute;
-          left: 51.46%;
-          top: 76.94%;
-          width: 36.82%;
-          height: 5.71%;
+          left: 49.9%;
+          top: 75.9%;
+          width: 41.6%;
+          height: 10.05%;
           z-index: 4;
           pointer-events: none;
         }
@@ -168,7 +168,7 @@ export default function AboutMockupPage() {
 
         .osb-about-story {
           padding: 4rem 1.5rem 5rem;
-          border-top: 1px solid rgba(205, 127, 50, 0.18);
+          border-top: 1px solid rgba(168, 120, 79, 0.18);
           background: linear-gradient(180deg, #090807 0%, #0d0b09 100%);
         }
 
@@ -180,7 +180,7 @@ export default function AboutMockupPage() {
         .osb-about-story h2 {
           font-family: var(--font-playfair), Georgia, serif;
           font-size: clamp(1.5rem, 3vw, 2rem);
-          color: #d4821a;
+          color: #b88958;
           margin: 2.5rem 0 1rem;
         }
 
@@ -209,7 +209,7 @@ export default function AboutMockupPage() {
         }
 
         .osb-about-story a {
-          color: #d4821a;
+          color: #b88958;
           text-decoration: underline;
           text-underline-offset: 3px;
         }
@@ -328,18 +328,34 @@ export default function AboutMockupPage() {
 
             <h2>Who is behind it</h2>
             <p>
-              Open Source Barware is a <strong>RBJP Holdings</strong> project, forged in Cleveland,
-              Ohio, and given to the trade with no strings attached. Richard B. Jamison built it
+              Open Source Barware is a <strong>Richard B. Jamison</strong> project, forged in
+              Cleveland, Ohio, and given to the trade with no strings attached. Richard built it
               from decades in hospitality, music, and operating businesses where the numbers only work
-              when the people doing the work trust the system.
-            </p>
-            <p>
-              Hirado Junior — Nito to anyone who has worked a floor with him — appears in the origin
-              story because this work was always about the crew on the other side of the stick, not a
-              product category. If you want the full philosophy, read{" "}
+              when the people doing the work trust the system. If you want the full philosophy, read{" "}
               <Link href="/manifesto">the manifesto</Link>. If you want the workflow, start with{" "}
               <Link href="/the-process">the process</Link> or{" "}
               <Link href="/downloads">download the program</Link>.
+            </p>
+
+            <h2>What&rsquo;s next</h2>
+            <p>
+              Now we build <strong>The World Hidden Bar Tour</strong>. City by city, every couple of
+              months, we visit a new market — the bars that are popular and famous, the bartenders
+              working those rooms, and the locals who actually know where to go after last call. We
+              spend a few days on the floor, collect their recommendations for hidden bars, and tour
+              the spots they trust to build another hidden-bar map for that city.
+            </p>
+            <p>
+              Miami is first. Richard spent ten years there and already has five bars almost nobody
+              outside the trade would think to visit — places that are absolutely brilliant once you
+              know they exist. September is the first venture. That is what the fundraising is for.
+            </p>
+            <p>
+              The inventory program is only the start. Next comes a full wine inventory system —
+              updated pour logic, pitchers in depth, and hundreds of varietals of wine. A chat forum
+              where bartenders can network, share what works, and talk shop with each other. And a
+              full resource library — cocktail references, beer and wine references, and everything
+              else worth keeping behind the bar, free for the people who use it.
             </p>
 
             <h2>Buy us a drink</h2>

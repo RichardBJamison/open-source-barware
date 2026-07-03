@@ -543,7 +543,7 @@ export default function TheProcess() {
             <Link
               href="/inventory"
               prefetch={false}
-              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-base tracking-wide transition-all hover:shadow-[0_0_40px_rgba(205,127,50,0.3)]"
+              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-base tracking-wide transition-all hover:shadow-[0_0_40px_rgba(168,120,79,0.3)]"
             >
               Open the Trial Home Base
             </Link>

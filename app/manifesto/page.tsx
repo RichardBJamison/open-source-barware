@@ -228,7 +228,7 @@ export default function ManifestoPage() {
               href="https://ko-fi.com/W2J022HCH2"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_24px_rgba(205,127,50,0.25)]"
+              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_24px_rgba(168,120,79,0.25)]"
             >
               Buy Us a Drink
             </a>
@@ -287,7 +287,7 @@ export default function ManifestoPage() {
           </p>
           <Link
             href="/downloads"
-            className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
+            className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
           >
             Download the Program
           </Link>

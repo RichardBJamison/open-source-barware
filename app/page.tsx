@@ -17,7 +17,7 @@ export const metadata = pageMetadata({
 });
 
 const primaryCtaClass =
-  "group relative inline-flex w-full items-center justify-center bg-copper px-8 py-4 text-center text-sm font-semibold tracking-wide text-bg transition-all hover:bg-copper-bright hover:shadow-[0_0_30px_rgba(205,127,50,0.25)] sm:w-[210px]";
+  "group relative inline-flex w-full items-center justify-center bg-copper px-8 py-4 text-center text-sm font-semibold tracking-wide text-bg transition-all hover:bg-copper-bright hover:shadow-[0_0_30px_rgba(168,120,79,0.25)] sm:w-[210px]";
 
 const workshopTools = [
   {
@@ -128,10 +128,10 @@ export default function Home() {
       {/* ── STATS STRIP ── */}
       <section className="border-y border-gear-border bg-bg-panel">
         <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
-          <StatBlock number="$0" label="Cost, forever" />
+          <StatBlock number="$0" label="Cost" />
           <StatBlock number="1" label="Free program" />
-          <StatBlock number="3" label="Weeks of field testing" />
-          <StatBlock number="100%" label="Open source" />
+          <StatBlock number="3" label="Easy steps" detail="Each week" />
+          <StatBlock number="100%" label="Simple" detail="Add data. Get inventory." />
         </div>
       </section>
 
@@ -194,9 +194,9 @@ export default function Home() {
             The Workshop
           </span>
         </div>
-        <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-4 max-w-lg">
-          <span className="copper-text">Precision instruments</span> for the
-          craft.
+        <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-4 max-w-2xl">
+          <span className="copper-text">Precision instruments</span>
+          <span className="whitespace-nowrap"> for the craft.</span>
         </h2>
         <p className="text-text-muted mb-12 max-w-lg">
           We provide one simple system. Here you will find the free program
@@ -339,7 +339,7 @@ export default function Home() {
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               href="/downloads"
-              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
+              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
             >
               Download the Program
             </Link>
@@ -357,75 +357,70 @@ export default function Home() {
 }
 
 function ProblemHourglass() {
+  const edgeFade =
+    "radial-gradient(ellipse at 50% 54%, black 0%, black 58%, rgba(0,0,0,0.88) 74%, transparent 100%)";
+
   return (
     <div
       aria-hidden="true"
-      className="relative overflow-hidden rounded-sm border border-copper/20 bg-bg-panel/55 p-5 shadow-[inset_0_0_40px_rgba(205,127,50,0.06),0_20px_60px_rgba(0,0,0,0.25)]"
+      className="relative overflow-hidden rounded-sm bg-[#100c08] p-3 shadow-[inset_0_0_42px_rgba(168,120,79,0.08),0_24px_70px_rgba(0,0,0,0.36)]"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(205,127,50,0.18),transparent_38%),linear-gradient(135deg,rgba(45,102,94,0.12),transparent_45%)]" />
-      <div className="absolute left-5 right-5 top-5 h-px bg-gradient-to-r from-transparent via-copper/40 to-transparent" />
-      <div className="absolute bottom-5 left-5 right-5 h-px bg-gradient-to-r from-transparent via-copper/25 to-transparent" />
-      <svg
-        viewBox="0 0 220 270"
-        className="relative mx-auto h-[240px] w-full text-copper drop-shadow-[0_0_18px_rgba(205,127,50,0.16)]"
-        fill="none"
-      >
-        <defs>
-          <linearGradient id="hourglassSand" x1="88" x2="132" y1="74" y2="204">
-            <stop stopColor="#d9a460" />
-            <stop offset="1" stopColor="#8b4a22" />
-          </linearGradient>
-          <linearGradient id="hourglassGlass" x1="57" x2="163" y1="50" y2="220">
-            <stop stopColor="#f3dfbc" stopOpacity="0.2" />
-            <stop offset="0.48" stopColor="#ffffff" stopOpacity="0.05" />
-            <stop offset="1" stopColor="#2d665e" stopOpacity="0.16" />
-          </linearGradient>
-        </defs>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_68%,rgba(168,120,79,0.24),transparent_42%),radial-gradient(circle_at_48%_16%,rgba(215,193,145,0.12),transparent_34%),linear-gradient(135deg,rgba(45,102,94,0.12),transparent_46%)]" />
+      <div className="absolute -left-12 top-16 h-44 w-44 rounded-full bg-patina/10 blur-3xl" />
+      <div className="absolute bottom-8 left-1/2 h-28 w-44 -translate-x-1/2 rounded-full bg-copper/20 blur-2xl" />
 
-        <path
-          d="M66 54c9 39 29 59 44 77-15 18-35 38-44 77h88c-9-39-29-59-44-77 15-18 35-38 44-77H66Z"
-          fill="url(#hourglassGlass)"
-          stroke="currentColor"
-          strokeWidth="2"
-          opacity="0.9"
+      <div className="relative z-10 mx-auto max-w-[255px]">
+        <Image
+          src="/images/landing-hourglass.png"
+          alt=""
+          width={314}
+          height={466}
+          className="h-auto w-full opacity-95 drop-shadow-[0_18px_30px_rgba(0,0,0,0.45)] saturate-[0.9] sepia-[0.12] contrast-[1.08]"
+          style={{
+            WebkitMaskImage: edgeFade,
+            maskImage: edgeFade,
+          }}
         />
-        <path
-          d="M83 77h54c-7 18-18 31-27 42-9-11-20-24-27-42Z"
-          fill="url(#hourglassSand)"
-          opacity="0.76"
-        />
-        <path
-          d="M88 195c7-19 16-31 22-39 6 8 15 20 22 39H88Z"
-          fill="url(#hourglassSand)"
-          opacity="0.84"
-        />
-        <path d="M110 126v48" stroke="#d9a460" strokeWidth="2" strokeLinecap="round" strokeDasharray="2 8" />
-        <path d="M57 46h106M57 216h106" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-        <path d="M71 34h78M71 228h78" stroke="#8b4a22" strokeWidth="6" strokeLinecap="round" />
-        <path d="M76 38v186M144 38v186" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.72" />
-        <circle cx="76" cy="38" r="5" fill="currentColor" opacity="0.55" />
-        <circle cx="144" cy="38" r="5" fill="currentColor" opacity="0.55" />
-        <circle cx="76" cy="224" r="5" fill="currentColor" opacity="0.55" />
-        <circle cx="144" cy="224" r="5" fill="currentColor" opacity="0.55" />
-        <path d="M36 132h38M146 132h38" stroke="currentColor" strokeWidth="1" opacity="0.35" />
-        <circle cx="110" cy="132" r="7" stroke="#2d665e" strokeWidth="1.5" opacity="0.8" />
-        <circle cx="110" cy="132" r="2" fill="#2d665e" opacity="0.8" />
-      </svg>
-      <div className="relative mt-1 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.28em] text-text-light">
+      </div>
+
+      <div className="pointer-events-none absolute inset-0 z-20 bg-[radial-gradient(ellipse_at_center,transparent_44%,rgba(13,11,9,0.64)_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-20 bg-gradient-to-b from-bg-panel/80 via-bg-panel/30 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-gradient-to-t from-bg-panel via-bg-panel/55 to-transparent" />
+
+      <div className="relative z-30 -mt-2 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.28em] text-text-light">
         <span className="h-px w-8 bg-copper/30" />
-        <span>Time back</span>
+        <span>Get Your Time Back</span>
         <span className="h-px w-8 bg-copper/30" />
       </div>
     </div>
   );
 }
 
-function StatBlock({ number, label }: { number: string; label: string }) {
+function StatBlock({
+  number,
+  label,
+  detail,
+}: {
+  number: string;
+  label: string;
+  detail?: string;
+}) {
   return (
     <div className="text-center">
       <div className="stat-number copper-text">{number}</div>
-      <div className="text-xs text-text-light tracking-wider uppercase mt-1">
+      <div
+        aria-label={`${number} ${label}${detail ? `, ${detail}` : ""}`}
+        className="mt-2 min-h-[38px] text-[11px] uppercase leading-relaxed tracking-[0.18em] text-text-light"
+      >
         {label}
+        {detail ? (
+          <>
+            {" "}
+            <span className="mt-0.5 block text-[10px] tracking-[0.14em] text-text-light/75">
+              {detail}
+            </span>
+          </>
+        ) : null}
       </div>
     </div>
   );

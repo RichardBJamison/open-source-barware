@@ -1,7 +1,7 @@
 # Open Source Barware — Handoff
 
-*Last updated: 2026-07-01 | agent: CODEX | project ID: `open-source-barware`*
-*Status: active / local trial workflow foundation and customer process page verified*
+*Last updated: 2026-07-03 | agent: CODEX | project ID: `open-source-barware`*
+*Status: active / GPL download compliance package verified locally*
 
 ## Purpose
 
@@ -26,6 +26,19 @@ an admin home base.
 - `/downloads` is now a program guide instead of a direct-download grid. The
   cards say "Learn More" and jump to explainer sections for how each feature
   fits inside the one Chrome-side program.
+- `/downloads` now includes a GPL Download panel with direct links to a licensed
+  program package, corresponding source archive, GPL text, and the public
+  compliance page.
+- `/open-source-compliance` now exists as the public license/source notice page.
+  Footer navigation and the sitemap include it.
+- `public/downloads/` now contains `LICENSE.txt`, `README.md`, `NOTICE.md`,
+  `SOURCE-OFFER.md`, `open-source-barware-download-package.zip`, and
+  `open-source-barware-source.zip`. Legacy direct raw-file Cloudflare redirects
+  point spreadsheet/prompt URLs to the licensed package zip.
+- Root `LICENSE`, `NOTICE.md`, `README.md`, and `package.json` declare
+  GPL-3.0-or-later. `npm run package:compliance` regenerates the package and
+  source zips from non-ignored working-tree files, and `npm run build` now
+  runs that packaging step automatically through `prebuild`.
 - `/inventory/inputs` now exists as the admin-panel Weekly Inputs page with
   local draft fields for period dates, count notes, invoice file staging, POS
   file staging, notes, and a copyable AI reconciliation packet. The inventory
@@ -47,9 +60,29 @@ an admin home base.
   "Nito."
 - Home hero CTAs now read, left to right: "Learn This System" (`/the-process`),
   "Read Our Story" (`/about`), and "Download the Program" (`/downloads`). The
-  two orange CTAs share one sizing/style class.
+  two primary CTAs share one sizing/style class.
+- Home stat strip now reads `$0 Cost`, `1 Free program`, `3 Easy steps / Each
+  week`, and `100% Simple / Add data. Get inventory.` The Problem section uses
+  the supplied hourglass image at `public/images/landing-hourglass.png` blended
+  into a masked, vignetted panel with the caption "Get Your Time Back."
+- `/about` has a canvas light overlay on the "Buy Us a Drink" support sign. The
+  overlay is aligned to the full sign bulb border and animates the individual
+  bulbs with a rotating chase/glow, while still respecting reduced-motion
+  preferences by not starting the animation.
+- Site-wide highlight color has been muted from bright orange to aged
+  copper/brass: `--copper #a8784f`, `--copper-bright #b88958`, `--brass
+  #c7a76b`, `--brass-light #d7c191`. This covers public pages, shared UI,
+  download previews, the Chrome-side program CSS, and legacy local dashboard
+  accent shadows.
 - Public CTA language now frames Open Source Barware as one free program/app
   rather than multiple downloads, toolkits, or apps.
+- 2026-07-03 email infra audit confirmed `richard@opensourcebarware.com` is
+  currently only a Gmail-backed Thunderbird identity on `rbjpholdings@gmail.com`
+  and not a dedicated mailbox. Live DNS for `opensourcebarware.com` still has
+  no MX record. The local `getmail` backup pull now has a valid Maildir at
+  `~/.mailbox/barware/{cur,new,tmp}`, but the configured Gmail source label
+  `OpenSourceBarware` is not selectable yet, so the backup job still needs its
+  source mailbox created or corrected.
 - The latest Three-Way run on 2026-06-14 completed Codex and Grok responses;
   Claude/Reeve timed out.
 - The working `.meta` status is `partial`.
@@ -63,6 +96,9 @@ an admin home base.
 - `app/inventory/dashboard/page.tsx` — local admin inventory dashboard
 - `app/inventory/inputs/page.tsx` — local weekly intake packet staging
 - `app/inventory/settings/page.tsx` — provider/cycle/local backup controls
+- `app/open-source-compliance/page.tsx` — public GPL/source compliance notice
+- `public/downloads/` — downloadable package/source archives plus license files
+- `scripts/build-compliance-packages.mjs` — regenerates compliance zip packages
 - `bar-app/` — legacy/local bar inventory implementation
 - `~/Me-Nexus/working/osb-full-system/prompt.md` — full product/design prompt
 - `~/Me-Nexus/working/osb-full-system/synthesis.md` — available synthesis
@@ -73,6 +109,7 @@ an admin home base.
 cd "/Users/richardjamison/Documents/New project/open-source-barware"
 npm install
 npm run dev
+npm run package:compliance
 npm run build
 ```
 
@@ -139,12 +176,68 @@ Confirm scripts in `package.json` before relying on these commands.
   metadata, header/footer, legacy download buttons, and the program guide.
   "Mobile Count App" is now "Mobile Count View." `npm run lint`,
   `npm run build`, and `git diff --check` passed.
+- 2026-07-03 CODEX: Muted the bright orange palette to aged copper/brass.
+  Verification passed: bright-token source scan clean for old orange values,
+  `git diff --check`, `npm run lint` (0 errors, 5 existing warnings), and
+  `npm run build`. Fresh local browser checks at desktop 1280px and mobile
+  390px confirmed primary CTA background `rgb(168, 120, 79)`, matching hero CTA
+  sizing, muted copper/brass headline gradient, and no horizontal overflow.
+- 2026-07-03 CODEX: Added GPL download/source compliance package and public
+  compliance page. Verification passed: `npm run package:compliance`,
+  `zipinfo` confirmed package zip contains `README.md`, `LICENSE.txt`,
+  `NOTICE.md`, `SOURCE-OFFER.md`, spreadsheet files, and `master-prompt.md`;
+  source zip scan found no `.env`, `node_modules`, `.next`, `out`,
+  `program/data`, `program/osb_config.json`, or generated zip recursion;
+  `npm run lint` passed with 0 errors and 5 existing warnings; `git diff
+  --check` passed; `npm run build` passed with `/open-source-compliance`
+  prerendered; browser desktop/mobile DOM checks passed for `/downloads` and
+  `/open-source-compliance`; local HTTP checks returned 200 for package zip,
+  source zip, GPL text, and compliance page.
+- 2026-07-03 CODEX: Wired GPL packaging into the build pipeline with
+  `package.json` `prebuild`. Verification passed: `npm run build` triggered
+  `npm run package:compliance` first, then emitted the static export containing
+  `out/open-source-compliance.html`, `out/downloads/open-source-barware-download-package.zip`,
+  `out/downloads/open-source-barware-source.zip`, and the public license/readme
+  notice files.
+- 2026-07-03 CODEX: Added the supplied hourglass image to the home Problem
+  section and tightened the stat strip wording/formatting. Verification passed:
+  `npm run package:compliance`, source zip includes `app/page.tsx` and
+  `public/images/landing-hourglass.png`, `npm run lint` passed with 0 errors
+  and 5 existing warnings, `git diff --check` passed, `npm run build` passed,
+  and browser checks at 1280px and 390px confirmed the image is loaded/masked,
+  stat labels do not overflow, and there is no horizontal overflow.
+- 2026-07-03 CODEX: Updated the home Problem hourglass caption to "Get Your
+  Time Back" and removed the hard border/frame lines around the picture.
+  Verification passed: `npm run package:compliance`, source zip includes
+  `app/page.tsx` and `public/images/landing-hourglass.png`, `npm run lint`
+  passed with 0 errors and 5 existing warnings, `git diff --check` passed,
+  `npm run build` passed, and a local browser check confirmed the caption,
+  loaded image, and 0px panel border.
+- 2026-07-03 CODEX: Adjusted the home Workshop heading so "for the craft." stays
+  together instead of leaving "craft." alone on the next line. Verification
+  passed: `npm run package:compliance`, source zip includes `app/page.tsx`,
+  `npm run lint` passed with 0 errors and 5 existing warnings, `git diff
+  --check` passed, `npm run build` passed, and a 703px browser check confirmed
+  "the" and "craft." share the same row with no horizontal overflow.
+- 2026-07-03 CODEX: Fixed the `/about` "Buy Us a Drink" sign lights. The canvas
+  overlay now covers the full sign border instead of a narrow strip, draws
+  individual bulb cores/halos, and runs a faster rotating chase. Verification
+  passed: `npm run package:compliance`, source zip includes
+  `components/AboutMockupPage.tsx` and `lib/about-sign-lights.ts`, `npm run
+  lint` passed with 0 errors and 5 existing warnings, `git diff --check` passed,
+  `npm run build` passed, and browser screenshots confirmed the overlay sits on
+  the real sign and changes over time.
 
 ## Known issues
 
 - Three-Way result is partial because Reeve timed out.
-- Live production at `opensourcebarware.com` may lag this local build until the
-  static export is deployed.
+- Live production at `opensourcebarware.com` may lag local changes until the
+  static export is deployed. The 2026-07-03 muted-palette and GPL compliance
+  passes are local and verified, but not committed or pushed yet.
+- Open Source Barware mail is not domain-live yet. `opensourcebarware.com`
+  currently has no MX record, and the Thunderbird/Gmail identity for
+  `richard@opensourcebarware.com` is still a stopgap rather than a direct
+  mailbox.
 - The full Chrome-side package/provider API connection is not built yet; current
   app behavior is local browser storage plus AI handoff packet staging.
 - Invoice/POS file staging stores metadata and notes locally; it does not yet
@@ -166,6 +259,9 @@ Confirm scripts in `package.json` before relying on these commands.
 5. Review the existing Three-Way outputs and align/retire any prompt-only scope
    that conflicts with the Chrome program direction.
 6. Build backup restore/import, workbook export, and POS/invoice parser paths.
+7. Choose the long-term mailbox host for `richard@opensourcebarware.com`,
+   enable domain mail, and replace the Gmail identity stopgap with a dedicated
+   Thunderbird mailbox after direct send/receive verification.
 
 ## Pickup point
 

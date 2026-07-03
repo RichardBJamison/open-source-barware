@@ -2,11 +2,14 @@
   "name": "open-source-barware",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run package:compliance",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "package:compliance": "node scripts/build-compliance-packages.mjs"
   },
   "dependencies": {
     "next": "16.2.6",

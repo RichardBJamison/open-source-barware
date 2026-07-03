@@ -20,7 +20,7 @@ export function AppButton({
 
   const variants = {
     primary:
-      "bg-copper hover:bg-copper-bright text-bg hover:shadow-[0_0_20px_rgba(205,127,50,0.3)]",
+      "bg-copper hover:bg-copper-bright text-bg hover:shadow-[0_0_20px_rgba(168,120,79,0.3)]",
     secondary:
       "bg-transparent border border-copper/40 text-copper hover:border-copper hover:bg-copper/10",
   };
@@ -206,7 +206,7 @@ export function StepIndicator({
                   w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold border-2 transition-all
                   ${
                     isActive
-                      ? "bg-copper border-copper-bright text-bg shadow-[0_0_12px_rgba(205,127,50,0.4)]"
+                      ? "bg-copper border-copper-bright text-bg shadow-[0_0_12px_rgba(168,120,79,0.4)]"
                       : isComplete
                         ? "bg-copper/20 border-copper text-copper"
                         : "bg-bg-warm border-gear-border text-text-light"

@@ -159,7 +159,7 @@ export default function DashboardPage() {
         <div className="flex flex-wrap gap-2">
           <Link
             href="/inventory/count"
-            className="bg-copper hover:bg-copper-bright text-bg font-semibold px-5 py-2.5 text-sm tracking-wide transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.3)]"
+            className="bg-copper hover:bg-copper-bright text-bg font-semibold px-5 py-2.5 text-sm tracking-wide transition-all hover:shadow-[0_0_20px_rgba(168,120,79,0.3)]"
           >
             Start Count
           </Link>

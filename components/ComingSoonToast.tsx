@@ -39,7 +39,7 @@ export default function ComingSoonToast() {
       >
       <div
         className={`panel rivets pointer-events-auto w-full max-w-[520px] transition-opacity duration-500 ease-out ${dismissed ? "opacity-0" : "opacity-100"}`}
-        style={{ boxShadow: "0 24px 80px rgba(0,0,0,0.8), 0 0 2px rgba(205,127,50,0.4)" }}
+        style={{ boxShadow: "0 24px 80px rgba(0,0,0,0.8), 0 0 2px rgba(168,120,79,0.4)" }}
       >
         {/* Top copper accent bar */}
         <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-copper to-transparent" />
@@ -94,7 +94,7 @@ export default function ComingSoonToast() {
           {/* CTA */}
           <button
             onClick={dismiss}
-            className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3.5 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
+            className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3.5 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
           >
             Come on in
           </button>

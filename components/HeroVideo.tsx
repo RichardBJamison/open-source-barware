@@ -1,21 +1,39 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 
 const BASE_RATE = 0.6;
 const SLOW_RATE = 0.25;
 
+function subscribeMediaQuery(query: string, callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+
+  const mediaQuery = window.matchMedia(query);
+  mediaQuery.addEventListener("change", callback);
+
+  return () => mediaQuery.removeEventListener("change", callback);
+}
+
+function getMediaQuerySnapshot(query: string) {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia(query).matches;
+}
+
+function useMediaQuery(query: string) {
+  const subscribe = useCallback(
+    (callback: () => void) => subscribeMediaQuery(query, callback),
+    [query],
+  );
+  const getSnapshot = useCallback(() => getMediaQuerySnapshot(query), [query]);
+
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
+}
+
 export default function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [useVideo, setUseVideo] = useState(false);
-
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-    setUseVideo(isDesktop && !prefersReducedMotion);
-  }, []);
+  const prefersReducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const useVideo = isDesktop && !prefersReducedMotion;
 
   useEffect(() => {
     if (!useVideo) return;

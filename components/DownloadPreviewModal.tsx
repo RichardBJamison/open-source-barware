@@ -20,25 +20,25 @@ function InventorySheetMockup() {
     { product: "Don Julio Reposado", size: "750ml", count: "1.9", cost: "$52.00", total: "$98.80", par: "2", low: false },
   ];
   return (
-    <div style={{ background: "#0d0b09", border: "1px solid rgba(205,127,50,0.2)", borderRadius: 4, overflow: "hidden", fontFamily: "monospace" }}>
+    <div style={{ background: "#0d0b09", border: "1px solid rgba(168,120,79,0.2)", borderRadius: 4, overflow: "hidden", fontFamily: "monospace" }}>
       {/* Title bar */}
-      <div style={{ background: "rgba(205,127,50,0.12)", borderBottom: "1px solid rgba(205,127,50,0.2)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ color: "#cd7f32", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Bar Inventory Master Sheet</span>
-        <span style={{ color: "#cd7f32", fontSize: 10, opacity: 0.7 }}>Agave &amp; Rye · Week 23</span>
+      <div style={{ background: "rgba(168,120,79,0.12)", borderBottom: "1px solid rgba(168,120,79,0.2)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ color: "#a8784f", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Bar Inventory Master Sheet</span>
+        <span style={{ color: "#a8784f", fontSize: 10, opacity: 0.7 }}>Agave &amp; Rye · Week 23</span>
       </div>
       {/* Stats row */}
-      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid rgba(205,127,50,0.15)" }}>
+      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid rgba(168,120,79,0.15)" }}>
         {[["Total Value", "$12,840"], ["Products", "147"], ["Low Stock", "12"], ["Pour Cost", "22.4%"]].map(([label, val]) => (
-          <div key={label} style={{ flex: 1, padding: "8px 12px", borderRight: "1px solid rgba(205,127,50,0.1)" }}>
+          <div key={label} style={{ flex: 1, padding: "8px 12px", borderRight: "1px solid rgba(168,120,79,0.1)" }}>
             <div style={{ color: "#a87640", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase" }}>{label}</div>
-            <div style={{ color: "#cd7f32", fontSize: 14, fontWeight: 700, marginTop: 2 }}>{val}</div>
+            <div style={{ color: "#a8784f", fontSize: 14, fontWeight: 700, marginTop: 2 }}>{val}</div>
           </div>
         ))}
       </div>
       {/* Table header */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 0.7fr 0.6fr 0.8fr 0.8fr 0.5fr 0.5fr", gap: 0, padding: "6px 12px", borderBottom: "1px solid rgba(205,127,50,0.25)", background: "rgba(205,127,50,0.06)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 0.7fr 0.6fr 0.8fr 0.8fr 0.5fr 0.5fr", gap: 0, padding: "6px 12px", borderBottom: "1px solid rgba(168,120,79,0.25)", background: "rgba(168,120,79,0.06)" }}>
         {["Product", "Size", "Count", "Unit Cost", "Total", "Par", ""].map((h) => (
-          <div key={h} style={{ color: "#cd7f32", fontSize: 9, letterSpacing: "0.15em", textTransform: "uppercase", opacity: 0.8 }}>{h}</div>
+          <div key={h} style={{ color: "#a8784f", fontSize: 9, letterSpacing: "0.15em", textTransform: "uppercase", opacity: 0.8 }}>{h}</div>
         ))}
       </div>
       {/* Rows */}
@@ -46,18 +46,18 @@ function InventorySheetMockup() {
         <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 0.7fr 0.6fr 0.8fr 0.8fr 0.5fr 0.5fr", gap: 0, padding: "5px 12px", borderBottom: "1px solid rgba(255,255,255,0.04)", background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.02)" }}>
           <div style={{ color: r.low ? "#e8cda0" : "#c4a882", fontSize: 10 }}>{r.product}</div>
           <div style={{ color: "#7a6040", fontSize: 10 }}>{r.size}</div>
-          <div style={{ color: r.low ? "#e8c050" : "#c4a882", fontSize: 10, fontWeight: r.low ? 700 : 400 }}>{r.count}</div>
+          <div style={{ color: r.low ? "#c7a76b" : "#c4a882", fontSize: 10, fontWeight: r.low ? 700 : 400 }}>{r.count}</div>
           <div style={{ color: "#7a6040", fontSize: 10 }}>{r.cost}</div>
           <div style={{ color: "#c4a882", fontSize: 10 }}>{r.total}</div>
           <div style={{ color: "#7a6040", fontSize: 10 }}>{r.par}</div>
-          <div style={{ fontSize: 9 }}>{r.low ? <span style={{ color: "#e8c050", background: "rgba(232,192,80,0.12)", padding: "1px 5px", borderRadius: 2 }}>LOW</span> : <span style={{ color: "#4a8a5a", opacity: 0.7 }}>✓</span>}</div>
+          <div style={{ fontSize: 9 }}>{r.low ? <span style={{ color: "#c7a76b", background: "rgba(199,167,107,0.12)", padding: "1px 5px", borderRadius: 2 }}>LOW</span> : <span style={{ color: "#4a8a5a", opacity: 0.7 }}>✓</span>}</div>
         </div>
       ))}
       {/* Totals */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 0.7fr 0.6fr 0.8fr 0.8fr 0.5fr 0.5fr", gap: 0, padding: "7px 12px", borderTop: "1px solid rgba(205,127,50,0.3)", background: "rgba(205,127,50,0.07)" }}>
-        <div style={{ color: "#cd7f32", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em" }}>TOTALS (Liquor Tab)</div>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 0.7fr 0.6fr 0.8fr 0.8fr 0.5fr 0.5fr", gap: 0, padding: "7px 12px", borderTop: "1px solid rgba(168,120,79,0.3)", background: "rgba(168,120,79,0.07)" }}>
+        <div style={{ color: "#a8784f", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em" }}>TOTALS (Liquor Tab)</div>
         <div /><div /><div />
-        <div style={{ color: "#cd7f32", fontSize: 10, fontWeight: 700 }}>$481.80</div>
+        <div style={{ color: "#a8784f", fontSize: 10, fontWeight: 700 }}>$481.80</div>
         <div /><div />
       </div>
     </div>
@@ -71,11 +71,11 @@ function QuickCountMockup() {
     { cat: "BEER — DRAFT", items: ["Modelo Especial", "Bud Light", "Blue Moon", "IPA Rotation"] },
   ];
   return (
-    <div style={{ background: "#0d0b09", border: "1px solid rgba(205,127,50,0.2)", borderRadius: 4, overflow: "hidden", fontFamily: "monospace" }}>
+    <div style={{ background: "#0d0b09", border: "1px solid rgba(168,120,79,0.2)", borderRadius: 4, overflow: "hidden", fontFamily: "monospace" }}>
       {/* Header */}
-      <div style={{ padding: "12px 16px", borderBottom: "2px solid rgba(205,127,50,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ padding: "12px 16px", borderBottom: "2px solid rgba(168,120,79,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={{ color: "#cd7f32", fontSize: 12, fontWeight: 700, letterSpacing: "0.2em" }}>QUICK COUNT SHEET</div>
+          <div style={{ color: "#a8784f", fontSize: 12, fontWeight: 700, letterSpacing: "0.2em" }}>QUICK COUNT SHEET</div>
           <div style={{ color: "#6a5030", fontSize: 9, marginTop: 2 }}>opensourcebarware.com — free to the trade</div>
         </div>
         <div style={{ textAlign: "right" }}>
@@ -86,8 +86,8 @@ function QuickCountMockup() {
       </div>
       {sections.map((sec) => (
         <div key={sec.cat}>
-          <div style={{ background: "rgba(205,127,50,0.08)", padding: "4px 16px", borderTop: "1px solid rgba(205,127,50,0.15)", borderBottom: "1px solid rgba(205,127,50,0.15)" }}>
-            <span style={{ color: "#cd7f32", fontSize: 9, letterSpacing: "0.25em", textTransform: "uppercase", fontWeight: 700 }}>{sec.cat}</span>
+          <div style={{ background: "rgba(168,120,79,0.08)", padding: "4px 16px", borderTop: "1px solid rgba(168,120,79,0.15)", borderBottom: "1px solid rgba(168,120,79,0.15)" }}>
+            <span style={{ color: "#a8784f", fontSize: 9, letterSpacing: "0.25em", textTransform: "uppercase", fontWeight: 700 }}>{sec.cat}</span>
           </div>
           {sec.items.map((item) => (
             <div key={item} style={{ display: "grid", gridTemplateColumns: "1fr 60px 60px 60px", borderBottom: "1px solid rgba(255,255,255,0.04)", padding: "5px 16px", alignItems: "center" }}>
@@ -95,7 +95,7 @@ function QuickCountMockup() {
               {["Open", "Back Bar", "Storage"].map((lbl) => (
                 <div key={lbl} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
                   <div style={{ color: "#4a3820", fontSize: 8, letterSpacing: "0.1em" }}>{lbl}</div>
-                  <div style={{ width: 40, height: 16, border: "1px solid rgba(205,127,50,0.2)", borderRadius: 2 }} />
+                  <div style={{ width: 40, height: 16, border: "1px solid rgba(168,120,79,0.2)", borderRadius: 2 }} />
                 </div>
               ))}
             </div>
@@ -104,7 +104,7 @@ function QuickCountMockup() {
       ))}
       <div style={{ padding: "8px 16px", display: "flex", gap: 16 }}>
         <div style={{ color: "#4a3820", fontSize: 9 }}>Notes: ____________________</div>
-        <div style={{ color: "#cd7f32", fontSize: 9, marginLeft: "auto", opacity: 0.5 }}>→ Enter in spreadsheet after count</div>
+        <div style={{ color: "#a8784f", fontSize: 9, marginLeft: "auto", opacity: 0.5 }}>→ Enter in spreadsheet after count</div>
       </div>
     </div>
   );
@@ -121,24 +121,24 @@ function VarianceMockup() {
   ];
   const maxBar = 14;
   return (
-    <div style={{ background: "#0d0b09", border: "1px solid rgba(205,127,50,0.2)", borderRadius: 4, overflow: "hidden", fontFamily: "monospace" }}>
-      <div style={{ background: "rgba(205,127,50,0.12)", borderBottom: "1px solid rgba(205,127,50,0.2)", padding: "8px 14px", display: "flex", justifyContent: "space-between" }}>
-        <span style={{ color: "#cd7f32", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em" }}>VARIANCE CALCULATOR</span>
-        <span style={{ color: "#cd7f32", fontSize: 10, opacity: 0.7 }}>Week 23 vs POS</span>
+    <div style={{ background: "#0d0b09", border: "1px solid rgba(168,120,79,0.2)", borderRadius: 4, overflow: "hidden", fontFamily: "monospace" }}>
+      <div style={{ background: "rgba(168,120,79,0.12)", borderBottom: "1px solid rgba(168,120,79,0.2)", padding: "8px 14px", display: "flex", justifyContent: "space-between" }}>
+        <span style={{ color: "#a8784f", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em" }}>VARIANCE CALCULATOR</span>
+        <span style={{ color: "#a8784f", fontSize: 10, opacity: 0.7 }}>Week 23 vs POS</span>
       </div>
       {/* Summary pills */}
-      <div style={{ display: "flex", gap: 8, padding: "8px 12px", borderBottom: "1px solid rgba(205,127,50,0.1)" }}>
-        {[["Total Variance", "-$148.30", "#e8c050"], ["Pour Cost", "22.4%", "#cd7f32"], ["Flagged", "2 cats", "#e05050"], ["Vs Last Week", "+2.1%", "#4a8a5a"]].map(([l, v, c]) => (
-          <div key={l} style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(205,127,50,0.1)", padding: "5px 8px", borderRadius: 3 }}>
+      <div style={{ display: "flex", gap: 8, padding: "8px 12px", borderBottom: "1px solid rgba(168,120,79,0.1)" }}>
+        {[["Total Variance", "-$148.30", "#c7a76b"], ["Pour Cost", "22.4%", "#a8784f"], ["Flagged", "2 cats", "#e05050"], ["Vs Last Week", "+2.1%", "#4a8a5a"]].map(([l, v, c]) => (
+          <div key={l} style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(168,120,79,0.1)", padding: "5px 8px", borderRadius: 3 }}>
             <div style={{ color: "#6a5030", fontSize: 8, letterSpacing: "0.15em" }}>{l}</div>
             <div style={{ color: c, fontSize: 13, fontWeight: 700, marginTop: 1 }}>{v}</div>
           </div>
         ))}
       </div>
       {/* Column headers */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 0.7fr 0.7fr 0.7fr 0.6fr 1fr", padding: "5px 12px", borderBottom: "1px solid rgba(205,127,50,0.2)", background: "rgba(205,127,50,0.05)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1.6fr 0.7fr 0.7fr 0.7fr 0.6fr 1fr", padding: "5px 12px", borderBottom: "1px solid rgba(168,120,79,0.2)", background: "rgba(168,120,79,0.05)" }}>
         {["Category", "Physical", "POS", "Variance", "Pct", ""].map((h) => (
-          <div key={h} style={{ color: "#cd7f32", fontSize: 8, letterSpacing: "0.15em", textTransform: "uppercase", opacity: 0.7 }}>{h}</div>
+          <div key={h} style={{ color: "#a8784f", fontSize: 8, letterSpacing: "0.15em", textTransform: "uppercase", opacity: 0.7 }}>{h}</div>
         ))}
       </div>
       {cats.map((r, i) => (
@@ -153,7 +153,7 @@ function VarianceMockup() {
           <div style={{ color: r.flag ? "#e05050" : "#6a7860", fontSize: 10 }}>{r.pct}%</div>
           {/* Mini bar */}
           <div style={{ height: 6, background: "rgba(255,255,255,0.05)", borderRadius: 2, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${Math.min(Math.abs(r.pct) / maxBar * 100, 100)}%`, background: r.flag ? "#e05050" : "#cd7f32", opacity: 0.6, borderRadius: 2 }} />
+            <div style={{ height: "100%", width: `${Math.min(Math.abs(r.pct) / maxBar * 100, 100)}%`, background: r.flag ? "#e05050" : "#a8784f", opacity: 0.6, borderRadius: 2 }} />
           </div>
         </div>
       ))}
@@ -175,40 +175,40 @@ function ProductDatabaseMockup() {
     { name: "Maker's Mark", cat: "Whiskey", size: "1.75L", cost: "$38.00", pour: "1.5oz", ppc: "$0.89" },
   ];
   return (
-    <div style={{ background: "#0d0b09", border: "1px solid rgba(205,127,50,0.2)", borderRadius: 4, overflow: "hidden", fontFamily: "monospace" }}>
-      <div style={{ background: "rgba(205,127,50,0.12)", borderBottom: "1px solid rgba(205,127,50,0.2)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ color: "#cd7f32", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em" }}>PRODUCT DATABASE</span>
+    <div style={{ background: "#0d0b09", border: "1px solid rgba(168,120,79,0.2)", borderRadius: 4, overflow: "hidden", fontFamily: "monospace" }}>
+      <div style={{ background: "rgba(168,120,79,0.12)", borderBottom: "1px solid rgba(168,120,79,0.2)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ color: "#a8784f", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em" }}>PRODUCT DATABASE</span>
         <span style={{ color: "#4a8a5a", fontSize: 10 }}>✓ 500+ products loaded</span>
       </div>
       {/* Search bar */}
-      <div style={{ padding: "8px 12px", borderBottom: "1px solid rgba(205,127,50,0.1)", display: "flex", gap: 8, alignItems: "center" }}>
-        <div style={{ flex: 1, height: 26, border: "1px solid rgba(205,127,50,0.25)", borderRadius: 3, padding: "0 10px", display: "flex", alignItems: "center", gap: 6 }}>
+      <div style={{ padding: "8px 12px", borderBottom: "1px solid rgba(168,120,79,0.1)", display: "flex", gap: 8, alignItems: "center" }}>
+        <div style={{ flex: 1, height: 26, border: "1px solid rgba(168,120,79,0.25)", borderRadius: 3, padding: "0 10px", display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ color: "#4a3820", fontSize: 10 }}>🔍</span>
           <span style={{ color: "#4a3820", fontSize: 10, letterSpacing: "0.05em" }}>Search 500+ products by name, brand, or category...</span>
         </div>
         {["All", "Whiskey", "Vodka", "Tequila", "Gin", "Rum"].map((f, i) => (
-          <div key={f} style={{ padding: "3px 8px", border: `1px solid ${i === 0 ? "#cd7f32" : "rgba(205,127,50,0.2)"}`, borderRadius: 2, color: i === 0 ? "#cd7f32" : "#4a3820", fontSize: 9 }}>{f}</div>
+          <div key={f} style={{ padding: "3px 8px", border: `1px solid ${i === 0 ? "#a8784f" : "rgba(168,120,79,0.2)"}`, borderRadius: 2, color: i === 0 ? "#a8784f" : "#4a3820", fontSize: 9 }}>{f}</div>
         ))}
       </div>
       {/* Column headers */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 0.8fr 0.7fr 0.8fr 0.7fr 0.7fr", padding: "5px 12px", borderBottom: "1px solid rgba(205,127,50,0.2)", background: "rgba(205,127,50,0.05)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 0.8fr 0.7fr 0.8fr 0.7fr 0.7fr", padding: "5px 12px", borderBottom: "1px solid rgba(168,120,79,0.2)", background: "rgba(168,120,79,0.05)" }}>
         {["Product Name", "Category", "Size", "Avg Cost", "Std Pour", "$/Pour"].map((h) => (
-          <div key={h} style={{ color: "#cd7f32", fontSize: 8, letterSpacing: "0.15em", textTransform: "uppercase", opacity: 0.7 }}>{h}</div>
+          <div key={h} style={{ color: "#a8784f", fontSize: 8, letterSpacing: "0.15em", textTransform: "uppercase", opacity: 0.7 }}>{h}</div>
         ))}
       </div>
       {products.map((p, i) => (
         <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 0.8fr 0.7fr 0.8fr 0.7fr 0.7fr", padding: "4px 12px", borderBottom: "1px solid rgba(255,255,255,0.04)", background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.02)", alignItems: "center" }}>
           <div style={{ color: "#c4a882", fontSize: 10 }}>{p.name}</div>
-          <div style={{ fontSize: 9, padding: "1px 5px", background: "rgba(205,127,50,0.08)", color: "#cd7f32", borderRadius: 2, width: "fit-content" }}>{p.cat}</div>
+          <div style={{ fontSize: 9, padding: "1px 5px", background: "rgba(168,120,79,0.08)", color: "#a8784f", borderRadius: 2, width: "fit-content" }}>{p.cat}</div>
           <div style={{ color: "#7a6040", fontSize: 10 }}>{p.size}</div>
           <div style={{ color: "#a88050", fontSize: 10 }}>{p.cost}</div>
           <div style={{ color: "#7a6040", fontSize: 10 }}>{p.pour}</div>
           <div style={{ color: "#c4a882", fontSize: 10 }}>{p.ppc}</div>
         </div>
       ))}
-      <div style={{ padding: "6px 12px", borderTop: "1px solid rgba(205,127,50,0.1)", display: "flex", justifyContent: "space-between" }}>
+      <div style={{ padding: "6px 12px", borderTop: "1px solid rgba(168,120,79,0.1)", display: "flex", justifyContent: "space-between" }}>
         <span style={{ color: "#4a3820", fontSize: 9 }}>Showing 7 of 523 products</span>
-        <span style={{ color: "#cd7f32", fontSize: 9 }}>Import to your spreadsheet in one click →</span>
+        <span style={{ color: "#a8784f", fontSize: 9 }}>Import to your spreadsheet in one click →</span>
       </div>
     </div>
   );
@@ -261,7 +261,7 @@ export default function DownloadPreviewModal({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
           className="panel w-full max-w-2xl pointer-events-auto flex flex-col"
-          style={{ maxHeight: "85vh", boxShadow: "0 32px 100px rgba(0,0,0,0.9), 0 0 3px rgba(205,127,50,0.3)" }}
+          style={{ maxHeight: "85vh", boxShadow: "0 32px 100px rgba(0,0,0,0.9), 0 0 3px rgba(168,120,79,0.3)" }}
         >
           {/* Top copper accent — fixed */}
           <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-copper to-transparent shrink-0" />
@@ -287,14 +287,14 @@ export default function DownloadPreviewModal({
           {/* Scrollable content */}
           <div className="overflow-y-auto flex-1 min-h-0 px-7 py-5 space-y-4">
             {/* Beta notice */}
-            <div className="flex items-start gap-3 p-4 border border-[rgba(232,192,80,0.2)] bg-[rgba(232,192,80,0.04)] rounded-sm">
+            <div className="flex items-start gap-3 p-4 border border-[rgba(199,167,107,0.2)] bg-[rgba(199,167,107,0.04)] rounded-sm">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 mt-0.5">
-                <path d="M8 2L14 13H2L8 2Z" stroke="#e8c050" strokeWidth="1.2" fill="none" />
-                <line x1="8" y1="7" x2="8" y2="10" stroke="#e8c050" strokeWidth="1.2" />
-                <circle cx="8" cy="11.5" r="0.7" fill="#e8c050" />
+                <path d="M8 2L14 13H2L8 2Z" stroke="#c7a76b" strokeWidth="1.2" fill="none" />
+                <line x1="8" y1="7" x2="8" y2="10" stroke="#c7a76b" strokeWidth="1.2" />
+                <circle cx="8" cy="11.5" r="0.7" fill="#c7a76b" />
               </svg>
               <div>
-                <div className="text-[10px] font-semibold text-[#e8c050] tracking-[0.15em] uppercase mb-1">Live Testing at Agave &amp; Rye</div>
+                <div className="text-[10px] font-semibold text-[#c7a76b] tracking-[0.15em] uppercase mb-1">Live Testing at Agave &amp; Rye</div>
                 <p className="text-xs text-text-muted leading-relaxed">
                   This program is being tested in a real bar right now. You&rsquo;re getting an early build.
                   It works — we&rsquo;re just still counting bottles to prove it. Feedback welcome.
@@ -325,7 +325,7 @@ export default function DownloadPreviewModal({
           <div className="shrink-0 px-7 py-5 border-t border-gear-border flex flex-col gap-3">
             <button
               onClick={onConfirm}
-              className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3.5 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(205,127,50,0.25)]"
+              className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3.5 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
             >
               Download the Program
             </button>
