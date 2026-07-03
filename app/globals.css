@@ -303,6 +303,77 @@ body { background: var(--bg); color: var(--text); }
   line-height: 1;
 }
 
+/* ── The Dojo sandbox ── */
+.dojo-welcome-overlay {
+  animation: dojo-fade-in 0.35s ease-out;
+}
+
+.dojo-welcome-backdrop {
+  animation: dojo-fade-in 0.35s ease-out;
+}
+
+.dojo-welcome-panel {
+  animation: dojo-rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dojo-welcome-badge {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--patina-light);
+  border: 1px solid rgba(74, 124, 111, 0.35);
+  padding: 0.35rem 0.75rem;
+  background: rgba(74, 124, 111, 0.08);
+}
+
+.dojo-sandbox-pill {
+  align-items: center;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--patina-light);
+  border: 1px solid rgba(74, 124, 111, 0.35);
+  padding: 0.2rem 0.5rem;
+  background: rgba(74, 124, 111, 0.1);
+}
+
+@keyframes dojo-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dojo-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dojo-karate-kick {
+  0%, 100% { transform: rotate(-18deg) translateY(0); }
+  50% { transform: rotate(-24deg) translateY(-3px); }
+}
+
+@keyframes dojo-karate-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+
+.dojo-karate-guy .dojo-karate-kick {
+  transform-origin: 118px 114px;
+  animation: dojo-karate-kick 1.8s ease-in-out infinite;
+}
+
+.dojo-karate-guy {
+  animation: dojo-karate-wobble 3s ease-in-out infinite;
+}
+
 /* ── July 4th launch overlay ── */
 .july4-scroll {
   -ms-overflow-style: none;

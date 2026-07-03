@@ -81,7 +81,8 @@ export interface InventorySettings {
   updatedAt: string | null;
 }
 
-const PREFIX = "osb_";
+/** Web Dojo sandbox — isolated from the downloaded Chrome program (`osb_`). */
+const PREFIX = "osb_dojo_";
 export const STORAGE_KEYS = {
   bar: `${PREFIX}bar`,
   counts: `${PREFIX}counts`,

@@ -10,6 +10,7 @@ import {
   type Bottle,
   type Station,
 } from '@/lib/inventory-store';
+import { seedDojoPlayground } from '@/lib/dojo';
 
 function useHydrated() {
   return useSyncExternalStore(
@@ -112,13 +113,17 @@ export default function DashboardPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 text-center">
         <div className="panel rounded-sm p-8 sm:p-12 rivets">
-          <p className="text-text-muted mb-4">No bar is configured on this device yet.</p>
-          <Link
-            href="/inventory/setup"
+          <p className="text-text-muted mb-4">The Dojo is empty. Load the demo bar to start playing.</p>
+          <button
+            type="button"
+            onClick={() => {
+              seedDojoPlayground(true);
+              window.location.reload();
+            }}
             className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 text-sm tracking-wide transition-all"
           >
-            Set Up Your Bar
-          </Link>
+            Load Demo Bar
+          </button>
         </div>
       </div>
     );

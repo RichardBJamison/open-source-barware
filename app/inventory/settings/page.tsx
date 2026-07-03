@@ -2,7 +2,6 @@
 
 import { useState, useSyncExternalStore } from "react";
 import {
-  clearAll,
   getBar,
   getCounts,
   getInventorySettings,
@@ -10,6 +9,7 @@ import {
   saveInventorySettings,
   type InventorySettings,
 } from "@/lib/inventory-store";
+import { resetDojoPlayground, showDojoWelcomeAgain } from "@/lib/dojo";
 
 const providerOptions: { value: InventorySettings["aiProvider"]; label: string }[] = [
   { value: "", label: "Not selected" },
@@ -72,12 +72,12 @@ export default function InventorySettingsPage() {
 
   const clearDeviceData = () => {
     const confirmed = window.confirm(
-      "Clear the local inventory map, counts, weekly inputs, and settings from this browser?"
+      "Reset the Dojo playground? Demo bar data will be restored fresh in this browser."
     );
     if (!confirmed) return;
-    clearAll();
+    resetDojoPlayground();
     setSettingsOverride(getInventorySettings());
-    setStatus("Local inventory data cleared");
+    setStatus("Dojo playground reset with fresh demo data");
   };
 
   if (!hydrated || !settings) {
@@ -232,9 +232,9 @@ export default function InventorySettingsPage() {
               Backup before you move machines.
             </h2>
             <p className="text-text-muted leading-relaxed">
-              Current trial data is stored in this browser. Export a JSON backup
-              after setup and after each meaningful count so a reset does not
-              erase the bar map.
+              The Dojo keeps sandbox data in this browser only. Export a JSON
+              backup if you want to save your experiments, or reset to reload the
+              Agave &amp; Rye demo bar.
             </p>
           </div>
           <div className="lg:col-span-7">
@@ -256,7 +256,16 @@ export default function InventorySettingsPage() {
                 onClick={clearDeviceData}
                 className="border border-wine/40 text-wine-glow hover:bg-wine/10 px-6 py-3 text-sm tracking-wide transition-all"
               >
-                Clear Local Data
+                Reset Dojo Playground
+              </button>
+              <button
+                onClick={() => {
+                  showDojoWelcomeAgain();
+                  setStatus("Welcome screen will show next time you open The Dojo home");
+                }}
+                className="border border-copper/30 text-copper hover:bg-copper/10 px-6 py-3 text-sm tracking-wide transition-all"
+              >
+                Show Welcome Again
               </button>
             </div>
             {status && <p className="text-xs text-patina-light mt-4">{status}</p>}

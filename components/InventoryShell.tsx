@@ -137,7 +137,7 @@ export default function InventoryShell({
                 Open Source Barware
               </h2>
               <span className="text-[9px] text-text-light uppercase tracking-[0.2em]">
-                Inventory
+                The Dojo
               </span>
             </div>
           </div>
@@ -208,10 +208,15 @@ export default function InventoryShell({
             </svg>
           </button>
 
-          <h1 className="font-serif text-base lg:text-lg copper-text truncate">
-            Open Source Barware{" "}
-            <span className="text-text-light font-sans text-xs lg:text-sm tracking-wide">
-              &mdash; Inventory
+          <h1 className="font-serif text-base lg:text-lg copper-text truncate flex items-center gap-2 min-w-0">
+            <span className="truncate">
+              Open Source Barware{" "}
+              <span className="text-text-light font-sans text-xs lg:text-sm tracking-wide">
+                &mdash; The Dojo
+              </span>
+            </span>
+            <span className="dojo-sandbox-pill shrink-0 hidden sm:inline-flex">
+              Sandbox
             </span>
           </h1>
         </div>

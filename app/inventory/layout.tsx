@@ -2,9 +2,9 @@ import InventoryShell from "@/components/InventoryShell";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Inventory App — Open Source Barware",
+  title: "The Dojo — Open Source Barware",
   description:
-    "Local inventory workspace for Open Source Barware. Setup, counts, weekly inputs, and reporting inside the Chrome-side program.",
+    "Play in the Open Source Barware sandbox. Explore the finished inventory program with demo data before you download and build your own bar.",
   path: "/inventory",
   noIndex: true,
 });

@@ -1,7 +1,7 @@
 # Open Source Barware — Handoff
 
-*Last updated: 2026-07-03 | agent: CODEX | project ID: `open-source-barware`*
-*Status: active / GPL download compliance package verified locally*
+*Last updated: 2026-07-03 | agent: GROK | project ID: `open-source-barware`*
+*Status: active / The Dojo sandbox shipped to GitHub main*
 
 ## Purpose
 
@@ -46,18 +46,28 @@ an admin home base.
 - `/inventory/settings` now exists for provider selection/status, inventory
   cycle settings, backup reminder, operational notes, local JSON backup export,
   and local data clearing.
-- Inventory setup, dashboard, count, history, inputs, and settings now share
-  `lib/inventory-store.ts`. The store normalizes older localStorage shapes,
-  setup saves the nested station/bottle map used by the dashboard, dashboard no
-  longer seeds fake demo data, and counts save through the same store.
+- **`/inventory` is The Dojo** — a browser sandbox that mirrors the finished
+  downloaded program (butterfly state). First visit shows a welcome modal:
+  "Welcome to the Dojo," steampunk karate-guy illustration, and copy explaining
+  caterpillar setup vs. finished playground. Demo data seeds automatically into
+  isolated `osb_dojo_*` localStorage keys (separate from the Chrome download's
+  `osb_*` keys).
+- Dojo demo bar is **Agave & Rye** with five stations, 23 bottles, two count
+  history entries, weekly-input drafts, and partial AI settings. Settings exposes
+  **Reset Dojo Playground** and **Show Welcome Again**.
+- Inventory setup, dashboard, count, history, inputs, and settings share
+  `lib/inventory-store.ts` (dojo-prefixed on web). Setup remains at
+  `/inventory/setup` for the caterpillar path; the Dojo nav skips straight to the
+  finished admin shell.
+- `/about` story section credits **Richard B. Jamison**, removes Hirado/Nito from
+  "Who is behind it," and adds **What's next** (World Hidden Bar Tour, Miami
+  September, wine inventory/forum/library roadmap).
 - `/the-process` is now customer-forward "kitchen table" copy for the Chrome-side
   program: one Chrome-side program, caterpillar-to-butterfly setup, voice notes,
   spreadsheet view, AI home base, checks/gates, weekly inputs, and simple
   cycle reporting. It no longer presents open internal build decisions.
-- `/about` now frames the origin story around monthly inventory dread for the
-  person responsible for a bar, and uses a compact commemorative credit panel
-  instead of large photo/profile cards. Hirado Junior is listed with nickname
-  "Nito."
+- `/about` frames the origin story around monthly inventory dread, uses the
+  compact commemorative credit panel, and includes the Hidden Bar Tour roadmap.
 - Home hero CTAs now read, left to right: "Learn This System" (`/the-process`),
   "Read Our Story" (`/about`), and "Download the Program" (`/downloads`). The
   two primary CTAs share one sizing/style class.
@@ -91,7 +101,11 @@ an admin home base.
 
 - `app/` — routes and pages
 - `components/` — shared UI
-- `lib/inventory-store.ts` — inventory state logic
+- `lib/inventory-store.ts` — inventory state logic (`osb_dojo_*` on web)
+- `lib/dojo.ts` — welcome flags, seed/reset helpers
+- `lib/dojo-seed.ts` — Agave & Rye demo bar/counts/settings
+- `components/DojoWelcomeModal.tsx` — first-run Dojo welcome overlay
+- `components/SteampunkKarateGuy.tsx` — welcome illustration
 - `app/inventory/setup/page.tsx` — first-run bar map wizard
 - `app/inventory/dashboard/page.tsx` — local admin inventory dashboard
 - `app/inventory/inputs/page.tsx` — local weekly intake packet staging
@@ -227,13 +241,20 @@ Confirm scripts in `package.json` before relying on these commands.
   lint` passed with 0 errors and 5 existing warnings, `git diff --check` passed,
   `npm run build` passed, and browser screenshots confirmed the overlay sits on
   the real sign and changes over time.
+- 2026-07-03 GROK: Shipped **The Dojo** sandbox at `/inventory`. Welcome modal
+  ("Welcome to the Dojo," steampunk karate guy), `osb_dojo_*` storage isolation,
+  Agave & Rye demo seed, shell rebranding, reset/welcome-again controls in
+  settings. About copy: Richard B. Jamison attribution + What's Next section.
+  Verification passed: targeted `eslint` on Dojo files, `npm run build`, local
+  dev at `http://localhost:3000/inventory`, browser opened for Richard review.
+  Pushed to GitHub `main` in this session.
 
 ## Known issues
 
 - Three-Way result is partial because Reeve timed out.
-- Live production at `opensourcebarware.com` may lag local changes until the
-  static export is deployed. The 2026-07-03 muted-palette and GPL compliance
-  passes are local and verified, but not committed or pushed yet.
+- Live production at `opensourcebarware.com` may lag GitHub `main` until
+  Cloudflare Pages rebuilds. No `CLOUDFLARE_API_TOKEN` on macbook15 for manual
+  `wrangler pages deploy`; deploy is Git-connected or dashboard-triggered.
 - Open Source Barware mail is not domain-live yet. `opensourcebarware.com`
   currently has no MX record, and the Thunderbird/Gmail identity for
   `richard@opensourcebarware.com` is still a stopgap rather than a direct
@@ -242,16 +263,17 @@ Confirm scripts in `package.json` before relying on these commands.
   app behavior is local browser storage plus AI handoff packet staging.
 - Invoice/POS file staging stores metadata and notes locally; it does not yet
   persist file bytes or parse files without an AI/provider handoff.
-- The global welcome toast can appear over the inventory setup flow on a fresh
-  browser profile; consider suppressing it for `/inventory/*`.
+- The global July 4 launch overlay can still appear over `/inventory/*` on fresh
+  profiles when `NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY=true` or pre-launch date logic
+  fires; consider suppressing site-wide overlays inside The Dojo.
 
 ## Open work
 
-1. Continue implementation from the customer-forward process page into the
+1. Deploy latest `main` (Dojo + About + GPL compliance) to Cloudflare Pages and
+   verify live `/inventory` welcome + demo dashboard.
+2. Continue implementation from the customer-forward process page into the
    actual Chrome-side setup/home base: provider list, API key storage, workbook
    generation path, POS export scope, and backup/restore path.
-2. Deploy the current local build to production after review so the public site
-   matches the Chrome-program/product direction now in the repo.
 3. Add provider/API connection and file parsing behind `/inventory/settings` and
    `/inventory/inputs`, preserving local-secret handling.
 4. Convert the approved report into implementation tickets for the Chrome-side
@@ -266,6 +288,9 @@ Confirm scripts in `package.json` before relying on these commands.
 ## Pickup point
 
 ```bash
-git -C "/Users/richardjamison/Documents/New project/open-source-barware" status --short
+cd "/Users/richardjamison/Documents/New project/open-source-barware"
+git pull origin main
+npm run dev
+# Dojo: http://localhost:3000/inventory
 npm run lint && npm run build
 ```
