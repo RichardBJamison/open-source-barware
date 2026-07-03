@@ -127,9 +127,9 @@ export default function Home() {
       </section>
 
       {/* ── THE PROBLEM ── */}
-      <section className="max-w-6xl mx-auto px-6 py-12 md:py-32">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-          <div className="md:col-span-4">
+      <section className="max-w-6xl mx-auto px-6 py-12 md:pt-16 md:pb-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12 items-center">
+          <div className="md:col-span-5">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-[1px] bg-copper/40" />
               <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
@@ -141,9 +141,12 @@ export default function Home() {
               <br />
               knows the drill.
             </h2>
+            <div className="mt-8 max-w-[300px]">
+              <ProblemHourglass />
+            </div>
           </div>
-          <div className="md:col-span-7 md:col-start-6">
-            <div className="space-y-5 text-text-muted leading-relaxed text-lg">
+          <div className="md:col-span-7 lg:col-span-6 lg:col-start-7">
+            <div className="max-w-2xl space-y-5 text-text-muted leading-relaxed text-lg">
               <p>
                 Close out. Grab the clipboard. Count every bottle by tenths.
                 Scribble numbers on paper. Walk to the office. Type it all into
@@ -165,10 +168,12 @@ export default function Home() {
         </div>
       </section>
 
-      <GearDivider />
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="h-px bg-gradient-to-r from-transparent via-copper/25 to-transparent" />
+      </div>
 
       {/* ── WHAT WE BUILT ── program card with steampunk panels */}
-      <section className="max-w-6xl mx-auto px-6 py-12 md:py-16">
+      <section className="max-w-6xl mx-auto px-6 pt-8 pb-12 md:pt-10 md:pb-16">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-8 h-[1px] bg-copper/40" />
           <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
@@ -323,6 +328,70 @@ export default function Home() {
         </div>
       </section>
     </>
+  );
+}
+
+function ProblemHourglass() {
+  return (
+    <div
+      aria-hidden="true"
+      className="relative overflow-hidden rounded-sm border border-copper/20 bg-bg-panel/55 p-5 shadow-[inset_0_0_40px_rgba(205,127,50,0.06),0_20px_60px_rgba(0,0,0,0.25)]"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(205,127,50,0.18),transparent_38%),linear-gradient(135deg,rgba(45,102,94,0.12),transparent_45%)]" />
+      <div className="absolute left-5 right-5 top-5 h-px bg-gradient-to-r from-transparent via-copper/40 to-transparent" />
+      <div className="absolute bottom-5 left-5 right-5 h-px bg-gradient-to-r from-transparent via-copper/25 to-transparent" />
+      <svg
+        viewBox="0 0 220 270"
+        className="relative mx-auto h-[240px] w-full text-copper drop-shadow-[0_0_18px_rgba(205,127,50,0.16)]"
+        fill="none"
+      >
+        <defs>
+          <linearGradient id="hourglassSand" x1="88" x2="132" y1="74" y2="204">
+            <stop stopColor="#d9a460" />
+            <stop offset="1" stopColor="#8b4a22" />
+          </linearGradient>
+          <linearGradient id="hourglassGlass" x1="57" x2="163" y1="50" y2="220">
+            <stop stopColor="#f3dfbc" stopOpacity="0.2" />
+            <stop offset="0.48" stopColor="#ffffff" stopOpacity="0.05" />
+            <stop offset="1" stopColor="#2d665e" stopOpacity="0.16" />
+          </linearGradient>
+        </defs>
+
+        <path
+          d="M66 54c9 39 29 59 44 77-15 18-35 38-44 77h88c-9-39-29-59-44-77 15-18 35-38 44-77H66Z"
+          fill="url(#hourglassGlass)"
+          stroke="currentColor"
+          strokeWidth="2"
+          opacity="0.9"
+        />
+        <path
+          d="M83 77h54c-7 18-18 31-27 42-9-11-20-24-27-42Z"
+          fill="url(#hourglassSand)"
+          opacity="0.76"
+        />
+        <path
+          d="M88 195c7-19 16-31 22-39 6 8 15 20 22 39H88Z"
+          fill="url(#hourglassSand)"
+          opacity="0.84"
+        />
+        <path d="M110 126v48" stroke="#d9a460" strokeWidth="2" strokeLinecap="round" strokeDasharray="2 8" />
+        <path d="M57 46h106M57 216h106" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+        <path d="M71 34h78M71 228h78" stroke="#8b4a22" strokeWidth="6" strokeLinecap="round" />
+        <path d="M76 38v186M144 38v186" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.72" />
+        <circle cx="76" cy="38" r="5" fill="currentColor" opacity="0.55" />
+        <circle cx="144" cy="38" r="5" fill="currentColor" opacity="0.55" />
+        <circle cx="76" cy="224" r="5" fill="currentColor" opacity="0.55" />
+        <circle cx="144" cy="224" r="5" fill="currentColor" opacity="0.55" />
+        <path d="M36 132h38M146 132h38" stroke="currentColor" strokeWidth="1" opacity="0.35" />
+        <circle cx="110" cy="132" r="7" stroke="#2d665e" strokeWidth="1.5" opacity="0.8" />
+        <circle cx="110" cy="132" r="2" fill="#2d665e" opacity="0.8" />
+      </svg>
+      <div className="relative mt-1 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.28em] text-text-light">
+        <span className="h-px w-8 bg-copper/30" />
+        <span>Time back</span>
+        <span className="h-px w-8 bg-copper/30" />
+      </div>
+    </div>
   );
 }
 
