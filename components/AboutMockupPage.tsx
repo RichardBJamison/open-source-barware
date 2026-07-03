@@ -137,7 +137,6 @@ export default function AboutMockupPage() {
           height: 5.71%;
           z-index: 4;
           pointer-events: none;
-          mix-blend-mode: screen;
         }
 
         .drink-sign-canvas {

@@ -8,7 +8,7 @@ export const SIGN_FRAME = {
 const TOP_COUNT = 16;
 const SIDE_COUNT = 4;
 const BOTTOM_COUNT = 16;
-export const CHASE_MS = 18_000;
+export const CHASE_MS = 14_000;
 
 export type BulbPoint = { x: number; y: number };
 
@@ -48,9 +48,24 @@ export function pulseIntensity(
   let delta = cyclePos - phase;
   if (delta < 0) delta += 1;
 
-  if (delta < 0.045) return delta / 0.045;
-  if (delta < 0.09) return 1 - (delta - 0.045) / 0.045;
-  if (delta < 0.15) return Math.max(0, 0.35 * (1 - (delta - 0.09) / 0.06));
+  if (delta < 0.05) return delta / 0.05;
+  if (delta < 0.1) return 1 - (delta - 0.05) / 0.05;
+  if (delta < 0.18) return Math.max(0, 0.4 * (1 - (delta - 0.1) / 0.08));
+  return 0;
+}
+
+/** Dim trail — bulbs just behind the bright pulse fade slightly. */
+export function dimIntensity(
+  cyclePos: number,
+  bulbIndex: number,
+  total: number,
+): number {
+  const phase = bulbIndex / total;
+  let delta = cyclePos - phase - 0.12;
+  if (delta < 0) delta += 1;
+  if (delta > 0.5) return 0;
+  if (delta < 0.06) return delta / 0.06;
+  if (delta < 0.12) return 1 - (delta - 0.06) / 0.06;
   return 0;
 }
 
@@ -61,7 +76,13 @@ export function startAboutSignLights(
   const ctx = canvas.getContext("2d", { alpha: true });
   if (!ctx) return () => undefined;
 
+  const sourceImg = wrap.parentElement?.querySelector("img");
+  if (!sourceImg) return () => undefined;
+
   const bulbs = frameBulbPositions();
+  const { left, top, right, bottom } = SIGN_FRAME;
+  const frameW = right - left;
+  const frameH = bottom - top;
   const startTime = performance.now();
   let frame = 0;
 
@@ -69,7 +90,12 @@ export function startAboutSignLights(
     const w = wrap.clientWidth;
     const h = wrap.clientHeight;
 
-    if (w >= 2 && h >= 2) {
+    if (
+      w >= 2 &&
+      h >= 2 &&
+      sourceImg.complete &&
+      sourceImg.naturalWidth > 0
+    ) {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const bufferW = Math.round(w * dpr);
       const bufferH = Math.round(h * dpr);
@@ -84,36 +110,88 @@ export function startAboutSignLights(
 
       ctx.clearRect(0, 0, w, h);
 
+      const displayW = sourceImg.clientWidth;
+      const displayH = sourceImg.clientHeight;
+      const scaleX = sourceImg.naturalWidth / displayW;
+      const scaleY = sourceImg.naturalHeight / displayH;
       const cyclePos = ((now - startTime) % CHASE_MS) / CHASE_MS;
-      const glowRadius = Math.min(w, h) * 0.16;
+      const patchR = Math.max(5, Math.min(w, h) * 0.075);
+
+      const drawBulbPatch = (
+        bulb: BulbPoint,
+        cx: number,
+        cy: number,
+        brightness: number,
+        saturate: number,
+      ) => {
+        const pctLeft = left + bulb.x * frameW;
+        const pctTop = top + bulb.y * frameH;
+        const imgCx = (pctLeft / 100) * displayW;
+        const imgCy = (pctTop / 100) * displayH;
+        const sx = imgCx * scaleX - patchR * scaleX;
+        const sy = imgCy * scaleY - patchR * scaleY;
+        const sw = patchR * 2 * scaleX;
+        const sh = patchR * 2 * scaleY;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, patchR, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.filter = `brightness(${brightness}) saturate(${saturate})`;
+        ctx.drawImage(
+          sourceImg,
+          sx,
+          sy,
+          sw,
+          sh,
+          cx - patchR,
+          cy - patchR,
+          patchR * 2,
+          patchR * 2,
+        );
+        ctx.restore();
+      };
 
       for (let i = 0; i < bulbs.length; i++) {
+        const cx = bulbs[i].x * w;
+        const cy = bulbs[i].y * h;
+
+        const dim = dimIntensity(cyclePos, i, bulbs.length);
+        if (dim > 0.08) {
+          drawBulbPatch(bulbs[i], cx, cy, 0.72 - dim * 0.18, 0.85);
+        }
+
         const intensity = pulseIntensity(cyclePos, i, bulbs.length);
-        if (intensity < 0.04) continue;
-
-        const x = bulbs[i].x * w;
-        const y = bulbs[i].y * h;
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
-
-        gradient.addColorStop(0, `rgba(255, 240, 200, ${intensity * 0.95})`);
-        gradient.addColorStop(0.35, `rgba(255, 200, 100, ${intensity * 0.55})`);
-        gradient.addColorStop(1, "rgba(255, 140, 50, 0)");
-
-        ctx.globalCompositeOperation = "lighter";
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
-        ctx.fill();
+        if (intensity > 0.05) {
+          drawBulbPatch(
+            bulbs[i],
+            cx,
+            cy,
+            1 + intensity * 0.85,
+            1 + intensity * 0.35,
+          );
+        }
       }
 
-      ctx.globalCompositeOperation = "source-over";
+      ctx.filter = "none";
     }
 
     frame = requestAnimationFrame(tick);
   };
 
-  tick(startTime);
-  frame = requestAnimationFrame(tick);
+  const onReady = () => {
+    tick(performance.now());
+    frame = requestAnimationFrame(tick);
+  };
 
-  return () => cancelAnimationFrame(frame);
+  if (sourceImg.complete) {
+    onReady();
+  } else {
+    sourceImg.addEventListener("load", onReady, { once: true });
+  }
+
+  return () => {
+    cancelAnimationFrame(frame);
+    sourceImg.removeEventListener("load", onReady);
+  };
 }
