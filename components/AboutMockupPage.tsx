@@ -422,6 +422,34 @@ export default function AboutMockupPage() {
               for everyone. Every contribution keeps Open Source Barware alive without turning it into
               something we would not want to use behind our own bar.
             </p>
+            <p>
+              Hosting is only the floor. What you are really backing is the work still coming:
+            </p>
+            <ul>
+              <li>Phone software built for real counts on the floor</li>
+              <li>Digital scale integration — actual scale data import, not guesswork</li>
+              <li>Notification systems that tell the right people at the right time</li>
+              <li>
+                Full liquor and wine inventory with the standards you can actually buy against
+              </li>
+              <li>Product history that follows a bottle from delivery to depletion</li>
+              <li>
+                A library for product knowledge — teaching brochures your other bartenders can use
+              </li>
+              <li>
+                A working management-style bar bible so managers and leads stay on the same page
+              </li>
+            </ul>
+            <p>
+              And beside all of that, we are launching{" "}
+              <strong>The World Hidden Bar Tour</strong> — city by city, bartender by bartender,
+              mapping the bars worth knowing that most people never find.
+            </p>
+            <p>
+              There are a lot of good reasons to buy us a drink. Your support keeps the free program
+              moving and funds the next layer of tools, tours, and trade knowledge we are building
+              for the people behind the stick.
+            </p>
           </div>
         </section>
       </main>
