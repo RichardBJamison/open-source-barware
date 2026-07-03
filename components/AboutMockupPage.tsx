@@ -125,6 +125,66 @@ export default function AboutMockupPage() {
           height: 9.4%;
         }
 
+        .osb-timeline-entry {
+          position: absolute;
+          z-index: 3;
+          pointer-events: none;
+          font-family: var(--font-inter), system-ui, sans-serif;
+        }
+
+        .osb-timeline-entry-post2020 {
+          left: 53.4%;
+          top: 27.8%;
+          width: 41.5%;
+          padding: 0.2rem 0 0.35rem 0.9rem;
+          background: linear-gradient(180deg, #f1e9db 0%, #efe6d6 100%);
+          border-left: 2px solid rgba(94, 158, 143, 0.42);
+        }
+
+        .osb-timeline-entry-post2020::before {
+          content: "";
+          position: absolute;
+          left: -0.45rem;
+          top: 0.15rem;
+          width: 0.55rem;
+          height: 0.55rem;
+          border-radius: 999px;
+          background: #5e9e8f;
+          box-shadow: 0 0 0 2px #f1e9db;
+        }
+
+        .osb-timeline-entry-label {
+          display: block;
+          margin-bottom: 0.45rem;
+          font-size: clamp(0.58rem, 1.05vw, 0.72rem);
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: #5e9e8f;
+          font-weight: 600;
+        }
+
+        .osb-timeline-entry-body {
+          margin: 0;
+          font-size: clamp(0.68rem, 1.2vw, 0.82rem);
+          line-height: 1.55;
+          color: #171717;
+        }
+
+        .osb-timeline-entry-kicker {
+          display: block;
+          margin-top: 0.45rem;
+          font-style: italic;
+          color: #3d3d3d;
+        }
+
+        @media (max-width: 720px) {
+          .osb-timeline-entry-post2020 {
+            left: 8%;
+            top: 46%;
+            width: 84%;
+          }
+        }
+
         .osb-sr-copy {
           position: absolute;
           width: 1px;
@@ -229,6 +289,22 @@ export default function AboutMockupPage() {
             priority
           />
 
+          <div
+            className="osb-timeline-entry osb-timeline-entry-post2020"
+            aria-label="Post-2020 seasonal circuit"
+          >
+            <span className="osb-timeline-entry-label">Post-2020 • The Seasonal Circuit</span>
+            <p className="osb-timeline-entry-body">
+              The Hamptons, Lake Tahoe, Martha&apos;s Vineyard, Austin, Vail, and Aspen —
+              including Harbor View Hotel and The Wharf on Martha&apos;s Vineyard, The
+              Ritz-Carlton Bachelor Gulch in Vail, and the Molly Hotel in Aspen with the Death
+              &amp; Co / Gin &amp; Luck team.
+              <span className="osb-timeline-entry-kicker">
+                Honestly — I should write a book on post-pandemic bar re-openings.
+              </span>
+            </p>
+          </div>
+
           <a
             className="osb-hotspot support-button"
             href="https://ko-fi.com/W2J022HCH2"
@@ -242,6 +318,12 @@ export default function AboutMockupPage() {
             <p>
               This project is a thank-you to the bartenders, managers, musicians, guests, cooks,
               servers, barbacks, door staff, dishwashers, and friends who shaped the work.
+            </p>
+            <p>
+              Post-2020 seasonal circuit: Hamptons, Lake Tahoe, Martha&apos;s Vineyard, Austin,
+              Vail, and Aspen — Harbor View Hotel, The Wharf, Ritz-Carlton Bachelor Gulch, Molly
+              Hotel with Death &amp; Co / Gin &amp; Luck. Honestly — I should write a book on
+              post-pandemic bar re-openings.
             </p>
             <h2>Buy us a drink</h2>
             <p>Every donation keeps Open Source Barware alive, open, and free for everyone.</p>
