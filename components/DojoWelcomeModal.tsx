@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppButton, AppPanel } from "@/components/AppUI";
-import SteampunkKarateGuy from "@/components/SteampunkKarateGuy";
-import { Gear } from "@/components/SteampunkElements";
+import { Gear, Rivet } from "@/components/SteampunkElements";
 import { markDojoWelcomeSeen, seedDojoPlayground } from "@/lib/dojo";
 
 interface DojoWelcomeModalProps {
@@ -13,11 +13,18 @@ interface DojoWelcomeModalProps {
   onClose: () => void;
 }
 
+const ARMORY = [
+  "Rapier-like shock-batons",
+  "Clockwork gauntlets",
+  "Spring-loaded wrist blasters",
+  "Rhythmic opponents",
+] as const;
+
 export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProps) {
   const router = useRouter();
   const [entering, setEntering] = useState(false);
 
-  const enterDojo = useCallback(() => {
+  const enterSalle = useCallback(() => {
     setEntering(true);
     seedDojoPlayground();
     markDojoWelcomeSeen();
@@ -29,79 +36,130 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
 
   return (
     <div
-      className="dojo-welcome-overlay fixed inset-0 z-[180] flex items-center justify-center p-4 sm:p-6"
+      className="salle-welcome-overlay fixed inset-0 z-[180] flex items-center justify-center p-3 sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="dojo-welcome-title"
+      aria-labelledby="salle-welcome-title"
     >
       <div
-        className="dojo-welcome-backdrop absolute inset-0 bg-black/75 backdrop-blur-sm"
+        className="salle-welcome-backdrop absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
 
       <div
-        className="dojo-welcome-panel relative z-10 w-full max-w-2xl max-h-[92vh] overflow-y-auto"
+        className="salle-welcome-panel relative z-10 w-full max-w-3xl max-h-[94vh] overflow-y-auto salle-welcome-scroll"
         onClick={(e) => e.stopPropagation()}
       >
-        <AppPanel className="relative overflow-hidden px-6 py-8 sm:px-10 sm:py-10">
-          <div className="absolute -top-6 -right-4 opacity-15 pointer-events-none">
-            <Gear size={90} className="gear-spin text-copper" />
+        <AppPanel className="relative overflow-hidden px-0 py-0 sm:px-0 sm:py-0" withRivets={false}>
+          <div className="absolute top-3 right-3 opacity-20 pointer-events-none z-0">
+            <Gear size={72} className="gear-spin text-copper" />
           </div>
-          <div className="absolute -bottom-8 -left-6 opacity-10 pointer-events-none">
-            <Gear size={70} className="gear-spin-reverse text-brass" />
+          <div className="absolute bottom-6 left-4 opacity-12 pointer-events-none z-0">
+            <Gear size={56} className="gear-spin-reverse text-brass" />
           </div>
 
-          <div className="relative flex flex-col sm:flex-row gap-6 sm:gap-8 items-center">
-            <div className="shrink-0 w-40 sm:w-44">
-              <SteampunkKarateGuy className="w-full h-auto" />
-              <p className="mt-2 text-center text-[10px] uppercase tracking-[0.2em] text-text-light">
-                Totally on brand
-              </p>
+          <div className="relative salle-welcome-hero-frame">
+            <div className="salle-welcome-hero-inner">
+              <Image
+                src="/images/salle-darmes-welcome.jpg"
+                alt="Steampunk fencing academy emblem — gauntlet, rapier, and clockwork gears above Salle d'Armes"
+                width={1200}
+                height={900}
+                priority
+                className="salle-welcome-hero-img"
+              />
             </div>
+            <div className="salle-welcome-hero-rivets" aria-hidden="true">
+              <Rivet />
+              <Rivet />
+              <Rivet />
+              <Rivet />
+            </div>
+          </div>
 
-            <div className="flex-1 text-center sm:text-left">
-              <p className="dojo-welcome-badge mb-3">Sandbox Playground</p>
-              <h2
-                id="dojo-welcome-title"
-                className="font-serif text-3xl sm:text-4xl copper-text mb-4"
-              >
-                Welcome to the Dojo
+          <div className="relative px-6 sm:px-10 pt-6 pb-8 sm:pb-10">
+            <p className="salle-welcome-badge mb-4 text-center sm:text-left">
+              Clockwork Gymnasium &middot; Sandbox Playground
+            </p>
+
+            <div className="salle-welcome-parchment mb-6">
+              <p className="salle-welcome-parchment-kicker">Fencing Academy</p>
+              <h2 id="salle-welcome-title" className="salle-welcome-title mb-4">
+                Salle d&rsquo;Armes
               </h2>
-              <p className="text-text-muted leading-relaxed mb-3">
-                You are stepping into a mirror of the program you download — the
-                finished butterfly, not the caterpillar setup crawl. Out in the
-                real world you will walk through voice notes, station maps, checks,
-                and gates until your bar is built. Once it is,{" "}
-                <strong className="text-cream font-normal">this</strong> is what
-                it looks like.
-              </p>
-              <p className="text-text-muted leading-relaxed mb-3">
-                Here you get to play first. Click around the dashboard, run a count,
-                peek at weekly inputs, poke the settings. Break nothing that
-                matters — it is demo data in your browser, free to reset anytime.
-              </p>
-              <p className="text-text-light text-sm leading-relaxed">
-                Have fun. When you are ready for the real build path, read{" "}
-                <Link href="/the-process" className="text-copper hover:text-copper-bright copper-underline">
-                  the process
-                </Link>{" "}
-                or{" "}
-                <Link href="/downloads" className="text-copper hover:text-copper-bright copper-underline">
-                  download the program
-                </Link>
-                .
+              <p className="salle-welcome-lead">
+                Welcome to the Fencing Academy, a refined Salle d&rsquo;Armes where
+                gentlemanly combat meets the arts. Master the timing of the machine
+                within our Clockwork Gymnasium. Train with fancy steampunk weapons,
+                rapier-like shock-batons, clockwork-assisted gauntlets, and
+                spring-loaded wrist blasters against rhythmic opponents.
               </p>
             </div>
-          </div>
 
-          <div className="relative mt-8 flex flex-col sm:flex-row gap-3 sm:justify-end">
-            <AppButton variant="secondary" onClick={onClose} className="sm:order-1">
-              Look Around First
-            </AppButton>
-            <AppButton onClick={enterDojo} disabled={entering} className="sm:order-2">
-              {entering ? "Warming Up..." : "Enter the Dojo"}
-            </AppButton>
+            <div className="salle-welcome-armory mb-6" aria-label="Training equipment">
+              {ARMORY.map((item) => (
+                <span key={item} className="salle-welcome-chip">
+                  {item}
+                </span>
+              ))}
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:gap-6 items-start mb-8">
+              <div className="text-text-muted leading-relaxed space-y-3 text-sm sm:text-base">
+                <p>
+                  Beneath the brass and theatrics, this is still the finished
+                  butterfly — not the caterpillar setup crawl. Out in the wild you
+                  walk voice notes, station maps, checks, and gates until your bar
+                  is built. <strong className="text-cream font-normal">Here</strong>{" "}
+                  is what it looks like when the automata stop arguing.
+                </p>
+                <p>
+                  Click the dashboard. Run a count. Poke weekly inputs. Adjust
+                  settings like a duelist who has never heard of &ldquo;read-only.&rdquo;
+                  Break nothing that matters — demo data only, reset anytime from
+                  settings.
+                </p>
+                <p className="text-text-light text-sm italic">
+                  En garde. Or don&rsquo;t. The bottles aren&rsquo;t fighting back.
+                </p>
+              </div>
+
+              <div className="salle-welcome-rules hidden sm:block shrink-0 w-44">
+                <p className="salle-welcome-rules-title">House Rules</p>
+                <ul className="salle-welcome-rules-list">
+                  <li>No live steel in the well</li>
+                  <li>Counts are practice lunges</li>
+                  <li>Agave &amp; Rye is the sparring partner</li>
+                  <li>Salute before you pour</li>
+                </ul>
+              </div>
+            </div>
+
+            <p className="text-text-light text-xs sm:text-sm mb-6 text-center sm:text-left">
+              Ready for the real build path? Read{" "}
+              <Link href="/the-process" className="text-copper hover:text-copper-bright copper-underline">
+                the process
+              </Link>{" "}
+              or{" "}
+              <Link href="/downloads" className="text-copper hover:text-copper-bright copper-underline">
+                download the program
+              </Link>
+              . The gauntlets stay fancier in your imagination either way.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+              <AppButton variant="secondary" onClick={onClose} className="sm:order-1">
+                Observe from the Gallery
+              </AppButton>
+              <AppButton onClick={enterSalle} disabled={entering} className="sm:order-2">
+                {entering ? "Winding the Automata..." : "Salute & Enter the Salle"}
+              </AppButton>
+            </div>
+
+            <p className="mt-5 text-center text-[10px] uppercase tracking-[0.22em] text-text-light/70">
+              No rapiers were harmed &middot; demo data only &middot; parry responsibly
+            </p>
           </div>
         </AppPanel>
       </div>

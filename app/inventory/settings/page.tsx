@@ -72,12 +72,12 @@ export default function InventorySettingsPage() {
 
   const clearDeviceData = () => {
     const confirmed = window.confirm(
-      "Reset the Dojo playground? Demo bar data will be restored fresh in this browser."
+      "Reset the Salle d'Armes playground? Demo bar data will be restored fresh in this browser."
     );
     if (!confirmed) return;
     resetDojoPlayground();
     setSettingsOverride(getInventorySettings());
-    setStatus("Dojo playground reset with fresh demo data");
+    setStatus("Salle playground reset with fresh demo data");
   };
 
   if (!hydrated || !settings) {
@@ -232,7 +232,7 @@ export default function InventorySettingsPage() {
               Backup before you move machines.
             </h2>
             <p className="text-text-muted leading-relaxed">
-              The Dojo keeps sandbox data in this browser only. Export a JSON
+              The Salle keeps sandbox data in this browser only. Export a JSON
               backup if you want to save your experiments, or reset to reload the
               Agave &amp; Rye demo bar.
             </p>
@@ -256,12 +256,12 @@ export default function InventorySettingsPage() {
                 onClick={clearDeviceData}
                 className="border border-wine/40 text-wine-glow hover:bg-wine/10 px-6 py-3 text-sm tracking-wide transition-all"
               >
-                Reset Dojo Playground
+                Reset Salle Playground
               </button>
               <button
                 onClick={() => {
                   showDojoWelcomeAgain();
-                  setStatus("Welcome screen will show next time you open The Dojo home");
+                  setStatus("Welcome screen will show next time you open the Salle home");
                 }}
                 className="border border-copper/30 text-copper hover:bg-copper/10 px-6 py-3 text-sm tracking-wide transition-all"
               >

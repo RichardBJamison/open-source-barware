@@ -85,7 +85,7 @@ export default function Header() {
           <Link href="/the-process" className="text-text-muted hover:text-copper transition-colors tracking-wide">The Process</Link>
           <Link href="/about" className="text-text-muted hover:text-copper transition-colors tracking-wide">About</Link>
           <Link href="/resources" className="text-text-muted hover:text-copper transition-colors tracking-wide">Resources</Link>
-          <Link href="/inventory" className="text-text-muted hover:text-copper transition-colors tracking-wide">The Dojo</Link>
+          <Link href="/inventory" className="text-text-muted hover:text-copper transition-colors tracking-wide">Salle d&rsquo;Armes</Link>
           <Link
             href="/downloads"
             className="relative bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 tracking-wide transition-all hover:shadow-[0_0_20px_rgba(168,120,79,0.3)]"
@@ -112,7 +112,7 @@ export default function Header() {
           <Link href="/the-process" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">The Process</Link>
           <Link href="/about" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">About</Link>
           <Link href="/resources" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">Resources</Link>
-          <Link href="/inventory" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">The Dojo</Link>
+          <Link href="/inventory" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">Salle d&rsquo;Armes</Link>
           <Link href="/downloads" onClick={() => setMenuOpen(false)} className="bg-copper text-bg font-semibold px-6 py-2.5 tracking-wide text-center">Free Program</Link>
         </div>
       )}

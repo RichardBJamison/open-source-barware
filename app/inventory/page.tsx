@@ -63,7 +63,7 @@ export default function InventoryPage() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <Gear size={48} className="gear-spin text-copper mx-auto mb-4" />
-            <p className="text-text-muted">Opening the Dojo...</p>
+            <p className="text-text-muted">Opening the Salle...</p>
           </div>
         </div>
       )}

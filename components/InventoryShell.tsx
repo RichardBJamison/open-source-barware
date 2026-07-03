@@ -137,7 +137,7 @@ export default function InventoryShell({
                 Open Source Barware
               </h2>
               <span className="text-[9px] text-text-light uppercase tracking-[0.2em]">
-                The Dojo
+                Salle d&rsquo;Armes
               </span>
             </div>
           </div>
@@ -212,7 +212,7 @@ export default function InventoryShell({
             <span className="truncate">
               Open Source Barware{" "}
               <span className="text-text-light font-sans text-xs lg:text-sm tracking-wide">
-                &mdash; The Dojo
+                &mdash; Salle d&rsquo;Armes
               </span>
             </span>
             <span className="dojo-sandbox-pill shrink-0 hidden sm:inline-flex">

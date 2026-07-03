@@ -113,7 +113,7 @@ export default function DashboardPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 text-center">
         <div className="panel rounded-sm p-8 sm:p-12 rivets">
-          <p className="text-text-muted mb-4">The Dojo is empty. Load the demo bar to start playing.</p>
+          <p className="text-text-muted mb-4">The Salle is empty. Load the demo bar to start sparring.</p>
           <button
             type="button"
             onClick={() => {
@@ -122,7 +122,7 @@ export default function DashboardPage() {
             }}
             className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 text-sm tracking-wide transition-all"
           >
-            Load Demo Bar
+            Load the Sparring Bar
           </button>
         </div>
       </div>
