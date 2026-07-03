@@ -1,7 +1,7 @@
 # Open Source Barware — Handoff
 
-*Last updated: 2026-07-03 | agent: GROK | project ID: `open-source-barware`*
-*Status: active / The Dojo sandbox shipped to GitHub main*
+*Last updated: 2026-07-03 | agent: CODEX | project ID: `open-source-barware`*
+*Status: active / About sign lights removed and Ko-fi hotspot restored*
 
 ## Purpose
 
@@ -85,10 +85,9 @@ an admin home base.
   week`, and `100% Simple / Add data. Get inventory.` The Problem section uses
   the supplied hourglass image at `public/images/landing-hourglass.png` blended
   into a masked, vignetted panel with the caption "Get Your Time Back."
-- `/about` has a canvas light overlay on the "Buy Us a Drink" support sign. The
-  overlay is aligned to the full sign bulb border and animates the individual
-  bulbs with a rotating chase/glow, while still respecting reduced-motion
-  preferences by not starting the animation.
+- `/about` no longer has animated light/canvas overlay on the "Buy Us a Drink"
+  support sign. The Ko-fi hotspot remains a plain absolute link above the mockup
+  image so the sign stays static and clickable.
 - Site-wide highlight color has been muted from bright orange to aged
   copper/brass: `--copper #a8784f`, `--copper-bright #b88958`, `--brass
   #c7a76b`, `--brass-light #d7c191`. This covers public pages, shared UI,
@@ -246,14 +245,9 @@ Confirm scripts in `package.json` before relying on these commands.
   `npm run lint` passed with 0 errors and 5 existing warnings, `git diff
   --check` passed, `npm run build` passed, and a 703px browser check confirmed
   "the" and "craft." share the same row with no horizontal overflow.
-- 2026-07-03 CODEX: Fixed the `/about` "Buy Us a Drink" sign lights. The canvas
-  overlay now covers the full sign border instead of a narrow strip, draws
-  individual bulb cores/halos, and runs a faster rotating chase. Verification
-  passed: `npm run package:compliance`, source zip includes
-  `components/AboutMockupPage.tsx` and `lib/about-sign-lights.ts`, `npm run
-  lint` passed with 0 errors and 5 existing warnings, `git diff --check` passed,
-  `npm run build` passed, and browser screenshots confirmed the overlay sits on
-  the real sign and changes over time.
+- 2026-07-03 CODEX: Superseded the `/about` "Buy Us a Drink" sign light attempt.
+  The canvas overlay and `lib/about-sign-lights.ts` are gone; keep this sign
+  static so the Ko-fi hotspot remains the top interactive layer.
 - 2026-07-03 GROK: Shipped **The Dojo** sandbox at `/inventory`. Welcome modal
   ("Welcome to the Dojo," steampunk karate guy), `osb_dojo_*` storage isolation,
   Agave & Rye demo seed, shell rebranding, reset/welcome-again controls in
