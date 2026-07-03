@@ -6,6 +6,14 @@ import {
   BottleIcon,
 } from "@/components/SteampunkElements";
 import HeroVideo from "@/components/HeroVideo";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Open Source Barware — Free Bar Inventory Program",
+  description:
+    "The free bar inventory program built by bartenders, tested in a real restaurant. No subscriptions. No upsells. Just a system that works.",
+  path: "/",
+});
 
 const primaryCtaClass =
   "group relative inline-flex w-full items-center justify-center bg-copper px-8 py-4 text-center text-sm font-semibold tracking-wide text-bg transition-all hover:bg-copper-bright hover:shadow-[0_0_30px_rgba(205,127,50,0.25)] sm:w-[210px]";
@@ -163,6 +171,11 @@ export default function Home() {
                 AI changed everything. Now we can build this program for free.
                 So we did.
               </p>
+              <p>
+                <Link href="/manifesto" className="text-copper hover:text-copper-bright transition-colors copper-underline">
+                  Read the full manifesto
+                </Link>
+              </p>
             </div>
           </div>
         </div>
@@ -255,6 +268,17 @@ export default function Home() {
             ))}
           </div>
         </Link>
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-6 text-sm text-text-muted">
+          <span className="text-text-light">Tracking one category?</span>
+          <Link href="/liquor-inventory" className="text-copper hover:text-copper-bright transition-colors">
+            Free Liquor Inventory
+          </Link>
+          <span className="text-text-light">&middot;</span>
+          <Link href="/wine-inventory" className="text-wine-glow hover:text-copper transition-colors">
+            Free Wine Inventory
+          </Link>
+        </div>
       </section>
 
       {/* ── FIELD TESTED ── image-backed mention */}

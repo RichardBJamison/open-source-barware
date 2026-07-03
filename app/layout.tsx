@@ -44,14 +44,14 @@ export const metadata: Metadata = {
     "free inventory system",
     "bartender tools",
     "liquor inventory",
+    "free liquor inventory",
+    "wine inventory",
+    "free wine inventory",
     "open source",
     "restaurant inventory",
     "beverage management",
   ],
   metadataBase: new URL(siteUrl),
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     title: siteTitle,
     description: siteDescription,

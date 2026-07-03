@@ -1,0 +1,7 @@
+name = "osb-www-redirect"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[[routes]]
+pattern = "www.opensourcebarware.com/*"
+zone_name = "opensourcebarware.com"

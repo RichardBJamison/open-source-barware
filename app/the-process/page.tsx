@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { Gear, GearDivider, PipeLine, PipeNode } from "@/components/SteampunkElements";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "The Process - Open Source Barware",
   description:
     "A kitchen-table explanation of the Open Source Barware Chrome-side inventory system, from voice notes and spreadsheets to the AI home base.",
-};
+  path: "/the-process",
+});
 
 const productBlocks = [
   {

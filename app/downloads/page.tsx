@@ -1,13 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { Metadata } from "next";
 import { Gear, GearDivider, BottleIcon } from "@/components/SteampunkElements";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Program Guide — Open Source Barware",
   description:
     "Learn how each Open Source Barware inventory feature fits inside the Chrome-side bar inventory program.",
-};
+  path: "/downloads",
+});
 
 const toolGuides = [
   {
@@ -392,12 +393,20 @@ export default function DownloadsPage() {
             Bartender with ideas? Developer who wants to help? Bar owner
             who wants to test? This is a community project &mdash; jump in.
           </p>
-          <Link
-            href="/about"
-            className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
-          >
-            Learn About the Project
-          </Link>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href="/about"
+              className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
+            >
+              Learn About the Project
+            </Link>
+            <Link
+              href="/manifesto"
+              className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
+            >
+              Why It&rsquo;s Free
+            </Link>
+          </div>
         </div>
       </section>
     </>

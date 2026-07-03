@@ -1,13 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { Metadata } from "next";
 import { Gear, GearDivider } from "@/components/SteampunkElements";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Free Bartender Resources & Community — Open Source Barware",
   description:
     "Free bartender resources, bartender community links, free cocktail recipes, and the open source bar inventory program built for bar professionals.",
-};
+  path: "/resources",
+});
 
 export default function ResourcesPage() {
   return (
@@ -201,12 +202,20 @@ export default function ResourcesPage() {
           <p className="text-text-muted text-sm mb-10 max-w-md mx-auto">
             Know a feature bartenders should have? Let us know.
           </p>
-          <Link
-            href="/downloads"
-            className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
-          >
-            Download the Program
-          </Link>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href="/downloads"
+              className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
+            >
+              Download the Program
+            </Link>
+            <Link
+              href="/manifesto"
+              className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
+            >
+              Read the Manifesto
+            </Link>
+          </div>
         </div>
       </section>
     </>

@@ -42,14 +42,22 @@ export default function Footer() {
               <Link href="/" className="text-sm text-text-muted hover:text-copper transition-colors">Home</Link>
               <Link href="/the-process" className="text-sm text-text-muted hover:text-copper transition-colors">The Process</Link>
               <Link href="/about" className="text-sm text-text-muted hover:text-copper transition-colors">About</Link>
+              <Link href="/manifesto" className="text-sm text-text-muted hover:text-copper transition-colors">Manifesto</Link>
               <Link href="/resources" className="text-sm text-text-muted hover:text-copper transition-colors">Resources</Link>
               <Link href="/downloads" className="text-sm text-text-muted hover:text-copper transition-colors">Program</Link>
               <Link href="/inventory" className="text-sm text-text-muted hover:text-copper transition-colors">The Dojo</Link>
             </div>
           </div>
 
-          {/* Info */}
+          {/* Inventory by category */}
           <div className="md:col-span-3">
+            <span className="text-[10px] text-text-light tracking-[0.3em] uppercase block mb-4">
+              Free Inventory
+            </span>
+            <div className="flex flex-col gap-3 mb-8">
+              <Link href="/liquor-inventory" className="text-sm text-text-muted hover:text-copper transition-colors">Liquor Inventory</Link>
+              <Link href="/wine-inventory" className="text-sm text-text-muted hover:text-copper transition-colors">Wine Inventory</Link>
+            </div>
             <span className="text-[10px] text-text-light tracking-[0.3em] uppercase block mb-4">
               Workshop
             </span>
