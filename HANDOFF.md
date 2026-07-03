@@ -255,10 +255,17 @@ Confirm scripts in `package.json` before relying on these commands.
 - Live production at `opensourcebarware.com` may lag GitHub `main` until
   Cloudflare Pages rebuilds. No `CLOUDFLARE_API_TOKEN` on macbook15 for manual
   `wrangler pages deploy`; deploy is Git-connected or dashboard-triggered.
-- Open Source Barware mail is not domain-live yet. `opensourcebarware.com`
-  currently has no MX record, and the Thunderbird/Gmail identity for
-  `richard@opensourcebarware.com` is still a stopgap rather than a direct
-  mailbox.
+- Open Source Barware mail is now domain-live on Forward Email, but Thunderbird
+  is not migrated yet. On 2026-07-03, `opensourcebarware.com` was added to
+  Forward Email and its setup now verifies complete with the full Forward Email
+  Cloudflare record set visible in DNS (MX, TXT verification, DKIM/SPF,
+  autoconfig/autodiscover, and related support records). Thunderbird still has
+  `richard@opensourcebarware.com` only as a Gmail-backed identity on
+  `rbjpholdings@gmail.com`, not as a direct IMAP/SMTP mailbox.
+- `resonantwebdesign.com`, `richardbjamison.com`, and `rbjpholdings.com` remain
+  incomplete in Forward Email. `resonantwebdesign.com` is ready for the same
+  Cloudflare flow, `richardbjamison.com` still needs its GoDaddy-side DNS
+  changes, and `rbjpholdings.com` still does not appear live in public DNS.
 - The full Chrome-side package/provider API connection is not built yet; current
   app behavior is local browser storage plus AI handoff packet staging.
 - Invoice/POS file staging stores metadata and notes locally; it does not yet
@@ -281,9 +288,13 @@ Confirm scripts in `package.json` before relying on these commands.
 5. Review the existing Three-Way outputs and align/retire any prompt-only scope
    that conflicts with the Chrome program direction.
 6. Build backup restore/import, workbook export, and POS/invoice parser paths.
-7. Choose the long-term mailbox host for `richard@opensourcebarware.com`,
-   enable domain mail, and replace the Gmail identity stopgap with a dedicated
-   Thunderbird mailbox after direct send/receive verification.
+7. Finish the mail migration: create the real alias/mailbox path for
+   `richard@opensourcebarware.com` in Forward Email, generate its password,
+   and replace the Gmail identity stopgap in Thunderbird with direct
+   IMAP/SMTP.
+8. Repeat the same hosted-mail setup for `resonantwebdesign.com`, then decide
+   whether `me@richardbjamison.com` should stay forwarding-only or be upgraded
+   into a real Thunderbird mailbox on Forward Email.
 
 ## Pickup point
 
