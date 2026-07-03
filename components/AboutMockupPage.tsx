@@ -397,17 +397,6 @@ export default function AboutMockupPage() {
               <li>Weekly rhythm: count the room, add invoices and POS, read the story.</li>
             </ul>
 
-            <h2>Who is behind it</h2>
-            <p>
-              Open Source Barware is a <strong>Richard B. Jamison</strong> project, forged in
-              Cleveland, Ohio, and given to the trade with no strings attached. Richard built it
-              from decades in hospitality, music, and operating businesses where the numbers only work
-              when the people doing the work trust the system. If you want the full philosophy, read{" "}
-              <Link href="/manifesto">the manifesto</Link>. If you want the workflow, start with{" "}
-              <Link href="/the-process">the process</Link> or{" "}
-              <Link href="/downloads">download the program</Link>.
-            </p>
-
             <h2>What&rsquo;s next</h2>
             <p>
               Now we build <strong>The World Hidden Bar Tour</strong>. City by city, every couple of
