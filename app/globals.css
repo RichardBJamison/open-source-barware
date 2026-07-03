@@ -302,3 +302,177 @@ body { background: var(--bg); color: var(--text); }
   font-size: 3.5rem;
   line-height: 1;
 }
+
+/* ── July 4th launch overlay ── */
+.july4-overlay {
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(0, 40, 104, 0.45) 0%,
+    rgba(13, 11, 9, 0.55) 45%,
+    rgba(191, 10, 48, 0.25) 100%
+  );
+}
+
+.july4-backdrop {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 20, 60, 0.55) 0%,
+    rgba(13, 11, 9, 0.62) 40%,
+    rgba(80, 10, 30, 0.5) 100%
+  );
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+}
+
+.july4-stars {
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 30% 65%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.5px 1.5px at 55% 15%, rgba(196, 170, 114, 0.55), transparent),
+    radial-gradient(1px 1px at 70% 80%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1px 1px at 85% 35%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 92% 60%, rgba(168, 120, 79, 0.5), transparent);
+  animation: july4-twinkle 6s ease-in-out infinite alternate;
+}
+
+@keyframes july4-twinkle {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.july4-confetti-piece {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 14px;
+  opacity: 0.75;
+  animation: july4-confetti-fall linear infinite;
+}
+
+@keyframes july4-confetti-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 0.85; }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.july4-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid rgba(191, 10, 48, 0.5);
+  background: linear-gradient(
+    135deg,
+    rgba(191, 10, 48, 0.25),
+    rgba(0, 40, 104, 0.25)
+  );
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #fff;
+  box-shadow: 0 0 24px rgba(191, 10, 48, 0.2);
+}
+
+.july4-photo-frame {
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 3px;
+  background: linear-gradient(
+    145deg,
+    rgba(191, 10, 48, 0.35),
+    rgba(0, 40, 104, 0.35)
+  );
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(168, 120, 79, 0.2);
+}
+
+.july4-photo-stripe {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    rgba(255, 255, 255, 0.03) 8px,
+    rgba(255, 255, 255, 0.03) 16px
+  );
+  pointer-events: none;
+}
+
+.july4-party-card {
+  box-shadow:
+    0 32px 100px rgba(0, 0, 0, 0.75),
+    0 0 60px rgba(191, 10, 48, 0.12),
+    0 0 80px rgba(0, 40, 104, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+@keyframes july4-photo-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) rotate(-6deg) scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+.july4-photo-pop {
+  animation: july4-photo-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.july4-headline {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f5e6c8 35%,
+    #a8784f 70%,
+    #bf0a30 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 12px rgba(191, 10, 48, 0.25));
+}
+
+.july4-cta-primary {
+  background: linear-gradient(
+    135deg,
+    #bf0a30 0%,
+    #a8784f 50%,
+    #002868 100%
+  );
+  color: #fff;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.july4-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(191, 10, 48, 0.35),
+    0 0 30px rgba(168, 120, 79, 0.25);
+}
+
+.july4-bunting-flag {
+  display: block;
+  width: 18px;
+  height: 14px;
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+  opacity: 0.85;
+  animation: july4-bunting-wave 2.5s ease-in-out infinite;
+}
+
+.july4-bunting-flag:nth-child(odd) {
+  animation-delay: 0.2s;
+}
+
+@keyframes july4-bunting-wave {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-4px) rotate(2deg); }
+}

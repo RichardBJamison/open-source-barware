@@ -2,16 +2,39 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
+import { areDownloadsUnlocked } from "@/lib/launch-gate";
+import { useLaunchNow } from "@/lib/use-launch-now";
 import type { ToolPreview } from "./DownloadPreviewModal";
 
-const DownloadPreviewModal = dynamic(() => import("./DownloadPreviewModal"), { ssr: false });
+const DownloadPreviewModal = dynamic(() => import("./DownloadPreviewModal"), {
+  ssr: false,
+});
+const DownloadLockedModal = dynamic(() => import("./DownloadLockedModal"), {
+  ssr: false,
+});
 
 export default function DownloadButton({ tool }: { tool: ToolPreview }) {
+  const searchParams = useSearchParams();
+  const now = useLaunchNow();
   const [open, setOpen] = useState(false);
+  const [lockedOpen, setLockedOpen] = useState(false);
+
+  const previewParam =
+    searchParams.get("preview") === "july4" ||
+    searchParams.get("july4") === "1";
+  const unlocked = areDownloadsUnlocked(now, { preview: previewParam });
+
+  function handleClick() {
+    if (!unlocked) {
+      setLockedOpen(true);
+      return;
+    }
+    setOpen(true);
+  }
 
   function handleConfirm() {
     setOpen(false);
-    // Trigger actual file download
     const a = document.createElement("a");
     a.href = tool.href;
     a.download = "";
@@ -23,11 +46,12 @@ export default function DownloadButton({ tool }: { tool: ToolPreview }) {
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
-        className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(205,127,50,0.2)]"
+        onClick={handleClick}
+        className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(168,120,79,0.2)]"
       >
-        Download the Program
+        {unlocked ? "Download the Program" : "Downloads open July 4"}
       </button>
+      {lockedOpen && <DownloadLockedModal onClose={() => setLockedOpen(false)} />}
       {open && (
         <DownloadPreviewModal
           tool={tool}
