@@ -136,66 +136,6 @@ export default function AboutMockupPage() {
           pointer-events: none !important;
         }
 
-        .osb-timeline-entry {
-          position: absolute;
-          z-index: 3;
-          pointer-events: none;
-          font-family: var(--font-inter), system-ui, sans-serif;
-        }
-
-        .osb-timeline-entry-post2020 {
-          left: 53.4%;
-          top: 27.8%;
-          width: 41.5%;
-          padding: 0.2rem 0 0.35rem 0.9rem;
-          background: linear-gradient(180deg, #f1e9db 0%, #efe6d6 100%);
-          border-left: 2px solid rgba(94, 158, 143, 0.42);
-        }
-
-        .osb-timeline-entry-post2020::before {
-          content: "";
-          position: absolute;
-          left: -0.45rem;
-          top: 0.15rem;
-          width: 0.55rem;
-          height: 0.55rem;
-          border-radius: 999px;
-          background: #5e9e8f;
-          box-shadow: 0 0 0 2px #f1e9db;
-        }
-
-        .osb-timeline-entry-label {
-          display: block;
-          margin-bottom: 0.45rem;
-          font-size: clamp(0.58rem, 1.05vw, 0.72rem);
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: #5e9e8f;
-          font-weight: 600;
-        }
-
-        .osb-timeline-entry-body {
-          margin: 0;
-          font-size: clamp(0.68rem, 1.2vw, 0.82rem);
-          line-height: 1.55;
-          color: #171717;
-        }
-
-        .osb-timeline-entry-kicker {
-          display: block;
-          margin-top: 0.45rem;
-          font-style: italic;
-          color: #3d3d3d;
-        }
-
-        @media (max-width: 720px) {
-          .osb-timeline-entry-post2020 {
-            left: 8%;
-            top: 46%;
-            width: 84%;
-          }
-        }
-
         .osb-sr-copy {
           position: absolute;
           width: 1px;
@@ -300,22 +240,6 @@ export default function AboutMockupPage() {
             priority
           />
 
-          <div
-            className="osb-timeline-entry osb-timeline-entry-post2020"
-            aria-label="Post-2020 seasonal circuit"
-          >
-            <span className="osb-timeline-entry-label">Post-2020 • The Seasonal Circuit</span>
-            <p className="osb-timeline-entry-body">
-              The Hamptons, Lake Tahoe, Martha&apos;s Vineyard, Austin, Vail, and Aspen —
-              including Harbor View Hotel and The Wharf on Martha&apos;s Vineyard, The
-              Ritz-Carlton Bachelor Gulch in Vail, and the Molly Hotel in Aspen with the Death
-              &amp; Co / Gin &amp; Luck team.
-              <span className="osb-timeline-entry-kicker">
-                Honestly — I should write a book on post-pandemic bar re-openings.
-              </span>
-            </p>
-          </div>
-
           <a
             className="osb-hotspot support-button"
             href="https://ko-fi.com/W2J022HCH2"
@@ -357,24 +281,6 @@ export default function AboutMockupPage() {
               read, weekly inputs for counts and invoices, and an AI home base that explains what
               changed instead of hiding behind a dashboard. No signup wall. No email capture. No
               investor deck between you and a clean count.
-            </p>
-
-            <h2>Field-tested at Agave &amp; Rye</h2>
-            <p>
-              This was not designed in a conference room. The workflow was pressure-tested at{" "}
-              <strong>Agave &amp; Rye</strong> in downtown Cleveland — real wells, real liquor
-              rooms, real end-of-shift fatigue. If a step did not survive a late-night count, it
-              did not ship. That standard still governs the project: useful before it is fancy,
-              honest before it is automated.
-            </p>
-            <p>
-              The Cleveland bar community — including roots through the{" "}
-              <a href="https://sites.google.com/usbg.org/usbg-cleveland/home" target="_blank" rel="noopener noreferrer">
-                USBG Cleveland chapter
-              </a>{" "}
-              — shaped the tone of the work. Bartenders, barbacks, cooks, servers, door staff, and
-              the guests who kept showing up all left fingerprints on what became Open Source
-              Barware.
             </p>
 
             <h2>What &ldquo;open source&rdquo; means here</h2>
