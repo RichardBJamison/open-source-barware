@@ -271,9 +271,13 @@ Confirm scripts in `package.json` before relying on these commands.
 ## Known issues
 
 - Three-Way result is partial because Reeve timed out.
-- Live production at `opensourcebarware.com` may lag GitHub `main` until
-  Cloudflare Pages rebuilds. No `CLOUDFLARE_API_TOKEN` on macbook15 for manual
-  `wrangler pages deploy`; deploy is Git-connected or dashboard-triggered.
+- **Production deploy is broken/stale (verified 2026-07-03):** GitHub `main` is
+  current (`5400164+`) but live site still serves pre-Dojo build (`Welcome to
+  Inventory` in JS bundles, not `Welcome to the Dojo`). Pushes reach GitHub;
+  Cloudflare Pages is not rebuilding. No `CLOUDFLARE_API_TOKEN` on this machine.
+  Fix: add GitHub repo secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`
+  (workflow `.github/workflows/deploy-cloudflare-pages.yml`) **or** Cloudflare
+  dashboard → Workers & Pages → `open-source-barware` → Retry deployment.
 - Open Source Barware mail is now domain-live on Forward Email, but Thunderbird
   is not migrated yet. On 2026-07-03, `opensourcebarware.com` was added to
   Forward Email and its setup now verifies complete with the full Forward Email
