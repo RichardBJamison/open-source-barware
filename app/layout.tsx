@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JulyFourthLaunchOverlay from "@/components/JulyFourthLaunchOverlay";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 const GA_MEASUREMENT_ID = "G-DQJKBWMM8H";
 
@@ -59,11 +60,13 @@ export const metadata: Metadata = {
     siteName: "Open Source Barware",
     type: "website",
     locale: "en_US",
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: siteTitle,
     description: siteDescription,
+    images: [DEFAULT_OG_IMAGE.url],
   },
 };
 
@@ -80,14 +83,6 @@ const jsonLd = {
       "@type": "WebSite",
       name: "Open Source Barware",
       url: siteUrl,
-      potentialAction: {
-        "@type": "SearchAction",
-        target: {
-          "@type": "EntryPoint",
-          urlTemplate: `${siteUrl}/?q={search_term_string}`,
-        },
-        "query-input": "required name=search_term_string",
-      },
     },
   ],
 };

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import OptimizedPicture from "@/components/OptimizedPicture";
 import { Gear } from "./SteampunkElements";
 
 export default function Footer() {
@@ -18,11 +18,13 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-5">
             <div className="mb-4">
-              <Image
-                src="/images/logo.png"
+              <OptimizedPicture
+                webpSrc="/images/logo.webp"
+                fallbackSrc="/images/logo.png"
                 alt="Open Source Barware"
                 width={200}
                 height={113}
+                className="w-[200px] h-auto"
                 style={{ mixBlendMode: "lighten" }}
               />
             </div>

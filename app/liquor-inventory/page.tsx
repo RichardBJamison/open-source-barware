@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import OptimizedPicture from "@/components/OptimizedPicture";
 import { Gear, GearDivider, BottleIcon } from "@/components/SteampunkElements";
 import { pageMetadata } from "@/lib/seo";
 
@@ -63,11 +63,11 @@ export default function LiquorInventoryPage() {
     <>
       {/* ── HERO ── */}
       <section className="relative min-h-[35vh] flex items-center overflow-hidden grain">
-        <Image
-          src="/images/copper-glass.png"
+        <OptimizedPicture
+          webpSrc="/images/copper-glass.webp"
+          fallbackSrc="/images/copper-glass.png"
           alt="Copper still and glassware behind a liquor-focused bar setup"
-          fill
-          className="object-cover object-center"
+          className="absolute inset-0 h-full w-full object-cover object-center"
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-r from-bg/90 via-bg/70 to-bg/40" />

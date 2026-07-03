@@ -165,6 +165,54 @@ export default function AboutMockupPage() {
           white-space: nowrap;
           border: 0;
         }
+
+        .osb-about-story {
+          padding: 4rem 1.5rem 5rem;
+          border-top: 1px solid rgba(205, 127, 50, 0.18);
+          background: linear-gradient(180deg, #090807 0%, #0d0b09 100%);
+        }
+
+        .osb-about-story-inner {
+          max-width: 42rem;
+          margin: 0 auto;
+        }
+
+        .osb-about-story h2 {
+          font-family: var(--font-playfair), Georgia, serif;
+          font-size: clamp(1.5rem, 3vw, 2rem);
+          color: #d4821a;
+          margin: 2.5rem 0 1rem;
+        }
+
+        .osb-about-story h2:first-child {
+          margin-top: 0;
+        }
+
+        .osb-about-story p,
+        .osb-about-story li {
+          color: #c8b9a4;
+          line-height: 1.75;
+          font-size: 1rem;
+        }
+
+        .osb-about-story p {
+          margin-bottom: 1rem;
+        }
+
+        .osb-about-story ul {
+          margin: 0 0 1rem 1.25rem;
+          padding: 0;
+        }
+
+        .osb-about-story li {
+          margin-bottom: 0.5rem;
+        }
+
+        .osb-about-story a {
+          color: #d4821a;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
       `}</style>
 
       <main className="osb-about-page">
@@ -225,6 +273,85 @@ export default function AboutMockupPage() {
             </p>
             <h2>Buy us a drink</h2>
             <p>Every donation keeps Open Source Barware alive, open, and free for everyone.</p>
+          </div>
+        </section>
+
+        <section className="osb-about-story" aria-labelledby="about-story-heading">
+          <div className="osb-about-story-inner">
+            <h2 id="about-story-heading">Why we built this</h2>
+            <p>
+              Open Source Barware started with a problem every working bar manager recognizes:
+              close out, grab the clipboard, count bottles by tenths, walk to the office, type
+              numbers into a spreadsheet from 2014, try to reconcile against POS sales, and watch
+              it never quite add up. The industry has lived that loop for decades while vendors
+              sold inventory guns, monthly SaaS fees, and consulting priced by the bottle.
+            </p>
+            <p>
+              We built the program we wished existed. It is free, open source, and designed around
+              how bars actually run — voice notes on a walk-through, a spreadsheet everyone can
+              read, weekly inputs for counts and invoices, and an AI home base that explains what
+              changed instead of hiding behind a dashboard. No signup wall. No email capture. No
+              investor deck between you and a clean count.
+            </p>
+
+            <h2>Field-tested at Agave &amp; Rye</h2>
+            <p>
+              This was not designed in a conference room. The workflow was pressure-tested at{" "}
+              <strong>Agave &amp; Rye</strong> in downtown Cleveland — real wells, real liquor
+              rooms, real end-of-shift fatigue. If a step did not survive a late-night count, it
+              did not ship. That standard still governs the project: useful before it is fancy,
+              honest before it is automated.
+            </p>
+            <p>
+              The Cleveland bar community — including roots through the{" "}
+              <a href="https://sites.google.com/usbg.org/usbg-cleveland/home" target="_blank" rel="noopener noreferrer">
+                USBG Cleveland chapter
+              </a>{" "}
+              — shaped the tone of the work. Bartenders, barbacks, cooks, servers, door staff, and
+              the guests who kept showing up all left fingerprints on what became Open Source
+              Barware.
+            </p>
+
+            <h2>What &ldquo;open source&rdquo; means here</h2>
+            <p>
+              The program, documentation, and operating logic are meant to stay in the open. You can
+              download the system, run it in Chrome, connect the AI provider you already trust, and
+              keep your own inventory map and weekly packet on your terms. Fork it. Improve it. Share
+              it with the next bar that is tired of renting their own workflow.
+            </p>
+            <ul>
+              <li>One free Chrome-side program — not six upsells dressed as a toolkit.</li>
+              <li>Customer-owned data with provider-connected AI, not a black-box platform.</li>
+              <li>Checks and gates before the first live count, so the map is right before the math.</li>
+              <li>Weekly rhythm: count the room, add invoices and POS, read the story.</li>
+            </ul>
+
+            <h2>Who is behind it</h2>
+            <p>
+              Open Source Barware is a <strong>RBJP Holdings</strong> project, forged in Cleveland,
+              Ohio, and given to the trade with no strings attached. Richard B. Jamison built it
+              from decades in hospitality, music, and operating businesses where the numbers only work
+              when the people doing the work trust the system.
+            </p>
+            <p>
+              Hirado Junior — Nito to anyone who has worked a floor with him — appears in the origin
+              story because this work was always about the crew on the other side of the stick, not a
+              product category. If you want the full philosophy, read{" "}
+              <Link href="/manifesto">the manifesto</Link>. If you want the workflow, start with{" "}
+              <Link href="/the-process">the process</Link> or{" "}
+              <Link href="/downloads">download the program</Link>.
+            </p>
+
+            <h2>Buy us a drink</h2>
+            <p>
+              The software stays free. Donations through{" "}
+              <a href="https://ko-fi.com/W2J022HCH2" target="_blank" rel="noopener noreferrer">
+                Ko-fi
+              </a>{" "}
+              help cover hosting, images, and the time it takes to keep the project open and honest
+              for everyone. Every contribution keeps Open Source Barware alive without turning it into
+              something we would not want to use behind our own bar.
+            </p>
           </div>
         </section>
       </main>

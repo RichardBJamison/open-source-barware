@@ -6,6 +6,7 @@ import {
   BottleIcon,
 } from "@/components/SteampunkElements";
 import HeroVideo from "@/components/HeroVideo";
+import OptimizedPicture from "@/components/OptimizedPicture";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -205,11 +206,11 @@ export default function Home() {
         {/* Workshop photo */}
         <div className="relative rounded-sm overflow-hidden panel mb-16">
           <div className="aspect-[21/9] relative">
-            <Image
-              src="/images/workshop.jpg"
+            <OptimizedPicture
+              webpSrc="/images/workshop-1280.webp"
+              fallbackSrc="/images/workshop.jpg"
               alt="Craftsman workbench with bar tools, jiggers, and vintage measuring instruments"
-              fill
-              className="object-cover object-center"
+              className="absolute inset-0 h-full w-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-bg/20 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-bg/40 to-transparent" />
@@ -282,12 +283,12 @@ export default function Home() {
       </section>
 
       {/* ── FIELD TESTED ── image-backed mention */}
-      <section className="relative bg-bg-panel border-y border-gear-border overflow-hidden">
-        <Image
-          src="/images/hands.png"
+      <section className="relative bg-bg-panel border-y border-gear-border overflow-hidden min-h-[220px]">
+        <OptimizedPicture
+          webpSrc="/images/hands.webp"
+          fallbackSrc="/images/hands.png"
           alt="Bartender writing inventory counts in a notebook at the bar"
-          fill
-          className="object-cover object-center"
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-bg/95 via-bg/75 to-bg/50" />
         <div className="relative z-10 max-w-3xl mx-auto px-6 py-16 flex items-center gap-6">
