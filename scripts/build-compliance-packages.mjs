@@ -1,5 +1,6 @@
+import archiver from "archiver";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, unlinkSync } from "node:fs";
+import { createWriteStream, existsSync, mkdirSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -49,13 +50,30 @@ function assertFiles(files) {
   }
 }
 
+async function createZip(archivePath, files, { flat = false } = {}) {
+  await new Promise((resolve, reject) => {
+    const output = createWriteStream(path.join(root, archivePath));
+    const archive = archiver("zip", { zlib: { level: 9 } });
+
+    output.on("close", resolve);
+    archive.on("error", reject);
+    archive.pipe(output);
+
+    for (const file of files) {
+      archive.file(path.join(root, file), {
+        name: flat ? path.basename(file) : file,
+      });
+    }
+
+    archive.finalize();
+  });
+}
+
 mkdirSync(path.join(root, downloadsDir), { recursive: true });
 assertFiles(downloadPackageFiles);
 
 removeIfPresent(downloadArchive);
-run("zip", ["-q", "-X", "-j", downloadArchive, ...downloadPackageFiles], {
-  stdio: "inherit",
-});
+await createZip(downloadArchive, downloadPackageFiles, { flat: true });
 
 const listedFiles = run("git", [
   "ls-files",
@@ -74,9 +92,7 @@ const sourceFiles = Array.from(
 
 assertFiles(sourceFiles);
 removeIfPresent(sourceArchive);
-run("zip", ["-q", "-X", sourceArchive, ...sourceFiles], {
-  stdio: "inherit",
-});
+await createZip(sourceArchive, sourceFiles);
 
 console.log(`Wrote ${downloadArchive}`);
 console.log(`Wrote ${sourceArchive}`);

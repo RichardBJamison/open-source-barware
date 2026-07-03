@@ -273,13 +273,13 @@ Confirm scripts in `package.json` before relying on these commands.
 ## Known issues
 
 - Three-Way result is partial because Reeve timed out.
-- **Production deploy is broken/stale (verified 2026-07-03):** GitHub `main` is
-  current (`5400164+`) but live site still serves pre-Dojo build (`Welcome to
-  Inventory` in JS bundles, not `Welcome to the Dojo`). Pushes reach GitHub;
-  Cloudflare Pages is not rebuilding. No `CLOUDFLARE_API_TOKEN` on this machine.
-  Fix: add GitHub repo secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`
-  (workflow `.github/workflows/deploy-cloudflare-pages.yml`) **or** Cloudflare
-  dashboard → Workers & Pages → `open-source-barware` → Retry deployment.
+- **Production deploy fixed (2026-07-03):** Live `opensourcebarware.com` now on
+  commit `5c79554` (wrangler OAuth deploy `f9833061`). Root cause of stale
+  GitHub→CF auto-builds: `scripts/build-compliance-packages.mjs` called system
+  `zip`, which is missing on Cloudflare Pages build image — fixed with `archiver`.
+  PDF Global API Key (`cfk_…`) is **revoked/invalid**; use `npx wrangler login`
+  (OAuth, `rbjpholdings@gmail.com`) for CLI deploys. Account ID:
+  `76e06daee0ff936fd1f1b099b957416a`.
 - Open Source Barware mail is now domain-live on Forward Email, but Thunderbird
   is not migrated yet. On 2026-07-03, `opensourcebarware.com` was added to
   Forward Email and its setup now verifies complete with the full Forward Email
@@ -305,9 +305,7 @@ Confirm scripts in `package.json` before relying on these commands.
 1. Set Cloudflare Pages env `GHL_API_TOKEN` (location `bNT4wp0nokIQdBJbQDaa`
    default in function) so `/api/updates-subscribe` accepts signups; then deploy
    latest `main` and verify live `/inventory/setup` step 1 + API 200.
-2. Deploy latest `main` (Dojo + About + GPL compliance) to Cloudflare Pages and
-   verify live `/inventory` welcome + demo dashboard.
-3. Continue implementation from the customer-forward process page into the
+2. Continue implementation from the customer-forward process page into the
    actual Chrome-side setup/home base: provider list, API key storage, workbook
    generation path, POS export scope, and backup/restore path.
 4. Add provider/API connection and file parsing behind `/inventory/settings` and
