@@ -194,6 +194,30 @@ export default function AboutMockupPage() {
           }
         }
 
+        .osb-timeline-quip {
+          position: absolute;
+          z-index: 3;
+          left: 53.4%;
+          top: 36.9%;
+          width: 41%;
+          padding-left: 0.85rem;
+          pointer-events: none;
+          font-family: var(--font-inter), system-ui, sans-serif;
+          font-size: clamp(0.66rem, 1.12vw, 0.8rem);
+          line-height: 1.55;
+          font-style: italic;
+          color: #454545;
+        }
+
+        @media (max-width: 720px) {
+          .osb-timeline-quip {
+            left: 8%;
+            top: 52%;
+            width: 84%;
+            padding-left: 0;
+          }
+        }
+
         .osb-sr-copy {
           position: absolute;
           width: 1px;
@@ -312,6 +336,10 @@ export default function AboutMockupPage() {
             priority
           />
 
+          <p className="osb-timeline-quip" aria-hidden="true">
+            Honestly — I should write a book on opening your bar post-apocalypse.
+          </p>
+
           <a
             className="osb-hotspot support-button"
             href="https://ko-fi.com/W2J022HCH2"
@@ -330,7 +358,7 @@ export default function AboutMockupPage() {
               Post-2020 seasonal circuit: Hamptons, Lake Tahoe, Martha&apos;s Vineyard, Austin,
               Vail, and Aspen — Harbor View Hotel, The Wharf, Ritz-Carlton Bachelor Gulch, Molly
               Hotel with Death &amp; Co / Gin &amp; Luck. Honestly — I should write a book on
-              post-pandemic bar re-openings.
+              opening your bar post-apocalypse.
             </p>
             <h2>Buy us a drink</h2>
             <p>Every donation keeps Open Source Barware alive, open, and free for everyone.</p>
