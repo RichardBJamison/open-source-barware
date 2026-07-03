@@ -19,6 +19,14 @@ export default function AboutMockupPage() {
   const signCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    if (window.location.hash === "#story" || window.location.hash === "") {
+      requestAnimationFrame(() => {
+        signWrapRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const wrap = signWrapRef.current;
@@ -143,6 +151,7 @@ export default function AboutMockupPage() {
           display: block;
           width: 100%;
           height: 100%;
+          mix-blend-mode: screen;
         }
 
         .osb-sr-copy {
@@ -193,6 +202,7 @@ export default function AboutMockupPage() {
             alt="Open Source Barware story section with timeline, Miami hidden bar tours panel, and buy us a drink support panel"
             width={1024}
             height={1106}
+            priority
           />
 
           <div ref={signWrapRef} className="drink-sign-canvas-wrap" aria-hidden="true">
