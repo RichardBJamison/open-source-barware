@@ -59,7 +59,7 @@ jobs:
         shell: pwsh
         run: |
           $installDir = Join-Path $env:USERPROFILE "osb-program"
-          pwsh -NoProfile -ExecutionPolicy Bypass -File "$installDir\scripts\windows-vc.ps1" -InstallDir $installDir
+          & "$installDir\scripts\windows-vc.ps1" -InstallDir $installDir
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Stop server

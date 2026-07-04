@@ -27,11 +27,28 @@ function Add-Check([string]$id, [string]$label, [scriptblock]$test) {
 function Get-Http([string]$path) {
     $bases = @("http://127.0.0.1:$Port", "http://localhost:$Port")
     foreach ($base in $bases) {
+        $uri = "$base$path"
         try {
-            return Invoke-WebRequest -Uri "$base$path" -UseBasicParsing -TimeoutSec 10
+            return Invoke-WebRequest -Uri $uri -UseBasicParsing -TimeoutSec 5
+        } catch {}
+        try {
+            $tmp = [System.IO.Path]::GetTempFileName()
+            $code = (curl.exe -s -o $tmp -w "%{http_code}" $uri 2>$null)
+            if ($code -eq "200") {
+                $content = Get-Content $tmp -Raw -ErrorAction Stop
+                Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+                return [pscustomobject]@{ StatusCode = 200; Content = $content }
+            }
+            Remove-Item $tmp -Force -ErrorAction SilentlyContinue
         } catch {}
     }
     throw "request failed for $path"
+}
+
+Add-Check "VC-00" "Port listening on 127.0.0.1" {
+    $t = Test-NetConnection -ComputerName 127.0.0.1 -Port $Port -WarningAction SilentlyContinue
+    if (-not $t.TcpTestSucceeded) { throw "port $Port closed" }
+    "OK"
 }
 
 Write-Host ""
