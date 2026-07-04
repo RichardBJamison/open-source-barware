@@ -1,7 +1,7 @@
 # OSB Chrome Program — Handoff
 
 *Last updated: 2026-07-04 | agent: GROK | project ID: `open-source-barware`*
-*Status: **paused (milestone lockdown)** — caterpillar Steps 1–6 complete; Step 7 count polish only*
+*Status: **active** — coaching-path rebuild shipped; ready for clean walk-through from welcome*
 
 ## Purpose
 
@@ -55,7 +55,16 @@ After reconciliation (Step 5) or anytime on Review (Step 6), the green pulsating
 
 XML returns nested `<inventory_audit>` with `<stations>` → `<bottles>` for ETL/scripts.
 
-**Cache bust:** `osb-app.js?v=20260704-reconcile-toolkit` — hard refresh after pickup.
+**Cache bust:** `osb-app.js?v=20260704-coaching-rebuild` — hard refresh after pickup.
+
+## Coaching model (two-pass — 2026-07-04 rebuild)
+
+| Pass | Steps | Behavior |
+|---|---|---|
+| Pass 1 | Build → Walk → Reconcile → Review | Map contract; humble parser; user fixes before approve |
+| Pass 2 | Count | Reconcile to map; golden → lock baseline; gaps → comparison export + re-upload |
+
+Count step: finish button **disabled** until `!hasIssues`. **Edit & re-upload count** returns to notes editor (not file picker only). Reconcile report uses **What we have / What you gave us / What we need** trio.
 
 ## Key files
 
