@@ -94,20 +94,8 @@
         </div>
       </div>
       <div id="updatesSignupForm">
-        <label for="updatesEmail" class="inline-label">Email</label>
-        <input id="updatesEmail" type="email" placeholder="you@yourbar.com" autocomplete="email" />
-        <div class="updates-location-row">
-          <div>
-            <label for="updatesCity" class="inline-label">City</label>
-            <input id="updatesCity" type="text" placeholder="Cleveland" autocomplete="address-level2" />
-          </div>
-          <div>
-            <label for="updatesState" class="inline-label">State</label>
-            <select id="updatesState">
-              <option value="">Select state</option>
-            </select>
-          </div>
-        </div>
+        <label for="updatesEmail" class="inline-label">Email <span class="required-mark">*</span></label>
+        <input id="updatesEmail" type="email" placeholder="you@yourbar.com" autocomplete="email" required autofocus />
         <div class="updates-toggle-list" role="group" aria-label="Email preferences">
           <label class="updates-toggle-card updates-toggle-card--releases" for="updatesOptIn">
             <input id="updatesOptIn" class="updates-toggle-input" type="checkbox" checked />
@@ -135,6 +123,18 @@
               <span class="updates-toggle-desc">Email me when World Hidden Bar Tours go online. Invite me to the discovery run of your city.</span>
             </span>
           </label>
+        </div>
+        <div id="updatesLocationRow" class="updates-location-row hidden">
+          <div>
+            <label for="updatesCity" class="inline-label">City <span class="required-mark">*</span></label>
+            <input id="updatesCity" type="text" placeholder="Cleveland" autocomplete="address-level2" />
+          </div>
+          <div>
+            <label for="updatesState" class="inline-label">State <span class="required-mark">*</span></label>
+            <select id="updatesState">
+              <option value="">Select state</option>
+            </select>
+          </div>
         </div>
         <p id="updatesStatus" class="field-hint text-center" role="status"></p>
         <div class="setup-nav">

@@ -3,6 +3,13 @@ const GHL_BASE = "https://services.leadconnectorhq.com";
 const SETUP_TAG = "osb-setup-signup";
 const PROGRAM_UPDATES_TAG = "osb-program-updates";
 const HIDDEN_BAR_TOUR_TAG = "osb-hidden-bar-tour";
+const GHL_HEADERS = {
+  Version: "2021-07-28",
+  Accept: "application/json",
+  "Content-Type": "application/json",
+  "User-Agent":
+    "Mozilla/5.0 (compatible; OpenSourceBarware/1.0; +https://opensourcebarware.com)",
+};
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +24,54 @@ function jsonResponse(body, status = 200) {
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function ghlHeaders(token) {
+  return { ...GHL_HEADERS, Authorization: `Bearer ${token}` };
+}
+
+async function notifyOwner(env, details) {
+  const token = env.GHL_API_TOKEN;
+  if (!token) return;
+
+  const notifyTo = env.NOTIFY_EMAIL || "richard@opensourcebarware.com";
+  const lines = [
+    "New Open Source Barware release-list signup",
+    "",
+    `Email: ${details.email}`,
+    details.city ? `City: ${details.city}, ${details.state || ""}` : "City: (not provided)",
+    `Source: ${details.source}`,
+    `Program updates: ${details.programUpdates ? "yes" : "no"}`,
+    `Hidden Bar Tour: ${details.hiddenBarTour ? "yes" : "no"}`,
+    details.contactId ? `GHL contact: ${details.contactId}` : "",
+  ].filter(Boolean);
+
+  if (details.contactId) {
+    await fetch(`${GHL_BASE}/contacts/${details.contactId}/notes`, {
+      method: "POST",
+      headers: ghlHeaders(token),
+      body: JSON.stringify({ body: lines.join("\n") }),
+    }).catch(() => {});
+  }
+
+  const feUser = env.FORWARD_EMAIL_USER;
+  const fePass = env.FORWARD_EMAIL_PASS;
+  if (feUser && fePass) {
+    const auth = btoa(`${feUser}:${fePass}`);
+    await fetch("https://api.forwardemail.net/v1/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: env.FORWARD_EMAIL_FROM || "releases@opensourcebarware.com",
+        to: notifyTo,
+        subject: `OSB signup: ${details.email}`,
+        text: lines.join("\n"),
+      }),
+    }).catch(() => {});
+  }
 }
 
 export async function onRequestOptions() {
@@ -58,11 +113,19 @@ export async function onRequestPost(context) {
   if (!isValidEmail(email)) {
     return jsonResponse({ error: "A valid email is required." }, 400);
   }
-  if (!city || city.length < 2) {
-    return jsonResponse({ error: "City is required." }, 400);
-  }
-  if (!state) {
-    return jsonResponse({ error: "State is required." }, 400);
+  if (hiddenBarTour) {
+    if (!city || city.length < 2) {
+      return jsonResponse(
+        { error: "City is required for Hidden Bar Tour invites." },
+        400
+      );
+    }
+    if (!state) {
+      return jsonResponse(
+        { error: "State is required for Hidden Bar Tour invites." },
+        400
+      );
+    }
   }
   if (!programUpdates && !hiddenBarTour) {
     return jsonResponse(
@@ -78,24 +141,17 @@ export async function onRequestPost(context) {
   const body = {
     locationId,
     email,
-    city,
-    state,
     tags,
     source,
     country: "US",
   };
+  if (city) body.city = city;
+  if (state) body.state = state;
 
   try {
     const ghlResponse = await fetch(`${GHL_BASE}/contacts/upsert`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Version: "2021-07-28",
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "User-Agent":
-          "Mozilla/5.0 (compatible; OpenSourceBarware/1.0; +https://opensourcebarware.com)",
-      },
+      headers: ghlHeaders(token),
       body: JSON.stringify(body),
     });
 
@@ -122,10 +178,25 @@ export async function onRequestPost(context) {
         "You are on the release list. We only email when new additions ship.";
     }
 
+    const contactId = ghlData?.contact?.id || ghlData?.id || null;
+    try {
+      await notifyOwner(context.env, {
+        email,
+        city,
+        state,
+        source,
+        programUpdates,
+        hiddenBarTour,
+        contactId,
+      });
+    } catch {
+      // GHL save succeeded; notification is best-effort
+    }
+
     return jsonResponse({
       ok: true,
       message,
-      contactId: ghlData?.contact?.id || ghlData?.id || null,
+      contactId,
     });
   } catch (error) {
     return jsonResponse(

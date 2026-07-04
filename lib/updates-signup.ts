@@ -85,10 +85,13 @@ export function validateUpdatesSignup(payload: UpdatesSignupPayload): string | n
   const email = payload.email.trim();
   const city = payload.city.trim();
   const state = payload.state.trim();
+  const tour = Boolean(payload.hiddenBarTour);
 
   if (!email || !EMAIL_RE.test(email)) return "Enter a valid email address.";
-  if (!city || city.length < 2) return "Enter your city.";
-  if (!state) return "Select your state.";
+  if (tour) {
+    if (!city || city.length < 2) return "Enter your city for Hidden Bar Tour invites.";
+    if (!state) return "Select your state for Hidden Bar Tour invites.";
+  }
   return null;
 }
 

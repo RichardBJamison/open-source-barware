@@ -460,18 +460,20 @@ function setUpdatesSignupStatus(status) {
   else localStorage.setItem(UPDATES_SIGNUP_STORAGE_KEY, status);
 }
 
-function validateUpdatesSignup({ email, city, state }) {
+function validateUpdatesSignup({ email, city, state, hiddenBarTour }) {
   const trimmedEmail = (email || "").trim();
   const trimmedCity = (city || "").trim();
   const trimmedState = (state || "").trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) return "Enter a valid email address.";
-  if (!trimmedCity || trimmedCity.length < 2) return "Enter your city.";
-  if (!trimmedState) return "Select your state.";
+  if (hiddenBarTour) {
+    if (!trimmedCity || trimmedCity.length < 2) return "Enter your city for Hidden Bar Tour invites.";
+    if (!trimmedState) return "Select your state for Hidden Bar Tour invites.";
+  }
   return null;
 }
 
 async function submitUpdatesSignup({ email, city, state, programUpdates, hiddenBarTour }) {
-  const error = validateUpdatesSignup({ email, city, state });
+  const error = validateUpdatesSignup({ email, city, state, hiddenBarTour });
   if (error) return { ok: false, message: error };
   if (!programUpdates && !hiddenBarTour) {
     return { ok: false, message: "Select at least one email preference." };
@@ -525,6 +527,16 @@ function renderUpdatesSignupStep() {
   const already = document.getElementById("updatesAlreadySubscribed");
   if (form) form.classList.toggle("hidden", subscribed);
   if (already) already.classList.toggle("hidden", !subscribed);
+  const tourOptIn = document.getElementById("updatesTourOptIn");
+  const locationRow = document.getElementById("updatesLocationRow");
+  const toggleLocation = () => {
+    if (locationRow) locationRow.classList.toggle("hidden", !tourOptIn?.checked);
+  };
+  if (tourOptIn && !tourOptIn.dataset.bound) {
+    tourOptIn.dataset.bound = "1";
+    tourOptIn.addEventListener("change", toggleLocation);
+  }
+  toggleLocation();
 }
 
 async function advanceFromUpdatesSignup() {

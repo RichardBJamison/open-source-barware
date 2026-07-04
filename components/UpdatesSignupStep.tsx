@@ -95,17 +95,15 @@ export default function UpdatesSignupStep({
             Stay on the release list
           </h2>
           <p className="text-text-muted text-sm leading-relaxed max-w-md mx-auto">
-            We are still building this program. Join the update list and we will
-            only email you when new additions ship — scale import, notifications,
-            full liquor and wine inventory, Hidden Bar Tour news, and everything
-            else on the roadmap.
+            We are still building this program. Drop your email — we only write
+            when new additions ship. No marketing blasts while we build.
           </p>
         </div>
 
         <div className="space-y-4 mb-6">
           <label className="flex flex-col gap-1.5">
             <span className="text-xs uppercase tracking-[0.15em] text-text-muted">
-              Email
+              Email <span className="text-copper">*</span>
             </span>
             <input
               type="email"
@@ -113,43 +111,11 @@ export default function UpdatesSignupStep({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@yourbar.com"
               autoComplete="email"
+              autoFocus
+              required
               className="w-full bg-bg-warm border border-gear-border rounded-sm px-4 py-3 text-cream focus:outline-none focus:border-copper focus:shadow-[0_0_20px_rgba(168,120,79,0.12)]"
             />
           </label>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs uppercase tracking-[0.15em] text-text-muted">
-                City
-              </span>
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="Cleveland"
-                autoComplete="address-level2"
-                className="w-full bg-bg-warm border border-gear-border rounded-sm px-4 py-3 text-cream focus:outline-none focus:border-copper"
-              />
-            </label>
-
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs uppercase tracking-[0.15em] text-text-muted">
-                State
-              </span>
-              <select
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                className="w-full bg-bg-warm border border-gear-border rounded-sm px-4 py-3 text-cream focus:outline-none focus:border-copper"
-              >
-                <option value="">Select state</option>
-                {US_STATES.map(([abbr, name]) => (
-                  <option key={abbr} value={abbr}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
 
           <label className="flex items-start gap-3 border border-gear-border bg-bg/40 px-4 py-3 rounded-sm cursor-pointer">
             <input
@@ -160,7 +126,6 @@ export default function UpdatesSignupStep({
             />
             <span className="text-sm text-text-muted leading-relaxed">
               Yes — email me only when Open Source Barware ships new additions.
-              No marketing blasts while we build.
             </span>
           </label>
 
@@ -172,16 +137,53 @@ export default function UpdatesSignupStep({
               className="mt-1"
             />
             <span className="text-sm text-text-muted leading-relaxed">
-              Email me when World Hidden Bar Tours go online. Invite me to the
-              discovery run of your city.
+              Also invite me to Hidden Bar Tour discovery runs in my city.
             </span>
           </label>
+
+          {tourOptIn && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs uppercase tracking-[0.15em] text-text-muted">
+                  City <span className="text-copper">*</span>
+                </span>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="Cleveland"
+                  autoComplete="address-level2"
+                  className="w-full bg-bg-warm border border-gear-border rounded-sm px-4 py-3 text-cream focus:outline-none focus:border-copper"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs uppercase tracking-[0.15em] text-text-muted">
+                  State <span className="text-copper">*</span>
+                </span>
+                <select
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  className="w-full bg-bg-warm border border-gear-border rounded-sm px-4 py-3 text-cream focus:outline-none focus:border-copper"
+                >
+                  <option value="">Select state</option>
+                  {US_STATES.map(([abbr, name]) => (
+                    <option key={abbr} value={abbr}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
         </div>
 
         {status && (
           <p
             className={`text-sm mb-4 text-center ${
-              status.includes("on the list") ? "text-patina-light" : "text-copper"
+              status.includes("on the list") || status.includes("release list")
+                ? "text-patina-light"
+                : "text-copper"
             }`}
           >
             {status}
