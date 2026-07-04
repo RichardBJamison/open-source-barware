@@ -1590,3 +1590,17 @@ code {
   color: var(--cream);
   font-weight: 600;
 }
+
+/* Walk-parse review flags */
+tr.row-flagged {
+  background: rgba(199, 167, 107, 0.08);
+}
+tr.row-flagged td.raw-heard {
+  border-left: 3px solid var(--brass, #c7a76b);
+}
+.parse-flag {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--brass, #c7a76b);
+  font-style: italic;
+}

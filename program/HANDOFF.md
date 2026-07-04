@@ -84,6 +84,24 @@ curl -s http://localhost:5052/api/state
 
 - 2026-07-01 GROK: Frame scaffold created; `/ping` and `/api/state` passed on port 5052
   with `/usr/bin/python3 server.py`
+- 2026-07-04 CLAUDE: Launch-day fixes from Richard's live walk-through of setup.
+  (1) **Cycle input**: `name_bar` now offers only Weekly (starts Monday) or
+  Monthly (starts on the 1st) via a select; `/api/config` rejects any other
+  cycle payload with 400 (legacy `interval_days` 7/30 coerces). Verified via
+  curl: 850 days → 400; weekly/monthly → normalized config saved.
+  (2) **Walk parser rewritten** (`parseWalkText` in `osb-app.js`): the old
+  parser split on commas/periods/"and", which dictation doesn't produce, so
+  whole rows landed in single fields. New parser is **size-delimited** — each
+  bottle entry ends at its size token (750/liter/1.75/etc.), with
+  normalization for dictation mishears ("leader"→liter, "seven fifty"→750,
+  "754"→750, glued numbers), station markers (well N / row N / next row /
+  back bar shelf / front wall / glass shelf / speed rail...) that fuzzy-match
+  or auto-create stations, and quantity phrases ("two bottles", "a case").
+  Ambiguous entries carry `parse_flags` shown in the review table (flagged
+  rows sort first, brass highlight); any edit clears the flag. Verified
+  against Richard's real 945-word Agave & Rye-style walk transcript:
+  223 entries, 14 stations, only 13 flagged. Walk-screen copy now coaches
+  "name + size only — the size ends each bottle."
 
 ## Open work
 

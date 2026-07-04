@@ -689,6 +689,41 @@ def api_config():
         "cycle",
     }
     patch = {k: body[k] for k in allowed if k in body}
+    if "cycle" in patch:
+        cycle = patch["cycle"] if isinstance(patch["cycle"], dict) else {}
+        mode = str(cycle.get("mode", "")).lower()
+        interval = cycle.get("interval_days")
+        if mode not in ("weekly", "monthly"):
+            # legacy payloads: only interval 7 (weekly) or 30 (monthly) accepted
+            if interval == 7:
+                mode = "weekly"
+            elif interval == 30:
+                mode = "monthly"
+            else:
+                return (
+                    jsonify({
+                        "error": "Inventory cycle must be weekly (starts Monday) or monthly (starts on the 1st)."
+                    }),
+                    400,
+                )
+        if mode == "weekly":
+            patch["cycle"] = {
+                "mode": "weekly",
+                "anchor": "monday",
+                "anchor_day": "monday",
+                "interval_days": 7,
+                "label": "Inventory cycle",
+                "timezone": cycle.get("timezone", "America/New_York"),
+            }
+        else:
+            patch["cycle"] = {
+                "mode": "monthly",
+                "anchor": "first-of-month",
+                "anchor_day": "first",
+                "interval_days": 30,
+                "label": "Inventory cycle",
+                "timezone": cycle.get("timezone", "America/New_York"),
+            }
     if body.get("bar_name"):
         bar = _load_bar()
         bar["name"] = body["bar_name"].strip()

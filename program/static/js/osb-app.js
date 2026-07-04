@@ -567,13 +567,23 @@ function renderWalkReview() {
     updateWalkReviewProgress();
     return;
   }
-  body.innerHTML = bottles
+  const flaggedFirst = [...bottles].sort((a, b) => {
+    const af = (a.parse_flags || []).length ? 0 : 1;
+    const bf = (b.parse_flags || []).length ? 0 : 1;
+    return af - bf;
+  });
+  body.innerHTML = flaggedFirst
     .map((b) => {
+      const flags = b.parse_flags || [];
       const raw = b.raw_heard || b.name;
+      const rawCell = flags.length
+        ? `${escapeHtml(raw)}<div class="parse-flag">⚑ ${escapeHtml(flags.join("; "))}</div>`
+        : escapeHtml(raw);
       const unverified = !b.size_verified ? " size-unverified" : "";
+      const flaggedCls = flags.length ? " row-flagged" : "";
       return `
-        <tr class="${unverified}" data-bottle="${b.id}" data-station="${b.stationId}">
-          <td class="raw-heard">${escapeHtml(raw)}</td>
+        <tr class="${unverified}${flaggedCls}" data-bottle="${b.id}" data-station="${b.stationId}">
+          <td class="raw-heard">${rawCell}</td>
           <td><input type="text" class="review-name" value="${escapeHtml(b.name)}" data-bottle="${b.id}" data-station="${b.stationId}" /></td>
           <td><select class="review-station" data-bottle="${b.id}" data-station="${b.stationId}">${stationOptions(b.stationId)}</select></td>
           <td><select class="review-size" data-bottle="${b.id}" data-station="${b.stationId}">${sizeOptions(b.size || "750ml")}</select></td>
@@ -752,6 +762,13 @@ function bindWalkReviewListeners() {
       bottle.size_verified = true;
     }
     if (t.classList.contains("review-verified")) bottle.size_verified = t.checked;
+    // Any edit resolves the parse flag — the operator has looked at this row.
+    if (bottle.parse_flags?.length) {
+      bottle.parse_flags = [];
+      const row = t.closest("tr");
+      row?.classList.remove("row-flagged");
+      row?.querySelector(".parse-flag")?.remove();
+    }
 
     await persistBar();
     updateWalkReviewProgress();
@@ -1082,66 +1099,233 @@ function addStation() {
   renderStationList();
 }
 
-function parseVoiceNotes(text) {
-  const lines = text
-    .split(/\n/)
-    .map((l) => l.trim())
+/* ── Walk parser: size-delimited segmentation ─────────────────────────────────
+ * In a bar-walk dictation each bottle entry ENDS with its size ("Tito's 750",
+ * "Ketel One liter"). Sizes are the delimiters — not commas or periods, which
+ * dictation rarely produces. Station phrases ("well two", "row three",
+ * "back bar shelf") mark where the walker moved and group what follows.
+ */
+
+const WALK_WORD_NUMS = {
+  one: "1", two: "2", too: "2", to: "2", three: "3", four: "4", for: "4",
+  five: "5", six: "6", seven: "7", eight: "8", nine: "9", ten: "10",
+};
+
+function walkNormalizeText(text) {
+  let t = " " + String(text).replace(/\r/g, "\n") + " ";
+  t = t.toLowerCase();
+  t = t.replace(/\bleader\b/g, "liter"); // most common dictation mishear
+  t = t.replace(/\blitre\b/g, "liter");
+  t = t.replace(/\bseven\s+fifty\b/g, "750");
+  t = t.replace(/\bseven\s+50\b/g, "750");
+  t = t.replace(/\b7\s+fifty\b/g, "750");
+  t = t.replace(/\b7\/50\b/g, "750");
+  t = t.replace(/\b75[43]\b/g, "750"); // "750" + stray syllable collisions
+  t = t.replace(/\b7\/5[43]\b/g, "750");
+  t = t.replace(/\b(\d{1,4})750\b/g, "$1 750"); // "666750" glued numbers
+  return t;
+}
+
+const WALK_SIZE_PATTERNS = [
+  [/^1\.75\s*l?$/, "1.75L"],
+  [/^handle$/, "1.75L"],
+  [/^(?:\.75|0\.75)$/, "750ml"],
+  [/^750(?:ml)?$/, "750ml"],
+  [/^375(?:ml)?$/, "375ml"],
+  [/^200(?:ml)?$/, "200ml"],
+  [/^50ml$/, "50ml"],
+  [/^liter$/, "1L"],
+  [/^1l$/, "1L"],
+  [/^l$/, "1L"], // bare "L" right after a name = liter
+];
+
+function walkSizeOf(token) {
+  const t = token.replace(/[.,;:!?]+$/, "");
+  for (const [re, sz] of WALK_SIZE_PATTERNS) {
+    if (re.test(t)) return sz;
+  }
+  return null;
+}
+
+const WALK_STATION_RES = [
+  /^(well)\s+(one|two|too|to|three|four|for|five|six|seven|eight|nine|ten|\d{1,2})(\s+(primary|secondary|rear|front|large|small))?(\s+(row|bro)\s+(one|two|too|three|four|five|\d{1,2}))?(\s+(top|bottom|back|front)\s+(left|right|center)(\s+corner)?)?/,
+  /^(row|bro)\s+(one|two|too|three|four|five|six|seven|\d{1,2})/,
+  /^(next)\s+(row|shelf)/,
+  /^(back\s+bar)(\s+(shelf|wall))?/,
+  /^(front|back)\s+wall(\s+(left|right|center)\s+side)?/,
+  /^(bar)\s+(left|right)\s+side(\s+top\s+shelf)?/,
+  /^(top|bottom|glass)\s+shelf/,
+  /^(center|middle)\s+bar(\s+front\s+section)?/,
+  /^(rear|front)\s+row(\s+(one|two|three|\d{1,2}))?/,
+  /^(speed\s*rail|rail)\b/,
+  /^(cooler|walk[\s-]?in|liquor\s+room|store\s*room|storage)\b/,
+];
+
+function walkTitleCase(s) {
+  return s.replace(/(^|[\s-])(\S)/g, (m, pre, c) => pre + c.toUpperCase());
+}
+
+function walkMatchStation(words, i) {
+  const windowText = words.slice(i, i + 8).join(" ");
+  for (const re of WALK_STATION_RES) {
+    const m = windowText.match(re);
+    if (m && windowText.startsWith(m[0])) {
+      let label = m[0]
+        .trim()
+        .split(/\s+/)
+        .map((w) => (w === "bro" ? "row" : (WALK_WORD_NUMS[w] ?? w)))
+        .join(" ");
+      return { label: walkTitleCase(label), consumed: m[0].trim().split(/\s+/).length };
+    }
+  }
+  return null;
+}
+
+function walkMatchQuantity(words, i) {
+  const w = words[i];
+  const next = (words[i + 1] || "").replace(/[.,]/g, "");
+  const num = WALK_WORD_NUMS[w] ?? (/^\d{1,2}$/.test(w) ? w : null);
+  if (num && (next === "bottles" || next === "bottle")) {
+    return { qty: parseInt(num, 10), consumed: 2 };
+  }
+  if ((w === "a" || w === "one") && next === "case") return { qty: 12, consumed: 2 };
+  return null;
+}
+
+function walkCleanName(s) {
+  return s
+    .replace(/\b(the|a|an|of|and)\b/g, " ")
+    .replace(/[.,]+/g, " ")
+    .replace(/^0\d+\s+/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseWalkText(rawText) {
+  const words = walkNormalizeText(rawText)
+    .split(/\s+/)
+    .map((w) => w.replace(/^[,;:()"']+|[,;:()"']+$/g, ""))
     .filter(Boolean);
-  const stations = sortedStations();
-  const newBottles = [];
-  let currentStation = stations[0] ?? null;
 
-  for (const line of lines) {
-    const matchedStation = stations.find((s) => {
-      const sName = s.name.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const lName = line.toLowerCase().replace(/[^a-z0-9]/g, "");
-      return lName.startsWith(sName) || sName.startsWith(lName) || lName.includes(sName);
-    });
+  const entries = [];
+  const stationsSeen = [];
+  let currentStation = null;
+  let buf = [];
+  let qty = 1;
 
-    if (matchedStation) {
-      currentStation = matchedStation;
-      const pattern = new RegExp(matchedStation.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-      const remainder = line.replace(pattern, "").replace(/^[\s:,\-]+/, "").trim();
-      if (remainder && currentStation) {
-        remainder.split(/[,.]/).forEach((prod) => {
-          const p = prod.trim();
-          if (p.length > 1) pushBottle(currentStation.id, p.replace(/^\d+\.\s*/, ""));
-        });
-      }
+  function mkEntry(name, size, sizeVerified, flags = []) {
+    return {
+      name: walkTitleCase(name),
+      size,
+      size_verified: sizeVerified,
+      station: currentStation,
+      qty,
+      raw_heard: name,
+      flags,
+    };
+  }
+
+  function flushUnsized() {
+    const name = walkCleanName(buf.join(" "));
+    if (name && name.length > 1) {
+      const flag =
+        name.split(" ").length <= 8
+          ? "no size heard — verify"
+          : "could not split — edit this one";
+      entries.push(mkEntry(name, "750ml", false, [flag]));
+    }
+    buf = [];
+    qty = 1;
+  }
+
+  let i = 0;
+  while (i < words.length) {
+    const st = walkMatchStation(words, i);
+    if (st) {
+      if (buf.length) flushUnsized();
+      currentStation = st.label;
+      if (!stationsSeen.includes(st.label)) stationsSeen.push(st.label);
+      i += st.consumed;
       continue;
     }
+    const q = walkMatchQuantity(words, i);
+    if (q) {
+      qty = q.qty;
+      i += q.consumed;
+      continue;
+    }
+    const size = walkSizeOf(words[i]);
+    if (size) {
+      const name = walkCleanName(buf.join(" "));
+      if (name) {
+        const flags = name.split(" ").length > 6 ? ["long name — may be two bottles"] : [];
+        entries.push(mkEntry(name, size, true, flags));
+      } else if (entries.length) {
+        entries[entries.length - 1].flags.push("extra size heard nearby — check size");
+      }
+      buf = [];
+      qty = 1;
+      i += 1;
+      continue;
+    }
+    buf.push(words[i]);
+    i += 1;
+  }
+  if (buf.length) flushUnsized();
 
-    if (currentStation) {
-      line.split(/[,.]|\band\b/).forEach((prod) => {
-        const p = prod.trim().replace(/^\d+\.\s*/, "").replace(/:$/, "");
-        if (p.length > 1) pushBottle(currentStation.id, p);
+  return { entries, stations: stationsSeen };
+}
+
+function walkFindOrCreateStation(label) {
+  if (!label) return sortedStations()[0] ?? null;
+  const key = label.toLowerCase().replace(/[^a-z0-9]/g, "");
+  let found = barState.stations.find((s) => {
+    const sk = s.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return sk === key || sk.includes(key) || key.includes(sk);
+  });
+  if (found) return found;
+  found = {
+    id: uid(),
+    name: label,
+    type: /shelf|wall|back bar|center/i.test(label) ? "back-bar" : "well",
+    order: barState.stations.length,
+    bottles: [],
+  };
+  barState.stations.push(found);
+  return found;
+}
+
+function parseVoiceNotes(text) {
+  const { entries } = parseWalkText(text);
+  let added = 0;
+
+  for (const e of entries) {
+    const station = walkFindOrCreateStation(e.station);
+    if (!station) continue;
+    if (!station.bottles) station.bottles = [];
+    const exists = station.bottles.some(
+      (b) => b.name.toLowerCase() === e.name.toLowerCase() && b.size === e.size
+    );
+    if (exists) continue;
+    const copies = Math.max(1, Math.min(e.qty || 1, 48));
+    for (let c = 0; c < copies; c += 1) {
+      station.bottles.push({
+        id: uid(),
+        name: e.name,
+        raw_heard: e.raw_heard,
+        category: guessCategory(e.name),
+        size: e.size,
+        size_verified: e.size_verified,
+        parse_flags: e.flags || [],
+        par_level: 1.0,
+        current_level: 1.0,
+        cost: 0,
       });
+      added += 1;
+      if (copies > 1) break; // qty>1: one line item; count handled at first count
     }
   }
-
-  function pushBottle(stationId, raw) {
-    const station = barState.stations.find((s) => s.id === stationId);
-    if (!station) return;
-    const parsed = extractSizeFromRaw(raw);
-    if (parsed.name.length < 2) return;
-    if (!station.bottles) station.bottles = [];
-    const exists = station.bottles.some((b) => b.name.toLowerCase() === parsed.name.toLowerCase());
-    if (exists) return;
-    station.bottles.push({
-      id: uid(),
-      name: parsed.name,
-      raw_heard: parsed.raw_heard,
-      category: guessCategory(parsed.name),
-      size: parsed.size,
-      size_verified: parsed.size_verified,
-      par_level: 1.0,
-      current_level: 1.0,
-      cost: 0,
-    });
-    newBottles.push(parsed.name);
-  }
-
-  return newBottles.length;
+  return added;
 }
 
 function fillManualStationSelect() {
@@ -1333,8 +1517,11 @@ async function initSetup() {
   showOnly(data.phase);
 
   const cfg = data.config;
-  const cycleEl = document.getElementById("cycleDays");
-  if (cycleEl && cfg.cycle?.interval_days) cycleEl.value = cfg.cycle.interval_days;
+  const cycleEl = document.getElementById("cycleMode");
+  if (cycleEl) {
+    cycleEl.value =
+      cfg.cycle?.mode === "monthly" || cfg.cycle?.interval_days === 30 ? "monthly" : "weekly";
+  }
 
   const voiceNotes = document.getElementById("voiceNotes");
   if (voiceNotes && data.state?.voice_notes_text) voiceNotes.value = data.state.voice_notes_text;
@@ -1427,8 +1614,14 @@ async function initSetup() {
   });
 
   document.getElementById("btnNameContinue")?.addEventListener("click", async () => {
-    const cycleDays = parseInt(document.getElementById("cycleDays")?.value || "7", 10);
-    await OSB.saveConfig({ cycle: { interval_days: cycleDays } });
+    const cycleMode =
+      document.getElementById("cycleMode")?.value === "monthly" ? "monthly" : "weekly";
+    await OSB.saveConfig({
+      cycle:
+        cycleMode === "monthly"
+          ? { mode: "monthly", anchor: "first-of-month", interval_days: 30 }
+          : { mode: "weekly", anchor_day: "monday", interval_days: 7 },
+    });
 
     const listed = await OSB.listBars();
     if (!listed.bars?.length) {
@@ -1792,8 +1985,10 @@ async function initHome() {
   }
 
   const cfg = data.config;
-  const cycleDays = cfg.cycle?.interval_days || 7;
-  const cycleText = `${cfg.cycle?.label || "Inventory cycle"} · every ${cycleDays} day${cycleDays === 1 ? "" : "s"}`;
+  const cycleText =
+    cfg.cycle?.mode === "monthly"
+      ? `${cfg.cycle?.label || "Inventory cycle"} · monthly, starts on the 1st`
+      : `${cfg.cycle?.label || "Inventory cycle"} · weekly, starts Monday`;
 
   document.getElementById("sidebarCycleLabel")?.replaceChildren(document.createTextNode(cycleText));
   await refreshHomeBars();

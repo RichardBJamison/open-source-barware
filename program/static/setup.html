@@ -120,8 +120,11 @@
         Planning a voice walk? A dedicated dictation app (Wispr Flow, VoiceInk, Whisperboard) saves hours of cleanup
         compared to speaking straight into Apple Notes.
       </p>
-      <label for="cycleDays" class="inline-label">Inventory cycle (days) — shared across all bars</label>
-      <input id="cycleDays" type="number" min="1" max="90" value="7" />
+      <label for="cycleMode" class="inline-label">Inventory cycle — shared across all bars</label>
+      <select id="cycleMode">
+        <option value="weekly" selected>Weekly — counts start every Monday</option>
+        <option value="monthly">Monthly — counts start on the 1st</option>
+      </select>
       <div class="setup-nav">
         <button class="btn btn-secondary" type="button" data-go="updates_signup">← Back</button>
         <button class="btn btn-primary" id="btnNameContinue" type="button">Continue</button>
@@ -206,12 +209,18 @@
             or any app that exports <code>.txt</code> or <code>.md</code> — then transfer the file to this computer and upload.
           </p>
           <p class="info-body" style="margin-top:10px;">
-            Or paste your voice notes directly in the box. Say each station name, then every product on that station.
+            Or paste your voice notes directly in the box.
+            <strong>Say only the bottle name and its size — the size is what ends each bottle.</strong>
+            "Tito's 750. Ketel One liter. Bacardi 750." Skip levels, prices, and descriptions on
+            this first walk — that all comes later. When you move to a new spot, call it out:
+            "Well two." "Row three." "Back bar shelf."
           </p>
           <div class="example-box">
             <p class="box-label">Example</p>
             <p class="example-text">
-              "Well one: Tito's vodka, Ketel One, Tanqueray gin… Back Bar Top Shelf: Patron Silver, Don Julio 1942…"
+              "Well one. Tito's 750, Ketel One liter, Tanqueray 750, triple sec 750.
+              Row two. Espolon Blanco liter, Evan Williams 750.
+              Back bar top shelf. Patron Silver 750, Don Julio 1942 750…"
             </p>
             <p class="example-text example-warning" style="margin-top:10px;">
               If you don't know what to say here, go back to Step 2 — you need your station map before you can walk the bar.
