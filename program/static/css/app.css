@@ -200,6 +200,14 @@ a { color: var(--copper-bright); }
   width: 100%;
 }
 
+.setup-nav-trio:not(.has-toolkit) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.setup-nav-trio:not(.has-toolkit) #btnReconcileNext {
+  justify-self: end;
+}
+
 .setup-nav-trio .btn-primary {
   justify-self: end;
 }
@@ -386,6 +394,14 @@ a { color: var(--copper-bright); }
   margin-bottom: 18px;
 }
 
+.map-download-section-label {
+  margin: 4px 0 0;
+}
+
+.map-download-grid-audit {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .map-download-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -481,7 +497,8 @@ a { color: var(--copper-bright); }
     width: 100%;
   }
 
-  .map-download-grid {
+  .map-download-grid,
+  .map-download-grid-audit {
     grid-template-columns: 1fr;
   }
 }

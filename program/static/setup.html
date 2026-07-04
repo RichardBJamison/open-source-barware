@@ -392,15 +392,11 @@
         <button class="btn btn-primary" id="btnReconcile" type="button">Run reconciliation</button>
       </div>
       <div id="reconcilePreview" class="reconcile-preview"></div>
-      <div id="reconcileExport" class="reconcile-export hidden">
-        <span class="reconcile-export-label">Audit your full setup — export every bottle to check against the shelf:</span>
-        <div class="reconcile-export-actions">
-          <a class="btn btn-secondary btn-sm" id="btnExportCsv" href="/api/export/bottles?format=csv">Download CSV</a>
-          <a class="btn btn-secondary btn-sm" id="btnExportXlsx" href="/api/export/bottles?format=xlsx">Download Excel (.xlsx)</a>
-        </div>
-      </div>
-      <div class="setup-nav">
+      <div class="setup-nav setup-nav-trio" id="reconcileNav">
         <button class="btn btn-secondary" type="button" data-go="voice_walk">← Back</button>
+        <button class="btn btn-map-toolkit hidden" id="btnOpenReconcileToolkit" type="button" aria-expanded="false" aria-controls="mapToolkitModal">
+          Print / Download MAP
+        </button>
         <button class="btn btn-secondary" id="btnReconcileNext" type="button" data-go="map_review" disabled>Next step →</button>
       </div>
       <div class="hard-reset-row">
@@ -448,35 +444,7 @@
           <button class="btn btn-add" id="btnReviewAddConfirm" type="button">+</button>
         </div>
       </div>
-      <div id="mapToolkitModal" class="map-toolkit-modal hidden" role="dialog" aria-modal="true" aria-labelledby="mapToolkitTitle">
-        <button type="button" class="map-toolkit-modal-backdrop" id="btnMapModalCloseBackdrop" aria-label="Close"></button>
-        <div class="map-toolkit-modal-sheet">
-          <button type="button" class="map-toolkit-modal-close" id="btnMapModalClose" aria-label="Close">×</button>
-          <p class="map-toolkit-eyebrow">Your walk reference</p>
-          <h3 class="map-toolkit-title" id="mapToolkitTitle">Print / Download MAP</h3>
-          <p class="map-toolkit-lead">
-            Take this with you while you walk wells and bars. Each station has extra lines for missed entries —
-            speak them into Notes now, <strong>add</strong> them in the editor when you're back.
-          </p>
-          <div class="map-toolkit-actions">
-            <button class="btn btn-secondary" id="btnMapPrint" type="button">Print walk sheet</button>
-            <button class="btn btn-secondary" id="btnMapCopy" type="button">
-              <span id="btnMapCopyLabel">Copy map to clipboard</span>
-            </button>
-            <p id="mapToolkitFeedback" class="map-toolkit-feedback hidden" role="status"></p>
-            <div class="map-download-grid">
-              <button class="btn btn-ghost btn-sm" id="btnMapExportWalkCsv" type="button" data-format="walk_csv">Download walk sheet (.csv)</button>
-              <button class="btn btn-ghost btn-sm" id="btnMapExportWalkXlsx" type="button" data-format="walk_xlsx">Download walk sheet (.xlsx)</button>
-            </div>
-          </div>
-          <div class="map-toolkit-digital">
-            <p class="box-label">Digital view — station by station</p>
-            <div id="mapDigitalView" class="map-digital-view scroll-panel"></div>
-            <button class="btn btn-ghost btn-sm" id="btnMapDigitalAdd" type="button">+ Add a missed product</button>
-          </div>
-        </div>
-      </div>
-      <div class="setup-nav setup-nav-trio">
+      <div class="setup-nav setup-nav-trio has-toolkit">
         <button class="btn btn-secondary" type="button" data-go="reconcile">← Back</button>
         <button class="btn btn-map-toolkit" id="btnOpenMapToolkit" type="button" aria-expanded="false" aria-controls="mapToolkitModal">
           Print / Download MAP
@@ -593,7 +561,43 @@
     </section>
 
     <p class="status" id="status"></p>
+
+    <div id="mapToolkitModal" class="map-toolkit-modal hidden" role="dialog" aria-modal="true" aria-labelledby="mapToolkitTitle">
+      <button type="button" class="map-toolkit-modal-backdrop" id="btnMapModalCloseBackdrop" aria-label="Close"></button>
+      <div class="map-toolkit-modal-sheet">
+        <button type="button" class="map-toolkit-modal-close" id="btnMapModalClose" aria-label="Close">×</button>
+        <p class="map-toolkit-eyebrow">Export &amp; print</p>
+        <h3 class="map-toolkit-title" id="mapToolkitTitle">Print / Download MAP</h3>
+        <p class="map-toolkit-lead">
+          Print or copy for the floor. Download machine-readable files — <strong>CSV</strong>, <strong>Excel</strong>,
+          or <strong>XML</strong> — for spreadsheets, scripts, or your POS pipeline.
+        </p>
+        <div class="map-toolkit-actions">
+          <button class="btn btn-secondary" id="btnMapPrint" type="button">Print walk sheet</button>
+          <button class="btn btn-secondary" id="btnMapCopy" type="button">
+            <span id="btnMapCopyLabel">Copy map to clipboard</span>
+          </button>
+          <p id="mapToolkitFeedback" class="map-toolkit-feedback hidden" role="status"></p>
+          <p class="box-label map-download-section-label">Walk sheet — field use</p>
+          <div class="map-download-grid">
+            <button class="btn btn-ghost btn-sm map-export-btn" type="button" data-format="walk_csv">Walk sheet (.csv)</button>
+            <button class="btn btn-ghost btn-sm map-export-btn" type="button" data-format="walk_xlsx">Walk sheet (.xlsx)</button>
+          </div>
+          <p class="box-label map-download-section-label">Full bottle audit — CSV / Excel / XML</p>
+          <div class="map-download-grid map-download-grid-audit">
+            <button class="btn btn-ghost btn-sm map-export-btn" type="button" data-format="csv">Audit (.csv)</button>
+            <button class="btn btn-ghost btn-sm map-export-btn" type="button" data-format="xlsx">Audit (.xlsx)</button>
+            <button class="btn btn-ghost btn-sm map-export-btn" type="button" data-format="xml">Audit (.xml)</button>
+          </div>
+        </div>
+        <div class="map-toolkit-digital">
+          <p class="box-label">Digital view — station by station</p>
+          <div id="mapDigitalView" class="map-digital-view scroll-panel"></div>
+          <button class="btn btn-ghost btn-sm" id="btnMapDigitalAdd" type="button">+ Add a missed product</button>
+        </div>
+      </div>
+    </div>
   </div>
-  <script src="/static/js/osb-app.js?v=20260704-map-actions"></script>
+  <script src="/static/js/osb-app.js?v=20260704-reconcile-toolkit"></script>
 </body>
 </html>

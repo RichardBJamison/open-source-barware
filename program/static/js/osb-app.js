@@ -1764,6 +1764,13 @@ function setReconcileNextEnabled(enabled) {
   if (btn) btn.disabled = !enabled;
 }
 
+function setReconcileToolkitVisible(visible) {
+  const btn = document.getElementById("btnOpenReconcileToolkit");
+  const nav = document.getElementById("reconcileNav");
+  if (btn) btn.classList.toggle("hidden", !visible);
+  if (nav) nav.classList.toggle("has-toolkit", visible);
+}
+
 function reconcileAuditStats(stations = sortedStations()) {
   let flagged = 0;
   let unverified = 0;
@@ -1878,11 +1885,22 @@ function isMapToolkitOpen() {
   return modal && !modal.classList.contains("hidden");
 }
 
-function setMapToolkitOpen(open) {
+let mapToolkitTriggerId = null;
+
+function mapToolkitTriggers() {
+  return Array.from(document.querySelectorAll("[aria-controls='mapToolkitModal']"));
+}
+
+function setMapToolkitOpen(open, triggerId = mapToolkitTriggerId) {
   const modal = document.getElementById("mapToolkitModal");
-  const btn = document.getElementById("btnOpenMapToolkit");
   if (modal) modal.classList.toggle("hidden", !open);
-  if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open && triggerId) mapToolkitTriggerId = triggerId;
+  mapToolkitTriggers().forEach((btn) => {
+    btn.setAttribute(
+      "aria-expanded",
+      open && btn.id === mapToolkitTriggerId ? "true" : "false"
+    );
+  });
   document.body.style.overflow = open ? "hidden" : "";
   if (open) renderMapDigitalView();
 }
@@ -2095,7 +2113,8 @@ async function downloadMapExport(format, btn) {
     const blob = await r.blob();
     const disp = r.headers.get("Content-Disposition") || "";
     const match = disp.match(/filename="?([^";]+)"?/i);
-    const filename = match?.[1] || `map-${format}.${format.includes("xlsx") ? "xlsx" : "csv"}`;
+    const ext = format.includes("xlsx") ? "xlsx" : format === "xml" ? "xml" : "csv";
+    const filename = match?.[1] || `map-${format}.${ext}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -2261,6 +2280,7 @@ function renderReconcilePreview() {
     <p class="field-hint">Run reconciliation to build the full audit report.</p>
   `;
   setReconcileNextEnabled(false);
+  setReconcileToolkitVisible(false);
 }
 
 async function runReconciliation({ quiet = false } = {}) {
@@ -2268,12 +2288,12 @@ async function runReconciliation({ quiet = false } = {}) {
   await persistBar();
   const result = await OSB.reconcile();
   renderStationAuditReport("reconcilePreview");
-  document.getElementById("reconcileExport")?.classList.remove("hidden");
+  setReconcileToolkitVisible(true);
   const rb = document.getElementById("btnReconcile");
   if (rb) rb.textContent = "Re-run reconciliation";
   setReconcileNextEnabled(true);
   if (!quiet) {
-    setStatus("Report ready — audit every bottle below, download a sheet if you like, then hit Next step.");
+    setStatus("Report ready — audit below, then Print / Download MAP for CSV, Excel, or XML.");
   }
   return result;
 }
@@ -2285,7 +2305,7 @@ async function initReconcileStep(data) {
   }
   if (data.state?.has_draft_map) {
     renderStationAuditReport("reconcilePreview");
-    document.getElementById("reconcileExport")?.classList.remove("hidden");
+    setReconcileToolkitVisible(true);
     const rb = document.getElementById("btnReconcile");
     if (rb) rb.textContent = "Re-run reconciliation";
     setReconcileNextEnabled(true);
@@ -2713,20 +2733,13 @@ async function initSetup() {
     }
   });
 
-  document.getElementById("btnExportCsv")?.addEventListener("click", async (e) => {
-    e.preventDefault();
-    await persistBar();
-    window.location.href = "/api/export/bottles?format=csv";
-  });
-
-  document.getElementById("btnExportXlsx")?.addEventListener("click", async (e) => {
-    e.preventDefault();
-    await persistBar();
-    window.location.href = "/api/export/bottles?format=xlsx";
-  });
-
   document.getElementById("btnOpenMapToolkit")?.addEventListener("click", () => {
-    setMapToolkitOpen(!isMapToolkitOpen());
+    setMapToolkitOpen(!isMapToolkitOpen(), "btnOpenMapToolkit");
+    setStatus("");
+  });
+
+  document.getElementById("btnOpenReconcileToolkit")?.addEventListener("click", () => {
+    setMapToolkitOpen(!isMapToolkitOpen(), "btnOpenReconcileToolkit");
     setStatus("");
   });
 
@@ -2745,12 +2758,12 @@ async function initSetup() {
     }
   });
 
-  document.getElementById("btnMapExportWalkCsv")?.addEventListener("click", async (e) => {
-    await downloadMapExport(e.currentTarget.dataset.format || "walk_csv", e.currentTarget);
-  });
-
-  document.getElementById("btnMapExportWalkXlsx")?.addEventListener("click", async (e) => {
-    await downloadMapExport(e.currentTarget.dataset.format || "walk_xlsx", e.currentTarget);
+  document.querySelectorAll(".map-export-btn").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      const format = e.currentTarget.dataset.format;
+      if (!format) return;
+      await downloadMapExport(format, e.currentTarget);
+    });
   });
 
   document.getElementById("btnMapDigitalAdd")?.addEventListener("click", () => {

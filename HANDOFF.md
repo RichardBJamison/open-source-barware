@@ -1,7 +1,7 @@
 # Open Source Barware — Handoff
 
 *Last updated: 2026-07-04 | agent: GROK | project ID: `open-source-barware`*
-*Status: PAUSED (lockdown) — repo clean on `main` @ `6181bc0`, deployed to opensourcebarware.com*
+*Status: **PAUSED (milestone lockdown)** — caterpillar Steps 1–7 complete; see Nexus library handoff*
 
 ## Purpose
 
@@ -288,6 +288,13 @@ Confirm scripts in `package.json` before relying on these commands.
   box; solid `bg-black`; hourglass + copy centered stack; offset `translate-x-[13%]`
   for PNG art balance (`6181bc0`). Step 5 map toolkit (green pulse, print, walk
   sheets). Manual `wrangler pages deploy` for immediate production updates.
+- 2026-07-04 GROK: **Caterpillar milestone lockdown** (Richard: "lock it down").
+  Step 4 Reconcile gets same green Print/Download MAP button as Step 5 Review.
+  Shared modal moved to wizard shell; exports: walk csv/xlsx + audit csv/xlsx/xml.
+  Server: `GET /api/export/bottles?format=xml`. Compliance zips rebuilt.
+  Nexus: `~/Me-Nexus/library/open-source-barware/BUILD-MILESTONE-2026-07-04-CATERPILLAR.md`.
+  Verified: Flask XML export, `npm run build`, program handoffs updated. Status: paused —
+  next stage is Step 7 tiny polish + butterfly, not caterpillar rework.
 
 ## Known issues
 
@@ -319,39 +326,28 @@ Confirm scripts in `package.json` before relying on these commands.
   pre-launch date logic fires; consider suppressing site-wide overlays inside
   The Dojo.
 
-## Open work
+## Open work (post-milestone — next stage)
 
-1. Set Cloudflare Pages env `GHL_API_TOKEN` (location `bNT4wp0nokIQdBJbQDaa`
-   default in function) so `/api/updates-subscribe` accepts signups; then deploy
-   latest `main` and verify live `/inventory/setup` step 1 + API 200.
-2. Continue implementation from the customer-forward process page into the
-   actual Chrome-side setup/home base: provider list, API key storage, workbook
-   generation path, POS export scope, and backup/restore path.
-4. Add provider/API connection and file parsing behind `/inventory/settings` and
-   `/inventory/inputs`, preserving local-secret handling.
-5. Convert the approved report into implementation tickets for the Chrome-side
-   setup program and admin home base.
-6. Review the existing Three-Way outputs and align/retire any prompt-only scope
-   that conflicts with the Chrome program direction.
-7. Build backup restore/import, workbook export, and POS/invoice parser paths.
-8. Finish the mail migration: create the real alias/mailbox path for
-   `richard@opensourcebarware.com` in Forward Email, generate its password,
-   and replace the Gmail identity stopgap in Thunderbird with direct
-   IMAP/SMTP.
-9. Repeat the same hosted-mail setup for `resonantwebdesign.com`, then decide
-   whether `me@richardbjamison.com` should stay forwarding-only or be upgraded
-   into a real Thunderbird mailbox on Forward Email.
+**Caterpillar Steps 1–6 are locked.** Only tiny tweaks or Step 7 polish from here.
+
+1. Step 7 count: CSV import/export parity with walk spreadsheet path
+2. Butterfly home base: metrics timeframe, spreadsheets, in-house inventory rooms
+3. Chrome program delivery: `install.sh` + LaunchAgent + customer bookmark flow
+4. Cloudflare Pages env `GHL_API_TOKEN` for `/api/updates-subscribe` (503 until set)
+5. Provider/API connection + file parsing (settings/inputs) — local-secret handling
+6. Mail migration: `richard@opensourcebarware.com` Thunderbird IMAP/SMTP
 
 ## Pickup point
 
 **Nexus library (read first):** `~/Me-Nexus/library/open-source-barware/HANDOFF.md`
+**Milestone:** `~/Me-Nexus/library/open-source-barware/BUILD-MILESTONE-2026-07-04-CATERPILLAR.md`
 **Launch analysis:** `~/Me-Nexus/library/open-source-barware/LAUNCH-READINESS-2026-07-04.md`
 
 ```bash
 cd "/Users/richardjamison/Documents/New project/open-source-barware"
-git pull origin main          # expect b137d8a, clean tree
-npm run lint && npm run build
-open https://opensourcebarware.com
-# Dojo: http://localhost:3000/inventory  (npm run dev)
-# Chrome program: cd program && python3 server.py → http://localhost:5052/
+git pull origin main && git status   # expect clean tree
+cd program && python3 server.py
+open http://localhost:5052/          # Cmd+Shift+R after pull
+# Marketing: npm run build && open https://opensourcebarware.com
+# Dojo: npm run dev → http://localhost:3000/inventory
 ```

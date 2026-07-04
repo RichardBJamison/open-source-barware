@@ -14,6 +14,7 @@ import json
 import os
 import re
 import uuid
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -1086,6 +1087,34 @@ def _bottle_audit_rows(bar: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def _export_audit_xml(bar: dict[str, Any]) -> str:
+    """Structured bottle audit — stations nested with bottles for scripts / ETL."""
+    root = ET.Element("inventory_audit")
+    meta = ET.SubElement(root, "meta")
+    ET.SubElement(meta, "bar_name").text = (bar.get("name") or "").strip()
+    ET.SubElement(meta, "exported_at").text = _now()
+    ET.SubElement(meta, "bottle_count").text = str(_bar_bottle_count(bar))
+    stations_el = ET.SubElement(root, "stations")
+    for station in sorted(bar.get("stations", []), key=lambda s: s.get("order", 0)):
+        st_el = ET.SubElement(stations_el, "station", id=station.get("id", ""))
+        ET.SubElement(st_el, "name").text = station.get("name", "")
+        ET.SubElement(st_el, "type").text = station.get("type", "back-bar")
+        bottles_el = ET.SubElement(st_el, "bottles")
+        for b in station.get("bottles", []):
+            bot = ET.SubElement(bottles_el, "bottle", id=b.get("id", ""))
+            ET.SubElement(bot, "product_name").text = b.get("name", "")
+            ET.SubElement(bot, "category").text = b.get("category", "spirits")
+            ET.SubElement(bot, "size").text = b.get("size", "750ml")
+            ET.SubElement(bot, "size_verified").text = "true" if b.get("size_verified") else "false"
+            ET.SubElement(bot, "par_level").text = str(b.get("par_level", 1.0))
+            flags_el = ET.SubElement(bot, "flags")
+            for flag in b.get("parse_flags", []) or []:
+                ET.SubElement(flags_el, "flag").text = str(flag)
+            ET.SubElement(bot, "what_we_heard").text = b.get("raw_heard", b.get("name", ""))
+    ET.indent(root, space="  ")
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="unicode")
+
+
 def _export_xlsx(rows: list[dict[str, Any]], headers: list[str], sheet_title: str) -> Response:
     from openpyxl import Workbook
     from openpyxl.styles import Font
@@ -1116,10 +1145,18 @@ def _export_xlsx(rows: list[dict[str, Any]], headers: list[str], sheet_title: st
 
 @app.route("/api/export/bottles", methods=["GET"])
 def api_export_bottles():
-    """Full bottle-audit or clipboard walk sheet — CSV or XLSX."""
+    """Full bottle-audit or clipboard walk sheet — CSV, XLSX, or XML."""
     fmt = request.args.get("format", "csv").lower()
     bar = _load_bar()
     safe = re.sub(r"[^\w\-]+", "_", bar.get("name") or "bar").strip("_") or "bar"
+
+    if fmt == "xml":
+        body = _export_audit_xml(bar)
+        return Response(
+            body,
+            mimetype="application/xml",
+            headers={"Content-Disposition": f"attachment; filename={safe}_bottle_audit.xml"},
+        )
 
     if fmt in ("walk_csv", "walk_sheet_csv", "walk"):
         rows = _walk_sheet_rows(bar)
