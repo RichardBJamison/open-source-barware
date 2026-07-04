@@ -749,6 +749,48 @@ textarea { min-height: 140px; resize: vertical; }
   line-height: 1.5;
 }
 
+.field-hint.updates-status-error {
+  color: #f0a07a;
+  font-weight: 600;
+}
+
+.updates-success-toast {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(4, 8, 14, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.updates-success-toast.hidden {
+  display: none;
+}
+
+.updates-success-card {
+  max-width: 420px;
+  width: 100%;
+  padding: 28px 24px;
+  border-radius: 16px;
+  border: 2px solid rgba(168, 120, 79, 0.55);
+  background: linear-gradient(160deg, rgba(22, 30, 42, 0.98), rgba(10, 14, 22, 0.98));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+.updates-success-card p {
+  margin: 0 0 18px;
+  line-height: 1.55;
+  color: var(--cream);
+}
+
+.updates-success-card .btn {
+  min-width: 180px;
+}
+
 .guide-list {
   list-style: none;
   margin: 12px 0 0;
@@ -1054,9 +1096,10 @@ code {
 .updates-toggle-input {
   position: absolute;
   opacity: 0;
-  width: 0;
-  height: 0;
-  pointer-events: none;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: auto;
 }
 
 .updates-toggle-ui {

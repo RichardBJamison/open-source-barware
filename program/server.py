@@ -14,6 +14,8 @@ import json
 import math
 import os
 import re
+import urllib.error
+import urllib.request
 import uuid
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -1236,6 +1238,87 @@ def api_hard_reset():
     reset_cfg = {**DEFAULT_CONFIG, "phase": "updates_signup"}
     _write_json(_CONFIG_FILE, reset_cfg)
     return jsonify({"status": "reset", "phase": "updates_signup", "backup": backup_dir})
+
+
+UPDATES_SUBSCRIBE_UPSTREAM = os.environ.get(
+    "OSB_UPDATES_SUBSCRIBE_URL", "https://opensourcebarware.com/api/updates-subscribe"
+)
+_SIGNUPS_LOG = os.path.join(_DATA, "release_signups.jsonl")
+
+
+def _append_signup_log(entry: dict[str, Any]) -> None:
+    try:
+        os.makedirs(_DATA, exist_ok=True)
+        with open(_SIGNUPS_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps({**entry, "logged_at": _now()}) + "\n")
+    except OSError:
+        pass
+
+
+@app.route("/api/updates-subscribe", methods=["OPTIONS"])
+def api_updates_subscribe_options():
+    return Response(
+        "",
+        status=204,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+        },
+    )
+
+
+@app.route("/api/updates-subscribe", methods=["POST"])
+def api_updates_subscribe_proxy():
+    """Same-origin proxy to production signup API (Chrome program → GHL + notify)."""
+    body = request.get_data()
+    if not body:
+        return jsonify({"error": "JSON body required."}), 400
+
+    try:
+        payload = json.loads(body.decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return jsonify({"error": "Invalid JSON body."}), 400
+
+    _append_signup_log(
+        {
+            "email": payload.get("email", ""),
+            "programUpdates": payload.get("programUpdates"),
+            "hiddenBarTour": payload.get("hiddenBarTour"),
+            "source": payload.get("source", "chrome-program-setup"),
+        }
+    )
+
+    upstream_req = urllib.request.Request(
+        UPDATES_SUBSCRIBE_UPSTREAM,
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": (
+                "Mozilla/5.0 (compatible; OpenSourceBarware-Program/1.0; "
+                "+https://opensourcebarware.com)"
+            ),
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(upstream_req, timeout=20) as upstream_resp:
+            resp_body = upstream_resp.read()
+            status = upstream_resp.status
+    except urllib.error.HTTPError as exc:
+        resp_body = exc.read()
+        status = exc.code
+    except urllib.error.URLError as exc:
+        return jsonify({"error": f"Signup service unreachable: {exc.reason}"}), 502
+
+    try:
+        data = json.loads(resp_body.decode("utf-8")) if resp_body else {}
+    except json.JSONDecodeError:
+        data = {"error": "Invalid response from signup service."}
+        return jsonify(data), 502
+
+    return jsonify(data), status
 
 
 # ── Caterpillar stubs ───────────────────────────────────────────────────────

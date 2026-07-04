@@ -1,7 +1,7 @@
 /* Open Source Barware — Chrome program client */
 
 const UPDATES_SIGNUP_STORAGE_KEY = "osb_updates_signup";
-const UPDATES_SUBSCRIBE_URL = "https://opensourcebarware.com/api/updates-subscribe";
+const UPDATES_SUBSCRIBE_URL = "/api/updates-subscribe";
 
 const US_STATES = [
   ["AL", "Alabama"], ["AK", "Alaska"], ["AZ", "Arizona"], ["AR", "Arkansas"],
@@ -56,6 +56,7 @@ const CATEGORY_KEYWORDS = {
 };
 
 let setupListenersBound = false;
+let updatesSignupListenersBound = false;
 let homeListenersBound = false;
 let barState = { id: "", name: "", stations: [] };
 let walkParsed = false;
@@ -476,8 +477,11 @@ async function submitUpdatesSignup({ email, city, state, programUpdates, hiddenB
   const error = validateUpdatesSignup({ email, city, state, hiddenBarTour });
   if (error) return { ok: false, message: error };
   if (!programUpdates && !hiddenBarTour) {
-    return { ok: false, message: "Select at least one email preference." };
+    return { ok: false, message: "Turn on at least one email preference above." };
   }
+
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 20000);
 
   try {
     const response = await fetch(UPDATES_SUBSCRIBE_URL, {
@@ -491,6 +495,7 @@ async function submitUpdatesSignup({ email, city, state, programUpdates, hiddenB
         programUpdates: programUpdates ?? true,
         hiddenBarTour: Boolean(hiddenBarTour),
       }),
+      signal: controller.signal,
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -504,9 +509,127 @@ async function submitUpdatesSignup({ email, city, state, programUpdates, hiddenB
       ok: true,
       message: data.message || "You are on the list. We only email when new releases ship.",
     };
-  } catch {
+  } catch (err) {
+    if (err?.name === "AbortError") {
+      return { ok: false, message: "Signup timed out — check your connection and try again." };
+    }
     return { ok: false, message: "Network error — check your connection and try again." };
+  } finally {
+    window.clearTimeout(timeout);
   }
+}
+
+function showUpdatesSuccessToast(message) {
+  const toast = document.getElementById("updatesSuccessToast");
+  const text = document.getElementById("updatesSuccessText");
+  if (!toast || !text) return;
+  text.textContent = message;
+  toast.classList.remove("hidden");
+}
+
+function hideUpdatesSuccessToast() {
+  document.getElementById("updatesSuccessToast")?.classList.add("hidden");
+}
+
+async function handleUpdatesJoin() {
+  const optIn = document.getElementById("updatesOptIn")?.checked;
+  const tourOptIn = document.getElementById("updatesTourOptIn")?.checked;
+  if (!optIn && !tourOptIn) {
+    setUpdatesSignupStatus("skipped");
+    await advanceFromUpdatesSignup();
+    return;
+  }
+
+  const email = document.getElementById("updatesEmail")?.value || "";
+  const city = document.getElementById("updatesCity")?.value || "";
+  const state = document.getElementById("updatesState")?.value || "";
+  const statusEl = document.getElementById("updatesStatus");
+  const joinBtn = document.getElementById("btnUpdatesJoin");
+  if (joinBtn) {
+    joinBtn.disabled = true;
+    joinBtn.textContent = "Sending…";
+  }
+  if (statusEl) {
+    statusEl.textContent = "";
+    statusEl.classList.remove("updates-status-error");
+  }
+
+  try {
+    const result = await submitUpdatesSignup({
+      email,
+      city,
+      state,
+      programUpdates: optIn,
+      hiddenBarTour: tourOptIn,
+    });
+
+    if (!result.ok) {
+      if (statusEl) {
+        statusEl.textContent = result.message;
+        statusEl.classList.add("updates-status-error");
+      }
+      return;
+    }
+
+    showUpdatesSuccessToast(result.message);
+    if (statusEl) statusEl.textContent = "";
+    window.setTimeout(async () => {
+      hideUpdatesSuccessToast();
+      try {
+        await advanceFromUpdatesSignup();
+      } catch (err) {
+        if (statusEl) {
+          statusEl.textContent = err.message || "Could not continue setup.";
+          statusEl.classList.add("updates-status-error");
+        }
+      }
+    }, 900);
+  } catch (err) {
+    if (statusEl) {
+      statusEl.textContent = err.message || "Something went wrong. Try again.";
+      statusEl.classList.add("updates-status-error");
+    }
+  } finally {
+    if (joinBtn) {
+      joinBtn.disabled = false;
+      joinBtn.textContent = "Join the release list";
+    }
+  }
+}
+
+function bindUpdatesSignupListeners() {
+  if (updatesSignupListenersBound) return;
+  updatesSignupListenersBound = true;
+
+  document.getElementById("btnUpdatesSkip")?.addEventListener("click", async () => {
+    try {
+      setUpdatesSignupStatus("skipped");
+      await advanceFromUpdatesSignup();
+    } catch (err) {
+      setStatus(err.message, "updatesStatus");
+    }
+  });
+
+  document.getElementById("btnUpdatesContinue")?.addEventListener("click", async () => {
+    try {
+      await advanceFromUpdatesSignup();
+    } catch (err) {
+      setStatus(err.message, "updatesStatus");
+    }
+  });
+
+  document.getElementById("btnUpdatesJoin")?.addEventListener("click", () => {
+    handleUpdatesJoin();
+  });
+
+  document.getElementById("updatesSuccessDismiss")?.addEventListener("click", async () => {
+    hideUpdatesSuccessToast();
+    try {
+      await advanceFromUpdatesSignup();
+    } catch (err) {
+      setStatus(err.message, "updatesStatus");
+    }
+  });
 }
 
 function populateUpdatesStateSelect() {
@@ -3535,58 +3658,6 @@ async function initSetup() {
     await initSetup();
   });
 
-  document.getElementById("btnUpdatesSkip")?.addEventListener("click", async () => {
-    try {
-      setUpdatesSignupStatus("skipped");
-      await advanceFromUpdatesSignup();
-    } catch (err) {
-      setStatus(err.message, "updatesStatus");
-    }
-  });
-
-  document.getElementById("btnUpdatesContinue")?.addEventListener("click", async () => {
-    try {
-      await advanceFromUpdatesSignup();
-    } catch (err) {
-      setStatus(err.message, "updatesStatus");
-    }
-  });
-
-  document.getElementById("btnUpdatesJoin")?.addEventListener("click", async () => {
-    const optIn = document.getElementById("updatesOptIn")?.checked;
-    const tourOptIn = document.getElementById("updatesTourOptIn")?.checked;
-    if (!optIn && !tourOptIn) {
-      setUpdatesSignupStatus("skipped");
-      await advanceFromUpdatesSignup();
-      return;
-    }
-
-    const email = document.getElementById("updatesEmail")?.value || "";
-    const city = document.getElementById("updatesCity")?.value || "";
-    const state = document.getElementById("updatesState")?.value || "";
-    const statusEl = document.getElementById("updatesStatus");
-    const joinBtn = document.getElementById("btnUpdatesJoin");
-    if (joinBtn) joinBtn.disabled = true;
-    if (statusEl) statusEl.textContent = "";
-
-    const result = await submitUpdatesSignup({
-      email,
-      city,
-      state,
-      programUpdates: optIn,
-      hiddenBarTour: tourOptIn,
-    });
-    if (joinBtn) joinBtn.disabled = false;
-
-    if (!result.ok) {
-      if (statusEl) statusEl.textContent = result.message;
-      return;
-    }
-
-    if (statusEl) statusEl.textContent = result.message;
-    window.setTimeout(() => advanceFromUpdatesSignup(), 700);
-  });
-
   document.getElementById("btnNameContinue")?.addEventListener("click", async () => {
     const cycleMode =
       document.getElementById("cycleMode")?.value === "monthly" ? "monthly" : "weekly";
@@ -4765,6 +4836,9 @@ async function initHome() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (document.body.dataset.app === "setup") initSetup();
+  if (document.body.dataset.app === "setup") {
+    bindUpdatesSignupListeners();
+    initSetup().catch((err) => setStatus(err.message || "Setup failed to load."));
+  }
   if (document.body.dataset.app === "home") initHome();
 });

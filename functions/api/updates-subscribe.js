@@ -30,12 +30,8 @@ function ghlHeaders(token) {
   return { ...GHL_HEADERS, Authorization: `Bearer ${token}` };
 }
 
-async function notifyOwner(env, details) {
-  const token = env.GHL_API_TOKEN;
-  if (!token) return;
-
-  const notifyTo = env.NOTIFY_EMAIL || "richard@opensourcebarware.com";
-  const lines = [
+function signupNotifyLines(details) {
+  return [
     "New Open Source Barware release-list signup",
     "",
     `Email: ${details.email}`,
@@ -45,12 +41,33 @@ async function notifyOwner(env, details) {
     `Hidden Bar Tour: ${details.hiddenBarTour ? "yes" : "no"}`,
     details.contactId ? `GHL contact: ${details.contactId}` : "",
   ].filter(Boolean);
+}
+
+async function notifyOwner(env, details) {
+  const token = env.GHL_API_TOKEN;
+  if (!token) return;
+
+  const notifyTo = env.NOTIFY_EMAIL || "richard@opensourcebarware.com";
+  const lines = signupNotifyLines(details);
+  const noteBody = lines.join("\n");
 
   if (details.contactId) {
     await fetch(`${GHL_BASE}/contacts/${details.contactId}/notes`, {
       method: "POST",
       headers: ghlHeaders(token),
-      body: JSON.stringify({ body: lines.join("\n") }),
+      body: JSON.stringify({ body: noteBody }),
+    }).catch(() => {});
+
+    const dueDate = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+    await fetch(`${GHL_BASE}/contacts/${details.contactId}/tasks`, {
+      method: "POST",
+      headers: ghlHeaders(token),
+      body: JSON.stringify({
+        title: `OSB signup: ${details.email}`,
+        body: noteBody,
+        dueDate,
+        completed: false,
+      }),
     }).catch(() => {});
   }
 
@@ -68,7 +85,23 @@ async function notifyOwner(env, details) {
         from: env.FORWARD_EMAIL_FROM || "releases@opensourcebarware.com",
         to: notifyTo,
         subject: `OSB signup: ${details.email}`,
-        text: lines.join("\n"),
+        text: noteBody,
+      }),
+    }).catch(() => {});
+    return;
+  }
+
+  const webhook = env.NOTIFY_WEBHOOK;
+  if (webhook) {
+    await fetch(webhook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: notifyTo,
+        subject: `OSB signup: ${details.email}`,
+        text: noteBody,
+        email: details.email,
+        source: details.source,
       }),
     }).catch(() => {});
   }
