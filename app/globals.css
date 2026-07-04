@@ -428,8 +428,8 @@ body { background: var(--bg); color: var(--text); }
   position: absolute;
   left: 15%;
   right: 14%;
-  top: 79%;
-  bottom: 10%;
+  top: 81.5%;
+  max-height: 16%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -438,7 +438,7 @@ body { background: var(--bg); color: var(--text); }
 
 .salle-sign-rules-title {
   margin: 0 0 0.2rem;
-  font-size: clamp(1.35rem, 4.6vw, 1.75rem);
+  font-size: clamp(1.4rem, 5vw, 1.85rem);
   font-weight: 700;
   color: #152238;
   transform: rotate(-1deg);
@@ -453,8 +453,8 @@ body { background: var(--bg); color: var(--text); }
   list-style: none;
   margin: 0;
   padding: 0;
-  font-size: clamp(1.15rem, 4vw, 1.45rem);
-  line-height: 1.22;
+  font-size: clamp(1.22rem, 4.4vw, 1.55rem);
+  line-height: 1.18;
   color: #18263f;
 }
 
