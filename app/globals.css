@@ -312,15 +312,42 @@ body { background: var(--bg); color: var(--text); }
 .salle-welcome-backdrop,
 .dojo-welcome-backdrop {
   animation: dojo-fade-in 0.35s ease-out;
+  background:
+    radial-gradient(ellipse 55% 60% at 50% 42%, rgba(42, 34, 24, 0.35) 0%, transparent 62%),
+    rgba(0, 0, 0, 0.88);
 }
 
 .salle-scroll-popup,
 .salle-popup {
   animation: dojo-rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  isolation: isolate;
+}
+
+.salle-sign-glow {
+  position: absolute;
+  inset: -6px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 3px;
+  box-shadow:
+    0 0 22px 6px rgba(255, 228, 170, 0.42),
+    0 0 48px 14px rgba(200, 155, 88, 0.28),
+    0 0 90px 28px rgba(168, 120, 79, 0.14);
+}
+
+.salle-sign-glow-outer {
+  inset: -18px;
+  z-index: -1;
+  border-radius: 6px;
+  box-shadow:
+    0 0 60px 20px rgba(240, 210, 150, 0.12),
+    0 0 120px 45px rgba(184, 137, 88, 0.07),
+    0 0 180px 70px rgba(74, 124, 111, 0.05);
 }
 
 .salle-popup-frame {
   position: relative;
+  z-index: 1;
   padding: 14px;
   background:
     linear-gradient(135deg, #3d2e1c 0%, #7a5c38 18%, #c9a56a 32%, #8b6b42 50%, #c9a56a 68%, #7a5c38 82%, #3d2e1c 100%);
@@ -329,6 +356,7 @@ body { background: var(--bg); color: var(--text); }
     inset 0 2px 6px rgba(255, 235, 190, 0.35),
     inset 0 -4px 10px rgba(0, 0, 0, 0.55),
     0 0 0 1px #1a1208,
+    0 0 14px 3px rgba(255, 235, 190, 0.22),
     0 24px 56px rgba(0, 0, 0, 0.75);
 }
 
@@ -377,28 +405,33 @@ body { background: var(--bg); color: var(--text); }
   z-index: 1;
   max-height: calc(94vh - 28px);
   overflow-y: auto;
-  background: #12100b;
+  overflow-x: hidden;
+  background:
+    linear-gradient(180deg, #1c1814 0%, #16130f 38%, #12100b 100%);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
 }
 
 .salle-popup-art {
   position: relative;
   line-height: 0;
+  margin-bottom: -2px;
 }
 
 .salle-popup-img {
   display: block;
   width: 100%;
   height: auto;
+  vertical-align: top;
 }
 
 .salle-popup-rules-panel {
   padding: 1rem 1.35rem 1.1rem;
   background:
     radial-gradient(ellipse 120% 80% at 50% 0%, rgba(255, 248, 230, 0.5) 0%, transparent 55%),
-    linear-gradient(175deg, #efe2c8 0%, #e2d2b0 55%, #d8c49a 100%);
-  border-top: 1px solid rgba(122, 96, 62, 0.35);
-  border-bottom: 1px solid rgba(122, 96, 62, 0.35);
-  box-shadow: inset 0 1px 0 rgba(255, 248, 230, 0.55);
+    linear-gradient(175deg, #efe2c8 0%, #e2d2b0 55%, #d4c4a0 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 230, 0.55),
+    inset 0 -8px 16px rgba(122, 96, 62, 0.08);
 }
 
 .salle-popup-rules-title {
@@ -435,7 +468,19 @@ body { background: var(--bg); color: var(--text); }
 
 .salle-popup-body {
   padding: 1rem 1.15rem 0.85rem;
-  background: linear-gradient(180deg, #1a1612 0%, #12100b 100%);
+  background: transparent;
+}
+
+.salle-popup .salle-scroll-footer {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background:
+    linear-gradient(180deg, #2a2218 0%, #1a1612 100%);
+  border: none;
+  border-top: 1px solid rgba(184, 137, 88, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(224, 192, 128, 0.12),
+    inset 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .salle-popup-copy {

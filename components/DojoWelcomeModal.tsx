@@ -62,6 +62,8 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
         className="salle-popup relative z-10 w-full max-w-lg"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="salle-sign-glow" aria-hidden="true" />
+        <div className="salle-sign-glow salle-sign-glow-outer" aria-hidden="true" />
         <div className="salle-popup-frame">
           <FrameRivet className="salle-frame-rivet-tl" />
           <FrameRivet className="salle-frame-rivet-tr" />
