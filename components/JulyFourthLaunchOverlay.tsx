@@ -10,7 +10,7 @@ import {
   shouldShowPreLaunchOverlay,
 } from "@/lib/launch-gate";
 
-const STORAGE_KEY = "osb-july4-launch-v3";
+const STORAGE_KEY = "osb-july4-launch-v4";
 
 const PARTY_SHOTS = [
   { src: "/images/hero.png", alt: "Bartender behind the bar" },
@@ -156,23 +156,23 @@ export default function JulyFourthLaunchOverlay() {
         </h1>
 
         <p className="mt-4 text-sm uppercase tracking-[0.3em] text-white/70">
-          We are almost finished &mdash; completed by the 4th at 6pm as planned
+          Thanks for stopping by early &mdash; go enjoy the fireworks
         </p>
 
         <div className="july4-party-card panel rivets mx-auto mt-8 w-full max-w-lg px-6 py-8 sm:px-10 sm:py-9">
           <p className="font-serif text-2xl italic leading-snug text-cream sm:text-3xl">
-            Thank you for stopping by early.
+            Thank you. Go enjoy the fireworks.
           </p>
 
           <p className="mt-5 text-base leading-relaxed text-text-muted sm:text-lg">
-            We are almost finished and will be completed by the 4th at 6pm as
-            planned. The site is open now so you can click around, explore the
-            pages, and see how the program works.
+            The site is open now so you can click around, explore the pages, and
+            see how the program works. Wander the workshop, read the process,
+            and try the inventory sandbox.
           </p>
 
           <p className="mt-4 text-base leading-relaxed text-cream/90">
-            Downloads stay locked until {LAUNCH_LABEL}. Until then, wander the
-            workshop, read the process, and try the inventory sandbox.
+            We&rsquo;ll be ready for downloads at {LAUNCH_LABEL} Eastern.
+            Program files stay locked until the timer hits zero.
           </p>
 
           <div className="mt-6 rounded-sm border border-white/10 bg-black/25 px-4 py-4">
@@ -186,12 +186,12 @@ export default function JulyFourthLaunchOverlay() {
               <TimeBlock value={countdown.seconds} label="Secs" />
             </div>
             <p className="mt-3 text-xs uppercase tracking-[0.2em] text-text-light">
-              6pm Eastern. Then the doors open.
+              10pm Eastern. Then the doors open.
             </p>
           </div>
 
           <p className="mt-6 font-serif text-xl italic text-copper-bright">
-            Come back at 6pm on the Fourth to grab the program. ✨
+            Come back at 10pm to grab the program. ✨
           </p>
 
           <button

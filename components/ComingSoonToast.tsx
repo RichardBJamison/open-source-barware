@@ -86,7 +86,7 @@ export default function ComingSoonToast() {
           </p>
           <p className="text-sm text-cream/80 leading-relaxed mb-6">
             The official launch is{" "}
-            <span className="text-copper font-semibold">July 4th at 6pm</span>{" "}
+            <span className="text-copper font-semibold">July 4th at 10pm</span>{" "}
             &mdash; because a free program for every bar in America felt right on
             Independence Day. Until then, the workshop is open and
             we&rsquo;d love your feedback.

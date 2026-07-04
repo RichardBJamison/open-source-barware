@@ -1,5 +1,5 @@
-export const LAUNCH_MS = new Date("2026-07-04T18:00:00-04:00").getTime();
-export const LAUNCH_LABEL = "July 4 at 6pm";
+export const LAUNCH_MS = new Date("2026-07-04T22:00:00-04:00").getTime();
+export const LAUNCH_LABEL = "July 4 at 10pm";
 
 type LaunchOptions = {
   preview?: boolean;
@@ -21,7 +21,7 @@ export function isLaunched(now = Date.now(), opts: LaunchOptions = {}) {
   return now >= LAUNCH_MS;
 }
 
-/** Pre-launch welcome overlay — show before go-live, hide after July 4 at 6pm. */
+/** Pre-launch welcome overlay — show before go-live, hide after July 4 at 10pm. */
 export function shouldShowPreLaunchOverlay(
   now = Date.now(),
   opts: LaunchOptions = {},
