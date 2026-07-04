@@ -1,7 +1,7 @@
 # Open Source Barware — Handoff
 
 *Last updated: 2026-07-04 | agent: GROK | project ID: `open-source-barware`*
-*Status: PAUSED (lockdown) — repo clean on `main` @ `b137d8a`, all builds pushed to origin*
+*Status: PAUSED (lockdown) — repo clean on `main` @ `6181bc0`, deployed to opensourcebarware.com*
 
 ## Purpose
 
@@ -284,6 +284,10 @@ Confirm scripts in `package.json` before relying on these commands.
   library handoff at `~/Me-Nexus/library/open-source-barware/`. Launch readiness
   analysis: static site fast/stable; GHL signup 503 until token set; overlay until
   6pm EDT. Verified: `npm run build`, git push, live HTTP 200s.
+- 2026-07-04 GROK: **Problem section finalized** (Richard approved). Removed panel
+  box; solid `bg-black`; hourglass + copy centered stack; offset `translate-x-[13%]`
+  for PNG art balance (`6181bc0`). Step 5 map toolkit (green pulse, print, walk
+  sheets). Manual `wrangler pages deploy` for immediate production updates.
 
 ## Known issues
 
