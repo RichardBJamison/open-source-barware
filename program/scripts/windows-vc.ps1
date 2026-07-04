@@ -98,11 +98,12 @@ Add-Check "VC-05" "Server /ping returns ok" {
     "version=$($body.version)"
 }
 
-Add-Check "VC-06" "Home admin shell loads" {
+Add-Check "VC-06" "Home route responds (phase-aware)" {
     $r = Get-Http "/home"
     if ($r.StatusCode -ne 200) { throw "status $($r.StatusCode)" }
-    if ($r.Content -notmatch "barSwitcher") { throw "barSwitcher not found" }
-    "OK"
+    if ($r.Content -match "barSwitcher") { return "butterfly admin shell" }
+    if ($r.Content -match "setup-shell") { return "gated to setup (pre-butterfly)" }
+    throw "unexpected /home content"
 }
 
 Add-Check "VC-07" "Setup wizard entry loads" {
