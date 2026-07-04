@@ -426,10 +426,10 @@ body { background: var(--bg); color: var(--text); }
 
 .salle-sign-rules {
   position: absolute;
-  left: 14%;
-  right: 13%;
-  top: 66%;
-  bottom: 9%;
+  left: 15%;
+  right: 14%;
+  top: 79%;
+  bottom: 10%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -437,31 +437,31 @@ body { background: var(--bg); color: var(--text); }
 }
 
 .salle-sign-rules-title {
-  margin: 0 0 0.15rem;
-  font-size: clamp(1.05rem, 3.4vw, 1.35rem);
+  margin: 0 0 0.2rem;
+  font-size: clamp(1.35rem, 4.6vw, 1.75rem);
   font-weight: 700;
-  color: #1a2d52;
-  transform: rotate(-1.2deg);
+  color: #152238;
+  transform: rotate(-1deg);
   text-decoration: underline;
-  text-decoration-color: rgba(26, 45, 82, 0.55);
-  text-underline-offset: 3px;
-  text-shadow: 0 0 0.6px rgba(26, 45, 82, 0.35);
-  opacity: 0.94;
+  text-decoration-color: rgba(21, 34, 56, 0.5);
+  text-underline-offset: 4px;
+  text-shadow: 0 0 0.8px rgba(21, 34, 56, 0.35);
+  opacity: 0.95;
 }
 
 .salle-sign-rules-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  font-size: clamp(0.95rem, 3vw, 1.15rem);
-  line-height: 1.28;
-  color: #1e2f4a;
+  font-size: clamp(1.15rem, 4vw, 1.45rem);
+  line-height: 1.22;
+  color: #18263f;
 }
 
 .salle-sign-rules-list li {
   position: relative;
-  padding-left: 0.55rem;
-  margin-bottom: 0.05rem;
+  padding-left: 0.65rem;
+  margin-bottom: 0.08rem;
   text-shadow:
     0 0 0.5px rgba(30, 47, 74, 0.4),
     0 0.5px 0 rgba(30, 47, 74, 0.15);
