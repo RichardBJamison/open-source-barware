@@ -1,7 +1,10 @@
 # Open Source Barware — Handoff
 
-*Last updated: 2026-07-04 | agent: GROK | project ID: `open-source-barware`*
-*Status: **PAUSED (milestone lockdown)** — caterpillar Steps 1–7 complete; see Nexus library handoff*
+*Last updated: 2026-07-04 ~15:40 EDT | agent: GROK | project ID: `open-source-barware`*
+*Status: **IN-PROGRESS** — caterpillar ✅ · butterfly P0 for **6pm EDT launch** · Tests 1–2 pass*
+
+> **Claude Code pickup:** Read `~/Me-Nexus/library/open-source-barware/HANDOFF.md` and
+> `SHIP-GAP-AND-TEST3-2026-07-04.md` before touching code. Program detail: `program/HANDOFF.md`.
 
 ## Purpose
 

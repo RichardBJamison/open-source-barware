@@ -1,82 +1,85 @@
 # OSB Chrome Program — Handoff
 
-*Last updated: 2026-07-04 | agent: GROK | project ID: `open-source-barware`*
-*Status: **active** — coaching-path rebuild shipped; ready for clean walk-through from welcome*
+*Updated: 2026-07-04 ~15:40 EDT | agent: GROK | project ID: `open-source-barware`*  
+*Status: **in-progress** — caterpillar complete; **butterfly is next (P0 for 6pm ship)***
+
+## Nexus pickup
+
+**Read first:** `~/Me-Nexus/library/open-source-barware/HANDOFF.md`  
+**Full gap + Test 3 spec:** `~/Me-Nexus/library/open-source-barware/SHIP-GAP-AND-TEST3-2026-07-04.md`  
+**Doc index:** `~/Me-Nexus/library/open-source-barware/README.md`
+
+---
 
 ## Purpose
 
-Local Chrome-side inventory program for Open Source Barware customers. Same delivery
-model as OVLP POP: one download, local Flask service, LaunchAgent auto-start, Chrome
-bookmark as the app.
+Local Chrome-side inventory program. OVLP POP pattern: `install.sh` → `~/osb-program/` → LaunchAgent → bookmark `http://localhost:5052/` in Chrome.
 
-The public website `/inventory/*` is a **sandbox trial** (The Dojo) with demo data.
-It mirrors this program's UI for marketing only. The real product lives here.
+Website `/inventory` = Dojo sandbox only. Real product = this folder.
 
-## Canonical locations
+---
 
-| What | Path |
-|---|---|
-| Source (dev) | `~/Documents/New project/open-source-barware/program/` |
-| Install target (customer) | `~/osb-program/` |
-| Nexus library handoff | `~/Me-Nexus/library/open-source-barware/HANDOFF.md` |
-| GitHub | https://github.com/RichardBJamison/open-source-barware |
-| Nexus project ID | `open-source-barware` |
-| Reference model | `~/ovlp-pop/` (OVLP Screen Pop) |
+## Lifecycle
 
-## Lifecycle — caterpillar → butterfly
+| Phase | Step | Status |
+|-------|------|--------|
+| `welcome` … `map_review` | 1–6 | ✅ **Locked** — do not rework UX |
+| `first_count` | 7 | ✅ Parser + reconcile + golden gate |
+| `butterfly` | Home admin | ❌ **Shell only** — see gaps below |
 
-| Phase ID | Step | User sees | Status |
-|---|---|---|---|
-| `welcome` | 1 | Introduction | ✓ shipped |
-| `name_bar` | 2 | Bar name + Weekly/Monthly cycle | ✓ shipped |
-| `build_bar` | 3 | Visual station map | ✓ shipped |
-| `voice_walk` | 4 | Size-delimited walk parser + review table | ✓ shipped |
-| `reconcile` | 5 | Auto-reconcile + audit report + **green export button** | ✓ **locked** |
-| `map_review` | 6 | Editable full map + **green export button** | ✓ **locked** |
-| `first_count` | 7 | Walk-style count upload + level parser | ✓ shipped — minor polish only |
-| `butterfly` | — | Home base admin panel | not built |
+---
 
-Gates block advance until each phase passes validation.
+## Critical gap (root cause)
 
-## Export toolkit (Steps 5 & 6 — shared modal)
+`btnFirstCountDone` sets `first_count_complete` + redirects to `/home`, but:
 
-After reconciliation (Step 5) or anytime on Review (Step 6), the green pulsating
-**Print / Download MAP** button opens a shared modal with:
+- `state.json` → `cycles[]` is **never written**
+- `_metrics_for_window()` returns placeholder nulls
+- `/api/in-house` returns empty `items`
+- `home.html` spreadsheets + weekly inputs = placeholders
 
-| Action | Detail |
-|---|---|
-| Print walk sheet | Opens print dialog / Save as PDF |
-| Copy map to clipboard | Off-screen fallback + ✓ feedback |
-| Walk sheet `.csv` / `.xlsx` | Field sheet with blank/add rows per station |
-| Audit `.csv` / `.xlsx` / `.xml` | Full bottle audit — machine-readable |
+Levels **are** saved on bottles via `POST /api/bar` (`current_level`). Butterfly does not read them yet.
 
-**API:** `GET /api/export/bottles?format=` one of:
-`csv`, `xlsx`, `xml`, `walk_csv`, `walk_xlsx`
+---
 
-XML returns nested `<inventory_audit>` with `<stations>` → `<bottles>` for ETL/scripts.
+## P0 build list (6pm deadline)
 
-**Cache bust:** `osb-app.js?v=20260704-coaching-rebuild` — hard refresh after pickup.
+1. Cycle close on `first_count_complete` → `cycles[0]` snapshot  
+2. Real metrics in `_metrics_for_window()`  
+3. `/api/in-house` + in-house UI  
+4. Spreadsheets panel — wire existing export APIs  
+5. Weekly inputs — POS upload log (store + list; parse later)  
+6. `install.sh` — full file copy + `requirements.txt`  
+7. `scripts/run-test3.mjs` — E2E API test through butterfly  
 
-## Coaching model (two-pass — 2026-07-04 rebuild)
+Details: Nexus `SHIP-GAP-AND-TEST3-2026-07-04.md`
 
-| Pass | Steps | Behavior |
-|---|---|---|
-| Pass 1 | Build → Walk → Reconcile → Review | Map contract; humble parser; user fixes before approve |
-| Pass 2 | Count | Reconcile to map; golden → lock baseline; gaps → comparison export + re-upload |
+---
 
-Count step: finish button **disabled** until `!hasIssues`. **Edit & re-upload count** returns to notes editor (not file picker only). Reconcile report uses **What we have / What you gave us / What we need** trio.
+## What's locked (caterpillar)
+
+- Two-pass coaching (Pass 1 map / Pass 2 count)  
+- Green **Print / Download MAP** modal Steps 5 & 6  
+- Export: `GET /api/export/bottles?format=csv|xlsx|xml|walk_csv|walk_xlsx`  
+- Count comparison: `POST /api/export/count-comparison`  
+- Finish count disabled until `!hasIssues`  
+
+**Tests:** `node scripts/run-test1.mjs` · `node scripts/run-test2.mjs` — both pass at `181a19e`
+
+---
 
 ## Key files
 
 | File | Role |
-|---|---|
-| `server.py` | Flask service, phase state, reconcile, exports |
-| `static/setup.html` | Caterpillar wizard + shared `#mapToolkitModal` |
-| `static/js/osb-app.js` | Phase router, parsers, map toolkit, review editor |
-| `static/css/app.css` | Map toolkit modal, green button, review styles |
-| `static/home.html` | Butterfly admin shell (stub) |
-| `install.sh` | Customer installer (POP pattern) |
-| `osb_config.example.json` | Config template — no secrets in repo |
+|------|------|
+| `server.py` | Flask, phases, exports, butterfly stubs |
+| `static/js/osb-app.js` | Parsers, setup router, `initHome()` |
+| `static/home.html` | Admin shell (placeholders) |
+| `static/setup.html` | Caterpillar wizard |
+| `install.sh` | Customer installer |
+| `SYNC_FROM_WEB_DOJO.md` | Additive sync from Dojo (POS log, tenths toggle) |
+
+---
 
 ## Commands
 
@@ -87,48 +90,31 @@ pip install -r requirements.txt
 python3 server.py
 # → http://localhost:5052/
 curl -s http://localhost:5052/ping
-curl -s "http://localhost:5052/api/export/bottles?format=xml" | head -5
+node scripts/run-test1.mjs
+node scripts/run-test2.mjs
 ```
 
-**Restart Flask** after any `server.py` change. **Cmd+Shift+R** after JS/CSS changes.
+Restart Flask after `server.py` changes. Cmd+Shift+R after JS/CSS.
 
-## Safety constraints
+---
 
-- API keys live in `~/osb-program/osb_config.json` on customer machines only
-- Do not commit `osb_config.json`, `data/`, or runtime state
-- Do not delete `program/data/` — contains live test bar (~218 bottles, bar "jh")
-- Website sandbox stays separate until butterfly shell is stable
+## Safety
 
-## Verification (2026-07-04 lockdown)
+- Do not delete `data/` — live test bar (~218 bottles)  
+- Do not commit `osb_config.json` or runtime `data/` state  
+- API keys: customer `~/osb-program/osb_config.json` only  
 
-| Check | Result |
-|---|---|
-| Walk parser (size-delimited) | ✓ 223 entries / 14 stations on Agave-style transcript |
-| Step 4 reconcile green button | ✓ appears after reconcile; opens shared modal |
-| Step 5 review green button | ✓ always visible in nav trio |
-| Print / copy / blob downloads | ✓ map modal actions |
-| `format=xml` export | ✓ `application/xml`, nested stations |
-| `format=csv` / `walk_csv` | ✓ 200 |
-| `POST /api/setup/count-notes` | ✓ 200 |
-| `npm run build` (site + zips) | ✓ 21 static pages |
+---
 
-Note: `format=xlsx` falls back to CSV if `openpyxl` is not installed in the venv.
+## Untracked dev file
 
-## Open work (post-lockdown — tiny only)
+`scripts/test-count-reconcile.mjs` — one-off harness against `data/bars.json`. Safe to commit or gitignore; not part of Test 1/2/3 suite.
 
-1. Step 7 count: CSV import/export parity with walk path
-2. Butterfly home base shell (metrics, spreadsheets, in-house inventory)
-3. `install.sh` + LaunchAgent (`com.opensourcebarware.program`)
-4. AI reconcile when provider connected
-5. Align Dojo sandbox with latest program UI after butterfly
+---
 
-## Pickup — first safe command
+## Pickup command
 
 ```bash
-cd "/Users/richardjamison/Documents/New project/open-source-barware"
-git pull origin main && git status   # expect clean
-cd program && python3 server.py
-open http://localhost:5052/
+cat ~/Me-Nexus/library/open-source-barware/HANDOFF.md
+cd ~/Documents/New\ project/open-source-barware && git pull && cd program && python3 server.py
 ```
-
-Read `~/Me-Nexus/library/open-source-barware/HANDOFF.md` before changing anything.
