@@ -139,13 +139,24 @@ function walkTitleCase(s) {
   return s.replace(/(^|[\s-])(\S)/g, (m, pre, c) => pre + c.toUpperCase());
 }
 
+const WELL_ROLES = ["primary", "service", "point", "patio", "secondary", "rear", "front", "large", "small"];
+
 function normalizeWalkStationLabel(label) {
   if (!label) return label;
   const parts = label.trim().split(/\s+/);
   if (parts[0]?.toLowerCase() !== "well") return label;
   const num = parts[1];
-  if (num && /^\d+$/.test(String(num))) return `Well ${num} Primary`;
-  return label;
+  if (!num || !/^\d+$/.test(String(num))) return label;
+  let role = "Primary";
+  for (let i = 2; i < parts.length; i++) {
+    const low = parts[i].toLowerCase();
+    if (low === "row" || low === "bro") break;
+    if (WELL_ROLES.includes(low)) {
+      role = low.charAt(0).toUpperCase() + low.slice(1);
+      break;
+    }
+  }
+  return `Well ${num} ${role}`;
 }
 
 function walkMatchStation(words, i) {

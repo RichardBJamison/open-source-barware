@@ -541,13 +541,24 @@ function moveBottle(bottleId, fromStationId, toStationId) {
   to.bottles.push(bottle);
 }
 
+const WELL_STATION_ROLES = ["primary", "service", "point", "patio", "secondary", "rear", "front", "large", "small"];
+
 function normalizeWalkStationLabel(label) {
   if (!label) return label;
   const parts = label.trim().split(/\s+/);
   if (parts[0]?.toLowerCase() !== "well") return label;
   const num = parts[1];
-  if (num && /^\d+$/.test(String(num))) return `Well ${num} Primary`;
-  return label;
+  if (!num || !/^\d+$/.test(String(num))) return label;
+  let role = "Primary";
+  for (let i = 2; i < parts.length; i++) {
+    const low = parts[i].toLowerCase();
+    if (low === "row" || low === "bro") break;
+    if (WELL_STATION_ROLES.includes(low)) {
+      role = low.charAt(0).toUpperCase() + low.slice(1);
+      break;
+    }
+  }
+  return `Well ${num} ${role}`;
 }
 
 function stationIdByName(name) {
@@ -2187,10 +2198,12 @@ function walkSizeOf(token) {
 }
 
 const WALK_STATION_RES = [
-  /^(well)\s+(one|two|too|to|three|four|for|five|six|seven|eight|nine|ten|\d{1,2})(\s+(primary|secondary|rear|front|large|small))?(\s+(row|bro)\s+(one|two|too|three|four|five|\d{1,2}))?(\s+(top|bottom|back|front)\s+(left|right|center)(\s+corner)?)?/,
+  /^(well)\s+(one|two|too|to|three|four|for|five|six|seven|eight|nine|ten|\d{1,2})(\s+(primary|secondary|service|point|patio|rear|front|large|small))?(\s+(row|bro)\s+(one|two|too|three|four|five|\d{1,2}))?(\s+(top|bottom|back|front)\s+(left|right|center)(\s+corner)?)?/,
   /^(row|bro)\s+(one|two|too|three|four|five|six|seven|\d{1,2})/,
   /^(next)\s+(row|shelf)/,
-  /^(back\s+bar)(\s+(shelf|wall))?/,
+  /^(wine)\s+(wall|cooler|rack|cellar)/,
+  /^(back\s+bar)(\s+(main|top\s+shelf|shelf|wall|point|service))?/,
+  /^(patio)\s+cooler/,
   /^(front|back)\s+wall(\s+(left|right|center)\s+side)?/,
   /^(bar)\s+(left|right)\s+side(\s+top\s+shelf)?/,
   /^(top|bottom|glass)\s+shelf/,
