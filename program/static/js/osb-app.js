@@ -541,17 +541,50 @@ function moveBottle(bottleId, fromStationId, toStationId) {
   to.bottles.push(bottle);
 }
 
+function normalizeWalkStationLabel(label) {
+  if (!label) return label;
+  const parts = label.trim().split(/\s+/);
+  if (parts[0]?.toLowerCase() !== "well") return label;
+  const num = parts[1];
+  if (num && /^\d+$/.test(String(num))) return `Well ${num} Primary`;
+  return label;
+}
+
 function stationIdByName(name) {
   const key = (name || "").trim().toLowerCase();
   if (!key) return null;
-  const exact = sortedStations().find((s) => s.name.toLowerCase() === key);
+  const normalized = normalizeWalkStationLabel(name).toLowerCase();
+  const exact = sortedStations().find(
+    (s) => s.name.toLowerCase() === key || s.name.toLowerCase() === normalized
+  );
   if (exact) return exact.id;
   const norm = key.replace(/[^a-z0-9]/g, "");
   const fuzzy = sortedStations().find((s) => {
     const sk = s.name.toLowerCase().replace(/[^a-z0-9]/g, "");
-    return sk === norm || sk.includes(norm) || norm.includes(sk);
+    const sn = normalizeWalkStationLabel(s.name).toLowerCase().replace(/[^a-z0-9]/g, "");
+    return (
+      sk === norm ||
+      sk.includes(norm) ||
+      norm.includes(sk) ||
+      sn === norm.replace(/row\d+/g, "") ||
+      sn.includes(norm) ||
+      norm.includes(sn)
+    );
   });
   return fuzzy?.id ?? null;
+}
+
+function stationIdsInCountScope(stationLabel) {
+  const ids = new Set();
+  if (!stationLabel) return [];
+  const normalized = normalizeWalkStationLabel(stationLabel);
+  for (const s of sortedStations()) {
+    if (normalizeWalkStationLabel(s.name) === normalized) ids.add(s.id);
+    if (s.name.toLowerCase() === stationLabel.trim().toLowerCase()) ids.add(s.id);
+  }
+  const direct = stationIdByName(stationLabel);
+  if (direct) ids.add(direct);
+  return [...ids];
 }
 
 function walkUnverifiedCount() {
@@ -1012,7 +1045,11 @@ function countLevelOf(token) {
     const den = parseInt(frac[2], 10);
     if (den > 0) return Math.min(99, parseInt(frac[1], 10) / den);
   }
-  if (COUNT_LEVEL_WORDS[t] !== undefined) return COUNT_LEVEL_WORDS[t];
+  if (COUNT_LEVEL_WORDS[t] !== undefined) {
+    const v = COUNT_LEVEL_WORDS[t];
+    if (v > 2) return null;
+    return v;
+  }
   const num = t.match(/^(\d+(?:\.\d+)?)$/);
   if (num) {
     const v = parseFloat(num[1]);
@@ -1063,6 +1100,14 @@ function scoreCountBottleMatch(spokenName, bottle) {
   const spoken = normalizeCountName(spokenName);
   const name = normalizeCountName(bottle.name);
   if (!spoken || !name) return 0;
+  const spokenHasCase = /\bcase\b/.test(spoken);
+  const nameHasCase = /\bcase\b/.test(name);
+  const spokenHasSpare = /\bspare\b/.test(spoken);
+  const nameHasSpare = /\bspare\b/.test(name);
+  if (spokenHasCase && !nameHasCase) return 0;
+  if (spokenHasSpare && !nameHasSpare) return 0;
+  if (!spokenHasCase && nameHasCase) return 0;
+  if (!spokenHasSpare && nameHasSpare && !spokenHasCase) return 0;
   if (spoken === name) return 200;
   if (spoken.includes(name) || name.includes(spoken)) return 150 + name.length;
   const spokenTokens = spoken.split(/\s+/).filter((tok) => tok.length > 1);
@@ -1072,6 +1117,12 @@ function scoreCountBottleMatch(spokenName, bottle) {
     if (name.startsWith(head) || nameTokens[0] === head || nameTokens[0].startsWith(head)) {
       return 120 + head.length;
     }
+  }
+  if (spokenTokens.length >= 2 && nameTokens.length >= 2) {
+    const allSpokenInName = spokenTokens.every((tok) => name.includes(tok));
+    if (allSpokenInName) return 130 + spokenTokens.length * 12;
+    const allNameInSpoken = nameTokens.every((tok) => spoken.includes(tok));
+    if (allNameInSpoken) return 125 + nameTokens.length * 10;
   }
   if (!nameTokens.length) return spoken.includes(name.split(" ")[0]) ? 80 : 0;
   const hits = nameTokens.filter((tok) => spoken.includes(tok)).length;
@@ -1123,13 +1174,37 @@ function parseCountText(rawText) {
       i += q.consumed;
       continue;
     }
+    const w = words[i];
+    const isOneInName =
+      w === "one" &&
+      buf.length >= 1 &&
+      words[i + 1] &&
+      !walkMatchStation(words, i + 1) &&
+      countLevelOf(words[i + 1]?.replace(/[.,;:!?]+$/, "").toLowerCase()) === null;
+    if (isOneInName) {
+      buf.push(words[i]);
+      i += 1;
+      continue;
+    }
     const lv = countLevelAt(words, i);
     if (lv) {
-      const name = countCleanName(buf.join(" "));
+      let name = countCleanName(buf.join(" "));
       if (name && name.length > 1) {
-        const copies = Math.max(1, Math.min(pendingQty, 12));
+        let level = lv.level;
+        if (/\bcase\b/i.test(name)) {
+          const normalized = normalizeCaseCountEntry(name, level);
+          name = normalized.name;
+          level = normalized.level;
+        } else if (/\bspare\b/i.test(name)) {
+          const spareM = name.match(/^(.+?)\s+spare$/i);
+          if (spareM) name = `Spare ${walkTitleCase(walkCleanName(spareM[1]))}`;
+          else name = walkTitleCase(name);
+        }
+        const isCase = /\bcase\b/i.test(name);
+        const copies = isCase ? 1 : Math.max(1, Math.min(pendingQty, 12));
+        if (isCase && pendingQty > 1 && level === 1) level = pendingQty;
         for (let c = 0; c < copies; c += 1) {
-          entries.push({ name, station: currentStation, level: lv.level });
+          entries.push({ name, station: currentStation, level });
         }
       }
       buf = [];
@@ -1181,8 +1256,12 @@ function reconcileCountToMap(parsedEntries) {
   const notInCount = [];
   const surprises = [];
   const mapUsed = new Map();
+  const countedStationIds = new Set();
 
   for (const entry of parsedEntries) {
+    if (entry.station) {
+      for (const sid of stationIdsInCountScope(entry.station)) countedStationIds.add(sid);
+    }
     if (entry.level === null) {
       surprises.push({
         entry,
@@ -1218,13 +1297,6 @@ function reconcileCountToMap(parsedEntries) {
       level: entry.level,
       crossStation: !scored.inStation && entry.station,
     });
-  }
-
-  const countedStationIds = new Set();
-  for (const entry of parsedEntries) {
-    if (!entry.station) continue;
-    const sid = stationIdByName(entry.station);
-    if (sid) countedStationIds.add(sid);
   }
 
   for (const b of allBottles()) {
@@ -2094,6 +2166,8 @@ function walkNormalizeText(text) {
 const WALK_SIZE_PATTERNS = [
   [/^1\.75\s*l?$/, "1.75L"],
   [/^handle$/, "1.75L"],
+  [/^12\s*oz$/, "750ml"],
+  [/^12oz$/, "750ml"],
   [/^(?:\.75|0\.75)$/, "750ml"],
   [/^750(?:ml)?$/, "750ml"],
   [/^375(?:ml)?$/, "375ml"],
@@ -2123,6 +2197,7 @@ const WALK_STATION_RES = [
   /^(center|middle)\s+bar(\s+front\s+section)?/,
   /^(rear|front)\s+row(\s+(one|two|three|\d{1,2}))?/,
   /^(speed\s*rail|rail)\b/,
+  /^(beer)\s+cooler/,
   /^(cooler|walk[\s-]?in|liquor\s+room|store\s*room|storage)\b/,
 ];
 
@@ -2140,7 +2215,8 @@ function walkMatchStation(words, i) {
         .split(/\s+/)
         .map((w) => (w === "bro" ? "row" : (WALK_WORD_NUMS[w] ?? w)))
         .join(" ");
-      return { label: walkTitleCase(label), consumed: m[0].trim().split(/\s+/).length };
+      label = normalizeWalkStationLabel(walkTitleCase(label));
+      return { label, consumed: m[0].trim().split(/\s+/).length };
     }
   }
   return null;
@@ -2172,6 +2248,32 @@ function countCleanName(s) {
     .replace(/\s+(?:bottle|bottles)$/i, "")
     .replace(/\beach\s+one\b/gi, "")
     .trim();
+}
+
+const CASE_QTY_WORDS = {
+  one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+};
+
+function normalizeCaseCountEntry(rawName, level) {
+  const lower = (rawName || "").toLowerCase().trim();
+  const mQty = lower.match(/^(.+?)\s+case\s+(one|two|three|four|five|six|seven|eight|nine|ten|\d{1,2})$/);
+  if (mQty) {
+    const qty = CASE_QTY_WORDS[mQty[2]] ?? parseInt(mQty[2], 10);
+    return { name: `Case ${walkTitleCase(walkCleanName(mQty[1]))}`, level: qty || level };
+  }
+  const mCase = lower.match(/^(.+?)\s+case$/);
+  if (mCase) {
+    return { name: `Case ${walkTitleCase(walkCleanName(mCase[1]))}`, level };
+  }
+  const mLead = lower.match(/^case\s+(.+?)\s+(one|two|three|four|five|six|seven|eight|nine|ten|\d{1,2})$/);
+  if (mLead) {
+    const qty = CASE_QTY_WORDS[mLead[2]] ?? parseInt(mLead[2], 10);
+    return { name: `Case ${walkTitleCase(walkCleanName(mLead[1]))}`, level: qty || level };
+  }
+  if (/^case\s+/i.test(rawName)) {
+    return { name: walkTitleCase(countCleanName(rawName)), level };
+  }
+  return { name: rawName, level };
 }
 
 function parseWalkText(rawText) {
@@ -2232,13 +2334,24 @@ function parseWalkText(rawText) {
       const name = walkCleanName(buf.join(" "));
       if (name) {
         const flags = name.split(" ").length > 6 ? ["long name — may be two bottles"] : [];
-        entries.push(mkEntry(name, size, true, flags));
+        const entry = mkEntry(name, size, true, flags);
+        const after = words.slice(i + 1);
+        const packQty = after.length >= 2 ? walkMatchQuantity(after, 0) : null;
+        if (packQty && packQty.qty >= 2 && packQty.qty <= 24) {
+          entry.qty = packQty.qty;
+          i += 1 + packQty.consumed;
+        } else {
+          i += 1;
+        }
+        entries.push(entry);
       } else if (entries.length) {
         entries[entries.length - 1].flags.push("extra size heard nearby — check size");
+        i += 1;
+      } else {
+        i += 1;
       }
       buf = [];
       qty = 1;
-      i += 1;
       continue;
     }
     buf.push(words[i]);
@@ -2280,23 +2393,20 @@ function parseVoiceNotes(text) {
       (b) => b.name.toLowerCase() === e.name.toLowerCase() && b.size === e.size
     );
     if (exists) continue;
-    const copies = Math.max(1, Math.min(e.qty || 1, 48));
-    for (let c = 0; c < copies; c += 1) {
-      station.bottles.push({
-        id: uid(),
-        name: e.name,
-        raw_heard: e.raw_heard,
-        category: guessCategory(e.name),
-        size: e.size,
-        size_verified: e.size_verified,
-        parse_flags: e.flags || [],
-        par_level: 1.0,
-        current_level: 1.0,
-        cost: 0,
-      });
-      added += 1;
-      if (copies > 1) break; // qty>1: one line item; count handled at first count
-    }
+    const par = Math.max(1, Math.min(e.qty || 1, 48));
+    station.bottles.push({
+      id: uid(),
+      name: e.name,
+      raw_heard: e.raw_heard,
+      category: guessCategory(e.name),
+      size: e.size,
+      size_verified: e.size_verified,
+      parse_flags: e.flags || [],
+      par_level: par,
+      current_level: par,
+      cost: 0,
+    });
+    added += 1;
   }
   return added;
 }
