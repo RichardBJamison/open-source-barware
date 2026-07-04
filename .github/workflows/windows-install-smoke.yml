@@ -42,7 +42,7 @@ jobs:
         shell: pwsh
         run: netsh advfirewall firewall add rule name="OSB-CI-5052" dir=in action=allow protocol=TCP localport=5052
 
-      - name: Run installer from extracted package (silent)
+      - name: Install, verify VC (same step — server survives)
         shell: pwsh
         run: |
           $pkg = Join-Path $env:RUNNER_TEMP "osb-customer\open-source-barware-program"
@@ -54,10 +54,6 @@ jobs:
             Get-ChildItem $logDir -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "--- $($_.FullName) ---"; Get-Content $_.FullName }
             exit $LASTEXITCODE
           }
-
-      - name: Run internal VC checklist
-        shell: pwsh
-        run: |
           $installDir = Join-Path $env:USERPROFILE "osb-program"
           & "$installDir\scripts\windows-vc.ps1" -InstallDir $installDir
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
