@@ -125,12 +125,19 @@ function walkTitleCase(s) {
   return s.replace(/(^|[\s-])(\S)/g, (m, pre, c) => pre + c.toUpperCase());
 }
 
+const WALK_STATION_WORD_NUMS = {
+  one: 1, two: 2, too: 2, to: 2, three: 3, four: 4, for: 4,
+  five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+};
+
 function normalizeWalkStationLabel(label) {
   if (!label) return label;
   const parts = label.trim().split(/\s+/);
   if (parts[0]?.toLowerCase() !== "well") return label;
-  const num = parts[1];
-  if (!num || !/^\d+$/.test(String(num))) return label;
+  const numRaw = parts[1];
+  const numWord = WALK_STATION_WORD_NUMS[numRaw?.toLowerCase?.() ?? numRaw];
+  const num = numWord ?? (/^\d+$/.test(String(numRaw)) ? parseInt(numRaw, 10) : null);
+  if (!num) return label;
   let role = "Primary";
   for (let i = 2; i < parts.length; i++) {
     const low = parts[i].toLowerCase();
@@ -141,6 +148,92 @@ function normalizeWalkStationLabel(label) {
     }
   }
   return `Well ${num} ${role}`;
+}
+
+function wellsByOrder(stations) {
+  return stations.filter((s) => s.type === "well");
+}
+
+function parseWalkStationIntent(label) {
+  if (!label) return null;
+  const lower = label.toLowerCase().trim();
+  const wellM = lower.match(
+    /^well\s+(one|two|too|to|three|four|for|five|six|seven|eight|nine|ten|\d{1,2})\b(?:\s+(\w+))?/
+  );
+  if (wellM) {
+    const idx = WALK_STATION_WORD_NUMS[wellM[1]] ?? parseInt(wellM[1], 10);
+    let role = null;
+    const tail = lower.slice(wellM[0].length).trim();
+    const roleInTail = tail.match(/^(primary|secondary|service|point|patio|rear|front|large|small)\b/);
+    if (roleInTail) role = roleInTail[1];
+    else if (wellM[2] && WELL_ROLES.includes(wellM[2])) role = wellM[2];
+    return { kind: "well", wellIndex: idx, role };
+  }
+  if (/^back\s+bar/.test(lower)) {
+    const qual = lower.replace(/^back\s+bar\s*/, "").split(/\s+/).filter((w) => w !== "row")[0] || "";
+    return { kind: "back-bar", qualifier: qual };
+  }
+  if (/beer\s+cooler/.test(lower)) return { kind: "beer-cooler" };
+  if (/patio\s+cooler/.test(lower)) return { kind: "patio-cooler" };
+  if (/wine\s+(wall|cooler|rack|cellar)/.test(lower)) return { kind: "wine" };
+  if (/liquor\s+room/.test(lower)) return { kind: "liquor-room" };
+  if (/speed\s*rail|\brail\b/.test(lower)) return { kind: "speed-rail" };
+  return { kind: "unknown" };
+}
+
+function resolveWalkStation(label, stations) {
+  if (!label) return null;
+  const ordered = [...stations].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const normLabel = normalizeWalkStationLabel(label).toLowerCase();
+  const key = label.trim().toLowerCase();
+  const exactNorm = ordered.find((s) => normalizeWalkStationLabel(s.name).toLowerCase() === normLabel);
+  if (exactNorm) return exactNorm;
+  const exactName = ordered.find((s) => s.name.toLowerCase() === key);
+  if (exactName) return exactName;
+  const intent = parseWalkStationIntent(label);
+  if (!intent) return null;
+  if (intent.kind === "well" && intent.wellIndex) {
+    if (intent.role) {
+      const roleTarget = `well ${intent.wellIndex} ${intent.role}`;
+      const byRole = ordered.find((s) => {
+        const sn = normalizeWalkStationLabel(s.name).toLowerCase();
+        return sn === roleTarget || sn.startsWith(`${roleTarget} `);
+      });
+      if (byRole) return byRole;
+    }
+    return wellsByOrder(ordered)[intent.wellIndex - 1] ?? null;
+  }
+  if (intent.kind === "back-bar") {
+    const backBars = ordered.filter((s) => s.type === "back-bar");
+    if (!backBars.length) return null;
+    const qual = (intent.qualifier || "").toLowerCase();
+    if (qual) {
+      const match = backBars.find((s) => {
+        const n = s.name.toLowerCase();
+        if (qual === "main" && n.includes("main")) return true;
+        if ((qual === "top" || qual === "shelf") && (n.includes("top") || n.includes("shelf"))) return true;
+        return n.includes(qual);
+      });
+      if (match) return match;
+    }
+    return backBars[0];
+  }
+  if (intent.kind === "beer-cooler") {
+    return ordered.find((s) => s.type === "walk-in" && /beer|cooler/i.test(s.name) && !/wine|patio/i.test(s.name));
+  }
+  if (intent.kind === "patio-cooler") {
+    return ordered.find((s) => /patio/i.test(s.name) && /cooler/i.test(s.name));
+  }
+  if (intent.kind === "wine") {
+    return ordered.find((s) => s.type === "walk-in" && /wine/i.test(s.name));
+  }
+  if (intent.kind === "liquor-room") {
+    return ordered.find((s) => s.type === "storage" || /liquor\s*room/i.test(s.name));
+  }
+  if (intent.kind === "speed-rail") {
+    return ordered.find((s) => /speed|rail/i.test(s.name));
+  }
+  return null;
 }
 
 function walkMatchStation(words, i) {
@@ -376,14 +469,18 @@ function runBarTest(groundTruth, walkText, countGolden, countHard) {
 
   function stationIdByName(name) {
     const key = (name || "").trim().toLowerCase();
+    if (!key) return null;
+    const resolved = resolveWalkStation(name, bar.stations);
+    if (resolved) return resolved.id;
     const normalized = normalizeWalkStationLabel(name).toLowerCase();
     const exact = sortedStations().find((s) => s.name.toLowerCase() === key || s.name.toLowerCase() === normalized);
     if (exact) return exact.id;
     const norm = key.replace(/[^a-z0-9]/g, "");
+    if (norm.length < 4) return null;
     const fuzzy = sortedStations().find((s) => {
       const sk = s.name.toLowerCase().replace(/[^a-z0-9]/g, "");
       const sn = normalizeWalkStationLabel(s.name).toLowerCase().replace(/[^a-z0-9]/g, "");
-      return sk === norm || sk.includes(norm) || norm.includes(sk) || sn.includes(norm);
+      return sk === norm || sn === norm;
     });
     return fuzzy?.id ?? null;
   }
@@ -401,14 +498,20 @@ function runBarTest(groundTruth, walkText, countGolden, countHard) {
   }
 
   function walkFindOrCreateStation(label) {
-    const key = (label || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-    let found = bar.stations.find((s) => {
-      const sk = s.name.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const sn = normalizeWalkStationLabel(s.name).toLowerCase().replace(/[^a-z0-9]/g, "");
-      return sk === key || sk.includes(key) || key.includes(sk) || sn === key || sn.includes(key);
-    });
-    if (found) return found;
-    found = { id: `st_auto_${bar.stations.length}`, name: label, type: "well", order: bar.stations.length, bottles: [] };
+    if (!label) return sortedStations()[0] ?? null;
+    const resolved = resolveWalkStation(label, bar.stations);
+    if (resolved) return resolved;
+    const key = label.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (key.length >= 4) {
+      const exact = bar.stations.find((s) => s.name.toLowerCase().replace(/[^a-z0-9]/g, "") === key);
+      if (exact) return exact;
+    }
+    const intent = parseWalkStationIntent(label);
+    let type = "well";
+    if (intent?.kind === "back-bar") type = "back-bar";
+    else if (intent?.kind === "beer-cooler" || intent?.kind === "patio-cooler" || intent?.kind === "wine") type = "walk-in";
+    else if (intent?.kind === "liquor-room") type = "storage";
+    const found = { id: `st_auto_${bar.stations.length}`, name: label, type, order: bar.stations.length, bottles: [] };
     bar.stations.push(found);
     return found;
   }
