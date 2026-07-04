@@ -4,8 +4,14 @@ import { useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Caveat } from "next/font/google";
 import { AppButton } from "@/components/AppUI";
 import { markDojoWelcomeSeen, seedDojoPlayground } from "@/lib/dojo";
+
+const penHand = Caveat({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
 
 interface DojoWelcomeModalProps {
   open: boolean;
@@ -80,7 +86,10 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
                 priority
                 className="salle-popup-img"
               />
-              <div className="salle-sign-rules" aria-labelledby="salle-house-rules-title">
+              <div
+                className={`salle-sign-rules ${penHand.className}`}
+                aria-labelledby="salle-house-rules-title"
+              >
                 <p id="salle-house-rules-title" className="salle-sign-rules-title">
                   House Rules
                 </p>
