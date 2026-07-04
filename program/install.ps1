@@ -25,6 +25,15 @@ function Write-Step([string]$msg) {
     Write-Host "  $msg"
 }
 
+function Show-ServerLogs([string]$logPath, [string]$logErr) {
+    foreach ($path in @($logErr, $logPath)) {
+        if (Test-Path $path) {
+            Write-Host "  --- $path ---"
+            Get-Content $path -ErrorAction SilentlyContinue | Select-Object -Last 40 | ForEach-Object { Write-Host "  $_" }
+        }
+    }
+}
+
 function Wait-ForPing([int]$seconds = 20) {
     $deadline = (Get-Date).AddSeconds($seconds)
     while ((Get-Date) -lt $deadline) {
@@ -188,12 +197,22 @@ Stop-PortListener -port $PORT
 $logPath = Join-Path $InstallDir "data\osb_server.log"
 $logErr = Join-Path $InstallDir "data\osb_server.err"
 $serverPy = Join-Path $InstallDir "server.py"
-Start-Process -FilePath $venvPython -ArgumentList "`"$serverPy`"" -WorkingDirectory $InstallDir `
-    -WindowStyle Hidden -RedirectStandardOutput $logPath -RedirectStandardError $logErr
+$serverProc = Start-Process -FilePath $venvPython -ArgumentList @($serverPy) -WorkingDirectory $InstallDir `
+    -WindowStyle Hidden -RedirectStandardOutput $logPath -RedirectStandardError $logErr -PassThru
 
-if (-not (Wait-ForPing 25)) {
+$pingWait = if ($Silent) { 45 } else { 25 }
+Start-Sleep -Seconds 2
+if ($serverProc.HasExited) {
+    Write-Host "  ERROR: Server process exited immediately (code $($serverProc.ExitCode))"
+    Show-ServerLogs -logPath $logPath -logErr $logErr
+    if (-not $Silent) { Read-Host "  Press Enter to exit" }
+    exit 1
+}
+
+if (-not (Wait-ForPing $pingWait)) {
     Write-Host "  ERROR: Server did not respond on http://localhost:$PORT/ping"
     Write-Host "  Log: $logPath"
+    Show-ServerLogs -logPath $logPath -logErr $logErr
     if (-not $Silent) { Read-Host "  Press Enter to exit" }
     exit 1
 }

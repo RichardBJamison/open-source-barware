@@ -1902,13 +1902,13 @@ if __name__ == "__main__":
         print(f"[init] created {_CONFIG_FILE}")
 
     print("\n  Open Source Barware — Chrome Program")
-    print("  " + "─" * 54)
+    print("  " + "-" * 54)
     print(f"  Version:    {VERSION}")
     print(f"  Setup:      http://localhost:{PORT}/")
     print(f"  Home base:  http://localhost:{PORT}/home  (after butterfly)")
     print(f"  API state:  http://localhost:{PORT}/api/state")
     print(f"  Data dir:   {_DATA}")
-    print("  " + "─" * 54 + "\n")
+    print("  " + "-" * 54 + "\n")
 
     cert = os.path.join(_DIR, "localhost+1.pem")
     key = os.path.join(_DIR, "localhost+1-key.pem")

@@ -45,7 +45,11 @@ jobs:
           if (-not (Test-Path $pkg)) { throw "extracted package missing at $pkg" }
           Set-Location $pkg
           ./install.ps1 -Silent -SkipBrowser
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($LASTEXITCODE -ne 0) {
+            $logDir = Join-Path $env:USERPROFILE "osb-program\data"
+            Get-ChildItem $logDir -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "--- $($_.FullName) ---"; Get-Content $_.FullName }
+            exit $LASTEXITCODE
+          }
 
       - name: Run internal VC checklist
         shell: pwsh
