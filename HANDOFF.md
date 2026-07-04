@@ -1,23 +1,24 @@
 # Open Source Barware — Handoff
 
-*Last updated: 2026-07-04 ~18:15 EDT | agent: GROK | project ID: `open-source-barware`*
-*Ship version: **`ac43e73`** on `main`*
-*Status: **IN-PROGRESS** — caterpillar ✅ · butterfly ✅ · Dojo+program Analytics/Spreadsheets ✅ · installers ✅ · Test 3 ✅ · launch **10pm EDT***
+*Last updated: 2026-07-04 ~18:40 EDT | agent: GROK | project ID: `open-source-barware`*
+*Ship version: **`36b712e`** on `main`*
+*Status: **IN-PROGRESS** — walk-first setup ✅ · release-list signup ✅ · butterfly ✅ · Test 3 ✅*
 
 > **Pickup:** `~/Me-Nexus/library/open-source-barware/HANDOFF.md` + `PROGRAM-SNAPSHOT-2026-07-04.md`  
 > Program detail: `program/HANDOFF.md`
 
-## Ship version summary (`ac43e73`)
+## Ship version summary (`36b712e`)
 
-- **Dojo (Reeve `103cf97`):** `/inventory/analytics`, `/inventory/spreadsheets`, `Bar-Inventory-Master.xlsx`, `recharts`
-- **Program (Grok):** `GET /api/analytics`, workbook tabs in `/home`, Mac/Win installers, Windows GHA VC green
-- **Tests:** `run-test1.mjs`, `run-test2.mjs`, `run-test3.mjs` (23 assertions) — all pass
-- **Launch gate:** `lib/launch-gate.ts` → July 4, **10pm Eastern** (`LAUNCH_MS = 2026-07-04T22:00:00-04:00`)
+- **Setup flow reordered:** `name_bar → voice_walk → reconcile → build_bar → map_review → first_count` — walk dictation **creates stations** (no pre-build)
+- **Release-list signup:** Chrome program uses same-origin `POST /api/updates-subscribe` (Flask proxy → GHL); success toast + advance to `name_bar`
+- **Email prefs:** city/state only when Hidden Bar Tour toggle on (`cb0f2ee`)
+- **Tests:** `run-test3.mjs`, `run-walk-first-test.mjs`, `test-updates-signup-flow.mjs`, `run-harbor-hearth-test.mjs` — all pass
 - **Zips:** `npm run package:program` → `public/downloads/open-source-barware-program-{mac,win}.zip`
+- **Richard inbox:** GHL contact + task created on signup; direct email needs `FORWARD_EMAIL_*` on Cloudflare Pages
 
 ```bash
 cd ~/Documents/New\ project/open-source-barware && git pull
-cd program && node scripts/run-test3.mjs
+cd program && node scripts/run-test3.mjs && node scripts/run-walk-first-test.mjs
 ```
 
 ## Purpose
@@ -79,13 +80,11 @@ an admin home base.
   `lib/inventory-store.ts` (dojo-prefixed on web). Setup remains at
   `/inventory/setup` for the caterpillar path; the Dojo nav skips straight to the
   finished admin shell.
-- **Release-list signup (optional, step 1 of setup):** collects email + city +
-  state at the start of caterpillar setup (Dojo wizard and Chrome program).
-  Submissions POST to `/api/updates-subscribe` (Cloudflare Pages Function) →
-  GHL contact upsert with tags `osb-program-updates` and `osb-setup-signup`.
-  Skip is remembered in localStorage; subscribers only get emailed on new
-  releases. Requires `GHL_API_TOKEN` (+ optional `GHL_LOCATION_ID`) in Cloudflare
-  Pages environment variables.
+- **Release-list signup (optional, first setup step):** email + toggles (program
+  releases / Hidden Bar Tour). Chrome program POSTs to local `/api/updates-subscribe`
+  (Flask proxy → production GHL). Success toast → advance. City/state only if tour
+  toggle on. GHL tags: `osb-setup-signup`, `osb-program-updates`, `osb-hidden-bar-tour`.
+  Cloudflare: `GHL_API_TOKEN` + `NOTIFY_EMAIL` set; `FORWARD_EMAIL_*` needed for inbox mail.
 - `/about` story section credits **Richard B. Jamison**, removes Hirado/Nito from
   "Who is behind it," and adds **What's next** (World Hidden Bar Tour, Miami
   September, wine inventory/forum/library roadmap).
@@ -345,14 +344,11 @@ Confirm scripts in `package.json` before relying on these commands.
 
 ## Open work (post-milestone — next stage)
 
-**Caterpillar Steps 1–6 are locked.** Only tiny tweaks or Step 7 polish from here.
-
-1. Step 7 count: CSV import/export parity with walk spreadsheet path
-2. Butterfly home base: metrics timeframe, spreadsheets, in-house inventory rooms
-3. Chrome program delivery: `install.sh` + LaunchAgent + customer bookmark flow
-4. Cloudflare Pages env `GHL_API_TOKEN` for `/api/updates-subscribe` (503 until set)
-5. Provider/API connection + file parsing (settings/inputs) — local-secret handling
-6. Mail migration: `richard@opensourcebarware.com` Thunderbird IMAP/SMTP
+1. **Forward Email API** on Cloudflare Pages (`FORWARD_EMAIL_USER` / `FORWARD_EMAIL_PASS`) so Richard gets inbox notification on each signup
+2. Greystone / Kelhen browser QA on walk-first flow + release-list join
+3. Step 7 count: CSV import/export parity with walk spreadsheet path
+4. Provider/API connection + file parsing (settings/inputs)
+5. Mail migration: `richard@opensourcebarware.com` Thunderbird IMAP/SMTP
 
 ## Pickup point
 
