@@ -2482,6 +2482,18 @@ tr.row-flagged td.raw-heard {
   color: var(--wine-glow);
 }
 
+.count-reconcile-coaching {
+  display: block;
+  margin-top: 6px;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text);
+  background: rgba(212, 168, 83, 0.12);
+  border-left: 3px solid var(--copper-bright);
+  border-radius: 0 4px 4px 0;
+}
+
 .count-reconcile-matched {
   color: var(--patina-light);
 }

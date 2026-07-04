@@ -1410,6 +1410,26 @@ function parseCountText(rawText) {
 
 const COUNT_MATCH_MIN_SCORE = 85;
 
+function findSameNameOnOtherStations(bottle) {
+  const spoken = walkCleanName(bottle.name || "");
+  if (!spoken || spoken.length < 2) return [];
+  const hits = [];
+  for (const b of allBottles()) {
+    if (b.stationId === bottle.stationId) continue;
+    if (scoreCountBottleMatch(spoken, b) >= COUNT_MATCH_MIN_SCORE) hits.push(b);
+  }
+  return hits;
+}
+
+function buildMissingFromCountCoaching(bottle) {
+  const others = findSameNameOnOtherStations(bottle);
+  if (!others.length) return null;
+  const otherStations = [...new Set(others.map((b) => b.stationName))];
+  const otherList = otherStations.join(otherStations.length > 1 ? ", " : "");
+  const here = bottle.stationName || "this station";
+  return `${bottle.name} was also found on ${otherList} — did you mean the ${here} version?`;
+}
+
 function findCountBottleMatchScored(spokenName, stationLabel) {
   const clean = walkCleanName(spokenName);
   if (!clean || clean.length < 2) return null;
@@ -1492,9 +1512,11 @@ function reconcileCountToMap(parsedEntries) {
     const key = `${b.stationId}:${b.id}`;
     if (mapUsed.has(key)) continue;
     if (countedStationIds.size && !countedStationIds.has(b.stationId)) continue;
+    const coachingHint = buildMissingFromCountCoaching(b);
     notInCount.push({
       bottle: b,
       message: `${b.name} — on your map but not in this count.`,
+      coachingHint,
     });
   }
 
@@ -1669,6 +1691,9 @@ function buildCountComparisonRows(report) {
 
   for (const m of report.notInCount || []) {
     const b = m.bottle;
+    const action = m.coachingHint
+      ? `${m.coachingHint} Re-count this station with the station name in your dictation.`
+      : "On map from walk — not in your count. Re-count or remove from map.";
     rows.push({
       station: b.stationName || "",
       status: "missing_from_count",
@@ -1677,7 +1702,7 @@ function buildCountComparisonRows(report) {
       map_par_level: b.par_level ?? 1,
       count_heard: "",
       count_level: "",
-      action_required: "On map from walk — not in your count. Re-count or remove from map.",
+      action_required: action,
     });
   }
 
@@ -1929,7 +1954,11 @@ function renderCountReconcileReport(report) {
       if (bucket.missing.length) {
         html += `<p class="count-reconcile-station-label">On your map — not in this count</p><ul class="count-reconcile-list">`;
         for (const m of bucket.missing) {
-          html += `<li class="count-reconcile-missing">${escapeHtml(m.message)}</li>`;
+          html += `<li class="count-reconcile-missing">${escapeHtml(m.message)}`;
+          if (m.coachingHint) {
+            html += `<span class="count-reconcile-coaching">${escapeHtml(m.coachingHint)}</span>`;
+          }
+          html += `</li>`;
         }
         html += `</ul>`;
       }
