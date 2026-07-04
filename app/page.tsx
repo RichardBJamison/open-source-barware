@@ -347,7 +347,7 @@ function ProblemHourglass() {
   return (
     <div
       aria-hidden="true"
-      className="relative flex w-full max-w-[320px] translate-x-[15%] flex-col items-center justify-center md:max-w-[360px]"
+      className="relative flex w-full max-w-[320px] translate-x-[13%] flex-col items-center justify-center md:max-w-[360px]"
     >
       {/* Warm lantern glow — follows hourglass offset (PNG art is left-heavy) */}
       <div
