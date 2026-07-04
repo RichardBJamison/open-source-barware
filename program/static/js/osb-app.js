@@ -1000,8 +1000,12 @@ function countLevelOf(token) {
   const t = (token || "").replace(/[.,;:!?]+$/, "").toLowerCase();
   if (!t) return null;
   if (t === "half" || t === "0.5" || t === ".5") return 0.5;
-  const dotTenth = t.match(/^\.(\d)$/);
-  if (dotTenth) return parseInt(dotTenth[1], 10) / 10;
+  const dotTenth = t.match(/^\.(\d{1,2})$/);
+  if (dotTenth) {
+    const digits = dotTenth[1];
+    if (digits.length === 1) return parseInt(digits, 10) / 10;
+    return parseInt(digits, 10) / 100;
+  }
   const frac = t.match(/^(\d+)\/(\d+)$/);
   if (frac) {
     const den = parseInt(frac[2], 10);
@@ -1009,7 +1013,21 @@ function countLevelOf(token) {
   }
   if (COUNT_LEVEL_WORDS[t] !== undefined) return COUNT_LEVEL_WORDS[t];
   const num = t.match(/^(\d+(?:\.\d+)?)$/);
-  if (num) return Math.min(99, parseFloat(num[1]));
+  if (num) {
+    const v = parseFloat(num[1]);
+    if (v > 2) return null;
+    return Math.min(2, v);
+  }
+  return null;
+}
+
+function countMatchQuantity(words, i) {
+  const w = words[i];
+  const next = (words[i + 1] || "").replace(/[.,]/g, "");
+  const num = WALK_WORD_NUMS[w] ?? (/^\d{1,2}$/.test(w) ? parseInt(w, 10) : null);
+  if (num && num <= 12 && (next === "bottles" || next === "bottle")) {
+    return { qty: parseInt(num, 10), consumed: 2 };
+  }
   return null;
 }
 
@@ -1065,28 +1083,7 @@ function scoreCountBottleMatch(spokenName, bottle) {
 }
 
 function findCountBottleMatch(spokenName, stationLabel) {
-  const clean = walkCleanName(spokenName);
-  if (!clean || clean.length < 2) return null;
-  const stationId = stationLabel ? stationIdByName(stationLabel) : null;
-  let best = null;
-  let bestScore = 0;
-  for (const b of allBottles()) {
-    if (stationId && b.stationId !== stationId) continue;
-    const score = scoreCountBottleMatch(clean, b);
-    if (score > bestScore) {
-      bestScore = score;
-      best = b;
-    }
-  }
-  if (best) return best;
-  for (const b of allBottles()) {
-    const score = scoreCountBottleMatch(clean, b);
-    if (score > bestScore) {
-      bestScore = score;
-      best = b;
-    }
-  }
-  return bestScore > 0 ? best : null;
+  return findCountBottleMatchScored(spokenName, stationLabel)?.bottle ?? null;
 }
 
 function parseCountText(rawText) {
@@ -1107,18 +1104,35 @@ function parseCountText(rawText) {
     buf = [];
   }
 
+  let pendingQty = 1;
+
   let i = 0;
   while (i < words.length) {
     const st = walkMatchStation(words, i);
     if (st) {
       if (buf.length) flushEntry(null);
       currentStation = st.label;
+      pendingQty = 1;
       i += st.consumed;
+      continue;
+    }
+    const q = countMatchQuantity(words, i);
+    if (q) {
+      pendingQty = q.qty;
+      i += q.consumed;
       continue;
     }
     const lv = countLevelAt(words, i);
     if (lv) {
-      flushEntry(lv.level);
+      const name = countCleanName(buf.join(" "));
+      if (name && name.length > 1) {
+        const copies = Math.max(1, Math.min(pendingQty, 12));
+        for (let c = 0; c < copies; c += 1) {
+          entries.push({ name, station: currentStation, level: lv.level });
+        }
+      }
+      buf = [];
+      pendingQty = 1;
       i += lv.consumed;
       continue;
     }
@@ -1127,6 +1141,38 @@ function parseCountText(rawText) {
   }
   if (buf.length) flushEntry(null);
   return entries;
+}
+
+const COUNT_MATCH_MIN_SCORE = 85;
+
+function findCountBottleMatchScored(spokenName, stationLabel) {
+  const clean = walkCleanName(spokenName);
+  if (!clean || clean.length < 2) return null;
+  const stationId = stationLabel ? stationIdByName(stationLabel) : null;
+  let best = null;
+  let bestScore = 0;
+  let bestInStation = null;
+  let bestInStationScore = 0;
+
+  for (const b of allBottles()) {
+    const score = scoreCountBottleMatch(clean, b);
+    if (stationId && b.stationId === stationId && score > bestInStationScore) {
+      bestInStationScore = score;
+      bestInStation = b;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = b;
+    }
+  }
+
+  if (bestInStation && bestInStationScore >= COUNT_MATCH_MIN_SCORE) {
+    return { bottle: bestInStation, score: bestInStationScore, inStation: true };
+  }
+  if (best && bestScore >= COUNT_MATCH_MIN_SCORE) {
+    return { bottle: best, score: bestScore, inStation: false };
+  }
+  return null;
 }
 
 function reconcileCountToMap(parsedEntries) {
@@ -1144,8 +1190,8 @@ function reconcileCountToMap(parsedEntries) {
       });
       continue;
     }
-    const hit = findCountBottleMatch(entry.name, entry.station);
-    if (!hit) {
+    const scored = findCountBottleMatchScored(entry.name, entry.station);
+    if (!scored) {
       surprises.push({
         entry,
         reason: "not_on_map",
@@ -1153,6 +1199,7 @@ function reconcileCountToMap(parsedEntries) {
       });
       continue;
     }
+    const hit = scored.bottle;
     const key = `${hit.stationId}:${hit.id}`;
     if (mapUsed.has(key)) {
       surprises.push({
@@ -1164,7 +1211,12 @@ function reconcileCountToMap(parsedEntries) {
       continue;
     }
     mapUsed.set(key, entry.level);
-    matched.push({ entry, bottle: hit, level: entry.level });
+    matched.push({
+      entry,
+      bottle: hit,
+      level: entry.level,
+      crossStation: !scored.inStation && entry.station,
+    });
   }
 
   for (const b of allBottles()) {
@@ -1251,9 +1303,12 @@ function renderCountReconcileReport(report) {
       <p class="box-label">Matched — levels applied</p>
       <ul class="count-reconcile-list count-reconcile-matched-list">`;
     for (const m of report.matched) {
+      const cross = m.crossStation
+        ? ` · <em>matched outside ${escapeHtml(m.entry.station || "station")}</em>`
+        : "";
       html += `<li class="count-reconcile-matched">
         <span>${escapeHtml(m.bottle.name)}</span>
-        <span class="count-reconcile-meta">${escapeHtml(m.bottle.stationName)} · heard "${escapeHtml(m.entry.name)}" · ${m.level}</span>
+        <span class="count-reconcile-meta">${escapeHtml(m.bottle.stationName)} · heard "${escapeHtml(m.entry.name)}" · ${m.level}${cross}</span>
       </li>`;
     }
     html += `</ul></div>`;
