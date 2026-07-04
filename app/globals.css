@@ -372,6 +372,7 @@ body { background: var(--bg); color: var(--text); }
 .salle-frame-rivet {
   position: absolute;
   z-index: 4;
+  pointer-events: none;
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -400,15 +401,23 @@ body { background: var(--bg); color: var(--text); }
 .salle-frame-rivet-bl { bottom: 5px; left: 5px; }
 .salle-frame-rivet-br { bottom: 5px; right: 5px; }
 
-.salle-popup-inner {
+.salle-popup-body {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
   max-height: calc(94vh - 28px);
-  overflow-y: auto;
-  overflow-x: hidden;
   background:
     linear-gradient(180deg, #1c1814 0%, #16130f 38%, #12100b 100%);
   box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
+}
+
+.salle-popup-inner {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .salle-entrance {
@@ -424,6 +433,9 @@ body { background: var(--bg); color: var(--text); }
 }
 
 .salle-entrance-actions {
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
   padding: 0.9rem 1.15rem 0.75rem;
   background: linear-gradient(180deg, #1a1612 0%, #12100b 100%);
   border-top: 1px solid rgba(184, 137, 88, 0.18);
@@ -453,6 +465,9 @@ body { background: var(--bg); color: var(--text); }
 }
 
 .salle-popup .salle-scroll-footer {
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
   margin: 0;
   padding: 0.75rem 1rem;
   background: linear-gradient(180deg, #2a2218 0%, #1a1612 100%);

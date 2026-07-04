@@ -9,6 +9,7 @@ import {
   hasSeenDojoWelcome,
   markDojoWelcomeSeen,
   seedDojoPlayground,
+  subscribeDojoWelcome,
 } from "@/lib/dojo";
 
 const NAV_ITEMS = [
@@ -111,7 +112,7 @@ function useHydrated() {
 
 function useNeedsWelcome() {
   return useSyncExternalStore(
-    () => () => undefined,
+    subscribeDojoWelcome,
     () => !hasSeenDojoWelcome(),
     () => true
   );

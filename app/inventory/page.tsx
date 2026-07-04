@@ -6,6 +6,7 @@ import { Gear } from "@/components/SteampunkElements";
 import {
   hasSeenDojoWelcome,
   seedDojoPlayground,
+  subscribeDojoWelcome,
 } from "@/lib/dojo";
 import { hasInventoryData } from "@/lib/inventory-store";
 
@@ -19,7 +20,7 @@ function useHydrated() {
 
 function useNeedsWelcome() {
   return useSyncExternalStore(
-    () => () => undefined,
+    subscribeDojoWelcome,
     () => !hasSeenDojoWelcome(),
     () => true
   );

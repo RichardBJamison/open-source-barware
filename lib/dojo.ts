@@ -17,6 +17,25 @@ import {
 export const DOJO_WELCOME_KEY = "osb_salle_entrance_welcome_seen";
 export const DOJO_SEEDED_KEY = "osb_dojo_seeded";
 
+const WELCOME_CHANGE_EVENT = "osb-salle-welcome-change";
+
+function notifyWelcomeChange(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(WELCOME_CHANGE_EVENT));
+}
+
+/** Subscribe for useSyncExternalStore — re-renders when welcome flag changes. */
+export function subscribeDojoWelcome(onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  const handler = () => onStoreChange();
+  window.addEventListener(WELCOME_CHANGE_EVENT, handler);
+  window.addEventListener("storage", handler);
+  return () => {
+    window.removeEventListener(WELCOME_CHANGE_EVENT, handler);
+    window.removeEventListener("storage", handler);
+  };
+}
+
 function writeFlag(key: string): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(key, "1");
@@ -29,6 +48,7 @@ export function hasSeenDojoWelcome(): boolean {
 
 export function markDojoWelcomeSeen(): void {
   writeFlag(DOJO_WELCOME_KEY);
+  notifyWelcomeChange();
 }
 
 export function isDojoSeeded(): boolean {
@@ -58,4 +78,5 @@ export function resetDojoPlayground(): void {
 export function showDojoWelcomeAgain(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(DOJO_WELCOME_KEY);
+  notifyWelcomeChange();
 }

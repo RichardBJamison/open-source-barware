@@ -3,9 +3,9 @@
 import { useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import { AppButton } from "@/components/AppUI";
-import { markDojoWelcomeSeen, seedDojoPlayground } from "@/lib/dojo";
+
 
 interface DojoWelcomeModalProps {
   open: boolean;
@@ -25,16 +25,12 @@ function FrameRivet({ className = "" }: { className?: string }) {
 }
 
 export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProps) {
-  const router = useRouter();
   const [entering, setEntering] = useState(false);
 
   const enterSalle = useCallback(() => {
     setEntering(true);
-    seedDojoPlayground();
-    markDojoWelcomeSeen();
     onClose();
-    router.push("/inventory/dashboard");
-  }, [onClose, router]);
+  }, [onClose]);
 
   if (!open) return null;
 
@@ -65,22 +61,24 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
           <FrameRivet className="salle-frame-rivet-bl" />
           <FrameRivet className="salle-frame-rivet-br" />
 
-          <div className="salle-popup-inner salle-welcome-scroll">
-            <div className="salle-entrance">
-              <Image
-                src="/images/salle-darmes-entrance.jpg"
-                alt="Salle d'Armes entrance — clockwork fencing academy with wall sign and open doors"
-                width={834}
-                height={1024}
-                priority
-                className="salle-entrance-img"
-              />
-            </div>
+          <div className="salle-popup-body">
+            <div className="salle-popup-inner salle-welcome-scroll">
+              <div className="salle-entrance">
+                <Image
+                  src="/images/salle-darmes-entrance.jpg"
+                  alt="Salle d'Armes entrance — clockwork fencing academy with wall sign and open doors"
+                  width={834}
+                  height={1024}
+                  priority
+                  className="salle-entrance-img"
+                />
+              </div>
 
-            <div className="sr-only" id="salle-welcome-desc">
-              Welcome to the Fencing Academy, a refined Salle d&apos;Armes where
-              gentlemanly combat meets the clockwork arts. House Rules:{" "}
-              {HOUSE_RULES.join("; ")}. Sandbox playground with demo data.
+              <div className="sr-only" id="salle-welcome-desc">
+                Welcome to the Fencing Academy, a refined Salle d&apos;Armes where
+                gentlemanly combat meets the clockwork arts. House Rules:{" "}
+                {HOUSE_RULES.join("; ")}. Sandbox playground with demo data.
+              </div>
             </div>
 
             <div className="salle-entrance-actions">
