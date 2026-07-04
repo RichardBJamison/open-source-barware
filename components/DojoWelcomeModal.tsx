@@ -80,18 +80,17 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
                 priority
                 className="salle-popup-img"
               />
+              <div className="salle-sign-rules" aria-labelledby="salle-house-rules-title">
+                <p id="salle-house-rules-title" className="salle-sign-rules-title">
+                  House Rules
+                </p>
+                <ul className="salle-sign-rules-list">
+                  {HOUSE_RULES.map((rule) => (
+                    <li key={rule}>{rule}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-
-            <section className="salle-popup-rules-panel" aria-labelledby="salle-house-rules-title">
-              <p id="salle-house-rules-title" className="salle-popup-rules-title">
-                House Rules
-              </p>
-              <ul className="salle-popup-rules-list">
-                {HOUSE_RULES.map((rule) => (
-                  <li key={rule}>{rule}</li>
-                ))}
-              </ul>
-            </section>
 
             <div className="salle-popup-body">
               <div className="salle-scroll-armory" aria-label="Training equipment">

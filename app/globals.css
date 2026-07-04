@@ -424,47 +424,65 @@ body { background: var(--bg); color: var(--text); }
   vertical-align: top;
 }
 
-.salle-popup-rules-panel {
-  padding: 1rem 1.35rem 1.1rem;
-  background:
-    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(255, 248, 230, 0.5) 0%, transparent 55%),
-    linear-gradient(175deg, #efe2c8 0%, #e2d2b0 55%, #d4c4a0 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 248, 230, 0.55),
-    inset 0 -8px 16px rgba(122, 96, 62, 0.08);
+.salle-sign-rules {
+  position: absolute;
+  left: 14%;
+  right: 13%;
+  top: 66%;
+  bottom: 9%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  pointer-events: none;
 }
 
-.salle-popup-rules-title {
-  margin: 0 0 0.55rem;
-  font-size: 9px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: #4a6b62;
-  font-weight: 600;
+.salle-sign-rules-title {
+  margin: 0 0 0.15rem;
+  font-family: var(--font-pen), "Segoe Script", cursive;
+  font-size: clamp(1.05rem, 3.4vw, 1.35rem);
+  font-weight: 700;
+  color: #1a2d52;
+  transform: rotate(-1.2deg);
+  text-decoration: underline;
+  text-decoration-color: rgba(26, 45, 82, 0.55);
+  text-underline-offset: 3px;
+  text-shadow: 0 0 0.6px rgba(26, 45, 82, 0.35);
+  opacity: 0.94;
 }
 
-.salle-popup-rules-list {
+.salle-sign-rules-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  font-family: var(--font-serif);
-  font-size: 0.92rem;
-  line-height: 1.55;
-  color: #2a2218;
+  font-family: var(--font-pen), "Segoe Script", cursive;
+  font-size: clamp(0.95rem, 3vw, 1.15rem);
+  line-height: 1.28;
+  color: #1e2f4a;
 }
 
-.salle-popup-rules-list li {
+.salle-sign-rules-list li {
   position: relative;
-  padding-left: 1rem;
-  margin-bottom: 0.2rem;
+  padding-left: 0.55rem;
+  margin-bottom: 0.05rem;
+  text-shadow:
+    0 0 0.5px rgba(30, 47, 74, 0.4),
+    0 0.5px 0 rgba(30, 47, 74, 0.15);
+  opacity: 0.93;
 }
 
-.salle-popup-rules-list li::before {
+.salle-sign-rules-list li::before {
   content: "—";
   position: absolute;
   left: 0;
-  color: #7a5528;
+  color: #2a3d5c;
+  font-size: 0.85em;
 }
+
+.salle-sign-rules-list li:nth-child(1) { transform: rotate(-0.7deg); }
+.salle-sign-rules-list li:nth-child(2) { transform: rotate(0.5deg); padding-left: 0.7rem; }
+.salle-sign-rules-list li:nth-child(3) { transform: rotate(-0.4deg); }
+.salle-sign-rules-list li:nth-child(4) { transform: rotate(0.8deg); padding-left: 0.65rem; }
+.salle-sign-rules-list li:nth-child(5) { transform: rotate(-0.2deg); }
 
 .salle-popup-body {
   padding: 1rem 1.15rem 0.85rem;
