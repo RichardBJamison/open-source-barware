@@ -285,9 +285,8 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-bg/95 via-bg/75 to-bg/50" />
         <div className="relative z-10 max-w-3xl mx-auto px-6 py-16 flex items-center gap-6">
           <div className="h-12 w-[2px] bg-copper/40 shrink-0" />
-          <p className="text-text-muted leading-relaxed">
-            The program was field-tested at <span className="text-cream font-medium">Agave &amp; Rye</span> in
-            downtown Cleveland. Real bottles. Real counts. Real pressure.
+          <p className="text-text-muted leading-relaxed text-lg">
+            Years of field-tested knowledge &mdash; spoken the way it was meant to be.
           </p>
         </div>
       </section>
