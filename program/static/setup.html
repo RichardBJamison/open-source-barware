@@ -26,14 +26,30 @@
       <h2 class="wizard-title">Welcome — let's map your bar</h2>
       <p class="wizard-lead">
         We&rsquo;re glad you&rsquo;re here. Everything you just installed now lives right here in Chrome —
-        this is your <strong>home base</strong>. Let&rsquo;s map your bar together. We&rsquo;ll guide you step by
-        step the first time; after that, this is the dashboard you come back to every cycle.
+        this is your <strong>home base</strong>. We coach you through two passes the first time; after that,
+        this is the dashboard you come back to every cycle.
       </p>
+      <div class="coaching-framework">
+        <p class="coaching-framework-title">How setup works — two passes</p>
+        <div class="coaching-pass-grid">
+          <div class="coaching-pass-card coaching-pass-card--1">
+            <span class="coaching-pass-badge">Pass 1</span>
+            <p class="coaching-pass-name">Walk &amp; map</p>
+            <p class="coaching-pass-desc">Build your approved bottle map — names, stations, sizes. No levels yet. We stay humble when speech is messy; you fix what we got wrong.</p>
+          </div>
+          <div class="coaching-pass-card coaching-pass-card--2">
+            <span class="coaching-pass-badge">Pass 2</span>
+            <p class="coaching-pass-name">Count &amp; reconcile</p>
+            <p class="coaching-pass-desc">Count levels against that map. If everything lines up, we lock your baseline. If not, we hand you a line-by-line comparison and invite you to fix and re-upload.</p>
+          </div>
+        </div>
+        <p class="coaching-framework-foot">Every input is a proposal. Reconciliation is the conversation until map and count agree.</p>
+      </div>
       <ul class="guide-list compact">
         <li>Name your bar and build your station map — plug-and-play</li>
-        <li>Walk the bar by voice — placement only, not quantities yet</li>
-        <li>Reconcile into a spreadsheet you can audit and correct</li>
-        <li>Approve the map, run your first count, then open home base</li>
+        <li><strong>Pass 1:</strong> Walk by voice — placement and sizes only</li>
+        <li>Reconcile, review, and approve the map contract</li>
+        <li><strong>Pass 2:</strong> First live count — lock baseline or fix gaps</li>
       </ul>
       <div class="info-box dictation-box">
         <p class="info-title">Better voice notes = less cleanup later</p>
@@ -153,7 +169,7 @@
 
     <!-- build_bar -->
     <section class="panel wizard-panel hidden" data-step="build_bar">
-      <p class="step-eyebrow">Step 2 · Build your bar</p>
+      <p class="step-eyebrow">Step 2 · Pass 1 — Build your bar</p>
       <div class="build-bar-name-header">
         <span class="build-bar-label">Build Your Bar</span>
         <input
@@ -167,6 +183,10 @@
       <p class="wizard-lead text-center">
         This whole page is <strong>one bar</strong> — every station below belongs to it. Starter templates
         run wells first, then back bar, then coolers. Reorder, rename, remove, or add your own.
+      </p>
+      <p class="coaching-inline coaching-inline--center" style="margin-bottom:16px">
+        <strong>What we need:</strong> Your station names — wells, back bar, coolers — before you walk.<br />
+        <strong>What happens next:</strong> Pass 1 voice walk maps bottles to these stations.
       </p>
       <div class="build-bars-toolbar">
         <div id="buildBarTabs" class="build-bar-tabs" aria-label="Bars you are building"></div>
@@ -206,8 +226,15 @@
 
     <!-- voice_walk -->
     <section class="panel wizard-panel hidden" data-step="voice_walk">
-      <p class="step-eyebrow">Step 3: Walk</p>
+      <p class="step-eyebrow">Step 3 · Pass 1 — Walk</p>
       <p class="step-subtitle">Walk the bar</p>
+      <div class="coaching-step-banner coaching-step-banner--pass1">
+        <span class="coaching-pass-badge">Pass 1</span>
+        <div class="coaching-step-copy">
+          <p><strong>What we need from you:</strong> Bottle names and sizes, station by station. No levels, no par — just where things live.</p>
+          <p><strong>What happens next:</strong> We draft a placement map. You review and fix names/sizes here or in a spreadsheet. Nothing locks until you approve in Review.</p>
+        </div>
+      </div>
       <div class="walk-bar-header">
         <div class="walk-bar-title-wrap">
           <h2 id="walkBarTitle" class="walk-bar-name-display">Your Bar</h2>
@@ -382,12 +409,16 @@
 
     <!-- reconcile -->
     <section class="panel wizard-panel hidden" data-step="reconcile">
-      <p class="step-eyebrow">Step 4 · Reconcile</p>
+      <p class="step-eyebrow">Step 4 · Pass 1 — Reconcile</p>
       <h2 class="wizard-title">Reconcile Your Map</h2>
       <p class="wizard-lead">
-        We'll turn your walk into an auditable draft map and spreadsheet with intentional blanks for anything unclear.
-        With AI connected, reconciliation gets smarter — otherwise we use what you parsed.
+        Pass 1 wrap-up: we turn your walk into an auditable draft map — with blanks where we're uncertain.
+        We never silently fix your bar; you see every gap before you approve.
       </p>
+      <div class="coaching-inline coaching-inline--pass1">
+        <p><strong>What we need from you:</strong> Run reconciliation, scan the audit, download the map if you want a spreadsheet view.</p>
+        <p><strong>What happens next:</strong> Review &amp; Confirm — your last chance to move bottles before counting.</p>
+      </div>
       <div class="actions">
         <button class="btn btn-primary" id="btnReconcile" type="button">Run reconciliation</button>
       </div>
@@ -406,12 +437,16 @@
 
     <!-- map_review -->
     <section class="panel wizard-panel hidden" data-step="map_review">
-      <p class="step-eyebrow">Step 5 · Review</p>
+      <p class="step-eyebrow">Step 5 · Pass 1 — Approve map</p>
       <h2 class="wizard-title text-center">Review &amp; Confirm</h2>
       <p class="wizard-lead text-center">
         Here's your full inventory map for <span id="reviewBarName" class="review-bar-name"></span> —
-        <strong>your last chance to change or move anything</strong> before the first count.
+        <strong>the contract Pass 2 will count against.</strong>
       </p>
+      <div class="coaching-inline coaching-inline--center">
+        <p><strong>What we need from you:</strong> Confirm every bottle, station, and size is right — or fix it here.</p>
+        <p><strong>What happens next:</strong> Pass 2 — your first live count. We reconcile what you say to this map line by line.</p>
+      </div>
       <div id="reviewStats" class="review-stats"></div>
       <div id="bottleGroupsReview" class="review-editor scroll-panel"></div>
       <div id="reviewAddBox" class="review-add-box hidden">
@@ -458,10 +493,17 @@
 
     <!-- first_count -->
     <section class="panel wizard-panel hidden" data-step="first_count">
-      <p class="step-eyebrow">Step 6 · Count</p>
+      <p class="step-eyebrow">Step 6 · Pass 2 — Count</p>
       <h2 class="wizard-title">First Live Inventory Count</h2>
+      <div class="coaching-step-banner coaching-step-banner--pass2">
+        <span class="coaching-pass-badge coaching-pass-badge--2">Pass 2</span>
+        <div class="coaching-step-copy">
+          <p><strong>What we need from you:</strong> Station by station — each bottle on your approved map with its level (full or tenths).</p>
+          <p><strong>What happens next:</strong> We compare your count to the walk map. Golden match → lock baseline. Gaps → we hand back a comparison; fix the map or re-upload until it lines up.</p>
+        </div>
+      </div>
       <p class="wizard-lead">
-        Count quantities and bottle levels against the approved map. This becomes your baseline for every future cycle.
+        This count becomes your baseline for every future cycle. We block a bad baseline — reconcile surprises before you finish.
       </p>
       <div class="count-action-bar">
         <button class="btn btn-secondary" id="btnCountReminders" type="button" aria-expanded="false" aria-controls="countRemindersPanel">
@@ -533,7 +575,7 @@
           <div class="parse-summary">
             <span class="glow-dot"></span>
             <span id="countSummaryText"></span>
-            <button class="btn btn-ghost btn-sm" id="btnRecount" type="button">Upload again</button>
+            <button class="btn btn-ghost btn-sm" id="btnRecount" type="button">Edit &amp; re-upload count</button>
           </div>
           <div id="countReconcileReport" class="count-reconcile-report hidden" role="region" aria-label="Count versus map reconciliation"></div>
           <div class="walk-review-table-wrap scroll-panel">
@@ -550,7 +592,7 @@
               <tbody id="countReviewBody"></tbody>
             </table>
           </div>
-          <button class="btn btn-primary" id="btnFirstCountDone" type="button" style="margin-top:16px">First count complete — open home base</button>
+          <button class="btn btn-primary" id="btnFirstCountDone" type="button" style="margin-top:16px" disabled>Upload your count first</button>
         </div>
       </div>
       <div class="setup-nav">
@@ -600,6 +642,6 @@
       </div>
     </div>
   </div>
-  <script src="/static/js/osb-app.js?v=20260704-count-export"></script>
+  <script src="/static/js/osb-app.js?v=20260704-coaching-rebuild"></script>
 </body>
 </html>

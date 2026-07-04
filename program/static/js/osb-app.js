@@ -172,6 +172,7 @@ const OSB = {
     setUpdatesSignupStatus("");
     barState = null;
     allBars = [];
+    resetCoachingClientState();
     return r.json();
   },
 
@@ -1316,6 +1317,54 @@ function buildCountReconcileSummary(matched, notInCount, surprises, stationsCoun
 let lastCountReconcile = null;
 let lastCountParsed = [];
 
+function resetCoachingClientState() {
+  walkParsed = false;
+  countParsed = false;
+  lastCountReconcile = null;
+  lastCountParsed = [];
+}
+
+function clearCountReconcileReport() {
+  lastCountReconcile = null;
+  const el = document.getElementById("countReconcileReport");
+  if (el) {
+    el.classList.add("hidden");
+    el.innerHTML = "";
+  }
+}
+
+function resetCountForReupload() {
+  clearCountReconcileReport();
+  setCountView(false);
+  setCountEntryOpen(true);
+  const notes = document.getElementById("countNotes");
+  notes?.focus();
+  notes?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  updateFirstCountDoneButton();
+  setStatus("Edit your count notes below, then upload or paste again.");
+}
+
+function updateFirstCountDoneButton() {
+  const btn = document.getElementById("btnFirstCountDone");
+  if (!btn) return;
+  if (!countParsed) {
+    btn.disabled = true;
+    btn.textContent = "Upload your count first";
+    return;
+  }
+  if (lastCountReconcile?.hasIssues) {
+    const gaps =
+      (lastCountReconcile.surprises?.length || 0) + (lastCountReconcile.notInCount?.length || 0);
+    btn.disabled = true;
+    btn.textContent = gaps
+      ? `Reconcile ${gaps} gap${gaps === 1 ? "" : "s"} first`
+      : "Reconcile gaps first";
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = "First count complete — open home base";
+}
+
 const COUNT_COMPARISON_HEADERS = [
   "station",
   "status",
@@ -1525,11 +1574,15 @@ async function downloadCountComparison(format, btn) {
 function renderCountReconcileReport(report) {
   lastCountReconcile = report;
   const el = document.getElementById("countReconcileReport");
-  if (!el) return;
+  if (!el) {
+    updateFirstCountDoneButton();
+    return;
+  }
 
   if (!report?.matched?.length && !report?.surprises?.length && !report?.notInCount?.length) {
     el.classList.add("hidden");
     el.innerHTML = "";
+    updateFirstCountDoneButton();
     return;
   }
 
@@ -1537,25 +1590,52 @@ function renderCountReconcileReport(report) {
     el.classList.remove("hidden");
     el.innerHTML = `
       <div class="count-reconcile-ok">
-        <strong>Count matches your map.</strong>
-        <span>${escapeHtml(report.summary)} — review levels below, then finish.</span>
+        <strong>Golden — count matches your map.</strong>
+        <span>${escapeHtml(report.summary)} — review levels below, then lock your baseline.</span>
+      </div>
+      <div class="coaching-reconcile-trio coaching-reconcile-trio--ok">
+        <div class="coaching-reconcile-col">
+          <p class="coaching-reconcile-label">What we have</p>
+          <p>Your approved walk map — names, stations, sizes.</p>
+        </div>
+        <div class="coaching-reconcile-col">
+          <p class="coaching-reconcile-label">What you gave us</p>
+          <p>${report.matched.length} bottles counted with levels that line up.</p>
+        </div>
+        <div class="coaching-reconcile-col">
+          <p class="coaching-reconcile-label">What we need</p>
+          <p>Quick scan of levels in the table, then finish.</p>
+        </div>
       </div>
       ${countComparisonActionsHtml()}`;
+    updateFirstCountDoneButton();
     return;
   }
 
   const actionCount = report.surprises.length + report.notInCount.length;
+  const mapTotal = allBottles().length;
+  const stationsCounted = report.countedStationIds?.length || 0;
 
   let html = `
     <div class="count-reconcile-alert">
-      <p class="count-reconcile-head"><strong>Reconciliation report</strong></p>
-      <p class="count-reconcile-lead">
-        We matched everything we could against the wells you counted. Below is what still doesn't line up —
-        <strong>${actionCount} item${actionCount === 1 ? "" : "s"} need you</strong> before this baseline locks.
-      </p>
-      <p class="count-reconcile-stats">${escapeHtml(report.summary)}</p>
+      <p class="count-reconcile-head"><strong>Not golden yet — reconciliation report</strong></p>
+      <div class="coaching-reconcile-trio">
+        <div class="coaching-reconcile-col">
+          <p class="coaching-reconcile-label">What we have</p>
+          <p>Approved map: <strong>${mapTotal} bottles</strong> across your stations. This is Pass 1 — your contract.</p>
+        </div>
+        <div class="coaching-reconcile-col">
+          <p class="coaching-reconcile-label">What you gave us</p>
+          <p>Your count: <strong>${report.matched.length} matched</strong>${stationsCounted ? ` across ${stationsCounted} station${stationsCounted === 1 ? "" : "s"}` : ""}. ${escapeHtml(report.summary)}</p>
+        </div>
+        <div class="coaching-reconcile-col coaching-reconcile-col--need">
+          <p class="coaching-reconcile-label">What we need</p>
+          <p><strong>${actionCount} gap${actionCount === 1 ? "" : "s"}</strong> before baseline locks — fix the map in Review, edit levels below, or re-upload your count.</p>
+        </div>
+      </div>
       <div class="count-reconcile-actions">
         <button type="button" class="btn btn-secondary btn-sm" id="btnGoReconcileMap">Go reconcile in Review →</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="btnRecountInline">Edit &amp; re-upload count</button>
       </div>
       ${countComparisonActionsHtml()}
     </div>`;
@@ -1603,11 +1683,13 @@ function renderCountReconcileReport(report) {
   }
 
   html += `<p class="count-reconcile-foot">
-    <strong>What to do:</strong> Open Review to add bottles you found on the shelf, remove ones that moved,
-    or re-upload this count after you fix the gaps. Stations you didn't count yet won't appear here.
+    <strong>Your move:</strong> Download the line-by-line comparison, fix gaps on the floor, then come back.
+    Stations you didn't count yet won't show missing bottles — only the sections you walked.
   </p>`;
   el.classList.remove("hidden");
   el.innerHTML = html;
+  el.querySelector("#btnRecountInline")?.addEventListener("click", () => resetCountForReupload());
+  updateFirstCountDoneButton();
 }
 
 function parseCountNotes(text) {
@@ -1675,6 +1757,7 @@ function setCountView(parsed) {
     updateCountSummary();
     renderCountReview();
   }
+  updateFirstCountDoneButton();
 }
 
 function updateCountSummary() {
@@ -2980,6 +3063,7 @@ async function initSetup() {
   }
   if (data.phase === "first_count") {
     await initCountStep(data);
+    updateFirstCountDoneButton();
   }
 
   bindWalkReviewListeners();
@@ -3009,6 +3093,7 @@ async function initSetup() {
     if (!ok) return;
     try {
       rBtn.disabled = true;
+      resetCoachingClientState();
       await OSB.hardReset();
       setStatus("");
       await initSetup();
@@ -3402,10 +3487,7 @@ async function initSetup() {
     e.target.value = "";
   });
 
-  document.getElementById("btnRecount")?.addEventListener("click", () => {
-    setCountView(false);
-    document.getElementById("countNotesFile")?.click();
-  });
+  document.getElementById("btnRecount")?.addEventListener("click", () => resetCountForReupload());
 
   document.getElementById("btnCountDraft")?.addEventListener("click", async () => {
     try {
@@ -3427,6 +3509,7 @@ async function initSetup() {
     updateCountSummary();
     const statusCell = input.closest("tr")?.querySelector("td:last-child");
     if (statusCell) statusCell.innerHTML = '<span class="report-ok">manual</span>';
+    updateFirstCountDoneButton();
   });
 
   document.getElementById("countReconcileReport")?.addEventListener("click", async (e) => {

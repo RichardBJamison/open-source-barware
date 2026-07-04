@@ -2494,6 +2494,10 @@ tr.row-flagged td.raw-heard {
 }
 
 .count-reconcile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
   margin-top: 12px;
 }
 
@@ -2565,4 +2569,210 @@ tr.row-flagged td.raw-heard {
   font-size: 0.82rem;
   color: var(--text-muted);
   line-height: 1.45;
+}
+
+/* ── Coaching framework (two-pass setup) ── */
+
+.coaching-framework {
+  margin: 18px 0 20px;
+  padding: 18px 20px;
+  background: linear-gradient(165deg, rgba(168, 120, 79, 0.1), rgba(17, 24, 34, 0.92));
+  border: 1px solid rgba(168, 120, 79, 0.3);
+  border-radius: 8px;
+}
+
+.coaching-framework-title {
+  margin: 0 0 14px;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--copper-bright);
+  text-align: center;
+}
+
+.coaching-pass-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .coaching-pass-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.coaching-pass-card {
+  padding: 14px 16px;
+  border-radius: 6px;
+  background: rgba(17, 24, 34, 0.65);
+  border: 1px solid rgba(168, 120, 79, 0.2);
+}
+
+.coaching-pass-card--1 {
+  border-color: rgba(168, 120, 79, 0.35);
+}
+
+.coaching-pass-card--2 {
+  border-color: rgba(107, 45, 60, 0.4);
+}
+
+.coaching-pass-badge {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 3px 10px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cream);
+  background: rgba(168, 120, 79, 0.35);
+  border-radius: 4px;
+}
+
+.coaching-pass-badge--2 {
+  background: rgba(107, 45, 60, 0.45);
+}
+
+.coaching-pass-name {
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: var(--cream);
+  font-size: 0.95rem;
+}
+
+.coaching-pass-desc {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.coaching-framework-foot {
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  font-style: italic;
+  text-align: center;
+  color: var(--patina-light);
+  line-height: 1.45;
+}
+
+.coaching-step-banner {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(168, 120, 79, 0.3);
+  background: rgba(168, 120, 79, 0.08);
+}
+
+.coaching-step-banner--pass2 {
+  border-color: rgba(107, 45, 60, 0.4);
+  background: rgba(107, 45, 60, 0.1);
+}
+
+.coaching-step-copy {
+  flex: 1;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.coaching-step-copy p {
+  margin: 0 0 8px;
+}
+
+.coaching-step-copy p:last-child {
+  margin-bottom: 0;
+}
+
+.coaching-step-copy strong {
+  color: var(--copper-bright);
+}
+
+.coaching-inline {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: rgba(17, 24, 34, 0.5);
+  border: 1px solid rgba(168, 120, 79, 0.2);
+  border-radius: 6px;
+}
+
+.coaching-inline--pass1 {
+  border-color: rgba(168, 120, 79, 0.3);
+}
+
+.coaching-inline--center {
+  text-align: center;
+}
+
+.coaching-inline p {
+  margin: 0 0 8px;
+}
+
+.coaching-inline p:last-child {
+  margin-bottom: 0;
+}
+
+.coaching-inline strong {
+  color: var(--copper-bright);
+}
+
+.coaching-reconcile-trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 14px 0 16px;
+  padding: 14px 0 0;
+  border-top: 1px solid rgba(168, 120, 79, 0.2);
+}
+
+.coaching-reconcile-trio--ok {
+  border-top: none;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+@media (max-width: 720px) {
+  .coaching-reconcile-trio {
+    grid-template-columns: 1fr;
+  }
+}
+
+.coaching-reconcile-col {
+  padding: 10px 12px;
+  background: rgba(17, 24, 34, 0.55);
+  border: 1px solid rgba(168, 120, 79, 0.15);
+  border-radius: 6px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.coaching-reconcile-col--need {
+  border-color: rgba(107, 45, 60, 0.4);
+  background: rgba(107, 45, 60, 0.1);
+}
+
+.coaching-reconcile-col p {
+  margin: 0;
+}
+
+.coaching-reconcile-label {
+  margin: 0 0 6px !important;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+#btnFirstCountDone:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.3);
 }
