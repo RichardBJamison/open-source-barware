@@ -155,7 +155,9 @@ export default function AboutMockupPage() {
 
         .osb-credit-role-bill {
           left: 36.5%;
-          top: 83.5%;
+          top: 79.6%;
+          height: 6.4%;
+          width: 27%;
         }
 
         .osb-credit-role-nito {
@@ -172,6 +174,13 @@ export default function AboutMockupPage() {
           font-weight: 500;
         }
 
+        .osb-credit-role-bill .osb-credit-role-text {
+          font-size: clamp(0.62rem, 1.05vw, 0.78rem);
+          letter-spacing: 0.14em;
+          color: #d8ccb8;
+          font-weight: 600;
+        }
+
         @media (max-width: 720px) {
           .osb-credit-role-wrap {
             height: 2.8%;
@@ -185,7 +194,8 @@ export default function AboutMockupPage() {
 
           .osb-credit-role-bill {
             left: 35.5%;
-            top: 84.2%;
+            top: 80.2%;
+            height: 7%;
           }
 
           .osb-credit-role-nito {
@@ -302,7 +312,7 @@ export default function AboutMockupPage() {
             <span className="osb-credit-role-text">Founder</span>
           </div>
           <div className="osb-credit-role-wrap osb-credit-role-bill" aria-hidden="true">
-            <span className="osb-credit-role-text">Project Host</span>
+            <span className="osb-credit-role-text">Advisor</span>
           </div>
           <div className="osb-credit-role-wrap osb-credit-role-nito" aria-hidden="true">
             <span className="osb-credit-role-text">Test Pilot</span>
@@ -316,8 +326,8 @@ export default function AboutMockupPage() {
               work, real counts, and the people living the problem.
             </p>
             <p>
-              Credits: Richard Jamison, Founder; Bill McLaughlin, Project Host; Hirado Junior
-              &ldquo;Nito&rdquo;, Test Pilot.
+              Credits: Richard Jamison, Founder; Advisor; Hirado Junior &ldquo;Nito&rdquo;,
+              Test Pilot.
             </p>
           </div>
         </section>
