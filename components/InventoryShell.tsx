@@ -84,6 +84,44 @@ const NAV_ITEMS = [
     ),
   },
   {
+    href: "/inventory/spreadsheets",
+    label: "Spreadsheets",
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      >
+        <rect x="2" y="2" width="14" height="14" rx="1" />
+        <path d="M2 6h14M2 10h14M2 14h14M6 2v14M10 2v14" />
+      </svg>
+    ),
+  },
+  {
+    href: "/inventory/analytics",
+    label: "Analytics",
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+      >
+        <path d="M2 16l4-5 3 2 5-8" />
+        <path d="M14 5h2v2" />
+        <rect x="2" y="12" width="2" height="4" rx="0.5" fill="currentColor" opacity="0.3" />
+        <rect x="6" y="9" width="2" height="7" rx="0.5" fill="currentColor" opacity="0.3" />
+        <rect x="10" y="7" width="2" height="9" rx="0.5" fill="currentColor" opacity="0.3" />
+        <rect x="14" y="4" width="2" height="12" rx="0.5" fill="currentColor" opacity="0.3" />
+      </svg>
+    ),
+  },
+  {
     href: "/inventory/settings",
     label: "Settings",
     icon: (
