@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppButton } from "@/components/AppUI";
@@ -18,13 +19,13 @@ const ARMORY = [
   "Rhythmic opponents",
 ] as const;
 
-function ScrollRivet({ className = "" }: { className?: string }) {
-  return (
-    <span className={`salle-scroll-rivet ${className}`} aria-hidden="true">
-      <span className="salle-scroll-rivet-head" />
-    </span>
-  );
-}
+const HOUSE_RULES = [
+  "No live steel in the well",
+  "No glass in the well",
+  "Salute before you pour",
+  "Bro's before ego's",
+  "Leave your nonsense at the door",
+] as const;
 
 export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProps) {
   const router = useRouter();
@@ -54,98 +55,86 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
       />
 
       <div
-        className="salle-scroll-popup relative z-10 w-full max-w-2xl max-h-[94vh] flex flex-col"
+        className="salle-popup relative z-10 w-full max-w-lg max-h-[94vh] overflow-y-auto salle-welcome-scroll"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="salle-scroll-header shrink-0">
-          <h2 id="salle-welcome-title" className="salle-scroll-header-title">
-            Salle d&apos;Armes
-          </h2>
-        </header>
-
-        <div className="salle-scroll-parchment salle-welcome-scroll min-h-0 flex-1 overflow-y-auto">
-          <ScrollRivet className="salle-scroll-rivet-tl" />
-          <ScrollRivet className="salle-scroll-rivet-tr" />
-          <ScrollRivet className="salle-scroll-rivet-bl" />
-          <ScrollRivet className="salle-scroll-rivet-br" />
-
-          <div className="salle-scroll-body">
-            <p className="salle-scroll-lead">
-              Welcome to the Fencing Academy, a refined Salle d&apos;Armes where
-              gentlemanly combat meets the arts. Master the timing of the machine
-              within our Clockwork Gymnasium. Train with fancy steampunk weapons,
-              rapier-like shock-batons, clockwork-assisted gauntlets, and
-              spring-loaded wrist blasters against rhythmic opponents.
+        <div className="salle-popup-art">
+          <Image
+            src="/images/salle-darmes-popup.jpg"
+            alt="Salle d'Armes — steampunk fencing academy with clockwork gauntlet and rapier"
+            width={832}
+            height={1248}
+            priority
+            className="salle-popup-img"
+          />
+          <div className="salle-popup-rules" aria-labelledby="salle-house-rules-title">
+            <p id="salle-house-rules-title" className="salle-popup-rules-title">
+              House Rules
             </p>
-
-            <div className="salle-scroll-armory" aria-label="Training equipment">
-              {ARMORY.map((item) => (
-                <span key={item} className="salle-scroll-chip">
-                  {item}
-                </span>
+            <ul className="salle-popup-rules-list">
+              {HOUSE_RULES.map((rule) => (
+                <li key={rule}>{rule}</li>
               ))}
-            </div>
-
-            <div className="salle-scroll-grid">
-              <div className="salle-scroll-copy">
-                <p>
-                  Beneath the brass and theatrics, this is still the finished
-                  butterfly — not the caterpillar setup crawl. Out in the wild you
-                  walk voice notes, station maps, checks, and gates until your bar
-                  is built. <strong>Here</strong> is what it looks like when the
-                  automata stop arguing.
-                </p>
-                <p>
-                  Click the dashboard. Run a count. Poke weekly inputs. Adjust
-                  settings like a duelist who has never heard of &ldquo;read-only.&rdquo;
-                  Break nothing that matters — demo data only, reset anytime from
-                  settings.
-                </p>
-                <p className="salle-scroll-quip">
-                  En garde. Or don&apos;t. The bottles aren&apos;t fighting back.
-                </p>
-              </div>
-
-              <aside className="salle-scroll-rules">
-                <p className="salle-scroll-rules-title">House Rules</p>
-                <ul className="salle-scroll-rules-list">
-                  <li>No live steel in the well</li>
-                  <li>Counts are practice lunges</li>
-                  <li>Agave &amp; Rye is the sparring partner</li>
-                  <li>Salute before you pour</li>
-                </ul>
-              </aside>
-            </div>
-
-            <p className="salle-scroll-links">
-              Ready for the real build path? Read{" "}
-              <Link href="/the-process" className="salle-scroll-link">
-                the process
-              </Link>{" "}
-              or{" "}
-              <Link href="/downloads" className="salle-scroll-link">
-                download the program
-              </Link>
-              . The gauntlets stay fancier in your imagination either way.
-            </p>
-
-            <div className="salle-scroll-actions">
-              <AppButton variant="secondary" onClick={onClose} className="salle-scroll-btn">
-                Observe from the Gallery
-              </AppButton>
-              <AppButton onClick={enterSalle} disabled={entering} className="salle-scroll-btn">
-                {entering ? "Winding the Automata..." : "Salute & Enter the Salle"}
-              </AppButton>
-            </div>
-
-            <p className="salle-scroll-fine">
-              No rapiers were harmed · demo data only · parry responsibly
-            </p>
+            </ul>
           </div>
         </div>
 
-        <footer className="salle-scroll-footer shrink-0">
-          Clockwork Gymnasium · Sandbox Playground
+        <div className="salle-popup-body">
+          <div className="salle-scroll-armory" aria-label="Training equipment">
+            {ARMORY.map((item) => (
+              <span key={item} className="salle-scroll-chip">
+                {item}
+              </span>
+            ))}
+          </div>
+
+          <div className="salle-scroll-copy salle-popup-copy">
+            <p>
+              Beneath the brass and theatrics, this is still the finished
+              butterfly — not the caterpillar setup crawl. Out in the wild you
+              walk voice notes, station maps, checks, and gates until your bar
+              is built. <strong>Here</strong> is what it looks like when the
+              automata stop arguing.
+            </p>
+            <p>
+              Click the dashboard. Run a count. Poke weekly inputs. Adjust
+              settings like a duelist who has never heard of &ldquo;read-only.&rdquo;
+              Break nothing that matters — demo data only, reset anytime from
+              settings.
+            </p>
+            <p className="salle-scroll-quip">
+              En garde. Or don&apos;t. The bottles aren&apos;t fighting back.
+            </p>
+          </div>
+
+          <p className="salle-scroll-links">
+            Ready for the real build path? Read{" "}
+            <Link href="/the-process" className="salle-scroll-link">
+              the process
+            </Link>{" "}
+            or{" "}
+            <Link href="/downloads" className="salle-scroll-link">
+              download the program
+            </Link>
+            . The gauntlets stay fancier in your imagination either way.
+          </p>
+
+          <div className="salle-scroll-actions">
+            <AppButton variant="secondary" onClick={onClose} className="salle-scroll-btn">
+              Observe from the Gallery
+            </AppButton>
+            <AppButton onClick={enterSalle} disabled={entering} className="salle-scroll-btn">
+              {entering ? "Winding the Automata..." : "Salute & Enter the Salle"}
+            </AppButton>
+          </div>
+
+          <p className="salle-scroll-fine">
+            No rapiers were harmed · demo data only · parry responsibly
+          </p>
+        </div>
+
+        <footer className="salle-scroll-footer">
+          <span id="salle-welcome-title">Clockwork Gymnasium · Sandbox Playground</span>
         </footer>
       </div>
     </div>

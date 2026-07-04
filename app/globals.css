@@ -314,9 +314,103 @@ body { background: var(--bg); color: var(--text); }
   animation: dojo-fade-in 0.35s ease-out;
 }
 
-.salle-scroll-popup {
+.salle-scroll-popup,
+.salle-popup {
   animation: dojo-rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   filter: drop-shadow(0 24px 48px rgba(0, 0, 0, 0.65));
+}
+
+.salle-popup-art {
+  position: relative;
+  line-height: 0;
+}
+
+.salle-popup-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.salle-popup-rules {
+  position: absolute;
+  left: 11%;
+  right: 11%;
+  bottom: 7.5%;
+  padding: 0.55rem 0.75rem 0.45rem;
+  text-align: left;
+  background: rgba(232, 218, 188, 0.72);
+  border: 1px solid rgba(122, 96, 62, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 230, 0.45);
+}
+
+.salle-popup-rules-title {
+  margin: 0 0 0.35rem;
+  font-size: 8px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #4a6b62;
+  font-weight: 600;
+}
+
+.salle-popup-rules-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(0.62rem, 2.1vw, 0.72rem);
+  line-height: 1.45;
+  color: #2a2218;
+}
+
+.salle-popup-rules-list li {
+  position: relative;
+  padding-left: 0.75rem;
+  margin-bottom: 0.12rem;
+}
+
+.salle-popup-rules-list li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: #7a5528;
+  font-size: 0.65em;
+}
+
+.salle-popup-body {
+  padding: 1rem 1.15rem 0.85rem;
+  background: linear-gradient(180deg, #1a1612 0%, #12100b 100%);
+  border-left: 1px solid rgba(74, 124, 111, 0.2);
+  border-right: 1px solid rgba(74, 124, 111, 0.2);
+}
+
+.salle-popup-copy {
+  margin-bottom: 0.85rem;
+}
+
+.salle-popup-copy p {
+  color: var(--text-muted);
+}
+
+.salle-popup-copy strong {
+  color: var(--cream);
+}
+
+.salle-popup .salle-scroll-chip {
+  color: var(--copper-bright, #c99a6a);
+  border-color: rgba(168, 120, 79, 0.35);
+  background: rgba(168, 120, 79, 0.08);
+}
+
+.salle-popup .salle-scroll-links {
+  color: var(--text-light);
+}
+
+.salle-popup .salle-scroll-link {
+  color: var(--copper);
+}
+
+.salle-popup .salle-scroll-fine {
+  color: rgba(245, 230, 200, 0.45);
 }
 
 .salle-welcome-scroll {
