@@ -1060,7 +1060,7 @@ def _walk_sheet_rows(bar: dict[str, Any]) -> list[dict[str, str]]:
         for i in range(_WALK_ADD_ROWS_PER_STATION):
             rows.append({
                 "station": station_name,
-                "product_name": f"ADD product {i + 1}:",
+                "product_name": f"Missed entry {i + 1} — speak or write:",
                 "size": "",
                 "level": "",
                 "notes": "",

@@ -1874,21 +1874,48 @@ async function addReviewBottle() {
 }
 
 function isMapToolkitOpen() {
-  const panel = document.getElementById("mapToolkitPanel");
-  return panel && !panel.classList.contains("hidden");
+  const modal = document.getElementById("mapToolkitModal");
+  return modal && !modal.classList.contains("hidden");
 }
 
 function setMapToolkitOpen(open) {
-  const panel = document.getElementById("mapToolkitPanel");
+  const modal = document.getElementById("mapToolkitModal");
   const btn = document.getElementById("btnOpenMapToolkit");
-  if (panel) panel.classList.toggle("hidden", !open);
-  if (btn) {
-    btn.setAttribute("aria-expanded", open ? "true" : "false");
-    btn.textContent = open ? "Hide map tools" : "Take your map — print or download";
+  if (modal) modal.classList.toggle("hidden", !open);
+  if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+  document.body.style.overflow = open ? "hidden" : "";
+  if (open) renderMapDigitalView();
+}
+
+function buildMapPlainText() {
+  const barName = barState.name?.trim() || "Your Bar";
+  const lines = [`${barName} — inventory map`, ""];
+  for (const s of sortedStations().filter((st) => (st.bottles || []).length)) {
+    lines.push(`▸ ${s.name}`);
+    for (const b of s.bottles || []) {
+      lines.push(`  ${b.name} · ${b.size || "750ml"}`);
+    }
+    lines.push("  _ missed entry — speak or write");
+    lines.push("  _ missed entry — speak or write");
+    lines.push("");
   }
-  if (open) {
-    renderMapDigitalView();
-    panel?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  return lines.join("\n").trim();
+}
+
+async function copyMapToClipboard() {
+  const text = buildMapPlainText();
+  try {
+    await navigator.clipboard.writeText(text);
+    setStatus("Map copied — paste into Notes or keep on your phone while you walk.");
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.className = "hidden";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    setStatus("Map copied.");
   }
 }
 
@@ -1913,14 +1940,16 @@ function renderMapDigitalView() {
         )
         .join("");
       const blanks = [1, 2]
-        .map((n) => `<div class="map-digital-blank">Blank line ${n} — write a discovery or level</div>`)
+        .map(
+          () =>
+            `<div class="map-digital-blank">Missed entry — speak it here, add in editor when back</div>`
+        )
         .join("");
       return `
       <div class="map-digital-station">
         <div class="map-digital-station-name">${escapeHtml(s.name)} <span class="map-digital-meta">(${bottles.length})</span></div>
         ${bottleRows}
         ${blanks}
-        <div class="map-digital-blank">+ Add a product in the editor above — it fills this section automatically</div>
       </div>`;
     })
     .join("");
@@ -1943,7 +1972,7 @@ function buildMapPrintHtml() {
       const adds = [1, 2, 3]
         .map(
           (n) =>
-            `<tr class="add-row"><td>ADD product ${n}:</td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>`
+            `<tr class="add-row"><td>Missed entry ${n} — speak or write:</td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>`
         )
         .join("");
       return `
@@ -2607,6 +2636,14 @@ async function initSetup() {
     setStatus("");
   });
 
+  document.getElementById("btnMapModalClose")?.addEventListener("click", () => setMapToolkitOpen(false));
+  document.getElementById("btnMapModalCloseBackdrop")?.addEventListener("click", () => setMapToolkitOpen(false));
+
+  document.getElementById("btnMapCopy")?.addEventListener("click", async () => {
+    await persistBar();
+    await copyMapToClipboard();
+  });
+
   document.getElementById("btnMapPrint")?.addEventListener("click", async () => {
     await persistBar();
     printMapSheet();
@@ -2622,10 +2659,11 @@ async function initSetup() {
   });
 
   document.getElementById("btnMapDigitalAdd")?.addEventListener("click", () => {
+    setMapToolkitOpen(false);
     toggleReviewAddBox(true);
     document.getElementById("reviewAddName")?.focus();
     document.getElementById("reviewAddBox")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    setStatus("Add a product — it lands in the map and every download updates automatically.");
+    setStatus("Add a missed product — it lands in the map and every download updates.");
   });
 
   document.getElementById("btnApproveMap")?.addEventListener("click", async () => {
