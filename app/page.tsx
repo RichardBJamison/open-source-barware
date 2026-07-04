@@ -145,10 +145,16 @@ export default function Home() {
                 The Problem
               </span>
             </div>
-            <h2 className="font-serif text-3xl md:text-4xl leading-tight copper-text">
-              Every bar manager
+            <h2 className="font-serif text-3xl md:text-4xl leading-[1.15] copper-text">
+              Every bar
               <br />
-              knows the drill.
+              manager
+              <br />
+              knows
+              <br />
+              the
+              <br />
+              drill.
             </h2>
             <div className="mt-8 max-w-[300px]">
               <ProblemHourglass />
