@@ -86,18 +86,25 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
                 priority
                 className="salle-popup-img"
               />
-              <div
-                className={`salle-sign-rules ${penHand.className}`}
-                aria-labelledby="salle-house-rules-title"
-              >
-                <p id="salle-house-rules-title" className="salle-sign-rules-title">
-                  House Rules
+              <div className="salle-sign-parchment">
+                <p className="salle-sign-welcome">
+                  Welcome to the Fencing Academy — a refined Salle d&apos;Armes
+                  where gentlemanly combat meets the arts. Master the timing of
+                  the machine in our Clockwork Gymnasium.
                 </p>
-                <ul className="salle-sign-rules-list">
-                  {HOUSE_RULES.map((rule) => (
-                    <li key={rule}>{rule}</li>
-                  ))}
-                </ul>
+                <div
+                  className={`salle-sign-rules ${penHand.className}`}
+                  aria-labelledby="salle-house-rules-title"
+                >
+                  <p id="salle-house-rules-title" className="salle-sign-rules-title">
+                    House Rules
+                  </p>
+                  <ul className="salle-sign-rules-list">
+                    {HOUSE_RULES.map((rule) => (
+                      <li key={rule}>{rule}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
 
