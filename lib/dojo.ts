@@ -13,7 +13,8 @@ import {
   createDojoWeeklyInputs,
 } from "@/lib/dojo-seed";
 
-export const DOJO_WELCOME_KEY = "osb_dojo_welcome_seen";
+/** Bumped for Salle d'Armes rebrand — old Dojo welcome flag no longer suppresses the new modal. */
+export const DOJO_WELCOME_KEY = "osb_salle_welcome_seen";
 export const DOJO_SEEDED_KEY = "osb_dojo_seeded";
 
 function writeFlag(key: string): void {

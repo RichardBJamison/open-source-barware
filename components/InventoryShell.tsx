@@ -1,13 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useState, useSyncExternalStore } from "react";
+import DojoWelcomeModal from "@/components/DojoWelcomeModal";
 import { Gear, Rivet, CocktailIcon } from "@/components/SteampunkElements";
+import {
+  hasSeenDojoWelcome,
+  markDojoWelcomeSeen,
+  seedDojoPlayground,
+} from "@/lib/dojo";
 
 const NAV_ITEMS = [
   {
-    href: "/inventory",
+    href: "/inventory/dashboard",
     label: "Dashboard",
     icon: (
       <svg
@@ -95,16 +101,45 @@ const NAV_ITEMS = [
   },
 ];
 
+function useHydrated() {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
+}
+
+function useNeedsWelcome() {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => !hasSeenDojoWelcome(),
+    () => true
+  );
+}
+
 export default function InventoryShell({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const hydrated = useHydrated();
+  const needsWelcome = useNeedsWelcome();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const finishWelcome = useCallback(() => {
+    seedDojoPlayground();
+    markDojoWelcomeSeen();
+    if (pathname === "/inventory") {
+      router.push("/inventory/dashboard");
+    }
+  }, [pathname, router]);
+
   return (
-    <div className="flex min-h-[calc(100vh-73px)]">
+    <div className="salle-shell flex min-h-[calc(100vh-73px)]">
+      <DojoWelcomeModal open={hydrated && needsWelcome} onClose={finishWelcome} />
+
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/60 z-40 lg:hidden"
@@ -122,7 +157,7 @@ export default function InventoryShell({
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        <div className="relative px-5 pt-5 pb-4 border-b border-gear-border">
+        <div className="relative px-5 pt-5 pb-4 border-b border-gear-border salle-shell-brand">
           <div className="absolute top-2 left-2">
             <Rivet />
           </div>
@@ -133,11 +168,14 @@ export default function InventoryShell({
           <div className="flex items-center gap-3">
             <CocktailIcon className="w-8 h-8 shrink-0" />
             <div className="min-w-0">
-              <h2 className="font-serif text-sm copper-text leading-tight truncate">
-                Open Source Barware
+              <p className="text-[9px] text-text-light uppercase tracking-[0.22em] mb-0.5">
+                Clockwork Gymnasium
+              </p>
+              <h2 className="font-serif text-base copper-text leading-tight truncate">
+                Salle d&apos;Armes
               </h2>
-              <span className="text-[9px] text-text-light uppercase tracking-[0.2em]">
-                Salle d&rsquo;Armes
+              <span className="text-[9px] text-patina-light uppercase tracking-[0.18em]">
+                Sandbox · demo data
               </span>
             </div>
           </div>
@@ -145,10 +183,7 @@ export default function InventoryShell({
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
-            const isActive =
-              item.href === "/inventory"
-                ? pathname === "/inventory"
-                : pathname?.startsWith(item.href);
+            const isActive = pathname?.startsWith(item.href);
 
             return (
               <Link
@@ -190,7 +225,7 @@ export default function InventoryShell({
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="sticky top-[73px] z-30 bg-bg-warm/95 backdrop-blur-sm border-b border-gear-border px-4 lg:px-6 py-3 flex items-center gap-4">
+        <div className="sticky top-[73px] z-30 bg-bg-warm/95 backdrop-blur-sm border-b border-gear-border px-4 lg:px-6 py-3 flex items-center gap-4 salle-shell-topbar">
           <button
             className="lg:hidden text-copper p-1"
             onClick={() => setSidebarOpen(true)}
@@ -210,13 +245,14 @@ export default function InventoryShell({
 
           <h1 className="font-serif text-base lg:text-lg copper-text truncate flex items-center gap-2 min-w-0">
             <span className="truncate">
-              Open Source Barware{" "}
+              Salle d&apos;Armes
               <span className="text-text-light font-sans text-xs lg:text-sm tracking-wide">
-                &mdash; Salle d&rsquo;Armes
+                {" "}
+                — Clockwork Gymnasium
               </span>
             </span>
-            <span className="dojo-sandbox-pill shrink-0 hidden sm:inline-flex">
-              Sandbox
+            <span className="salle-sandbox-pill shrink-0 hidden sm:inline-flex">
+              Fencing Academy
             </span>
           </h1>
         </div>

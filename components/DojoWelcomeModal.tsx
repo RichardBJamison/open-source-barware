@@ -86,10 +86,10 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
             <div className="salle-welcome-parchment mb-6">
               <p className="salle-welcome-parchment-kicker">Fencing Academy</p>
               <h2 id="salle-welcome-title" className="salle-welcome-title mb-4">
-                Salle d&rsquo;Armes
+                Salle d&apos;Armes
               </h2>
               <p className="salle-welcome-lead">
-                Welcome to the Fencing Academy, a refined Salle d&rsquo;Armes where
+                Welcome to the Fencing Academy, a refined Salle d&apos;Armes where
                 gentlemanly combat meets the arts. Master the timing of the machine
                 within our Clockwork Gymnasium. Train with fancy steampunk weapons,
                 rapier-like shock-batons, clockwork-assisted gauntlets, and
@@ -121,7 +121,7 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
                   settings.
                 </p>
                 <p className="text-text-light text-sm italic">
-                  En garde. Or don&rsquo;t. The bottles aren&rsquo;t fighting back.
+                  En garde. Or don&apos;t. The bottles aren&apos;t fighting back.
                 </p>
               </div>
 

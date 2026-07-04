@@ -265,7 +265,7 @@ export default function InventorySettingsPage() {
                 }}
                 className="border border-copper/30 text-copper hover:bg-copper/10 px-6 py-3 text-sm tracking-wide transition-all"
               >
-                Show Welcome Again
+                Show Salle Welcome Again
               </button>
             </div>
             {status && <p className="text-xs text-patina-light mt-4">{status}</p>}
