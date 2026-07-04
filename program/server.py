@@ -206,6 +206,7 @@ def _default_bar_setup() -> dict[str, Any]:
         "map_approved": False,
         "first_count_complete": False,
         "voice_notes": [],
+        "count_notes": [],
         "draft_map": None,
         "approved_map": None,
     }
@@ -495,7 +496,11 @@ def _can_advance(cfg: dict[str, Any], target: str) -> tuple[bool, str]:
     bar_name = bar.get("name") or cfg.get("bar_name", "")
 
     checks = {
-        "name_bar": (current == "welcome", "Complete welcome first."),
+        "updates_signup": (current == "welcome", "Complete welcome first."),
+        "name_bar": (
+            _phase_index(current) < _phase_index("name_bar"),
+            "Complete the release-list step first.",
+        ),
         "build_bar": (current == "name_bar", "Continue from the previous step first."),
         "voice_walk": (
             len(bar.get("stations", [])) > 0 and bool(bar_name),
@@ -503,8 +508,8 @@ def _can_advance(cfg: dict[str, Any], target: str) -> tuple[bool, str]:
         ),
         "reconcile": (has_walk, "Walk the bar — paste voice notes or add bottles."),
         "map_review": (
-            bool(setup.get("draft_map")) or _bar_bottle_count(bar) > 0,
-            "Run reconciliation or add bottles before review.",
+            bool(setup.get("draft_map")),
+            "Run reconciliation before review.",
         ),
         "first_count": (bool(setup.get("map_approved")), "Approve the inventory map before counting."),
         "butterfly": (
@@ -671,6 +676,10 @@ def api_state():
                 "voice_notes_text": "\n\n".join(
                     n.get("text", "") for n in setup.get("voice_notes", []) if n.get("text")
                 ),
+                "count_notes_count": len(setup.get("count_notes", [])),
+                "count_notes_text": "\n\n".join(
+                    n.get("text", "") for n in setup.get("count_notes", []) if n.get("text")
+                ),
                 "has_draft_map": bool(setup.get("draft_map")),
                 "has_approved_map": bool(setup.get("approved_map")),
                 "cycles_count": len(state.get("cycles", [])),
@@ -820,7 +829,7 @@ def api_phase_reset():
 
 @app.route("/api/hard-reset", methods=["POST"])
 def api_hard_reset():
-    """Full wipe back to first-run (Step 1). Archives current data first."""
+    """Full wipe back to updates signup (first setup step). Archives current data first."""
     import shutil
 
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -838,10 +847,11 @@ def api_hard_reset():
             if os.path.exists(f):
                 os.remove(f)
         except OSError:
-            _write_json(f, {"bars": []} if f == _BARS_FILE else {})
+            pass
 
-    _write_json(_CONFIG_FILE, DEFAULT_CONFIG)
-    return jsonify({"status": "reset", "phase": "welcome", "backup": backup_dir})
+    reset_cfg = {**DEFAULT_CONFIG, "phase": "updates_signup"}
+    _write_json(_CONFIG_FILE, reset_cfg)
+    return jsonify({"status": "reset", "phase": "updates_signup", "backup": backup_dir})
 
 
 # ── Caterpillar stubs ───────────────────────────────────────────────────────
@@ -885,6 +895,92 @@ def api_voice_notes():
     return jsonify({"status": "saved", "count": 1})
 
 
+@app.route("/api/setup/count-notes", methods=["POST"])
+def api_count_notes():
+    body = request.get_json(force=True) or {}
+    text = (body.get("text") or "").strip()
+    if not text:
+        return jsonify({"error": "text required"}), 400
+    bar = _load_bar()
+    existing = _bar_setup_state(bar).get("count_notes", [])
+    note_id = existing[0]["id"] if existing else _uid("note-")
+    notes = [{"id": note_id, "text": text, "uploaded_at": _now()}]
+    _save_bar_setup(bar["id"], {"count_notes": notes})
+    return jsonify({"status": "saved", "count": 1})
+
+
+def _reconcile_bar(bar: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Turn walked bar data into an auditable draft map + summary."""
+    flagged = 0
+    unverified = 0
+    duplicates_removed = 0
+    seen: set[tuple[str, str, str]] = set()
+    empty_stations: list[str] = []
+    locations: list[dict[str, Any]] = []
+
+    for station in sorted(bar.get("stations", []), key=lambda s: s.get("order", 0)):
+        station_name = station.get("name", "")
+        clean_bottles: list[dict[str, Any]] = []
+        for raw in station.get("bottles", []):
+            name = (raw.get("name") or "").strip()
+            size = (raw.get("size") or "750ml").strip() or "750ml"
+            if not name:
+                flagged += 1
+                continue
+            key = (station.get("id", ""), name.lower(), size.lower())
+            if key in seen:
+                duplicates_removed += 1
+                continue
+            seen.add(key)
+            parse_flags = list(raw.get("parse_flags") or [])
+            if not raw.get("size_verified"):
+                unverified += 1
+            if parse_flags:
+                flagged += 1
+            clean_bottles.append(
+                {
+                    "id": raw.get("id"),
+                    "name": name,
+                    "category": raw.get("category") or "spirits",
+                    "size": size,
+                    "size_verified": bool(raw.get("size_verified")),
+                    "par_level": raw.get("par_level", 1.0),
+                    "parse_flags": parse_flags,
+                    "raw_heard": raw.get("raw_heard") or name,
+                }
+            )
+        locations.append(
+            {
+                "id": station.get("id"),
+                "name": station_name,
+                "type": station.get("type"),
+                "bottles": clean_bottles,
+            }
+        )
+        if not clean_bottles:
+            empty_stations.append(station_name)
+
+    bottle_count = sum(len(loc.get("bottles", [])) for loc in locations)
+    draft = {
+        "id": _uid("map-"),
+        "created_at": _now(),
+        "status": "draft",
+        "locations": locations,
+        "blank_slots": [{"station": name, "reason": "no bottles assigned"} for name in empty_stations],
+        "flags": [],
+        "summary": {
+            "stations": len(locations),
+            "stations_with_bottles": len(locations) - len(empty_stations),
+            "bottles": bottle_count,
+            "flagged": flagged,
+            "unverified": unverified,
+            "duplicates_removed": duplicates_removed,
+            "empty_stations": len(empty_stations),
+        },
+    }
+    return draft, draft["summary"]
+
+
 @app.route("/api/setup/reconcile", methods=["POST"])
 def api_reconcile():
     """Build draft map from bar data; AI reconciliation wires in later."""
@@ -892,12 +988,21 @@ def api_reconcile():
     setup = _bar_setup_state(bar)
     if not setup.get("voice_notes") and _bar_bottle_count(bar) == 0:
         return jsonify({"error": "Walk the bar first — paste notes or add bottles."}), 400
-    draft = _bar_to_draft_map(bar)
+    draft, summary = _reconcile_bar(bar)
     cfg = _load_config()
     if not cfg.get("ai_api_key_set") and cfg.get("api_connection_status") != "connected":
-        draft["flags"].append("AI not connected — map built from your walk. Connect API in Settings for deeper reconciliation.")
+        draft["flags"].append(
+            "AI not connected — map built from your walk. Connect API in Settings for deeper reconciliation."
+        )
     _save_bar_setup(bar["id"], {"draft_map": draft})
-    return jsonify({"status": "draft_ready", "draft_map": draft, "bottle_count": _bar_bottle_count(bar)})
+    return jsonify(
+        {
+            "status": "draft_ready",
+            "draft_map": draft,
+            "summary": summary,
+            "bottle_count": summary["bottles"],
+        }
+    )
 
 
 _AUDIT_HEADERS = [
@@ -1042,6 +1147,9 @@ def api_save_bar():
                     bottle["raw_heard"] = str(b.get("raw_heard", "")).strip()
                 if "size_verified" in b:
                     bottle["size_verified"] = bool(b.get("size_verified"))
+                flags = b.get("parse_flags")
+                if isinstance(flags, list) and flags:
+                    bottle["parse_flags"] = [str(f).strip() for f in flags if str(f).strip()]
                 station["bottles"].append(bottle)
             stations.append(station)
         bar["stations"] = stations

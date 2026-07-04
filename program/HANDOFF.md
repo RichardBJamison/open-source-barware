@@ -1,7 +1,7 @@
 # OSB Chrome Program — Handoff
 
-*Last updated: 2026-07-01 | agent: GROK | project ID: `open-source-barware`*
-*Status: in-progress — frame scaffold only*
+*Last updated: 2026-07-04 | agent: GROK | project ID: `open-source-barware`*
+*Status: in-progress — caterpillar walkthrough mostly wired*
 
 ## Purpose
 
@@ -102,10 +102,19 @@ curl -s http://localhost:5052/api/state
   against Richard's real 945-word Agave & Rye-style walk transcript:
   223 entries, 14 stations, only 13 flagged. Walk-screen copy now coaches
   "name + size only — the size ends each bottle."
+- 2026-07-04 GROK: **Step 6 Count** mirrors Step 3 Walk upload UX. Click
+  **Enter your count** → paste or upload `.txt/.md/.markdown/.rtf` (iPhone
+  Notes, Keep, Samsung Notes). `POST /api/setup/count-notes` persists notes;
+  `parseCountText` reuses walk station markers + level-delimited parsing
+  (`one`, `point five`, `0.5`, `half`, etc.) against the approved map.
+  Review table edits `current_level` per bottle; **First count complete**
+  gates on upload/parse (`countParsed`). Cache-bust: `osb-app.js?v=20260704-count-walk`.
+  Verified: `/api/setup/count-notes` → 200; setup HTML serves `btnUploadCount`.
 
 ## Open work
 
-1. Flesh out caterpillar steps (voice upload, AI reconcile, XLS generation)
+1. Count CSV import/export (parity with walk spreadsheet path)
+2. Flesh out remaining caterpillar polish + AI reconcile, XLS generation
 2. Build butterfly home base metrics with timeframe selector
 3. In-house inventory category sub-pages
 4. Wire install.sh + LaunchAgent (`com.opensourcebarware.program`)

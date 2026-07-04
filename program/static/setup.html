@@ -92,14 +92,34 @@
             </select>
           </div>
         </div>
-        <label class="updates-optin">
-          <input id="updatesOptIn" type="checkbox" checked />
-          <span>Yes — email me only when Open Source Barware ships new additions.</span>
-        </label>
-        <label class="updates-optin">
-          <input id="updatesTourOptIn" type="checkbox" />
-          <span>Email me when World Hidden Bar Tours go online. Invite me to the discovery run of your city.</span>
-        </label>
+        <div class="updates-toggle-list" role="group" aria-label="Email preferences">
+          <label class="updates-toggle-card updates-toggle-card--releases" for="updatesOptIn">
+            <input id="updatesOptIn" class="updates-toggle-input" type="checkbox" checked />
+            <span class="updates-toggle-ui" aria-hidden="true">
+              <span class="updates-toggle-track">
+                <span class="updates-toggle-thumb"></span>
+              </span>
+              <span class="updates-toggle-state"></span>
+            </span>
+            <span class="updates-toggle-copy">
+              <span class="updates-toggle-title">Program releases</span>
+              <span class="updates-toggle-desc">Yes — email me only when Open Source Barware ships new additions.</span>
+            </span>
+          </label>
+          <label class="updates-toggle-card updates-toggle-card--tour" for="updatesTourOptIn">
+            <input id="updatesTourOptIn" class="updates-toggle-input" type="checkbox" />
+            <span class="updates-toggle-ui" aria-hidden="true">
+              <span class="updates-toggle-track">
+                <span class="updates-toggle-thumb"></span>
+              </span>
+              <span class="updates-toggle-state"></span>
+            </span>
+            <span class="updates-toggle-copy">
+              <span class="updates-toggle-title">Hidden Bar Tours</span>
+              <span class="updates-toggle-desc">Email me when World Hidden Bar Tours go online. Invite me to the discovery run of your city.</span>
+            </span>
+          </label>
+        </div>
         <p id="updatesStatus" class="field-hint text-center" role="status"></p>
         <div class="setup-nav">
           <button class="btn btn-secondary" id="btnUpdatesSkip" type="button">Skip for now</button>
@@ -353,7 +373,10 @@
       </div>
       <div class="setup-nav">
         <button class="btn btn-secondary" type="button" data-go="build_bar">← Back</button>
-        <button class="btn btn-primary" id="btnWalkContinue" type="button" disabled>Review your map first</button>
+        <button class="btn btn-primary" id="btnWalkContinue" type="button">Review your map first</button>
+      </div>
+      <div class="hard-reset-row">
+        <button class="btn btn-hard-reset" type="button" data-hard-reset>↺ Start over — hard reset</button>
       </div>
     </section>
 
@@ -378,7 +401,7 @@
       </div>
       <div class="setup-nav">
         <button class="btn btn-secondary" type="button" data-go="voice_walk">← Back</button>
-        <button class="btn btn-secondary" type="button" data-go="map_review">Next step →</button>
+        <button class="btn btn-secondary" id="btnReconcileNext" type="button" data-go="map_review" disabled>Next step →</button>
       </div>
       <div class="hard-reset-row">
         <button class="btn btn-hard-reset" type="button" data-hard-reset>↺ Start over — hard reset</button>
@@ -390,10 +413,41 @@
       <p class="step-eyebrow">Step 5 · Review</p>
       <h2 class="wizard-title text-center">Review &amp; Confirm</h2>
       <p class="wizard-lead text-center">
-        Here's your complete inventory map for <span id="reviewBarName" class="review-bar-name"></span>. Edit anything that needs fixing.
+        Here's your full inventory map for <span id="reviewBarName" class="review-bar-name"></span> —
+        <strong>your last chance to change or move anything</strong> before the first count.
       </p>
       <div id="reviewStats" class="review-stats"></div>
-      <div id="bottleGroupsReview" class="bottle-groups scroll-panel review-panel"></div>
+      <div id="bottleGroupsReview" class="review-editor scroll-panel"></div>
+      <div id="reviewAddBox" class="review-add-box hidden">
+        <p class="box-label">Add a bottle</p>
+        <div class="manual-bottle-row">
+          <input id="reviewAddName" type="text" placeholder="Product name..." />
+          <select id="reviewAddStation"></select>
+          <select id="reviewAddSize">
+            <option value="750ml" selected>750ml</option>
+            <option value="1L">1L</option>
+            <option value="1.75L">1.75L</option>
+            <option value="375ml">375ml</option>
+            <option value="200ml">200ml</option>
+            <option value="50ml">50ml</option>
+          </select>
+          <select id="reviewAddCategory">
+            <option value="spirits">Spirits</option>
+            <option value="vodka">Vodka</option>
+            <option value="gin">Gin</option>
+            <option value="rum">Rum</option>
+            <option value="tequila">Tequila</option>
+            <option value="whiskey">Whiskey</option>
+            <option value="scotch">Scotch</option>
+            <option value="cognac">Cognac</option>
+            <option value="liqueur">Liqueur</option>
+            <option value="beer">Beer</option>
+            <option value="wine">Wine</option>
+            <option value="mixer">Mixer</option>
+          </select>
+          <button class="btn btn-add" id="btnReviewAddConfirm" type="button">+</button>
+        </div>
+      </div>
       <div class="setup-nav">
         <button class="btn btn-secondary" type="button" data-go="reconcile">← Back</button>
         <button class="btn btn-primary" id="btnApproveMap" type="button">Map approved — start counting</button>
@@ -410,8 +464,93 @@
       <p class="wizard-lead">
         Count quantities and bottle levels against the approved map. This becomes your baseline for every future cycle.
       </p>
-      <div class="actions">
-        <button class="btn btn-primary" id="btnFirstCountDone" type="button">First count complete</button>
+      <div class="count-action-bar">
+        <button class="btn btn-secondary" id="btnCountReminders" type="button" aria-expanded="false" aria-controls="countRemindersPanel">
+          Best practices
+        </button>
+        <button class="btn btn-primary" id="btnEnterCount" type="button">Enter your count</button>
+      </div>
+      <div id="countRemindersPanel" class="count-reminders-panel hidden" role="region" aria-label="Count reminders">
+        <p class="count-reminders-title">Before you count</p>
+        <ul class="count-reminders-list">
+          <li>Count <strong>full bottles</strong> and <strong>open bottle levels</strong> (tenths) against your approved map — station by station.</li>
+          <li>Liter bottles and 750ml bottles look alike on the shelf. Double-check size before you lock a number.</li>
+          <li>Call out partials honestly — a bad baseline poisons every future cycle.</li>
+          <li>One station at a time. Finish a section before you jump to the next.</li>
+          <li>When every station is entered, mark the count complete to open home base.</li>
+        </ul>
+      </div>
+      <div id="countEntryPanel" class="count-entry-panel hidden">
+        <input type="file" id="countNotesFile" class="hidden" accept=".txt,.text,.md,.markdown,.rtf,.note,text/plain,text/markdown,text/rtf" />
+        <div id="countUnparsed">
+          <div class="info-box">
+            <p class="info-title">How to submit your count</p>
+            <p class="info-body">
+              <strong>Easiest option:</strong> Use <strong>Upload Count</strong> below to upload notes from your phone.
+              Speak into <strong>iPhone Notes</strong>, <strong>Google Keep</strong>, <strong>Samsung Notes</strong>,
+              or any app that exports <code>.txt</code> or <code>.md</code> — then transfer the file to this computer and upload.
+            </p>
+            <p class="info-body" style="margin-top:10px;">
+              Or paste your verbal count directly in the box.
+              <strong>Call out the station, then each bottle with its level.</strong>
+              Full bottles as <code>one</code> or <code>2</code>. Open bottles as tenths:
+              <code>point five</code>, <code>0.5</code>, or <code>half</code>.
+            </p>
+            <div class="example-box">
+              <p class="box-label">Example</p>
+              <p class="example-text">
+                "Well one. Tito's one. Ketel One point five. Tanqueray one. Bacardi zero.
+                Row two. Espolon one. Evan Williams point three.
+                Back bar top shelf. Patron one. Don Julio point eight…"
+              </p>
+            </div>
+          </div>
+          <div class="info-box parse-expect-box">
+            <p class="info-title">What happens when you upload</p>
+            <p class="info-body">
+              We match your dictation against the <strong>approved map</strong> from Step 5 and draft bottle levels.
+              Messy speech is normal — review every row before you finish. Wrong levels poison every future cycle.
+            </p>
+          </div>
+          <textarea id="countNotes" placeholder="Or paste your count notes here…"></textarea>
+          <div class="actions walk-actions">
+            <div class="upload-notes-wrap">
+              <button class="btn btn-primary" id="btnUploadCount" type="button">Upload Count</button>
+              <p class="upload-formats">
+                Accepts <code>.txt</code> · <code>.md</code> · <code>.markdown</code> · <code>.rtf</code><br />
+                iPhone Notes · Google Keep · Samsung Notes · plain-text exports<br />
+                <span class="upload-formats-tip">From iPhone Notes, export as Markdown or .txt (not PDF).</span>
+              </p>
+            </div>
+            <button class="btn btn-secondary" id="btnCountDraft" type="button">Save draft</button>
+          </div>
+        </div>
+        <div id="countParsed" class="hidden">
+          <div class="parse-expect-banner">
+            <strong>Review your count before you finish.</strong>
+            We matched your notes to the approved map. Fix any level that looks wrong — then open home base.
+          </div>
+          <div class="parse-summary">
+            <span class="glow-dot"></span>
+            <span id="countSummaryText"></span>
+            <button class="btn btn-ghost btn-sm" id="btnRecount" type="button">Upload again</button>
+          </div>
+          <div class="walk-review-table-wrap scroll-panel">
+            <table class="walk-review-table" id="countReviewTable">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Station</th>
+                  <th>Par</th>
+                  <th>Level</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="countReviewBody"></tbody>
+            </table>
+          </div>
+          <button class="btn btn-primary" id="btnFirstCountDone" type="button" style="margin-top:16px">First count complete — open home base</button>
+        </div>
       </div>
       <div class="setup-nav">
         <button class="btn btn-secondary" type="button" data-go="map_review">← Back</button>
@@ -424,6 +563,6 @@
 
     <p class="status" id="status"></p>
   </div>
-  <script src="/static/js/osb-app.js"></script>
+  <script src="/static/js/osb-app.js?v=20260704-count-walk"></script>
 </body>
 </html>

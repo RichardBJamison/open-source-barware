@@ -59,6 +59,7 @@ let setupListenersBound = false;
 let homeListenersBound = false;
 let barState = { id: "", name: "", stations: [] };
 let walkParsed = false;
+let countParsed = false;
 let editingStationId = null;
 let allBars = [];
 
@@ -168,6 +169,9 @@ const OSB = {
   async hardReset() {
     const r = await fetch("/api/hard-reset", { method: "POST" });
     if (!r.ok) throw new Error("Could not reset the program");
+    setUpdatesSignupStatus("");
+    barState = null;
+    allBars = [];
     return r.json();
   },
 
@@ -269,6 +273,19 @@ const OSB = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
     });
+    return r.json();
+  },
+
+  async uploadCountNotes(text) {
+    const r = await fetch("/api/setup/count-notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.error || "Could not save count notes");
+    }
     return r.json();
   },
 
@@ -528,19 +545,43 @@ function stationIdByName(name) {
   return sortedStations().find((s) => s.name.toLowerCase() === key)?.id ?? null;
 }
 
+function walkUnverifiedCount() {
+  return allBottles().filter((b) => !b.size_verified).length;
+}
+
 function walkReviewIsComplete() {
   const status = barState.setup?.walk_review_status;
   if (status === "complete" || status === "skipped" || status === "imported") return true;
   if (bottleCount() === 0) return false;
-  return allBottles().every((b) => b.size_verified);
+  return walkUnverifiedCount() === 0;
+}
+
+function scrollToFirstUnverifiedWalkRow() {
+  const row = document.querySelector("#walkReviewBody tr.size-unverified, #walkReviewBody tr.row-flagged");
+  if (!row) return false;
+  row.scrollIntoView({ behavior: "smooth", block: "center" });
+  row.classList.add("walk-row-pulse");
+  window.setTimeout(() => row.classList.remove("walk-row-pulse"), 1600);
+  return true;
 }
 
 function updateWalkContinueButton() {
   const btn = document.getElementById("btnWalkContinue");
   if (!btn) return;
   const ready = walkReviewIsComplete();
-  btn.disabled = !ready;
-  btn.textContent = ready ? "Continue" : "Review your map first";
+  const remaining = walkUnverifiedCount();
+  btn.classList.toggle("btn-walk-gated", !ready);
+  btn.setAttribute("aria-disabled", ready ? "false" : "true");
+  if (ready) {
+    btn.textContent = "Continue to reconcile →";
+  } else if (bottleCount() === 0) {
+    btn.textContent = "Upload notes first";
+  } else {
+    btn.textContent =
+      remaining === 1
+        ? "1 size still needs OK"
+        : `${remaining} sizes still need OK`;
+  }
 }
 
 function updateWalkReviewProgress() {
@@ -548,10 +589,13 @@ function updateWalkReviewProgress() {
   if (!el) return;
   const bottles = allBottles();
   const verified = bottles.filter((b) => b.size_verified).length;
+  const remaining = bottles.length - verified;
   el.textContent =
     bottles.length === 0
       ? "No bottles yet — upload notes or add manually."
-      : `${verified} of ${bottles.length} sizes reviewed`;
+      : remaining
+        ? `${verified} of ${bottles.length} sizes reviewed — ${remaining} still need the OK checkbox`
+        : `${verified} of ${bottles.length} sizes reviewed — ready to continue`;
 }
 
 function setReviewPath(path) {
@@ -574,6 +618,9 @@ function renderWalkReview() {
     return;
   }
   const flaggedFirst = [...bottles].sort((a, b) => {
+    const au = a.size_verified ? 1 : 0;
+    const bu = b.size_verified ? 1 : 0;
+    if (au !== bu) return au - bu;
     const af = (a.parse_flags || []).length ? 0 : 1;
     const bf = (b.parse_flags || []).length ? 0 : 1;
     return af - bf;
@@ -777,8 +824,12 @@ function bindWalkReviewListeners() {
     }
 
     await persistBar();
-    updateWalkReviewProgress();
-    updateWalkContinueButton();
+    if (walkUnverifiedCount() === 0 && barState.setup?.walk_review_status === "pending") {
+      await setWalkReviewStatus("complete");
+    } else {
+      updateWalkReviewProgress();
+      updateWalkContinueButton();
+    }
     const row = t.closest("tr");
     if (row) row.classList.toggle("size-unverified", !bottle.size_verified);
   });
@@ -892,6 +943,284 @@ async function saveWalkDraft() {
   const text = document.getElementById("voiceNotes")?.value?.trim();
   if (text) await OSB.uploadVoiceNotes(text);
   await persistBar();
+}
+
+const COUNT_LEVEL_WORDS = {
+  one: 1,
+  two: 2,
+  too: 2,
+  to: 2,
+  three: 3,
+  four: 4,
+  for: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+  ten: 10,
+  full: 1,
+  zero: 0,
+  none: 0,
+  out: 0,
+  half: 0.5,
+};
+
+function parseCountLevel(fragment) {
+  const t = fragment.toLowerCase().replace(/[.,;:]+/g, " ").trim();
+  if (!t) return null;
+  if (/\b(point\s*five|point\s*5|0\.5|\.5|half)\b/.test(t)) return 0.5;
+  const pointTenth = t.match(/\bpoint\s*(\d)\b/);
+  if (pointTenth) return parseInt(pointTenth[1], 10) / 10;
+  if (/\bzero\b|\bnone\b|\bout\b/.test(t)) return 0;
+  for (const [word, val] of Object.entries(COUNT_LEVEL_WORDS)) {
+    if (new RegExp(`\\b${word}\\b`).test(t)) return val;
+  }
+  const num = t.match(/\b(\d+(?:\.\d+)?)\b/);
+  if (num) return Math.min(99, parseFloat(num[1]));
+  return null;
+}
+
+function countLevelOf(token) {
+  const t = (token || "").replace(/[.,;:!?]+$/, "").toLowerCase();
+  if (!t) return null;
+  if (t === "half" || t === "0.5" || t === ".5") return 0.5;
+  if (COUNT_LEVEL_WORDS[t] !== undefined) return COUNT_LEVEL_WORDS[t];
+  const num = t.match(/^(\d+(?:\.\d+)?)$/);
+  if (num) return Math.min(99, parseFloat(num[1]));
+  return null;
+}
+
+function countLevelAt(words, i) {
+  const w = words[i]?.replace(/[.,;:!?]+$/, "").toLowerCase();
+  const w2 = words[i + 1]?.replace(/[.,;:!?]+$/, "").toLowerCase();
+  if (w === "point" && w2) {
+    const combined = parseCountLevel(`point ${w2}`);
+    if (combined !== null) return { level: combined, consumed: 2 };
+  }
+  const single = countLevelOf(w);
+  if (single !== null) return { level: single, consumed: 1 };
+  return null;
+}
+
+function bottleNameInLine(line, bottleName) {
+  const lineL = line.toLowerCase();
+  const nameL = (bottleName || "").toLowerCase().trim();
+  if (!nameL) return false;
+  if (lineL.includes(nameL)) return true;
+  const tokens = nameL.split(/\s+/).filter((tok) => tok.length > 2);
+  if (!tokens.length) return lineL.includes(nameL.split(" ")[0]);
+  const hits = tokens.filter((tok) => lineL.includes(tok)).length;
+  return hits >= Math.ceil(tokens.length * 0.55);
+}
+
+function scoreCountBottleMatch(spokenName, bottle) {
+  const spoken = spokenName.toLowerCase().trim();
+  const name = (bottle.name || "").toLowerCase().trim();
+  if (!spoken || !name) return 0;
+  if (spoken === name) return 200;
+  if (spoken.includes(name) || name.includes(spoken)) return 150 + name.length;
+  const tokens = name.split(/\s+/).filter((tok) => tok.length > 2);
+  if (!tokens.length) return spoken.includes(name.split(" ")[0]) ? 80 : 0;
+  const hits = tokens.filter((tok) => spoken.includes(tok)).length;
+  if (hits < Math.ceil(tokens.length * 0.55)) return 0;
+  return 60 + hits * 10;
+}
+
+function findCountBottleMatch(spokenName, stationLabel) {
+  const clean = walkCleanName(spokenName);
+  if (!clean || clean.length < 2) return null;
+  const stationId = stationLabel ? stationIdByName(stationLabel) : null;
+  let best = null;
+  let bestScore = 0;
+  for (const b of allBottles()) {
+    if (stationId && b.stationId !== stationId) continue;
+    const score = scoreCountBottleMatch(clean, b);
+    if (score > bestScore) {
+      bestScore = score;
+      best = b;
+    }
+  }
+  if (best) return best;
+  for (const b of allBottles()) {
+    const score = scoreCountBottleMatch(clean, b);
+    if (score > bestScore) {
+      bestScore = score;
+      best = b;
+    }
+  }
+  return bestScore > 0 ? best : null;
+}
+
+function parseCountText(rawText) {
+  const words = walkNormalizeText(rawText)
+    .split(/\s+/)
+    .map((w) => w.replace(/^[,;:()"']+|[,;:()"']+$/g, ""))
+    .filter(Boolean);
+
+  const entries = [];
+  let currentStation = null;
+  let buf = [];
+
+  let i = 0;
+  while (i < words.length) {
+    const st = walkMatchStation(words, i);
+    if (st) {
+      if (buf.length) {
+        const name = walkCleanName(buf.join(" "));
+        if (name) entries.push({ name, station: currentStation, level: null });
+        buf = [];
+      }
+      currentStation = st.label;
+      i += st.consumed;
+      continue;
+    }
+    const lv = countLevelAt(words, i);
+    if (lv) {
+      const name = walkCleanName(buf.join(" "));
+      if (name) entries.push({ name, station: currentStation, level: lv.level });
+      buf = [];
+      i += lv.consumed;
+      continue;
+    }
+    buf.push(words[i]);
+    i += 1;
+  }
+  if (buf.length) {
+    const name = walkCleanName(buf.join(" "));
+    if (name) entries.push({ name, station: currentStation, level: null });
+  }
+  return entries;
+}
+
+function parseCountNotes(text) {
+  const bottles = allBottles();
+  const matchedKeys = new Set();
+  let matched = 0;
+
+  for (const b of bottles) {
+    const bottle = findBottleRecord(b.id, b.stationId);
+    if (bottle) bottle.count_matched = false;
+  }
+
+  for (const entry of parseCountText(text)) {
+    const hit = findCountBottleMatch(entry.name, entry.station);
+    if (!hit || entry.level === null) continue;
+    const bottle = findBottleRecord(hit.id, hit.stationId);
+    if (!bottle) continue;
+    const key = `${hit.stationId}:${hit.id}`;
+    bottle.current_level = entry.level;
+    bottle.count_matched = true;
+    if (!matchedKeys.has(key)) {
+      matchedKeys.add(key);
+      matched += 1;
+    }
+  }
+
+  for (const line of text.split(/\n+/).map((l) => l.trim()).filter(Boolean)) {
+    const level = parseCountLevel(line);
+    if (level === null) continue;
+    for (const b of bottles) {
+      if (!bottleNameInLine(line, b.name)) continue;
+      const bottle = findBottleRecord(b.id, b.stationId);
+      if (!bottle) continue;
+      const key = `${b.stationId}:${b.id}`;
+      if (matchedKeys.has(key)) continue;
+      bottle.current_level = level;
+      bottle.count_matched = true;
+      matchedKeys.add(key);
+      matched += 1;
+    }
+  }
+
+  return matched;
+}
+
+function setCountView(parsed) {
+  countParsed = parsed;
+  document.getElementById("countUnparsed")?.classList.toggle("hidden", parsed);
+  document.getElementById("countParsed")?.classList.toggle("hidden", !parsed);
+  if (parsed) {
+    updateCountSummary();
+    renderCountReview();
+  }
+}
+
+function updateCountSummary() {
+  const el = document.getElementById("countSummaryText");
+  if (!el) return;
+  const bottles = allBottles();
+  const entered = bottles.filter((b) => b.count_matched || (b.current_level ?? 1) !== 1).length;
+  el.textContent = `${entered} of ${bottles.length} bottles have levels — review and fix before finishing.`;
+}
+
+function renderCountReview() {
+  const body = document.getElementById("countReviewBody");
+  if (!body) return;
+  const bottles = allBottles();
+  if (!bottles.length) {
+    body.innerHTML = `<tr><td colspan="5" class="bottle-empty">No bottles on your map — go back to Review.</td></tr>`;
+    return;
+  }
+  body.innerHTML = bottles
+    .map((b) => {
+      const level = b.current_level ?? 1;
+      const status = b.count_matched
+        ? '<span class="report-ok">from notes</span>'
+        : '<span class="report-warn">set level</span>';
+      return `
+        <tr data-bottle="${b.id}" data-station="${b.stationId}">
+          <td>${escapeHtml(b.name)}</td>
+          <td>${escapeHtml(b.stationName)}</td>
+          <td>${b.par_level ?? 1}</td>
+          <td><input type="number" class="count-level-input" step="0.1" min="0" max="99" value="${level}" data-bottle="${b.id}" data-station="${b.stationId}" /></td>
+          <td>${status}</td>
+        </tr>`;
+    })
+    .join("");
+}
+
+async function processCountNotes(text) {
+  if (!text?.trim()) {
+    setStatus(`Upload a count file (${WALK_NOTES_ACCEPT_LABEL}) or paste your notes first.`);
+    return;
+  }
+  const matched = parseCountNotes(text);
+  await OSB.uploadCountNotes(text);
+  await persistBar();
+  setCountView(true);
+  setStatus(
+    matched
+      ? `Matched ${matched} bottles from your count — review levels below.`
+      : "Notes saved — set levels manually in the table below."
+  );
+}
+
+async function saveCountDraft() {
+  const text = document.getElementById("countNotes")?.value?.trim();
+  if (text) await OSB.uploadCountNotes(text);
+  await persistBar();
+}
+
+function setCountEntryOpen(open) {
+  const panel = document.getElementById("countEntryPanel");
+  const btn = document.getElementById("btnEnterCount");
+  if (panel) panel.classList.toggle("hidden", !open);
+  if (btn) btn.textContent = open ? "Hide count entry" : "Enter your count";
+}
+
+async function initCountStep(data) {
+  const countNotes = document.getElementById("countNotes");
+  const notesText = data.state?.count_notes_text || "";
+  if (countNotes) countNotes.value = notesText;
+  if (notesText.trim()) {
+    setCountEntryOpen(true);
+    parseCountNotes(notesText);
+    setCountView(true);
+  } else {
+    setCountEntryOpen(false);
+    setCountView(false);
+  }
 }
 
 async function switchWalkBar(barId) {
@@ -1430,20 +1759,248 @@ function updateWalkSummary() {
   el.textContent = `Found ${count} bottles across ${withBottles} stations`;
 }
 
-function renderReview() {
+function setReconcileNextEnabled(enabled) {
+  const btn = document.getElementById("btnReconcileNext");
+  if (btn) btn.disabled = !enabled;
+}
+
+function reconcileAuditStats(stations = sortedStations()) {
+  let flagged = 0;
+  let unverified = 0;
+  let withBottles = 0;
+  stations.forEach((s) => {
+    const bottles = s.bottles || [];
+    if (bottles.length) withBottles += 1;
+    bottles.forEach((b) => {
+      if (b.parse_flags && b.parse_flags.length) flagged += 1;
+      if (!b.size_verified) unverified += 1;
+    });
+  });
+  return {
+    stations: stations.length,
+    withBottles,
+    bottles: bottleCount(),
+    flagged,
+    unverified,
+  };
+}
+
+function renderStationAuditReport(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const stations = sortedStations().filter((s) => (s.bottles || []).length > 0);
+  const stats = reconcileAuditStats(sortedStations());
+  let html = `
+    <div class="reconcile-stat-row">
+      <span><strong>${stats.stations}</strong> stations</span>
+      <span><strong>${stats.withBottles}</strong> with bottles</span>
+      <span><strong>${stats.bottles}</strong> bottles</span>
+      <span><strong>${stats.flagged}</strong> flagged</span>
+      <span><strong>${stats.unverified}</strong> sizes to confirm</span>
+    </div>`;
+  if (!stats.bottles) {
+    html += `<div class="report-empty">No bottles mapped yet. Walk the bar or add bottles, then run reconciliation.</div>`;
+    el.innerHTML = html;
+    return;
+  }
+  for (const s of stations) {
+    const bottles = s.bottles || [];
+    html += `<div class="report-station">
+      <div class="report-station-head"><span>${escapeHtml(s.name)}</span><span class="report-count">${bottles.length}</span></div>`;
+    html += `<table class="report-table"><thead><tr><th>Bottle</th><th>Size</th><th>Category</th><th>Status</th></tr></thead><tbody>`;
+    for (const b of bottles) {
+      let status;
+      let cls;
+      if (b.parse_flags && b.parse_flags.length) {
+        status = `⚑ ${escapeHtml(b.parse_flags.join("; "))}`;
+        cls = "report-flag";
+      } else if (!b.size_verified) {
+        status = "size unconfirmed";
+        cls = "report-warn";
+      } else {
+        status = "✓ verified";
+        cls = "report-ok";
+      }
+      html += `<tr><td>${escapeHtml(b.name)}</td><td>${escapeHtml(b.size || "750ml")}</td><td>${escapeHtml(b.category || "spirits")}</td><td class="${cls}">${status}</td></tr>`;
+    }
+    html += `</tbody></table></div>`;
+  }
+  el.innerHTML = html;
+}
+
+let reviewEditorListenersBound = false;
+
+function fillReviewAddStationSelect() {
+  const sel = document.getElementById("reviewAddStation");
+  if (!sel) return;
+  sel.innerHTML = sortedStations()
+    .map((s) => `<option value="${s.id}">${escapeHtml(s.name)}</option>`)
+    .join("");
+}
+
+function toggleReviewAddBox(show) {
+  document.getElementById("reviewAddBox")?.classList.toggle("hidden", !show);
+  if (show) fillReviewAddStationSelect();
+}
+
+async function addReviewBottle() {
+  const name = document.getElementById("reviewAddName")?.value?.trim();
+  const stationId = document.getElementById("reviewAddStation")?.value;
+  const size = document.getElementById("reviewAddSize")?.value || "750ml";
+  const category = document.getElementById("reviewAddCategory")?.value || "spirits";
+  if (!name || !stationId) {
+    setStatus("Enter a product name and pick a station.");
+    return;
+  }
+  const station = barState.stations.find((s) => s.id === stationId);
+  if (!station) return;
+  if (!station.bottles) station.bottles = [];
+  station.bottles.push({
+    id: uid(),
+    name,
+    raw_heard: name,
+    category,
+    size,
+    size_verified: true,
+    par_level: 1.0,
+    current_level: 1.0,
+    cost: 0,
+  });
+  document.getElementById("reviewAddName").value = "";
+  await persistBar();
+  toggleReviewAddBox(false);
+  await renderReview();
+  setStatus(`Added ${name} to ${station.name}.`);
+}
+
+function renderReviewEditor() {
+  const el = document.getElementById("bottleGroupsReview");
+  if (!el) return;
+  const bottles = allBottles();
+
+  let rows = "";
+  if (!bottles.length) {
+    rows = `<tr><td colspan="5" class="bottle-empty">No bottles yet — use + Add bottle below.</td></tr>`;
+  } else {
+    rows = bottles
+      .map(
+        (b) => `
+      <tr data-bottle="${b.id}" data-station="${b.stationId}">
+        <td><input type="text" class="review-name" value="${escapeHtml(b.name)}" data-bottle="${b.id}" data-station="${b.stationId}" /></td>
+        <td><select class="review-station" data-bottle="${b.id}" data-station="${b.stationId}">${stationOptions(b.stationId)}</select></td>
+        <td><select class="review-size" data-bottle="${b.id}" data-station="${b.stationId}">${sizeOptions(b.size || "750ml")}</select></td>
+        <td><select class="review-cat" data-bottle="${b.id}" data-station="${b.stationId}">${categoryOptions(b.category)}</select></td>
+        <td class="review-delete-cell"><button type="button" class="row-delete" data-del-review="${b.id}" data-station="${b.stationId}" title="Remove bottle">×</button></td>
+      </tr>`
+      )
+      .join("");
+  }
+
+  el.innerHTML = `
+    <div class="review-editor-toolbar">
+      <p class="review-editor-hint"><strong>${bottles.length}</strong> bottles — edit names, move stations, change sizes, or delete rows. Saves automatically.</p>
+      <button type="button" class="btn btn-ghost btn-sm" id="btnReviewAddBottle">+ Add bottle</button>
+    </div>
+    <div class="walk-review-table-wrap review-editor-table-wrap">
+      <table class="walk-review-table" id="reviewEditTable">
+        <thead>
+          <tr>
+            <th>Product name</th>
+            <th>Station</th>
+            <th>Size</th>
+            <th>Category</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="reviewEditBody">${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function bindReviewEditorListeners() {
+  if (reviewEditorListenersBound) return;
+  reviewEditorListenersBound = true;
+
+  document.getElementById("bottleGroupsReview")?.addEventListener("click", async (e) => {
+    if (e.target.closest("#btnReviewAddBottle")) {
+      toggleReviewAddBox(true);
+      return;
+    }
+    const delBtn = e.target.closest("[data-del-review]");
+    if (!delBtn) return;
+    const section = document.querySelector('[data-step="map_review"]');
+    if (section?.classList.contains("hidden")) return;
+    const station = barState.stations.find((s) => s.id === delBtn.dataset.station);
+    if (!station?.bottles) return;
+    station.bottles = station.bottles.filter((b) => b.id !== delBtn.dataset.delReview);
+    await persistBar();
+    await renderReview();
+    setStatus("Bottle removed.");
+  });
+
+  document.getElementById("bottleGroupsReview")?.addEventListener("change", async (e) => {
+    const section = document.querySelector('[data-step="map_review"]');
+    if (section?.classList.contains("hidden")) return;
+    const t = e.target;
+    const bottleId = t.dataset.bottle;
+    const stationId = t.dataset.station;
+    if (!bottleId || !stationId) return;
+
+    if (t.classList.contains("review-station")) {
+      moveBottle(bottleId, stationId, t.value);
+      await persistBar();
+      await renderReview();
+      return;
+    }
+
+    const bottle = findBottleRecord(bottleId, stationId);
+    if (!bottle) return;
+
+    if (t.classList.contains("review-name")) bottle.name = t.value.trim() || bottle.name;
+    if (t.classList.contains("review-size")) {
+      bottle.size = t.value;
+      bottle.size_verified = true;
+    }
+    if (t.classList.contains("review-cat")) bottle.category = t.value;
+    if (bottle.parse_flags?.length) bottle.parse_flags = [];
+
+    await persistBar();
+    const statsEl = document.getElementById("reviewStats");
+    if (statsEl) {
+      const cats = new Set(allBottles().map((b) => b.category));
+      const activeStations = sortedStations().filter((s) => (s.bottles || []).length).length;
+      statsEl.innerHTML = `
+        <div class="stat-card"><div class="stat-num">${activeStations}</div><div class="stat-lbl">Stations</div></div>
+        <div class="stat-card"><div class="stat-num">${bottleCount()}</div><div class="stat-lbl">Bottles</div></div>
+        <div class="stat-card"><div class="stat-num">${cats.size}</div><div class="stat-lbl">Categories</div></div>`;
+    }
+    const hint = document.querySelector(".review-editor-hint");
+    if (hint) {
+      hint.innerHTML = `<strong>${bottleCount()}</strong> bottles — edit names, move stations, change sizes, or delete rows. Saves automatically.`;
+    }
+  });
+
+  document.getElementById("btnReviewAddConfirm")?.addEventListener("click", () => addReviewBottle());
+}
+
+async function renderReview() {
+  barState = normalizeBar(await OSB.getBar());
   const nameEl = document.getElementById("reviewBarName");
   if (nameEl) nameEl.textContent = barState.name || "your bar";
 
   const statsEl = document.getElementById("reviewStats");
   if (statsEl) {
     const cats = new Set(allBottles().map((b) => b.category));
+    const activeStations = sortedStations().filter((s) => (s.bottles || []).length).length;
     statsEl.innerHTML = `
-      <div class="stat-card"><div class="stat-num">${sortedStations().length}</div><div class="stat-lbl">Stations</div></div>
+      <div class="stat-card"><div class="stat-num">${activeStations}</div><div class="stat-lbl">Stations</div></div>
       <div class="stat-card"><div class="stat-num">${bottleCount()}</div><div class="stat-lbl">Bottles</div></div>
       <div class="stat-card"><div class="stat-num">${cats.size}</div><div class="stat-lbl">Categories</div></div>
     `;
   }
-  renderBottleGroups("bottleGroupsReview", true);
+  renderReviewEditor();
+  fillReviewAddStationSelect();
+  bindReviewEditorListeners();
 }
 
 function renderReconcilePreview() {
@@ -1454,56 +2011,46 @@ function renderReconcilePreview() {
       <span><strong>${sortedStations().length}</strong> stations</span>
       <span><strong>${bottleCount()}</strong> bottles mapped</span>
     </div>
+    <p class="field-hint">Run reconciliation to build the full audit report.</p>
   `;
+  setReconcileNextEnabled(false);
 }
 
-function renderReconcileReport() {
-  const el = document.getElementById("reconcilePreview");
-  if (!el) return;
-  const stations = sortedStations();
-  let flagged = 0;
-  let unverified = 0;
-  stations.forEach((s) =>
-    (s.bottles || []).forEach((b) => {
-      if (b.parse_flags && b.parse_flags.length) flagged += 1;
-      if (!b.size_verified) unverified += 1;
-    })
-  );
-  let html = `
-    <div class="reconcile-stat-row">
-      <span><strong>${stations.length}</strong> stations</span>
-      <span><strong>${bottleCount()}</strong> bottles</span>
-      <span><strong>${flagged}</strong> flagged</span>
-      <span><strong>${unverified}</strong> sizes to confirm</span>
-    </div>`;
-  for (const s of stations) {
-    const bottles = s.bottles || [];
-    html += `<div class="report-station">
-      <div class="report-station-head"><span>${escapeHtml(s.name)}</span><span class="report-count">${bottles.length}</span></div>`;
-    if (!bottles.length) {
-      html += `<div class="report-empty">No bottles on this station.</div>`;
-    } else {
-      html += `<table class="report-table"><thead><tr><th>Bottle</th><th>Size</th><th>Category</th><th>Status</th></tr></thead><tbody>`;
-      for (const b of bottles) {
-        let status;
-        let cls;
-        if (b.parse_flags && b.parse_flags.length) {
-          status = `⚑ ${escapeHtml(b.parse_flags.join("; "))}`;
-          cls = "report-flag";
-        } else if (!b.size_verified) {
-          status = "size unconfirmed";
-          cls = "report-warn";
-        } else {
-          status = "✓ verified";
-          cls = "report-ok";
-        }
-        html += `<tr><td>${escapeHtml(b.name)}</td><td>${escapeHtml(b.size || "750ml")}</td><td>${escapeHtml(b.category || "spirits")}</td><td class="${cls}">${status}</td></tr>`;
-      }
-      html += `</tbody></table>`;
-    }
-    html += `</div>`;
+async function runReconciliation({ quiet = false } = {}) {
+  if (!quiet) setStatus("Reconciling your walk…");
+  await persistBar();
+  const result = await OSB.reconcile();
+  renderStationAuditReport("reconcilePreview");
+  document.getElementById("reconcileExport")?.classList.remove("hidden");
+  const rb = document.getElementById("btnReconcile");
+  if (rb) rb.textContent = "Re-run reconciliation";
+  setReconcileNextEnabled(true);
+  if (!quiet) {
+    setStatus("Report ready — audit every bottle below, download a sheet if you like, then hit Next step.");
   }
-  el.innerHTML = html;
+  return result;
+}
+
+async function initReconcileStep(data) {
+  if (bottleCount() === 0 && !data.state?.voice_notes_count) {
+    renderReconcilePreview();
+    return;
+  }
+  if (data.state?.has_draft_map) {
+    renderStationAuditReport("reconcilePreview");
+    document.getElementById("reconcileExport")?.classList.remove("hidden");
+    const rb = document.getElementById("btnReconcile");
+    if (rb) rb.textContent = "Re-run reconciliation";
+    setReconcileNextEnabled(true);
+    return;
+  }
+  try {
+    await runReconciliation({ quiet: true });
+    setStatus("Reconciliation complete — audit your map below, then continue.");
+  } catch (e) {
+    renderReconcilePreview();
+    setStatus(e.message);
+  }
 }
 
 function escapeHtml(str) {
@@ -1598,8 +2145,20 @@ async function initSetup() {
   if (data.phase === "voice_walk") {
     await initWalkStep(data);
   }
-  if (data.phase === "reconcile") renderReconcilePreview();
-  if (data.phase === "map_review") renderReview();
+  if (data.phase === "reconcile") await initReconcileStep(data);
+  if (data.phase === "map_review") {
+    if (!data.state?.has_draft_map && bottleCount() > 0) {
+      try {
+        await runReconciliation({ quiet: true });
+      } catch (e) {
+        setStatus(e.message);
+      }
+    }
+    await renderReview();
+  }
+  if (data.phase === "first_count") {
+    await initCountStep(data);
+  }
 
   bindWalkReviewListeners();
 
@@ -1623,13 +2182,14 @@ async function initSetup() {
     const rBtn = e.target.closest("[data-hard-reset]");
     if (!rBtn || document.body.dataset.app !== "setup") return;
     const ok = window.confirm(
-      "Hard reset wipes this bar and all setup progress and starts over at Step 1.\n\nYour current data is backed up automatically. Continue?"
+      "Hard reset wipes this bar and all setup progress and returns you to the email signup step.\n\nYour current data is backed up automatically. Continue?"
     );
     if (!ok) return;
     try {
       rBtn.disabled = true;
       await OSB.hardReset();
-      window.location.href = "/";
+      setStatus("");
+      await initSetup();
     } catch (err) {
       rBtn.disabled = false;
       setStatus(err.message);
@@ -1642,12 +2202,20 @@ async function initSetup() {
   });
 
   document.getElementById("btnUpdatesSkip")?.addEventListener("click", async () => {
-    setUpdatesSignupStatus("skipped");
-    await advanceFromUpdatesSignup();
+    try {
+      setUpdatesSignupStatus("skipped");
+      await advanceFromUpdatesSignup();
+    } catch (err) {
+      setStatus(err.message, "updatesStatus");
+    }
   });
 
   document.getElementById("btnUpdatesContinue")?.addEventListener("click", async () => {
-    await advanceFromUpdatesSignup();
+    try {
+      await advanceFromUpdatesSignup();
+    } catch (err) {
+      setStatus(err.message, "updatesStatus");
+    }
   });
 
   document.getElementById("btnUpdatesJoin")?.addEventListener("click", async () => {
@@ -1857,7 +2425,16 @@ async function initSetup() {
 
   document.getElementById("btnWalkContinue")?.addEventListener("click", async () => {
     if (!walkReviewIsComplete()) {
-      setStatus("Review names and sizes in the table — or use Continue with defaults if you're stuck.");
+      const remaining = walkUnverifiedCount();
+      if (remaining && scrollToFirstUnverifiedWalkRow()) {
+        setStatus(
+          remaining === 1
+            ? "1 row still needs the OK checkbox — we scrolled to it. Or use “I've checked every size” / Continue with defaults."
+            : `${remaining} rows still need the OK checkbox — we scrolled to the first one.`
+        );
+      } else {
+        setStatus("Upload notes or add bottles, then review names and sizes before continuing.");
+      }
       return;
     }
     const text = document.getElementById("voiceNotes")?.value?.trim();
@@ -1881,17 +2458,11 @@ async function initSetup() {
   });
 
   document.getElementById("btnReconcile")?.addEventListener("click", async () => {
-    setStatus("Reconciling…");
     try {
-      await persistBar();
-      await OSB.reconcile();
-      renderReconcileReport();
-      document.getElementById("reconcileExport")?.classList.remove("hidden");
-      const rb = document.getElementById("btnReconcile");
-      if (rb) rb.textContent = "Re-run reconciliation";
-      setStatus("Report ready — audit every bottle below, download a sheet if you like, then hit Next step.");
+      await runReconciliation();
     } catch (e) {
       setStatus(e.message);
+      setReconcileNextEnabled(false);
     }
   });
 
@@ -1914,7 +2485,105 @@ async function initSetup() {
     await initSetup();
   });
 
+  document.getElementById("btnCountReminders")?.addEventListener("click", () => {
+    const panel = document.getElementById("countRemindersPanel");
+    const btn = document.getElementById("btnCountReminders");
+    if (!panel || !btn) return;
+    const show = panel.classList.contains("hidden");
+    panel.classList.toggle("hidden", !show);
+    btn.setAttribute("aria-expanded", show ? "true" : "false");
+    btn.textContent = show ? "Hide best practices" : "Best practices";
+  });
+
+  document.getElementById("btnEnterCount")?.addEventListener("click", () => {
+    const panel = document.getElementById("countEntryPanel");
+    const reminders = document.getElementById("countRemindersPanel");
+    const reminderBtn = document.getElementById("btnCountReminders");
+    if (!panel) return;
+    const open = panel.classList.contains("hidden");
+    setCountEntryOpen(open);
+    if (open) {
+      reminders?.classList.add("hidden");
+      if (reminderBtn) {
+        reminderBtn.setAttribute("aria-expanded", "false");
+        reminderBtn.textContent = "Best practices";
+      }
+      panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      document.getElementById("countNotes")?.focus();
+    }
+    setStatus("");
+  });
+
+  document.getElementById("btnUploadCount")?.addEventListener("click", async () => {
+    const text = document.getElementById("countNotes")?.value?.trim();
+    if (text) {
+      try {
+        await processCountNotes(text);
+      } catch (e) {
+        setStatus(e.message);
+      }
+      return;
+    }
+    document.getElementById("countNotesFile")?.click();
+  });
+
+  document.getElementById("countNotesFile")?.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!isAcceptedWalkNotesFile(file)) {
+      const ext = walkNotesExtension(file.name);
+      if (ext === "pdf") {
+        setStatus("PDF isn't supported yet — from iPhone Notes, export as Markdown or .txt instead.");
+      } else {
+        setStatus(`That file type isn't supported. Use ${WALK_NOTES_ACCEPT_LABEL} from your notes app.`);
+      }
+      e.target.value = "";
+      return;
+    }
+    try {
+      const raw = await file.text();
+      const text = normalizeUploadedWalkNotes(raw, file.name);
+      document.getElementById("countNotes").value = text;
+      await processCountNotes(text);
+    } catch {
+      setStatus(`Could not read that file — try ${WALK_NOTES_ACCEPT_LABEL} from your notes app.`);
+    }
+    e.target.value = "";
+  });
+
+  document.getElementById("btnRecount")?.addEventListener("click", () => {
+    setCountView(false);
+    document.getElementById("countNotesFile")?.click();
+  });
+
+  document.getElementById("btnCountDraft")?.addEventListener("click", async () => {
+    try {
+      await saveCountDraft();
+      setStatus("Count draft saved.");
+    } catch (e) {
+      setStatus(e.message);
+    }
+  });
+
+  document.getElementById("countReviewTable")?.addEventListener("change", async (e) => {
+    const input = e.target.closest(".count-level-input");
+    if (!input) return;
+    const bottle = findBottleRecord(input.dataset.bottle, input.dataset.station);
+    if (!bottle) return;
+    bottle.current_level = parseFloat(input.value) || 0;
+    bottle.count_matched = true;
+    await persistBar();
+    updateCountSummary();
+    const statusCell = input.closest("tr")?.querySelector("td:last-child");
+    if (statusCell) statusCell.innerHTML = '<span class="report-ok">manual</span>';
+  });
+
   document.getElementById("btnFirstCountDone")?.addEventListener("click", async () => {
+    if (!countParsed) {
+      setStatus("Upload or paste your count first, then review levels in the table.");
+      return;
+    }
+    await persistBar();
     await OSB.saveConfig({ first_count_complete: true });
     await OSB.advancePhase("butterfly");
     window.location.href = "/home";
