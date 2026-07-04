@@ -1,7 +1,7 @@
 # Open Source Barware — Handoff
 
-*Last updated: 2026-07-03 | agent: CODEX | project ID: `open-source-barware`*
-*Status: active / About sign lights removed and Ko-fi hotspot restored*
+*Last updated: 2026-07-04 | agent: REEVE | project ID: `open-source-barware`*
+*Status: LAUNCH DAY (July 4) — repo clean on `main` @ `09d3b01`, all builds pushed to origin*
 
 ## Purpose
 
@@ -269,6 +269,15 @@ Confirm scripts in `package.json` before relying on these commands.
   succeeded, the launch gate now uses `2026-07-04T12:00:00-04:00`, the popup
   shows a compact live countdown, and the release overlay auto-dismisses after
   the timer hits zero.
+- 2026-07-04 REEVE: Launch-day session wrap — recording + handoff only, no code
+  changes by Reeve. Brought this handoff current with the two commits that
+  post-dated it: `df343d2` (Dashboard: remove-product button, open-bottle
+  "tenths" visibility toggle, mid-week POS reports on the web dojo) and `09d3b01`
+  (OG share image matched to the homepage hero + SEO metadata). Committed
+  `program/SYNC_FROM_WEB_DOJO.md` — the web-dojo → downloadable-program sync brief
+  documenting the process reasoning behind the three dojo changes and asking the
+  program build to *verify/fill gaps without rebuilding* what it already has.
+  Working tree now clean; `main` pushed to origin.
 
 ## Known issues
 
