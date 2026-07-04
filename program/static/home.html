@@ -18,6 +18,7 @@
       <nav class="sidebar-nav">
         <button type="button" class="sidebar-link active" data-view="dashboard">Dashboard</button>
         <button type="button" class="sidebar-link" data-view="spreadsheets">Spreadsheets</button>
+        <button type="button" class="sidebar-link" data-view="analytics">Analytics</button>
         <button type="button" class="sidebar-link" data-view="inhouse">In-house inventory</button>
         <button type="button" class="sidebar-link" data-view="inputs">Weekly inputs</button>
         <button type="button" class="sidebar-link" data-view="settings">Settings</button>
@@ -69,6 +70,10 @@
               <strong>Spreadsheets</strong>
               <span>Full workbook — numbers, variance, costs</span>
             </button>
+            <button type="button" class="nav-card nav-card-btn" data-goto="analytics">
+              <strong>Analytics</strong>
+              <span>Program health — cost %, trends, movers</span>
+            </button>
             <button type="button" class="nav-card nav-card-btn" data-goto="inputs">
               <strong>Weekly inputs</strong>
               <span>Count, invoices, POS for this cycle</span>
@@ -84,32 +89,46 @@
       <!-- Spreadsheets -->
       <section class="admin-view hidden" data-view="spreadsheets">
         <header class="view-header">
-          <h1>Spreadsheets</h1>
-          <p>Download your live map, walk sheets, and audit workbooks — same exports as setup.</p>
+          <h1>Inventory Workbook</h1>
+          <p>Live spreadsheet view plus exports — same data as the Dojo sandbox.</p>
         </header>
         <div class="panel">
-          <h2>Walk sheets</h2>
-          <p class="field-hint">Field count sheets with blank rows per station.</p>
-          <div class="actions">
-            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=walk_csv" download>Walk sheet (.csv)</a>
+          <div class="actions actions-trio" style="margin-top:0;">
+            <a class="btn btn-primary btn-sm" href="/downloads/Bar-Inventory-Master.xlsx" download>Download workbook (.xlsx)</a>
+            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=xlsx" download>Live audit (.xlsx)</a>
             <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=walk_xlsx" download>Walk sheet (.xlsx)</a>
           </div>
         </div>
-        <div class="panel">
-          <h2>Full audit</h2>
-          <p class="field-hint">Products, stations, par levels, and current levels for spreadsheets or scripts.</p>
-          <div class="actions">
-            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=csv" download>Audit (.csv)</a>
-            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=xlsx" download>Audit (.xlsx)</a>
-            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=xml" download>Audit (.xml)</a>
-          </div>
+        <div class="workbook-tabs" id="workbookTabs" role="tablist">
+          <button type="button" class="workbook-tab active" data-sheet="dashboard">Dashboard</button>
+          <button type="button" class="workbook-tab" data-sheet="product-master">Product Master</button>
+          <button type="button" class="workbook-tab" data-sheet="count-sheet">Count Sheet</button>
+          <button type="button" class="workbook-tab" data-sheet="variance">Variance</button>
+          <button type="button" class="workbook-tab" data-sheet="order-generator">Order Generator</button>
+        </div>
+        <div class="panel workbook-panel">
+          <div id="workbookContent" class="workbook-content"></div>
         </div>
         <div class="panel">
-          <h2>Reports</h2>
-          <p class="field-hint">First-week baseline JSON — use for AI handoff or custom scripts.</p>
+          <h2>Export toolkit</h2>
+          <p class="field-hint">Same exports as caterpillar setup — audit, walk sheets, count comparison, first-week JSON.</p>
           <div class="actions">
+            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=csv" download>Audit (.csv)</a>
+            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=xml" download>Audit (.xml)</a>
+            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=walk_csv" download>Walk sheet (.csv)</a>
             <a class="btn btn-primary btn-sm" href="/api/reports/first-week" target="_blank" rel="noopener">First-week report</a>
           </div>
+        </div>
+      </section>
+
+      <!-- Analytics -->
+      <section class="admin-view hidden" data-view="analytics">
+        <header class="view-header">
+          <h1>Program Health</h1>
+          <p>Inventory analytics from your live bar map and completed cycles.</p>
+        </header>
+        <div id="analyticsRoot" class="analytics-root">
+          <p class="field-hint">Loading analytics…</p>
         </div>
       </section>
 
@@ -250,6 +269,6 @@
       </section>
     </main>
   </div>
-  <script src="/static/js/osb-app.js?v=20260704-p0-home"></script>
+  <script src="/static/js/osb-app.js?v=20260704-analytics-spreadsheets"></script>
 </body>
 </html>

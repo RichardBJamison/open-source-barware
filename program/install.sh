@@ -72,6 +72,8 @@ fetch_or_copy "static/api-guide.html"
 fetch_or_copy "static/standard-setups.html"
 fetch_or_copy "static/css/app.css"
 fetch_or_copy "static/js/osb-app.js"
+mkdir -p "$INSTALL_DIR/static/downloads"
+fetch_or_copy "static/downloads/Bar-Inventory-Master.xlsx"
 
 if [ ! -f "$INSTALL_DIR/osb_config.json" ]; then
   cp "$INSTALL_DIR/osb_config.example.json" "$INSTALL_DIR/osb_config.json"

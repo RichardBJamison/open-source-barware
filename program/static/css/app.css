@@ -2788,3 +2788,223 @@ tr.row-flagged td.raw-heard {
   cursor: not-allowed;
   filter: grayscale(0.3);
 }
+
+/* ── Analytics + workbook (butterfly) ── */
+
+.text-wine { color: var(--wine-glow); }
+.text-patina { color: var(--patina-light); }
+
+.analytics-root { margin-top: 4px; }
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.analytics-panel h2 {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 14px;
+}
+
+.analytics-panel-wide { grid-column: span 2; }
+
+.analytics-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.analytics-panel-head h2 { margin-bottom: 0; }
+
+.analytics-total {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: var(--copper-bright);
+}
+
+.analytics-gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.analytics-gauge-svg { width: 100%; max-width: 280px; }
+
+.analytics-zone-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.analytics-bar-row {
+  display: grid;
+  grid-template-columns: 88px 1fr 52px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+}
+
+.analytics-bar-label {
+  color: var(--text-light);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytics-bar-track {
+  height: 10px;
+  background: var(--bg-warm);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.analytics-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  min-width: 2px;
+}
+
+.analytics-bar-val {
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.analytics-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.analytics-donut {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.analytics-donut::after {
+  content: "";
+  position: absolute;
+  inset: 28%;
+  background: var(--bg-panel);
+  border-radius: 50%;
+}
+
+.analytics-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.78rem;
+}
+
+.analytics-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-light);
+}
+
+.analytics-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.analytics-legend-count {
+  margin-left: auto;
+  color: var(--text-muted);
+}
+
+.analytics-alert-row,
+.analytics-velocity-row,
+.analytics-trend-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(168, 120, 79, 0.12);
+  font-size: 0.84rem;
+}
+
+.analytics-alert-row {
+  background: rgba(107, 45, 60, 0.08);
+  border: 1px solid rgba(107, 45, 60, 0.2);
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.analytics-alert-meta { text-align: right; font-family: ui-monospace, monospace; font-size: 0.75rem; }
+
+.analytics-ok { color: var(--patina-light); }
+
+.workbook-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+  overflow-x: auto;
+}
+
+.workbook-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.workbook-tab:hover { color: var(--text-light); }
+
+.workbook-tab.active {
+  color: var(--copper-bright);
+  border-bottom-color: var(--copper);
+}
+
+.workbook-panel { border-top-left-radius: 0; border-top-right-radius: 0; }
+
+.review-table-wrap { overflow-x: auto; }
+
+.review-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.review-table th,
+.review-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(168, 120, 79, 0.15);
+  text-align: left;
+}
+
+.review-table th {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+.review-table tbody tr:nth-child(even) { background: rgba(8, 12, 18, 0.2); }
+
+.review-table tr.row-flag td { background: rgba(107, 45, 60, 0.08); }
+
+@media (max-width: 900px) {
+  .analytics-panel-wide { grid-column: span 1; }
+}

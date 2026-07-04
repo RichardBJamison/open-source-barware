@@ -329,6 +329,12 @@ const OSB = {
     return r.json();
   },
 
+  async getAnalytics() {
+    const r = await fetch("/api/analytics");
+    if (!r.ok) throw new Error("Could not load analytics");
+    return r.json();
+  },
+
   async getPosLog() {
     const r = await fetch("/api/pos/log");
     return r.json();
@@ -4063,6 +4069,331 @@ function renderFirstWeekPanel(firstWeek) {
   `;
 }
 
+const ANALYTICS_COLORS = ["#B87333", "#4ECDC4", "#722F37", "#D4A847", "#8B5E3C", "#6B9B8A"];
+
+function costGaugeSvg(costPct) {
+  const clamped = Math.min(Math.max(costPct, 0), 60);
+  const startAngle = Math.PI;
+  const needleAngle = startAngle - (clamped / 60) * Math.PI;
+  const cx = 140;
+  const cy = 130;
+  const radius = 100;
+  const innerRadius = 70;
+
+  function arcPath(startDeg, endDeg) {
+    const s1 = startAngle - (startDeg / 60) * Math.PI;
+    const e1 = startAngle - (endDeg / 60) * Math.PI;
+    const x1 = cx + radius * Math.cos(s1);
+    const y1 = cy - radius * Math.sin(s1);
+    const x2 = cx + radius * Math.cos(e1);
+    const y2 = cy - radius * Math.sin(e1);
+    const x3 = cx + innerRadius * Math.cos(e1);
+    const y3 = cy - innerRadius * Math.sin(e1);
+    const x4 = cx + innerRadius * Math.cos(s1);
+    const y4 = cy - innerRadius * Math.sin(s1);
+    const largeArc = endDeg - startDeg > 30 ? 1 : 0;
+    return `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+  }
+
+  const nx = cx + 85 * Math.cos(needleAngle);
+  const ny = cy - 85 * Math.sin(needleAngle);
+  const zone =
+    costPct <= 18
+      ? { text: "Low", color: "#D4A847" }
+      : costPct <= 24
+        ? { text: "Target", color: "#4ECDC4" }
+        : costPct <= 32
+          ? { text: "Warning", color: "#D4A847" }
+          : { text: "Danger", color: "#722F37" };
+
+  return `
+    <div class="analytics-gauge-wrap">
+      <svg viewBox="0 0 280 160" class="analytics-gauge-svg" aria-hidden="true">
+        <path d="${arcPath(32, 60)}" fill="#722F37" opacity="0.7" />
+        <path d="${arcPath(24, 32)}" fill="#D4A847" opacity="0.7" />
+        <path d="${arcPath(18, 24)}" fill="#4ECDC4" opacity="0.8" />
+        <path d="${arcPath(0, 18)}" fill="#D4A847" opacity="0.4" />
+        <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="var(--cream)" stroke-width="2.5" stroke-linecap="round" />
+        <circle cx="${cx}" cy="${cy}" r="6" fill="var(--copper)" />
+        <text x="${cx}" y="${cy + 25}" text-anchor="middle" fill="var(--cream)" font-size="22" font-family="serif">${costPct.toFixed(1)}%</text>
+      </svg>
+      <span class="analytics-zone-label" style="color:${zone.color}">${zone.text} Zone</span>
+    </div>`;
+}
+
+function horizontalBars(items, valueKey = "value") {
+  if (!items?.length) return `<p class="field-hint">No data yet.</p>`;
+  const max = Math.max(...items.map((i) => i[valueKey] || 0), 1);
+  return items
+    .map((item, i) => {
+      const pct = Math.round(((item[valueKey] || 0) / max) * 100);
+      const color = ANALYTICS_COLORS[i % ANALYTICS_COLORS.length];
+      const label = item.name || item.label || "";
+      const val = item[valueKey] ?? 0;
+      const display = typeof val === "number" && valueKey === "value" && val > 10 ? `$${val.toFixed(0)}` : val;
+      return `
+        <div class="analytics-bar-row">
+          <span class="analytics-bar-label">${escapeHtml(label)}</span>
+          <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+          <span class="analytics-bar-val">${display}</span>
+        </div>`;
+    })
+    .join("");
+}
+
+function donutLegend(items) {
+  if (!items?.length) return "";
+  const total = items.reduce((s, i) => s + (i.value || 0), 0) || 1;
+  let angle = 0;
+  const stops = items
+    .map((item, i) => {
+      const slice = ((item.value || 0) / total) * 360;
+      const color = ANALYTICS_COLORS[i % ANALYTICS_COLORS.length];
+      const start = angle;
+      angle += slice;
+      return `${color} ${start}deg ${angle}deg`;
+    })
+    .join(", ");
+  const legend = items
+    .slice(0, 6)
+    .map(
+      (item, i) => `
+      <div class="analytics-legend-item">
+        <span class="analytics-legend-dot" style="background:${ANALYTICS_COLORS[i % ANALYTICS_COLORS.length]}"></span>
+        <span>${escapeHtml(item.name)}</span>
+        <span class="analytics-legend-count">${item.value}</span>
+      </div>`
+    )
+    .join("");
+  return `
+    <div class="analytics-donut-wrap">
+      <div class="analytics-donut" style="background:conic-gradient(${stops})"></div>
+      <div class="analytics-legend">${legend}</div>
+    </div>`;
+}
+
+async function loadAnalytics() {
+  const root = document.getElementById("analyticsRoot");
+  if (!root) return;
+  try {
+    const a = await OSB.getAnalytics();
+    if (!a.bottle_count) {
+      root.innerHTML = `<p class="field-hint">No inventory data yet — finish your first count to see analytics.</p>`;
+      return;
+    }
+
+    const alerts = (a.variance_alerts || [])
+      .map(
+        (item) => `
+      <div class="analytics-alert-row">
+        <div>
+          <strong>${escapeHtml(item.name)}</strong>
+          <span class="field-hint">${escapeHtml(item.category)}</span>
+        </div>
+        <div class="analytics-alert-meta">
+          <span class="text-wine">${item.current.toFixed(1)} / ${item.par.toFixed(1)}</span>
+          <span class="field-hint">-${item.deficit.toFixed(1)} deficit</span>
+        </div>
+      </div>`
+      )
+      .join("");
+
+    const velocity = (a.velocity || [])
+      .map(
+        (item) => `
+      <div class="analytics-velocity-row">
+        <span>${escapeHtml(item.name)}</span>
+        <span class="${item.direction === "down" ? "text-wine" : "text-patina"}">
+          ${item.direction === "down" ? "↓" : "↑"} ${Math.abs(item.change).toFixed(2)}
+        </span>
+      </div>`
+      )
+      .join("");
+
+    const trends = (a.trend_data || [])
+      .map(
+        (t) => `
+      <div class="analytics-trend-row">
+        <span>${escapeHtml(t.date)}</span>
+        <span>${t.items} items</span>
+        <span>avg ${t.avg_level}</span>
+      </div>`
+      )
+      .join("");
+
+    root.innerHTML = `
+      <div class="analytics-grid">
+        <div class="panel analytics-panel">
+          <h2>Beverage cost %</h2>
+          ${costGaugeSvg(a.beverage_cost_pct || 0)}
+          <p class="field-hint">Target: 18–24% for spirits programs</p>
+        </div>
+        <div class="panel analytics-panel analytics-panel-wide">
+          <div class="analytics-panel-head">
+            <h2>Inventory value by category</h2>
+            <span class="analytics-total">$${(a.total_value || 0).toFixed(0)}</span>
+          </div>
+          ${horizontalBars(a.category_values)}
+        </div>
+        <div class="panel analytics-panel">
+          <h2>Category breakdown</h2>
+          ${donutLegend(a.category_distribution)}
+        </div>
+        <div class="panel analytics-panel">
+          <h2>Variance alerts</h2>
+          ${
+            alerts ||
+            `<p class="field-hint analytics-ok">✓ All items at or above par</p>`
+          }
+        </div>
+        <div class="panel analytics-panel">
+          <h2>Count trends</h2>
+          ${trends || `<p class="field-hint">Complete a count to see trends.</p>`}
+        </div>
+        <div class="panel analytics-panel">
+          <h2>Velocity — movers</h2>
+          ${velocity || `<p class="field-hint">Need 2+ cycles to calculate velocity.</p>`}
+        </div>
+      </div>`;
+  } catch (e) {
+    root.innerHTML = `<p class="status">${escapeHtml(e.message)}</p>`;
+  }
+}
+
+let workbookSheet = "dashboard";
+let workbookData = null;
+
+function renderWorkbookTable(headers, rows) {
+  if (!rows.length) return `<p class="field-hint">No rows to show.</p>`;
+  return `
+    <div class="review-table-wrap scroll-panel">
+      <table class="review-table">
+        <thead><tr>${headers.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+        <tbody>
+          ${rows
+            .map(
+              (cells) =>
+                `<tr>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderWorkbookSheet(sheet, data) {
+  if (!data?.product_rows?.length) {
+    return `<p class="field-hint">No inventory data — finish your first count.</p>`;
+  }
+
+  if (sheet === "dashboard") {
+    const rows = [
+      ["Bar name", escapeHtml(data.bar_name || "")],
+      ["Total products", String(data.bottle_count || 0)],
+      ["Stations", String(data.station_count || 0)],
+      ["Estimated value", `$${(data.total_value || 0).toFixed(2)}`],
+      ["Below par", String(data.below_par || 0)],
+      ["Cycles logged", String(data.cycles_total || 0)],
+      ["Cycle label", escapeHtml(data.cycle_label || "")],
+      [
+        "Last count",
+        data.last_count_at ? escapeHtml(data.last_count_at.slice(0, 10)) : "Never",
+      ],
+    ];
+    return renderWorkbookTable(
+      ["Metric", "Value"],
+      rows.map(([a, b]) => [a, b])
+    );
+  }
+
+  if (sheet === "product-master") {
+    return renderWorkbookTable(
+      ["Product", "Category", "Station", "Size", "Cost", "Pour", "Cost %"],
+      data.product_rows.map((r) => [
+        escapeHtml(r.name),
+        escapeHtml(r.category),
+        escapeHtml(r.station),
+        escapeHtml(r.size),
+        r.cost ? `$${r.cost.toFixed(2)}` : "—",
+        r.pour_cost ? `$${r.pour_cost.toFixed(2)}` : "—",
+        r.cost_pct ? `${r.cost_pct.toFixed(1)}%` : "—",
+      ])
+    );
+  }
+
+  if (sheet === "count-sheet") {
+    return renderWorkbookTable(
+      ["Station", "Product", "Size", "Current", "Par"],
+      data.product_rows.map((r) => [
+        escapeHtml(r.station),
+        escapeHtml(r.name),
+        escapeHtml(r.size),
+        r.current_level.toFixed(1),
+        r.par_level.toFixed(1),
+      ])
+    );
+  }
+
+  if (sheet === "variance" || sheet === "order-generator") {
+    const varianceRows = data.product_rows
+      .map((r) => {
+        const v = r.current_level - r.par_level;
+        const pct = r.par_level ? (v / r.par_level) * 100 : 0;
+        const status = v > 0.05 ? "over" : v < -0.05 ? "under" : "at";
+        return { ...r, variance: v, variancePct: pct, status };
+      })
+      .sort((a, b) => a.variance - b.variance);
+
+    const filtered =
+      sheet === "order-generator"
+        ? varianceRows.filter((r) => r.status === "under")
+        : varianceRows;
+
+    if (!filtered.length) {
+      return `<p class="field-hint">All products at or above par — no orders needed.</p>`;
+    }
+
+    if (sheet === "order-generator") {
+      return renderWorkbookTable(
+        ["Product", "Station", "Current", "Par", "Need"],
+        filtered.map((r) => [
+          escapeHtml(r.name),
+          escapeHtml(r.station),
+          r.current_level.toFixed(2),
+          r.par_level.toFixed(2),
+          `+${(r.par_level - r.current_level).toFixed(2)}`,
+        ])
+      );
+    }
+
+    return renderWorkbookTable(
+      ["Product", "Station", "Current", "Par", "Variance", "Var %", "Status"],
+      filtered.map((r) => [
+        escapeHtml(r.name),
+        escapeHtml(r.station),
+        r.current_level.toFixed(2),
+        r.par_level.toFixed(2),
+        `${r.variance >= 0 ? "+" : ""}${r.variance.toFixed(2)}`,
+        `${r.variancePct >= 0 ? "+" : ""}${r.variancePct.toFixed(0)}%`,
+        r.status === "over" ? "Over" : r.status === "under" ? "Under" : "At par",
+      ])
+    );
+  }
+
+  return "";
+}
+
+async function loadSpreadsheets() {
+  const content = document.getElementById("workbookContent");
+  if (!content) return;
+  try {
+    workbookData = await OSB.getAnalytics();
+    content.innerHTML = renderWorkbookSheet(workbookSheet, workbookData);
+  } catch (e) {
+    content.innerHTML = `<p class="status">${escapeHtml(e.message)}</p>`;
+  }
+}
+
 async function loadInHouse() {
   const cat = document.getElementById("inhouseCategory")?.value || "all";
   const data = await OSB.getInHouse(cat);
@@ -4252,13 +4583,35 @@ async function initHome() {
   document.querySelectorAll(".sidebar-link").forEach((btn) => {
     btn.addEventListener("click", async () => {
       switchAdminView(btn.dataset.view);
+      if (btn.dataset.view === "spreadsheets") await loadSpreadsheets();
+      if (btn.dataset.view === "analytics") await loadAnalytics();
       if (btn.dataset.view === "inhouse") await loadInHouse();
       if (btn.dataset.view === "inputs") await loadPosLog();
     });
   });
 
   document.querySelectorAll("[data-goto]").forEach((btn) => {
-    btn.addEventListener("click", () => switchAdminView(btn.dataset.goto));
+    btn.addEventListener("click", async () => {
+      switchAdminView(btn.dataset.goto);
+      if (btn.dataset.goto === "spreadsheets") await loadSpreadsheets();
+      if (btn.dataset.goto === "analytics") await loadAnalytics();
+      if (btn.dataset.goto === "inhouse") await loadInHouse();
+    });
+  });
+
+  document.getElementById("workbookTabs")?.addEventListener("click", async (e) => {
+    const tab = e.target.closest(".workbook-tab");
+    if (!tab) return;
+    workbookSheet = tab.dataset.sheet || "dashboard";
+    document.querySelectorAll(".workbook-tab").forEach((b) => {
+      b.classList.toggle("active", b === tab);
+    });
+    const content = document.getElementById("workbookContent");
+    if (content && workbookData) {
+      content.innerHTML = renderWorkbookSheet(workbookSheet, workbookData);
+    } else {
+      await loadSpreadsheets();
+    }
   });
 
   document.getElementById("metricsWindow")?.addEventListener("change", loadMetrics);
@@ -4308,6 +4661,8 @@ async function initHome() {
     const fresh = await OSB.getState();
     document.getElementById("settBarName").value = fresh.config.bar_name || "";
     await loadMetrics();
+    await loadAnalytics();
+    await loadSpreadsheets();
     await loadInHouse();
     await loadPosLog();
   });

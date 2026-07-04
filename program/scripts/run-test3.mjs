@@ -136,6 +136,12 @@ async function main() {
   const inhouse = await api("GET", "/api/in-house");
   assert(inhouse.ok && inhouse.data?.items?.length === 4, "in-house 4 items");
 
+  const analytics = await api("GET", "/api/analytics");
+  assert(analytics.ok, "analytics 200");
+  assert(analytics.data?.bottle_count === 4, "analytics bottle_count=4");
+  assert(Array.isArray(analytics.data?.product_rows), "analytics product_rows");
+  assert(analytics.data?.variance_alerts?.length >= 0, "analytics variance_alerts");
+
   const report = await api("GET", "/api/reports/first-week");
   assert(report.ok && report.data?.cycle?.id, "first-week report");
 
@@ -154,6 +160,14 @@ async function main() {
   assert(homeR.status === 200, "home page 200");
   assert(!homeHtml.includes("Building next."), "home spreadsheets not placeholder");
   assert(!homeHtml.includes("Weekly packet staging"), "home inputs not placeholder");
+  assert(homeHtml.includes('data-view="analytics"'), "home analytics nav");
+  assert(homeHtml.includes("workbook-tabs"), "home spreadsheet tabs");
+  assert(homeHtml.includes("Bar-Inventory-Master.xlsx"), "home workbook download link");
+
+  const wbR = await fetch(`${BASE}/downloads/Bar-Inventory-Master.xlsx`);
+  const wbBuf = Buffer.from(await wbR.arrayBuffer());
+  assert(wbR.status === 200, "workbook xlsx 200");
+  assert(wbBuf[0] === 0x50 && wbBuf[1] === 0x4b, "workbook xlsx PK header");
 
   const xlsxR = await fetch(`${BASE}/api/export/bottles?format=xlsx`);
   const xlsxBuf = Buffer.from(await xlsxR.arrayBuffer());

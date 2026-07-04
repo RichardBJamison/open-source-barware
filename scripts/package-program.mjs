@@ -29,6 +29,7 @@ const PROGRAM_FILES = [
   "start.command",
   "start-server.ps1",
   "scripts/windows-vc.ps1",
+  "static/downloads/Bar-Inventory-Master.xlsx",
   "static/setup.html",
   "static/home.html",
   "static/api-guide.html",

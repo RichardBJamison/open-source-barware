@@ -133,7 +133,8 @@ $staticFiles = @(
     "static\api-guide.html",
     "static\standard-setups.html",
     "static\css\app.css",
-    "static\js\osb-app.js"
+    "static\js\osb-app.js",
+    "static\downloads\Bar-Inventory-Master.xlsx"
 )
 
 foreach ($rel in $copyList) {

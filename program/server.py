@@ -788,6 +788,172 @@ def _metrics_for_window(cfg: dict[str, Any], window: str, custom_from: str = "",
     }
 
 
+def _pours_per_bottle(size: str) -> int:
+    s = (size or "").lower()
+    if "1.75" in s or "1750" in s:
+        return 39
+    if "1l" in s or "1000" in s or "1 l" in s:
+        return 22
+    return 17
+
+
+def _cycle_avg_level(cycle: dict[str, Any]) -> float:
+    total = 0.0
+    count = 0
+    snap = cycle.get("snapshot") or {}
+    for station in snap.get("stations", []):
+        for bottle in station.get("bottles", []):
+            total += float(bottle.get("current_level", 0.0))
+            count += 1
+    return round(total / count, 2) if count else 0.0
+
+
+def _snapshot_level_map(cycle: dict[str, Any]) -> dict[str, float]:
+    levels: dict[str, float] = {}
+    snap = cycle.get("snapshot") or {}
+    for station in snap.get("stations", []):
+        for bottle in station.get("bottles", []):
+            bid = bottle.get("id")
+            if bid:
+                levels[bid] = float(bottle.get("current_level", 0.0))
+    return levels
+
+
+def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, Any]:
+    """Program Health analytics — mirrors Dojo /inventory/analytics."""
+    state = _load_state()
+    bar_id = bar.get("id", "")
+    cycles = [c for c in state.get("cycles", []) if c.get("bar_id") == bar_id]
+
+    category_values: dict[str, float] = {}
+    category_counts: dict[str, int] = {}
+    variance_alerts: list[dict[str, Any]] = []
+    product_rows: list[dict[str, Any]] = []
+    total_value = 0.0
+    cost_weighted = 0.0
+    cost_items = 0
+
+    for station, bottle in _iter_bar_bottles(bar):
+        cost = float(bottle.get("cost", 0.0))
+        level = float(bottle.get("current_level", 1.0))
+        par = float(bottle.get("par_level", 1.0))
+        bucket = _bucket_category(str(bottle.get("category", "spirits")))
+        line_value = cost * level
+        total_value += line_value
+        category_values[bucket] = round(category_values.get(bucket, 0.0) + line_value, 2)
+        category_counts[bucket] = category_counts.get(bucket, 0) + 1
+
+        if level < par:
+            variance_alerts.append(
+                {
+                    "id": bottle.get("id"),
+                    "name": bottle.get("name"),
+                    "category": bucket,
+                    "current": level,
+                    "par": par,
+                    "deficit": round(par - level, 2),
+                }
+            )
+
+        pours = _pours_per_bottle(str(bottle.get("size", "750ml")))
+        pour_cost = cost / pours if pours and cost else 0.0
+        avg_drink = 12.0
+        cost_pct_item = (pour_cost / avg_drink) * 100 if avg_drink and pour_cost else 0.0
+        if cost > 0:
+            cost_weighted += cost_pct_item
+            cost_items += 1
+
+        product_rows.append(
+            {
+                "name": bottle.get("name"),
+                "category": bucket,
+                "station": station.get("name"),
+                "size": bottle.get("size", "750ml"),
+                "cost": cost,
+                "pour_cost": round(pour_cost, 2),
+                "cost_pct": round(cost_pct_item, 1),
+                "current_level": level,
+                "par_level": par,
+            }
+        )
+
+    variance_alerts.sort(key=lambda x: x["deficit"], reverse=True)
+
+    if cost_items:
+        beverage_cost_pct = round(cost_weighted / cost_items, 1)
+    elif total_value > 0:
+        beverage_cost_pct = round((total_value / (total_value * 4)) * 100, 1)
+    else:
+        beverage_cost_pct = 0.0
+
+    trend_data = []
+    for cycle in list(reversed(cycles[-12:])):
+        completed = cycle.get("completed_at") or ""
+        try:
+            label = datetime.fromisoformat(completed.replace("Z", "+00:00")).strftime("%b %d")
+        except ValueError:
+            label = completed[:10]
+        trend_data.append(
+            {
+                "date": label,
+                "items": cycle.get("summary", {}).get("bottles", 0),
+                "avg_level": _cycle_avg_level(cycle),
+            }
+        )
+
+    velocity: list[dict[str, Any]] = []
+    if len(cycles) >= 2:
+        latest = cycles[-1]
+        previous = cycles[-2]
+        prev_map = _snapshot_level_map(previous)
+        name_map: dict[str, str] = {}
+        for station in (latest.get("snapshot") or {}).get("stations", []):
+            for bottle in station.get("bottles", []):
+                if bottle.get("id"):
+                    name_map[bottle["id"]] = bottle.get("name", "")
+        for bid, level in _snapshot_level_map(latest).items():
+            if bid not in prev_map:
+                continue
+            change = round(level - prev_map[bid], 2)
+            if change == 0:
+                continue
+            velocity.append(
+                {
+                    "id": bid,
+                    "name": name_map.get(bid, bid),
+                    "change": change,
+                    "direction": "up" if change > 0 else "down",
+                }
+            )
+        velocity.sort(key=lambda x: abs(x["change"]), reverse=True)
+        velocity = velocity[:10]
+
+    stats = _bar_inventory_stats(bar)
+    return {
+        "bar_name": bar.get("name", ""),
+        "bottle_count": stats["bottles"],
+        "station_count": stats["stations"],
+        "total_value": round(total_value, 2),
+        "beverage_cost_pct": beverage_cost_pct,
+        "category_values": [
+            {"name": k, "value": v}
+            for k, v in sorted(category_values.items(), key=lambda x: x[1], reverse=True)
+        ],
+        "category_distribution": [
+            {"name": k, "value": v}
+            for k, v in sorted(category_counts.items(), key=lambda x: x[1], reverse=True)
+        ],
+        "variance_alerts": variance_alerts,
+        "trend_data": trend_data,
+        "velocity": velocity,
+        "product_rows": sorted(product_rows, key=lambda r: (r["category"], r["name"])),
+        "cycles_total": len(cycles),
+        "cycle_label": cfg.get("cycle", {}).get("label", "Inventory cycle"),
+        "last_count_at": cycles[-1].get("completed_at") if cycles else None,
+        "below_par": stats["below_par"],
+    }
+
+
 @app.after_request
 def _cors(resp):
     resp.headers["Access-Control-Allow-Origin"] = "*"
@@ -822,6 +988,11 @@ def api_key_help():
 @app.route("/help/standard-setups")
 def standard_setups_help():
     return send_from_directory(_STATIC, "standard-setups.html")
+
+
+@app.route("/downloads/<path:filename>")
+def program_downloads(filename: str):
+    return send_from_directory(os.path.join(_STATIC, "downloads"), filename, as_attachment=True)
 
 
 @app.route("/home")
@@ -1743,6 +1914,13 @@ def api_metrics():
     custom_from = request.args.get("from", "")
     custom_to = request.args.get("to", "")
     return jsonify(_metrics_for_window(cfg, window, custom_from, custom_to))
+
+
+@app.route("/api/analytics", methods=["GET"])
+def api_analytics():
+    cfg = _load_config()
+    bar = _load_bar()
+    return jsonify(_analytics_payload(cfg, bar))
 
 
 @app.route("/api/in-house", methods=["GET"])
