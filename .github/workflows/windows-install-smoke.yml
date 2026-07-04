@@ -1,0 +1,51 @@
+# Synthetic Windows client — no physical PC required locally.
+# Runs install.ps1 on GitHub's windows-latest VM and hits /ping.
+
+name: Windows install smoke
+
+on:
+  push:
+    paths:
+      - "program/**"
+      - ".github/workflows/windows-install-smoke.yml"
+  pull_request:
+    paths:
+      - "program/**"
+  workflow_dispatch:
+
+jobs:
+  windows-install:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run installer (silent)
+        shell: pwsh
+        run: |
+          Set-Location program
+          ./install.ps1 -Silent -SkipBrowser
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Verify /ping
+        shell: pwsh
+        run: |
+          $r = Invoke-WebRequest -Uri http://localhost:5052/ping -UseBasicParsing
+          if ($r.StatusCode -ne 200) { throw "ping failed" }
+          $body = $r.Content | ConvertFrom-Json
+          if ($body.status -ne 'ok') { throw "unexpected ping body: $($r.Content)" }
+          Write-Host "OK version=$($body.version)"
+
+      - name: Verify home page
+        shell: pwsh
+        run: |
+          $r = Invoke-WebRequest -Uri http://localhost:5052/home -UseBasicParsing
+          if ($r.StatusCode -ne 200) { throw "home failed" }
+          if ($r.Content -notmatch 'barSwitcher') { throw "home missing admin shell" }
+
+      - name: Stop server
+        shell: pwsh
+        if: always()
+        run: |
+          Get-NetTCPConnection -LocalPort 5052 -ErrorAction SilentlyContinue |
+            ForEach-Object { if ($_.OwningProcess) { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } }

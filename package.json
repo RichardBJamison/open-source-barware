@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "package:compliance": "node scripts/build-compliance-packages.mjs"
+    "package:compliance": "node scripts/build-compliance-packages.mjs",
+    "package:program": "node scripts/package-program.mjs"
   },
   "dependencies": {
     "next": "16.2.6",
