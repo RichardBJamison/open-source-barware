@@ -1873,6 +1873,129 @@ async function addReviewBottle() {
   setStatus(`Added ${name} to ${station.name}.`);
 }
 
+function isMapToolkitOpen() {
+  const panel = document.getElementById("mapToolkitPanel");
+  return panel && !panel.classList.contains("hidden");
+}
+
+function setMapToolkitOpen(open) {
+  const panel = document.getElementById("mapToolkitPanel");
+  const btn = document.getElementById("btnOpenMapToolkit");
+  if (panel) panel.classList.toggle("hidden", !open);
+  if (btn) {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    btn.textContent = open ? "Hide map tools" : "Take your map — print or download";
+  }
+  if (open) {
+    renderMapDigitalView();
+    panel?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
+function renderMapDigitalView() {
+  const el = document.getElementById("mapDigitalView");
+  if (!el) return;
+  const stations = sortedStations().filter((s) => (s.bottles || []).length);
+  if (!stations.length) {
+    el.innerHTML = `<p class="map-digital-blank">No bottles on your map yet — add products above, then come back here.</p>`;
+    return;
+  }
+  el.innerHTML = stations
+    .map((s) => {
+      const bottles = s.bottles || [];
+      const bottleRows = bottles
+        .map(
+          (b) => `
+        <div class="map-digital-bottle">
+          <span>${escapeHtml(b.name)}</span>
+          <span class="map-digital-meta">${escapeHtml(b.size || "750ml")}</span>
+        </div>`
+        )
+        .join("");
+      const blanks = [1, 2]
+        .map((n) => `<div class="map-digital-blank">Blank line ${n} — write a discovery or level</div>`)
+        .join("");
+      return `
+      <div class="map-digital-station">
+        <div class="map-digital-station-name">${escapeHtml(s.name)} <span class="map-digital-meta">(${bottles.length})</span></div>
+        ${bottleRows}
+        ${blanks}
+        <div class="map-digital-blank">+ Add a product in the editor above — it fills this section automatically</div>
+      </div>`;
+    })
+    .join("");
+}
+
+function buildMapPrintHtml() {
+  const barName = barState.name?.trim() || "Your Bar";
+  const stations = sortedStations().filter((s) => (s.bottles || []).length);
+  const stationBlocks = stations
+    .map((s) => {
+      const rows = (s.bottles || [])
+        .map(
+          (b) =>
+            `<tr><td>${escapeHtml(b.name)}</td><td>${escapeHtml(b.size || "750ml")}</td><td class="blank"></td><td class="blank"></td></tr>`
+        )
+        .join("");
+      const blanks = [1, 2]
+        .map(() => `<tr class="spacer"><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>`)
+        .join("");
+      const adds = [1, 2, 3]
+        .map(
+          (n) =>
+            `<tr class="add-row"><td>ADD product ${n}:</td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>`
+        )
+        .join("");
+      return `
+      <section class="station">
+        <h2>${escapeHtml(s.name)}</h2>
+        <table>
+          <thead><tr><th>Product</th><th>Size</th><th>Level</th><th>Notes</th></tr></thead>
+          <tbody>${rows}${blanks}${adds}</tbody>
+        </table>
+      </section>`;
+    })
+    .join("");
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>${escapeHtml(barName)} — Walk Sheet</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, serif; margin: 24px; color: #111; }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  .lead { font-size: 0.9rem; color: #444; margin-bottom: 20px; max-width: 640px; }
+  .station { page-break-inside: avoid; margin-bottom: 22px; }
+  h2 { font-size: 1.05rem; border-bottom: 2px solid #333; padding-bottom: 4px; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { border: 1px solid #999; padding: 6px 8px; text-align: left; }
+  th { background: #eee; }
+  td.blank { min-height: 28px; height: 28px; }
+  tr.spacer td { height: 22px; }
+  tr.add-row td { font-style: italic; color: #555; }
+  @media print { body { margin: 12px; } }
+</style></head><body>
+  <h1>${escapeHtml(barName)} — Inventory Walk Sheet</h1>
+  <p class="lead">Hand this to your barback. Walk station by station. Write levels in tenths. Use blank and ADD rows for bottles you find on the shelf.</p>
+  ${stationBlocks || "<p>No bottles mapped yet.</p>"}
+  <script>window.onload = function() { window.print(); }<\/script>
+</body></html>`;
+}
+
+function printMapSheet() {
+  const html = buildMapPrintHtml();
+  const win = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
+  if (!win) {
+    setStatus("Allow pop-ups to print the walk sheet, or download the .csv / .xlsx instead.");
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+}
+
+async function downloadMapExport(href) {
+  await persistBar();
+  window.location.href = href;
+}
+
 function renderReviewEditor() {
   const el = document.getElementById("bottleGroupsReview");
   if (!el) return;
@@ -2001,6 +2124,7 @@ async function renderReview() {
   renderReviewEditor();
   fillReviewAddStationSelect();
   bindReviewEditorListeners();
+  if (isMapToolkitOpen()) renderMapDigitalView();
 }
 
 function renderReconcilePreview() {
@@ -2476,6 +2600,32 @@ async function initSetup() {
     e.preventDefault();
     await persistBar();
     window.location.href = "/api/export/bottles?format=xlsx";
+  });
+
+  document.getElementById("btnOpenMapToolkit")?.addEventListener("click", () => {
+    setMapToolkitOpen(!isMapToolkitOpen());
+    setStatus("");
+  });
+
+  document.getElementById("btnMapPrint")?.addEventListener("click", async () => {
+    await persistBar();
+    printMapSheet();
+    setStatus("Print dialog opened — hand the sheet to your barback on a clipboard.");
+  });
+
+  ["btnMapExportWalkCsv", "btnMapExportWalkXlsx", "btnMapExportAuditCsv", "btnMapExportAuditXlsx"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const href = e.currentTarget.getAttribute("href");
+      if (href) await downloadMapExport(href);
+    });
+  });
+
+  document.getElementById("btnMapDigitalAdd")?.addEventListener("click", () => {
+    toggleReviewAddBox(true);
+    document.getElementById("reviewAddName")?.focus();
+    document.getElementById("reviewAddBox")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setStatus("Add a product — it lands in the map and every download updates automatically.");
   });
 
   document.getElementById("btnApproveMap")?.addEventListener("click", async () => {

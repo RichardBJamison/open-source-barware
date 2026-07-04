@@ -207,10 +207,180 @@ a { color: var(--copper-bright); }
   justify-self: start;
 }
 
-.setup-nav-trio a.btn {
+.setup-nav-trio a.btn,
+.setup-nav-trio .btn-map-toolkit {
   justify-self: center;
   text-align: center;
   text-decoration: none;
+}
+
+.btn-map-toolkit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: min(100%, 320px);
+  padding: 14px 22px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #e8fff6;
+  background: linear-gradient(135deg, rgba(74, 124, 111, 0.95), rgba(111, 168, 150, 0.85));
+  border: 1px solid var(--patina-light);
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1px rgba(111, 168, 150, 0.25),
+    0 8px 24px rgba(74, 124, 111, 0.35);
+  animation: map-toolkit-pulse 2.4s ease-in-out infinite;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-map-toolkit:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px rgba(111, 168, 150, 0.4),
+    0 10px 32px rgba(74, 124, 111, 0.45),
+    0 0 28px rgba(111, 168, 150, 0.25);
+}
+
+.btn-map-toolkit[aria-expanded="true"] {
+  animation: none;
+  background: linear-gradient(135deg, rgba(74, 124, 111, 0.75), rgba(107, 45, 60, 0.35));
+}
+
+@keyframes map-toolkit-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(111, 168, 150, 0.25),
+      0 8px 24px rgba(74, 124, 111, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(111, 168, 150, 0.45),
+      0 8px 28px rgba(74, 124, 111, 0.5),
+      0 0 22px rgba(111, 168, 150, 0.35);
+  }
+}
+
+.map-toolkit-panel {
+  margin: 20px 0 8px;
+  padding: 20px 22px;
+  background: linear-gradient(160deg, rgba(74, 124, 111, 0.12), rgba(17, 24, 34, 0.95));
+  border: 1px solid rgba(111, 168, 150, 0.35);
+  border-radius: 8px;
+}
+
+.map-toolkit-eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--patina-light);
+  margin-bottom: 6px;
+}
+
+.map-toolkit-title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  color: var(--cream);
+  margin-bottom: 10px;
+}
+
+.map-toolkit-lead {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+
+.map-toolkit-tip {
+  margin-bottom: 16px;
+}
+
+.map-toolkit-actions {
+  margin-bottom: 18px;
+}
+
+.map-download-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.map-formats-hint {
+  margin: 8px 0 12px;
+  font-size: 0.78rem;
+}
+
+.map-toolkit-digital {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.map-digital-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.map-digital-head .box-label {
+  margin: 0;
+}
+
+.map-digital-head .field-hint {
+  flex: 1 1 200px;
+  margin: 0;
+}
+
+.map-digital-view {
+  max-height: 320px;
+  padding: 4px 0;
+}
+
+.map-digital-station {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--gear-border);
+  border-radius: 6px;
+}
+
+.map-digital-station-name {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--patina-light);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.map-digital-bottle {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 0.86rem;
+  color: var(--cream);
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+}
+
+.map-digital-bottle:last-child {
+  border-bottom: none;
+}
+
+.map-digital-meta {
+  color: var(--text-light);
+  white-space: nowrap;
+}
+
+.map-digital-blank {
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 0.8rem;
+  padding: 4px 0;
+  opacity: 0.7;
 }
 
 @media (max-width: 640px) {
@@ -219,9 +389,14 @@ a { color: var(--copper-bright); }
   }
   .setup-nav-trio .btn-primary,
   .setup-nav-trio .btn-secondary:first-child,
-  .setup-nav-trio a.btn {
+  .setup-nav-trio a.btn,
+  .setup-nav-trio .btn-map-toolkit {
     justify-self: stretch;
     width: 100%;
+  }
+
+  .map-download-grid {
+    grid-template-columns: 1fr;
   }
 }
 

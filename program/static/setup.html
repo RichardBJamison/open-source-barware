@@ -448,8 +448,48 @@
           <button class="btn btn-add" id="btnReviewAddConfirm" type="button">+</button>
         </div>
       </div>
-      <div class="setup-nav">
+      <div id="mapToolkitPanel" class="map-toolkit-panel hidden" role="region" aria-label="Take your map">
+        <p class="map-toolkit-eyebrow">Don't forget your map</p>
+        <h3 class="map-toolkit-title">Take this map with you</h3>
+        <p class="map-toolkit-lead">
+          Before you count, get the map in your hands. Print it for a barback on a clipboard,
+          download a walk sheet with blank lines per station, or keep the digital view open while you dictate into Notes.
+        </p>
+        <div class="info-box map-toolkit-tip">
+          <p class="info-title">Clipboard workflow</p>
+          <p class="info-body">
+            <strong>Print the walk sheet</strong> and hand it to your barback. They walk station by station,
+            write levels in the blank rows, and hand the clipboard back. Extra blank lines in each section are for
+            bottles you discover on the shelf — or products you <strong>add</strong> here before you print.
+          </p>
+        </div>
+        <div class="map-toolkit-actions">
+          <p class="box-label">Download</p>
+          <div class="map-download-grid">
+            <a class="btn btn-secondary btn-sm" id="btnMapExportWalkCsv" href="/api/export/bottles?format=walk_csv">Walk sheet (.csv)</a>
+            <a class="btn btn-secondary btn-sm" id="btnMapExportWalkXlsx" href="/api/export/bottles?format=walk_xlsx">Walk sheet (.xlsx)</a>
+            <a class="btn btn-ghost btn-sm" id="btnMapExportAuditCsv" href="/api/export/bottles?format=csv">Full audit (.csv)</a>
+            <a class="btn btn-ghost btn-sm" id="btnMapExportAuditXlsx" href="/api/export/bottles?format=xlsx">Full audit (.xlsx)</a>
+          </div>
+          <p class="upload-formats map-formats-hint">
+            Walk sheets include <strong>2 blank lines per station</strong> for handwriting and <strong>3 "add product"</strong> rows per section.
+          </p>
+          <button class="btn btn-secondary" id="btnMapPrint" type="button">Print walk sheet</button>
+        </div>
+        <div class="map-toolkit-digital">
+          <div class="map-digital-head">
+            <p class="box-label">Digital walk view</p>
+            <p class="field-hint">Keep this on your phone while you speak into Notes — station by station.</p>
+            <button class="btn btn-ghost btn-sm" id="btnMapDigitalAdd" type="button">+ Add a product</button>
+          </div>
+          <div id="mapDigitalView" class="map-digital-view scroll-panel"></div>
+        </div>
+      </div>
+      <div class="setup-nav setup-nav-trio">
         <button class="btn btn-secondary" type="button" data-go="reconcile">← Back</button>
+        <button class="btn btn-map-toolkit" id="btnOpenMapToolkit" type="button" aria-expanded="false" aria-controls="mapToolkitPanel">
+          Take your map — print or download
+        </button>
         <button class="btn btn-primary" id="btnApproveMap" type="button">Map approved — start counting</button>
       </div>
       <div class="hard-reset-row">
@@ -563,6 +603,6 @@
 
     <p class="status" id="status"></p>
   </div>
-  <script src="/static/js/osb-app.js?v=20260704-count-walk"></script>
+  <script src="/static/js/osb-app.js?v=20260704-map-toolkit"></script>
 </body>
 </html>

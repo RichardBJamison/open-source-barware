@@ -1010,6 +1010,63 @@ _AUDIT_HEADERS = [
     "par_level", "flags", "what_we_heard", "bottle_id",
 ]
 
+_WALK_SHEET_HEADERS = [
+    "station", "product_name", "size", "level", "notes",
+]
+
+_WALK_BLANK_LINES_PER_STATION = 2
+_WALK_ADD_ROWS_PER_STATION = 3
+
+
+def _walk_sheet_rows(bar: dict[str, Any]) -> list[dict[str, str]]:
+    """Clipboard-friendly walk sheet: bottles + blank handwriting lines + add rows per station."""
+    rows: list[dict[str, str]] = []
+    bar_name = (bar.get("name") or "Bar").strip()
+    rows.append({
+        "station": f"BAR: {bar_name}",
+        "product_name": "",
+        "size": "",
+        "level": "",
+        "notes": "Walk sheet — write levels in tenths; use blank rows for discoveries",
+    })
+    for station in sorted(bar.get("stations", []), key=lambda s: s.get("order", 0)):
+        station_name = station.get("name", "")
+        bottles = station.get("bottles", [])
+        if not bottles:
+            continue
+        rows.append({
+            "station": f"▸ {station_name}",
+            "product_name": "",
+            "size": "",
+            "level": "",
+            "notes": "",
+        })
+        for b in bottles:
+            rows.append({
+                "station": station_name,
+                "product_name": b.get("name", ""),
+                "size": b.get("size", "750ml"),
+                "level": "",
+                "notes": "",
+            })
+        for _ in range(_WALK_BLANK_LINES_PER_STATION):
+            rows.append({
+                "station": station_name,
+                "product_name": "",
+                "size": "",
+                "level": "",
+                "notes": "",
+            })
+        for i in range(_WALK_ADD_ROWS_PER_STATION):
+            rows.append({
+                "station": station_name,
+                "product_name": f"ADD product {i + 1}:",
+                "size": "",
+                "level": "",
+                "notes": "",
+            })
+    return rows
+
 
 def _bottle_audit_rows(bar: dict[str, Any]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
@@ -1029,41 +1086,70 @@ def _bottle_audit_rows(bar: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
+def _export_xlsx(rows: list[dict[str, Any]], headers: list[str], sheet_title: str) -> Response:
+    from openpyxl import Workbook
+    from openpyxl.styles import Font
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = sheet_title[:31]
+    ws.append([h.replace("_", " ").title() for h in headers])
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+    for r in rows:
+        ws.append([r.get(h, "") for h in headers])
+    for i, h in enumerate(headers, start=1):
+        width = 16
+        if rows:
+            longest = max(len(str(r.get(h, ""))) + 2 for r in rows)
+            width = min(40, max(12, len(h) + 2, longest))
+        col = chr(64 + i) if i <= 26 else "A"
+        ws.column_dimensions[col].width = width
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return Response(
+        buf.read(),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
 @app.route("/api/export/bottles", methods=["GET"])
 def api_export_bottles():
-    """Full bottle-audit sheet for the setup bar — CSV or XLSX."""
+    """Full bottle-audit or clipboard walk sheet — CSV or XLSX."""
     fmt = request.args.get("format", "csv").lower()
     bar = _load_bar()
-    rows = _bottle_audit_rows(bar)
     safe = re.sub(r"[^\w\-]+", "_", bar.get("name") or "bar").strip("_") or "bar"
+
+    if fmt in ("walk_csv", "walk_sheet_csv", "walk"):
+        rows = _walk_sheet_rows(bar)
+        sbuf = io.StringIO()
+        writer = csv.writer(sbuf)
+        writer.writerow(_WALK_SHEET_HEADERS)
+        for r in rows:
+            writer.writerow([r[h] for h in _WALK_SHEET_HEADERS])
+        return Response(
+            "﻿" + sbuf.getvalue(),
+            mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={safe}_walk_sheet.csv"},
+        )
+
+    if fmt in ("walk_xlsx", "walk_sheet_xlsx", "walk_excel"):
+        rows = _walk_sheet_rows(bar)
+        try:
+            resp = _export_xlsx(rows, _WALK_SHEET_HEADERS, "Walk Sheet")
+            resp.headers["Content-Disposition"] = f"attachment; filename={safe}_walk_sheet.xlsx"
+            return resp
+        except ImportError:
+            fmt = "walk_csv"
+
+    rows = _bottle_audit_rows(bar)
 
     if fmt in ("xlsx", "xls", "excel"):
         try:
-            from openpyxl import Workbook
-            from openpyxl.styles import Font
-
-            wb = Workbook()
-            ws = wb.active
-            ws.title = "Bottle Audit"
-            ws.append([h.replace("_", " ").title() for h in _AUDIT_HEADERS])
-            for cell in ws[1]:
-                cell.font = Font(bold=True)
-            for r in rows:
-                ws.append([r[h] for h in _AUDIT_HEADERS])
-            for i, h in enumerate(_AUDIT_HEADERS, start=1):
-                width = 16
-                if rows:
-                    longest = max(len(str(r[h])) + 2 for r in rows)
-                    width = min(40, max(12, len(h) + 2, longest))
-                ws.column_dimensions[chr(64 + i)].width = width
-            buf = io.BytesIO()
-            wb.save(buf)
-            buf.seek(0)
-            return Response(
-                buf.read(),
-                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                headers={"Content-Disposition": f"attachment; filename={safe}_bottle_audit.xlsx"},
-            )
+            resp = _export_xlsx(rows, _AUDIT_HEADERS, "Bottle Audit")
+            resp.headers["Content-Disposition"] = f"attachment; filename={safe}_bottle_audit.xlsx"
+            return resp
         except ImportError:
             fmt = "csv"  # openpyxl not installed — fall back to CSV
 
