@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & Discussion
+    url: https://github.com/RichardBJamison/open-source-barware/discussions
+    about: Ask questions, share your setup, or float an idea before filing an issue.
+  - name: Website
+    url: https://opensourcebarware.com
+    about: The public site, downloads, and the Dojo sandbox.
+  - name: Security vulnerability
+    url: https://github.com/RichardBJamison/open-source-barware/security/advisories/new
+    about: Report a security issue privately (do not open a public issue).
