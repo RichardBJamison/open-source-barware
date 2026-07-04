@@ -138,13 +138,14 @@ export default function Home() {
       {/* ── THE PROBLEM ── */}
       <section className="bg-black px-6 py-14 md:py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="mb-10 text-[10px] uppercase tracking-[0.32em] text-text-light/80">
-            The Problem
-          </p>
+          <div className="flex flex-col items-center">
+            <p className="mb-5 text-[10px] uppercase tracking-[0.32em] text-text-light/80">
+              The Problem
+            </p>
+            <ProblemHourglass />
+          </div>
 
-          <ProblemHourglass />
-
-          <h2 className="mt-6 font-serif text-4xl leading-[1.08] copper-text md:text-5xl lg:text-[3.25rem]">
+          <h2 className="mt-8 font-serif text-4xl leading-[1.08] copper-text md:text-5xl lg:text-[3.25rem]">
             Every bar manager knows the drill.
           </h2>
 
@@ -346,11 +347,11 @@ function ProblemHourglass() {
   return (
     <div
       aria-hidden="true"
-      className="relative mx-auto w-full max-w-[340px] md:max-w-[380px]"
+      className="relative flex w-full max-w-[320px] flex-col items-center justify-center md:max-w-[360px]"
     >
-      {/* Warm lantern glow — fades into solid black, no hard edge */}
+      {/* Warm lantern glow — centered on the label above */}
       <div
-        className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[140%] w-[160%] -translate-x-1/2 -translate-y-[46%]"
+        className="pointer-events-none absolute left-1/2 top-[42%] z-0 h-[130%] w-[150%] -translate-x-1/2 -translate-y-1/2"
         style={{
           background:
             "radial-gradient(ellipse 50% 48% at 50% 44%, rgba(168,120,79,0.22) 0%, rgba(0,0,0,0) 68%), radial-gradient(ellipse 42% 28% at 50% 78%, rgba(190,140,86,0.18) 0%, rgba(0,0,0,0) 72%)",
@@ -362,7 +363,7 @@ function ProblemHourglass() {
         alt=""
         width={398}
         height={386}
-        className="relative z-10 mx-auto h-auto w-full brightness-[1.04] contrast-[1.06] saturate-[1.04]"
+        className="relative z-10 block h-auto w-full max-w-[300px] object-center brightness-[1.04] contrast-[1.06] saturate-[1.04] md:max-w-[340px]"
         style={{
           WebkitMaskImage:
             "radial-gradient(ellipse 72% 68% at 50% 46%, #000 52%, transparent 100%)",
