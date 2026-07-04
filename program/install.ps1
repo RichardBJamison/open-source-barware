@@ -67,7 +67,7 @@ function Stop-PortListener([int]$port) {
     } catch {}
 }
 
-Clear-Host
+if (-not $Silent) { Clear-Host }
 Write-Host ""
 Write-Host "  Open Source Barware — Windows Install"
 Write-Host "  -------------------------------------"
@@ -124,6 +124,14 @@ foreach ($rel in $staticFiles) {
     $src = Join-Path $SourceDir $rel
     if (Test-Path $src) {
         Copy-Item -Path $src -Destination (Join-Path $InstallDir $rel) -Force
+    }
+}
+$scriptsDir = Join-Path $SourceDir "scripts"
+if (Test-Path $scriptsDir) {
+    $destScripts = Join-Path $InstallDir "scripts"
+    New-Item -ItemType Directory -Force -Path $destScripts | Out-Null
+    Get-ChildItem -Path $scriptsDir -Filter "*.ps1" -File | ForEach-Object {
+        Copy-Item -Path $_.FullName -Destination (Join-Path $destScripts $_.Name) -Force
     }
 }
 Write-Step "OK Program files copied"

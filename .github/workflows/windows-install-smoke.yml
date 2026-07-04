@@ -1,5 +1,5 @@
 # Synthetic Windows client — no physical PC required locally.
-# Runs install.ps1 on GitHub's windows-latest VM and hits /ping.
+# Builds the customer zip, installs like a user, runs internal VC checklist.
 
 name: Windows install smoke
 
@@ -7,10 +7,12 @@ on:
   push:
     paths:
       - "program/**"
+      - "scripts/package-program.mjs"
       - ".github/workflows/windows-install-smoke.yml"
   pull_request:
     paths:
       - "program/**"
+      - "scripts/package-program.mjs"
   workflow_dispatch:
 
 jobs:
@@ -20,28 +22,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run installer (silent)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Build customer Windows zip
+        run: npm ci && npm run package:program
+
+      - name: Extract zip (customer path)
         shell: pwsh
         run: |
-          Set-Location program
+          $zip = "public/downloads/open-source-barware-program-win.zip"
+          $dest = "$env:RUNNER_TEMP\osb-customer"
+          Expand-Archive -Path $zip -DestinationPath $dest -Force
+          Get-ChildItem -Recurse $dest | Select-Object -First 20 FullName
+
+      - name: Run installer from extracted package (silent)
+        shell: pwsh
+        run: |
+          $pkg = Join-Path $env:RUNNER_TEMP "osb-customer\open-source-barware-program"
+          if (-not (Test-Path $pkg)) { throw "extracted package missing at $pkg" }
+          Set-Location $pkg
           ./install.ps1 -Silent -SkipBrowser
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Verify /ping
+      - name: Run internal VC checklist
         shell: pwsh
         run: |
-          $r = Invoke-WebRequest -Uri http://localhost:5052/ping -UseBasicParsing
-          if ($r.StatusCode -ne 200) { throw "ping failed" }
-          $body = $r.Content | ConvertFrom-Json
-          if ($body.status -ne 'ok') { throw "unexpected ping body: $($r.Content)" }
-          Write-Host "OK version=$($body.version)"
-
-      - name: Verify home page
-        shell: pwsh
-        run: |
-          $r = Invoke-WebRequest -Uri http://localhost:5052/home -UseBasicParsing
-          if ($r.StatusCode -ne 200) { throw "home failed" }
-          if ($r.Content -notmatch 'barSwitcher') { throw "home missing admin shell" }
+          $installDir = Join-Path $env:USERPROFILE "osb-program"
+          pwsh -NoProfile -ExecutionPolicy Bypass -File "$installDir\scripts\windows-vc.ps1" -InstallDir $installDir
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Stop server
         shell: pwsh

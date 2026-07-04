@@ -28,6 +28,7 @@ const PROGRAM_FILES = [
   "Stop.bat",
   "start.command",
   "start-server.ps1",
+  "scripts/windows-vc.ps1",
   "static/setup.html",
   "static/home.html",
   "static/api-guide.html",
