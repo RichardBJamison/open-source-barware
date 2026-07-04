@@ -6,7 +6,8 @@ export const DEFAULT_OG_IMAGE = {
   url: "/images/og-image.jpg",
   width: 1200,
   height: 630,
-  alt: "Open Source Barware — free bar inventory program built by bartenders",
+  type: "image/jpeg",
+  alt: "Bartender counting bottles behind a bar — Open Source Barware, the free bar inventory program. Bar inventory shouldn't cost you a thing.",
 };
 
 type PageSeoOptions = {

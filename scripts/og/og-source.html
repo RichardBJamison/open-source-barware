@@ -1,0 +1,104 @@
+<!doctype html>
+<!--
+  Source for public/images/og-image.jpg — the social share card.
+  Mirrors the live homepage hero. Re-render with scripts/og/build-og.sh
+-->
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0d0b09;
+    --copper-bright: #b88958;
+    --copper: #a8784f;
+    --brass: #c7a76b;
+    --cream: #f5e6c8;
+    --patina-light: #5e9e8f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; }
+  .card {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  .photo {
+    position: absolute; inset: 0;
+    background-image: url("../../public/images/hero-poster.jpg");
+    background-size: cover;
+    background-position: 72% 42%;
+  }
+  /* Legibility wash — dark on the left where the copy sits, matching the hero */
+  .wash {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(90deg, rgba(13,11,9,0.94) 0%, rgba(13,11,9,0.86) 34%, rgba(13,11,9,0.5) 62%, rgba(13,11,9,0.2) 100%),
+      linear-gradient(0deg, rgba(13,11,9,0.55) 0%, rgba(13,11,9,0) 45%);
+  }
+  .content {
+    position: absolute;
+    left: 76px; top: 0; bottom: 0;
+    display: flex; flex-direction: column; justify-content: center;
+    width: 780px;
+  }
+  .eyebrow { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
+  .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--patina-light);
+    box-shadow: 0 0 12px 2px rgba(94,158,143,0.7);
+  }
+  .rule { width: 64px; height: 1px; background: linear-gradient(90deg, var(--patina-light), transparent); }
+  .eyebrow span {
+    font-size: 15px; font-weight: 600; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--patina-light);
+  }
+  h1 {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 700;
+    font-size: 78px;
+    line-height: 1.04;
+    color: var(--cream);
+    letter-spacing: -0.5px;
+  }
+  .copper {
+    background: linear-gradient(135deg, var(--copper-bright) 0%, var(--copper) 40%, var(--brass) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .brandrow {
+    position: absolute; left: 76px; bottom: 46px;
+    display: flex; align-items: baseline; gap: 16px;
+  }
+  .wordmark {
+    font-family: "Inter", sans-serif; font-weight: 600;
+    font-size: 20px; letter-spacing: 0.12em; color: var(--copper);
+  }
+  .wordmark b { color: var(--cream); font-weight: 700; }
+  .domain { font-size: 15px; color: rgba(245,230,200,0.55); letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="photo"></div>
+    <div class="wash"></div>
+    <div class="content">
+      <div class="eyebrow">
+        <span class="dot"></span><span class="rule"></span>
+        <span>Free &amp; Open Source</span>
+      </div>
+      <h1><span class="copper">Bar inventory</span><br/>shouldn&rsquo;t cost<br/>you a thing.</h1>
+    </div>
+    <div class="brandrow">
+      <span class="wordmark">OPEN&nbsp;S <b>&lt;&gt;</b> BARWARE</span>
+      <span class="domain">opensourcebarware.com</span>
+    </div>
+  </div>
+</body>
+</html>
