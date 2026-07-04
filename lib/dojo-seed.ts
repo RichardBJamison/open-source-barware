@@ -142,6 +142,7 @@ export function createDojoSettings(): InventorySettings {
     cycleLabel: "Weekly beverage inventory",
     weekStartsOn: "Monday",
     backupReminderAccepted: true,
+    showOpenBottleTenths: true,
     notes:
       "Dojo sandbox — connect your own API key when you download the real program.",
     updatedAt: new Date().toISOString(),

@@ -71,12 +71,24 @@ export interface WeeklyInputDraft {
   updatedAt: string | null;
 }
 
+/** A single POS export dropped in mid-week to keep the system current between counts. */
+export interface PosReportEntry {
+  id: string;
+  label: string;
+  reportDate: string;
+  note: string;
+  files: StoredFileRecord[];
+  addedAt: string;
+}
+
 export interface InventorySettings {
   aiProvider: "claude" | "chatgpt" | "grok" | "other" | "";
   apiConnectionStatus: "not-started" | "needs-key" | "connected" | "blocked";
   cycleLabel: string;
   weekStartsOn: string;
   backupReminderAccepted: boolean;
+  /** Show the open-bottle tenths (e.g. 2.4) on the dashboard, or just whole bottle counts. */
+  showOpenBottleTenths: boolean;
   notes: string;
   updatedAt: string | null;
 }
@@ -87,6 +99,7 @@ export const STORAGE_KEYS = {
   bar: `${PREFIX}bar`,
   counts: `${PREFIX}counts`,
   weeklyInputs: `${PREFIX}weekly_inputs`,
+  posReports: `${PREFIX}pos_reports`,
   settings: `${PREFIX}settings`,
 } as const;
 
@@ -107,6 +120,7 @@ export const DEFAULT_INVENTORY_SETTINGS: InventorySettings = {
   cycleLabel: "Weekly beverage inventory",
   weekStartsOn: "Monday",
   backupReminderAccepted: false,
+  showOpenBottleTenths: true,
   notes: "",
   updatedAt: null,
 };
@@ -249,6 +263,23 @@ export function saveWeeklyInputDraft(draft: WeeklyInputDraft): void {
 export function clearWeeklyInputDraft(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(STORAGE_KEYS.weeklyInputs);
+}
+
+export function getPosReports(): PosReportEntry[] {
+  const reports = readJson<PosReportEntry[]>(STORAGE_KEYS.posReports);
+  return Array.isArray(reports) ? reports : [];
+}
+
+export function savePosReport(entry: PosReportEntry): void {
+  const existing = getPosReports().filter((item) => item.id !== entry.id);
+  const next = [entry, ...existing].sort((a, b) =>
+    (b.reportDate || b.addedAt).localeCompare(a.reportDate || a.addedAt)
+  );
+  writeJson(STORAGE_KEYS.posReports, next);
+}
+
+export function deletePosReport(id: string): void {
+  writeJson(STORAGE_KEYS.posReports, getPosReports().filter((item) => item.id !== id));
 }
 
 export function getInventorySettings(): InventorySettings {

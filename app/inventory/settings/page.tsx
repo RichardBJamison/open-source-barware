@@ -5,6 +5,7 @@ import {
   getBar,
   getCounts,
   getInventorySettings,
+  getPosReports,
   getWeeklyInputDraft,
   saveInventorySettings,
   type InventorySettings,
@@ -56,6 +57,7 @@ export default function InventorySettingsPage() {
       bar: getBar(),
       counts: getCounts(),
       weeklyInputs: getWeeklyInputDraft(),
+      posReports: getPosReports(),
       settings: getInventorySettings(),
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], {
@@ -202,6 +204,22 @@ export default function InventorySettingsPage() {
                   </option>
                 ))}
               </select>
+            </label>
+
+            <label className="flex items-start gap-3 border border-gear-border bg-bg/50 p-4">
+              <input
+                type="checkbox"
+                checked={settings.showOpenBottleTenths}
+                onChange={(event) =>
+                  updateSettings({ showOpenBottleTenths: event.target.checked })
+                }
+                className="mt-1"
+              />
+              <span className="text-sm text-text-muted leading-relaxed">
+                Show the open-bottle tenths on the dashboard (e.g. 2.4). Turn off
+                to show whole bottle counts only — most bars hide the open-bottle
+                portion on the home base since it changes by the hour.
+              </span>
             </label>
 
             <label className="flex items-start gap-3 border border-gear-border bg-bg/50 p-4">

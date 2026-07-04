@@ -5,10 +5,14 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import {
   EMPTY_WEEKLY_INPUT_DRAFT,
   clearWeeklyInputDraft,
+  deletePosReport,
   generateId,
   getBar,
+  getPosReports,
   getWeeklyInputDraft,
+  savePosReport,
   saveWeeklyInputDraft,
+  type PosReportEntry,
   type StoredFileRecord,
   type WeeklyInputDraft,
 } from "@/lib/inventory-store";
@@ -77,9 +81,21 @@ function fileRecords(files: FileList | null): StoredFileRecord[] {
 export default function InventoryInputsPage() {
   const hydrated = useHydrated();
   const [draftOverride, setDraftOverride] = useState<WeeklyInputDraft | null>(null);
+  const [posReportsOverride, setPosReportsOverride] = useState<PosReportEntry[] | null>(null);
   const [copyStatus, setCopyStatus] = useState("");
   const draft = draftOverride ?? (hydrated ? getWeeklyInputDraft() : EMPTY_WEEKLY_INPUT_DRAFT);
+  const posReports = posReportsOverride ?? (hydrated ? getPosReports() : []);
   const bar = hydrated ? getBar() : null;
+
+  const addPosReport = (entry: PosReportEntry) => {
+    savePosReport(entry);
+    setPosReportsOverride(getPosReports());
+  };
+
+  const removePosReport = (id: string) => {
+    deletePosReport(id);
+    setPosReportsOverride(getPosReports());
+  };
 
   const updateDraft = (patch: Partial<WeeklyInputDraft>) => {
     const next = { ...draft, ...patch };
@@ -132,10 +148,23 @@ export default function InventoryInputsPage() {
       "## POS Notes",
       draft.posNotes || "No POS notes entered.",
       "",
+      "## Mid-Week POS Reports",
+      posReports.length
+        ? posReports
+            .map((report) => {
+              const files = report.files.length
+                ? report.files.map((file) => `${file.name} (${formatBytes(file.size)})`).join(", ")
+                : "no files attached";
+              const note = report.note ? ` — ${report.note}` : "";
+              return `- ${report.reportDate || "undated"} · ${report.label || "POS report"}: ${files}${note}`;
+            })
+            .join("\n")
+        : "No mid-week POS reports logged.",
+      "",
       "Review these inputs against the approved inventory map. Ask before guessing on unreadable invoices, unclear products, bottle sizes, POS date mismatches, comps, staff drinks, breakage, or spills.",
     ];
     return sections.join("\n");
-  }, [bar, draft]);
+  }, [bar, draft, posReports]);
 
   const copyPacket = async () => {
     try {
@@ -249,6 +278,12 @@ export default function InventoryInputsPage() {
         </div>
       </section>
 
+      <MidWeekPosPanel
+        reports={posReports}
+        onAdd={addPosReport}
+        onRemove={removePosReport}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
         <TextInputPanel
           title="Count Notes"
@@ -346,6 +381,188 @@ export default function InventoryInputsPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+function MidWeekPosPanel({
+  reports,
+  onAdd,
+  onRemove,
+}: {
+  reports: PosReportEntry[];
+  onAdd: (entry: PosReportEntry) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [label, setLabel] = useState("");
+  const [reportDate, setReportDate] = useState("");
+  const [note, setNote] = useState("");
+  const [files, setFiles] = useState<StoredFileRecord[]>([]);
+
+  const stageFiles = (list: FileList | null) => {
+    const records = fileRecords(list);
+    if (records.length) setFiles((prev) => [...prev, ...records]);
+  };
+
+  const canAdd = reportDate !== "" || label.trim() !== "" || files.length > 0;
+
+  const submit = () => {
+    if (!canAdd) return;
+    onAdd({
+      id: generateId("pos"),
+      label: label.trim() || "POS report",
+      reportDate,
+      note: note.trim(),
+      files,
+      addedAt: new Date().toISOString(),
+    });
+    setLabel("");
+    setReportDate("");
+    setNote("");
+    setFiles([]);
+  };
+
+  return (
+    <section id="mid-week-pos" className="panel rounded-sm p-6 md:p-8 mb-10 scroll-mt-28">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-4">
+          <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">
+            Mid-Week POS
+          </p>
+          <h2 className="font-serif text-3xl text-cream mb-4">
+            Drop POS reports as the week runs.
+          </h2>
+          <p className="text-text-muted leading-relaxed">
+            Between full counts, add POS exports whenever you pull them. Each one
+            is dated and kept in a running log so the system stays current and the
+            AI can estimate movement without waiting for the next physical count.
+          </p>
+        </div>
+
+        <div className="lg:col-span-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <label className="flex flex-col gap-2">
+              <span className="text-xs uppercase tracking-[0.15em] text-text-light">
+                Report Date
+              </span>
+              <input
+                type="date"
+                value={reportDate}
+                onChange={(event) => setReportDate(event.target.value)}
+                className="bg-bg-warm border border-gear-border px-4 py-3 text-cream focus:outline-none focus:border-copper/60"
+              />
+            </label>
+            <label className="flex flex-col gap-2">
+              <span className="text-xs uppercase tracking-[0.15em] text-text-light">
+                Label
+              </span>
+              <input
+                value={label}
+                onChange={(event) => setLabel(event.target.value)}
+                placeholder="e.g. Tuesday close, weekend brunch"
+                className="bg-bg-warm border border-gear-border px-4 py-3 text-cream placeholder:text-text-light/50 focus:outline-none focus:border-copper/60"
+              />
+            </label>
+          </div>
+
+          <label className="block border border-dashed border-gear-border bg-bg/40 p-5 text-center cursor-pointer hover:border-copper/50 transition-colors mb-4">
+            <span className="block text-sm text-copper font-semibold tracking-wide mb-1">
+              Attach POS export
+            </span>
+            <span className="block text-xs text-text-light">
+              CSV, PDF, or spreadsheet — stays on this device.
+            </span>
+            <input
+              type="file"
+              multiple
+              accept=".pdf,.csv,.xlsx,.xls,.txt"
+              onChange={(event) => {
+                stageFiles(event.target.files);
+                event.target.value = "";
+              }}
+              className="sr-only"
+            />
+          </label>
+
+          {files.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {files.map((file) => (
+                <div
+                  key={file.id}
+                  className="flex items-center justify-between gap-3 border border-gear-border bg-bg/50 px-3 py-2"
+                >
+                  <p className="text-sm text-cream truncate">{file.name}</p>
+                  <button
+                    onClick={() => setFiles((prev) => prev.filter((f) => f.id !== file.id))}
+                    className="text-text-light hover:text-wine-glow transition-colors text-xs"
+                    aria-label={`Remove ${file.name}`}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <textarea
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="Notes: shift covered, register, anything the reconciliation should know..."
+            rows={3}
+            className="w-full bg-bg-warm border border-gear-border rounded-sm px-4 py-3 text-sm text-cream leading-relaxed placeholder:text-text-light/50 focus:outline-none focus:border-copper/60 resize-y mb-4"
+          />
+
+          <button
+            onClick={submit}
+            disabled={!canAdd}
+            className="bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-3 text-sm tracking-wide transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Add POS Report
+          </button>
+
+          <div className="mt-8">
+            <p className="text-xs uppercase tracking-[0.2em] text-text-light mb-3">
+              Logged this week ({reports.length})
+            </p>
+            {reports.length === 0 ? (
+              <p className="text-sm text-text-light italic">
+                No mid-week POS reports yet.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {reports.map((report) => (
+                  <li
+                    key={report.id}
+                    className="flex items-start justify-between gap-4 border border-gear-border bg-bg/50 px-4 py-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm text-cream">
+                        <span className="font-mono text-copper mr-2">
+                          {report.reportDate || "undated"}
+                        </span>
+                        {report.label}
+                      </p>
+                      <p className="text-[11px] text-text-light mt-1">
+                        {report.files.length
+                          ? report.files.map((file) => file.name).join(", ")
+                          : "No files attached"}
+                        {report.note ? ` · ${report.note}` : ""}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => onRemove(report.id)}
+                      className="text-text-light hover:text-wine-glow transition-colors text-xs shrink-0"
+                      aria-label={`Remove ${report.label}`}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 

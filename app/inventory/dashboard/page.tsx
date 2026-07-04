@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   generateId,
   getBar,
+  getInventorySettings,
   saveBar,
   type Bar,
   type Bottle,
@@ -50,10 +51,20 @@ function getLevelColor(status: 'good' | 'warning' | 'critical') {
 }
 
 // ── Bottle gauge bar ──
-function BottleGauge({ current, par }: { current: number; par: number }) {
+function BottleGauge({
+  current,
+  par,
+  showTenths,
+}: {
+  current: number;
+  par: number;
+  showTenths: boolean;
+}) {
   const status = getLevelStatus(current, par);
   const colors = getLevelColor(status);
   const pct = Math.min(Math.max(current * 100, 0), 100);
+  // Whole-bottle view counts every open bottle as a physical bottle on hand.
+  const readout = showTenths ? current.toFixed(1) : String(Math.ceil(current));
 
   return (
     <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -78,7 +89,7 @@ function BottleGauge({ current, par }: { current: number; par: number }) {
         />
       </div>
       <span className={`text-xs font-mono w-8 text-right ${colors.text}`}>
-        {current.toFixed(1)}
+        {readout}
       </span>
     </div>
   );
@@ -99,6 +110,7 @@ export default function DashboardPage() {
   const [barOverride, setBarOverride] = useState<Bar | null>(null);
   const [expandedStations, setExpandedStations] = useState<Set<string>>(new Set());
   const bar = barOverride ?? (hydrated ? getBar() : null);
+  const showTenths = hydrated ? getInventorySettings().showOpenBottleTenths : true;
   const allBottles = useMemo(() => (bar ? bar.stations.flatMap((s) => s.bottles) : []), [bar]);
 
   if (!hydrated) {
@@ -144,6 +156,21 @@ export default function DashboardPage() {
       else next.add(id);
       return next;
     });
+  };
+
+  const removeBottle = (stationId: string, bottle: Bottle) => {
+    if (!bar) return;
+    if (!window.confirm(`Remove "${bottle.name}" from the map? This cannot be undone.`)) return;
+    const updated = {
+      ...bar,
+      stations: bar.stations.map((s) =>
+        s.id === stationId
+          ? { ...s, bottles: s.bottles.filter((b) => b.id !== bottle.id) }
+          : s
+      ),
+    };
+    saveBar(updated);
+    setBarOverride(updated);
   };
 
   return (
@@ -287,8 +314,23 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Gauge */}
-                        <div className="sm:w-3/5">
-                          <BottleGauge current={bottle.currentLevel} par={bottle.parLevel} />
+                        <div className="sm:w-3/5 flex items-center gap-3">
+                          <BottleGauge
+                            current={bottle.currentLevel}
+                            par={bottle.parLevel}
+                            showTenths={showTenths}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeBottle(station.id, bottle)}
+                            aria-label={`Remove ${bottle.name}`}
+                            title={`Remove ${bottle.name}`}
+                            className="shrink-0 text-text-light hover:text-wine-glow transition-colors p-1 -mr-1"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                              <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H6a1 1 0 01-1-1V6M10 11v6M14 11v6" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
                     );
