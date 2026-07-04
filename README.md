@@ -9,6 +9,8 @@
 
 Open Source Barware is a free, open-source bar inventory project for hospitality teams. It includes the public Next.js site, browser-based inventory sandbox, downloadable spreadsheet/prompt assets, and the in-progress local Chrome-side program under `program/`.
 
+> **OSB is free forever.** If it saved you a barback shift, [buy the project a beer ☕](https://ko-fi.com/W2J022HCH2). Every bit funds more tools for hospitality teams.
+
 ## What is included
 
 - `app/` and `components/` - the public Next.js App Router site.
