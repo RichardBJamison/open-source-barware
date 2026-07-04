@@ -2492,3 +2492,60 @@ tr.row-flagged td.raw-heard {
   font-size: 0.76rem;
   color: var(--text-light);
 }
+
+.count-reconcile-actions {
+  margin-top: 12px;
+}
+
+.count-reconcile-stations {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.count-reconcile-station {
+  padding: 14px 16px;
+  background: rgba(17, 24, 34, 0.6);
+  border: 1px solid rgba(168, 120, 79, 0.2);
+  border-radius: 8px;
+}
+
+.count-reconcile-station-needs {
+  border-color: rgba(107, 45, 60, 0.45);
+  background: linear-gradient(160deg, rgba(107, 45, 60, 0.12), rgba(17, 24, 34, 0.85));
+}
+
+.count-reconcile-station-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.count-reconcile-station-name {
+  font-weight: 600;
+  color: var(--cream);
+  font-size: 0.95rem;
+}
+
+.count-reconcile-station-score {
+  font-size: 0.78rem;
+  color: var(--patina-light);
+}
+
+.count-reconcile-station-label {
+  margin: 10px 0 4px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+.count-reconcile-station-ok {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--patina-light);
+}

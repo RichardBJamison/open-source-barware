@@ -1219,29 +1219,97 @@ function reconcileCountToMap(parsedEntries) {
     });
   }
 
+  const countedStationIds = new Set();
+  for (const entry of parsedEntries) {
+    if (!entry.station) continue;
+    const sid = stationIdByName(entry.station);
+    if (sid) countedStationIds.add(sid);
+  }
+
   for (const b of allBottles()) {
     const key = `${b.stationId}:${b.id}`;
-    if (!mapUsed.has(key)) {
-      notInCount.push({
-        bottle: b,
-        message: `${b.name} (${b.stationName}) — on your map but not in this count.`,
-      });
-    }
+    if (mapUsed.has(key)) continue;
+    if (countedStationIds.size && !countedStationIds.has(b.stationId)) continue;
+    notInCount.push({
+      bottle: b,
+      message: `${b.name} — on your map but not in this count.`,
+    });
   }
+
+  const stationBuckets = buildStationReconcileBuckets({
+    matched,
+    notInCount,
+    surprises,
+    countedStationIds,
+  });
 
   return {
     matched,
     notInCount,
     surprises,
-    hasIssues: notInCount.length > 0 || surprises.length > 0,
-    summary: buildCountReconcileSummary(matched, notInCount, surprises),
+    countedStationIds: [...countedStationIds],
+    stationBuckets,
+    hasIssues: surprises.length > 0 || notInCount.length > 0,
+    needsMapReconcile: surprises.some((s) => s.reason !== "no_level"),
+    summary: buildCountReconcileSummary(matched, notInCount, surprises, countedStationIds.size),
   };
 }
 
-function buildCountReconcileSummary(matched, notInCount, surprises) {
-  const parts = [`${matched.length} matched to your map`];
-  if (notInCount.length) parts.push(`${notInCount.length} on map but not counted`);
-  if (surprises.length) parts.push(`${surprises.length} need reconciliation`);
+function buildStationReconcileBuckets({ matched, notInCount, surprises, countedStationIds }) {
+  const buckets = new Map();
+
+  function ensure(stationName, stationId = null) {
+    const key = stationId || stationName || "unknown";
+    if (!buckets.has(key)) {
+      buckets.set(key, {
+        stationName: stationName || "Unknown station",
+        stationId,
+        matched: [],
+        missing: [],
+        surprises: [],
+        mapTotal: 0,
+      });
+    }
+    return buckets.get(key);
+  }
+
+  for (const sid of countedStationIds) {
+    const st = sortedStations().find((s) => s.id === sid);
+    if (st) {
+      const bucket = ensure(st.name, st.id);
+      bucket.mapTotal = (st.bottles || []).length;
+    }
+  }
+
+  for (const m of matched) {
+    const label = m.entry.station || m.bottle.stationName;
+    const sid = m.entry.station ? stationIdByName(m.entry.station) : m.bottle.stationId;
+    ensure(label, sid).matched.push(m);
+  }
+
+  for (const s of surprises) {
+    const label = s.entry.station || "Unknown station";
+    const sid = s.entry.station ? stationIdByName(s.entry.station) : null;
+    ensure(label, sid).surprises.push(s);
+  }
+
+  for (const m of notInCount) {
+    const bucket = ensure(m.bottle.stationName, m.bottle.stationId);
+    bucket.missing.push(m);
+    if (!bucket.mapTotal) {
+      const st = sortedStations().find((s) => s.id === m.bottle.stationId);
+      bucket.mapTotal = (st?.bottles || []).length;
+    }
+  }
+
+  return [...buckets.values()].sort((a, b) => a.stationName.localeCompare(b.stationName));
+}
+
+function buildCountReconcileSummary(matched, notInCount, surprises, stationsCounted = 0) {
+  const parts = [`${matched.length} matched`];
+  if (stationsCounted) parts.push(`${stationsCounted} station${stationsCounted === 1 ? "" : "s"} in this count`);
+  if (notInCount.length) parts.push(`${notInCount.length} missing from those stations`);
+  if (surprises.length) parts.push(`${surprises.length} to reconcile on the map`);
   return parts.join(" · ");
 }
 
@@ -1267,54 +1335,67 @@ function renderCountReconcileReport(report) {
     return;
   }
 
+  const actionCount = report.surprises.length + report.notInCount.length;
+
   let html = `
     <div class="count-reconcile-alert">
-      <p class="count-reconcile-head"><strong>Wait — your count doesn't match your map.</strong></p>
-      <p class="count-reconcile-lead">Shelves change. Bartenders grab bottles. This is normal — reconcile before you lock the baseline.</p>
+      <p class="count-reconcile-head"><strong>Reconciliation report</strong></p>
+      <p class="count-reconcile-lead">
+        We matched everything we could against the wells you counted. Below is what still doesn't line up —
+        <strong>${actionCount} item${actionCount === 1 ? "" : "s"} need you</strong> before this baseline locks.
+      </p>
       <p class="count-reconcile-stats">${escapeHtml(report.summary)}</p>
+      <div class="count-reconcile-actions">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnGoReconcileMap">Go reconcile in Review →</button>
+      </div>
     </div>`;
 
-  if (report.surprises.length) {
-    html += `<div class="count-reconcile-section">
-      <p class="box-label">Not on your map — reconcile first</p>
-      <ul class="count-reconcile-list">`;
-    for (const s of report.surprises) {
-      const station = s.entry.station ? ` · ${escapeHtml(s.entry.station)}` : "";
-      html += `<li class="count-reconcile-surprise">
-        <span>${escapeHtml(s.message)}</span>
-        <span class="count-reconcile-meta">Heard: "${escapeHtml(s.entry.name)}"${station} · level ${s.entry.level ?? "?"}</span>
-      </li>`;
+  if (report.stationBuckets?.length) {
+    html += `<div class="count-reconcile-stations">`;
+    for (const bucket of report.stationBuckets) {
+      const done = bucket.matched.length;
+      const total = bucket.mapTotal || done + bucket.missing.length;
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      const needsWork = bucket.surprises.length + bucket.missing.length;
+      html += `
+      <div class="count-reconcile-station${needsWork ? " count-reconcile-station-needs" : ""}">
+        <div class="count-reconcile-station-head">
+          <span class="count-reconcile-station-name">${escapeHtml(bucket.stationName)}</span>
+          <span class="count-reconcile-station-score">${done}/${total} matched (${pct}%)</span>
+        </div>`;
+
+      if (bucket.surprises.length) {
+        html += `<p class="count-reconcile-station-label">Add or fix on your map</p><ul class="count-reconcile-list">`;
+        for (const s of bucket.surprises) {
+          html += `<li class="count-reconcile-surprise">
+            <span>${escapeHtml(s.message)}</span>
+            <span class="count-reconcile-meta">Heard: "${escapeHtml(s.entry.name)}" · level ${s.entry.level ?? "?"}</span>
+          </li>`;
+        }
+        html += `</ul>`;
+      }
+
+      if (bucket.missing.length) {
+        html += `<p class="count-reconcile-station-label">On your map — not in this count</p><ul class="count-reconcile-list">`;
+        for (const m of bucket.missing) {
+          html += `<li class="count-reconcile-missing">${escapeHtml(m.message)}</li>`;
+        }
+        html += `</ul>`;
+      }
+
+      if (bucket.matched.length && !bucket.surprises.length && !bucket.missing.length) {
+        html += `<p class="count-reconcile-station-ok">✓ This station lines up — levels applied below.</p>`;
+      }
+
+      html += `</div>`;
     }
-    html += `</ul></div>`;
+    html += `</div>`;
   }
 
-  if (report.notInCount.length) {
-    html += `<div class="count-reconcile-section">
-      <p class="box-label">On your map — not in this count</p>
-      <ul class="count-reconcile-list">`;
-    for (const m of report.notInCount) {
-      html += `<li class="count-reconcile-missing">${escapeHtml(m.message)}</li>`;
-    }
-    html += `</ul></div>`;
-  }
-
-  if (report.matched.length) {
-    html += `<div class="count-reconcile-section">
-      <p class="box-label">Matched — levels applied</p>
-      <ul class="count-reconcile-list count-reconcile-matched-list">`;
-    for (const m of report.matched) {
-      const cross = m.crossStation
-        ? ` · <em>matched outside ${escapeHtml(m.entry.station || "station")}</em>`
-        : "";
-      html += `<li class="count-reconcile-matched">
-        <span>${escapeHtml(m.bottle.name)}</span>
-        <span class="count-reconcile-meta">${escapeHtml(m.bottle.stationName)} · heard "${escapeHtml(m.entry.name)}" · ${m.level}${cross}</span>
-      </li>`;
-    }
-    html += `</ul></div>`;
-  }
-
-  html += `<p class="count-reconcile-foot">Fix surprises in <strong>Review</strong> (add/remove bottles), or set levels manually below, then finish.</p>`;
+  html += `<p class="count-reconcile-foot">
+    <strong>What to do:</strong> Open Review to add bottles you found on the shelf, remove ones that moved,
+    or re-upload this count after you fix the gaps. Stations you didn't count yet won't appear here.
+  </p>`;
   el.classList.remove("hidden");
   el.innerHTML = html;
 }
@@ -3134,6 +3215,14 @@ async function initSetup() {
     updateCountSummary();
     const statusCell = input.closest("tr")?.querySelector("td:last-child");
     if (statusCell) statusCell.innerHTML = '<span class="report-ok">manual</span>';
+  });
+
+  document.getElementById("countReconcileReport")?.addEventListener("click", async (e) => {
+    if (!e.target.closest("#btnGoReconcileMap")) return;
+    await persistBar();
+    await OSB.advancePhase("map_review");
+    await initSetup();
+    setStatus("Review your map — add surprises, remove what's gone, then come back to Count.");
   });
 
   document.getElementById("btnFirstCountDone")?.addEventListener("click", async () => {
