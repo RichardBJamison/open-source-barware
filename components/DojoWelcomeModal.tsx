@@ -4,26 +4,13 @@ import { useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Caveat } from "next/font/google";
 import { AppButton } from "@/components/AppUI";
 import { markDojoWelcomeSeen, seedDojoPlayground } from "@/lib/dojo";
-
-const penHand = Caveat({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
 
 interface DojoWelcomeModalProps {
   open: boolean;
   onClose: () => void;
 }
-
-const ARMORY = [
-  "Rapier-like shock-batons",
-  "Clockwork gauntlets",
-  "Spring-loaded wrist blasters",
-  "Rhythmic opponents",
-] as const;
 
 const HOUSE_RULES = [
   "No live steel in the well",
@@ -57,19 +44,21 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
       role="dialog"
       aria-modal="true"
       aria-labelledby="salle-welcome-title"
+      aria-describedby="salle-welcome-desc"
     >
       <div
-        className="salle-welcome-backdrop absolute inset-0 bg-black/82 backdrop-blur-sm"
+        className="salle-welcome-backdrop absolute inset-0 bg-black/88 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
 
       <div
-        className="salle-popup relative z-10 w-full max-w-lg"
+        className="salle-popup relative z-10 w-full max-w-md sm:max-w-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="salle-sign-glow" aria-hidden="true" />
         <div className="salle-sign-glow salle-sign-glow-outer" aria-hidden="true" />
+
         <div className="salle-popup-frame">
           <FrameRivet className="salle-frame-rivet-tl" />
           <FrameRivet className="salle-frame-rivet-tr" />
@@ -77,70 +66,27 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
           <FrameRivet className="salle-frame-rivet-br" />
 
           <div className="salle-popup-inner salle-welcome-scroll">
-            <div className="salle-sign-board">
+            <div className="salle-entrance">
               <Image
-                src="/images/salle-darmes-popup.jpg"
-                alt="Salle d'Armes — steampunk fencing academy sign"
-                width={832}
-                height={1248}
+                src="/images/salle-darmes-entrance.jpg"
+                alt="Salle d'Armes entrance — clockwork fencing academy with wall sign and open doors"
+                width={834}
+                height={1024}
                 priority
-                className="salle-sign-board-img"
+                className="salle-entrance-img"
               />
-              <div
-                className={`salle-sign-rules ${penHand.className}`}
-                aria-labelledby="salle-house-rules-title"
-              >
-                <p id="salle-house-rules-title" className="salle-sign-rules-title">
-                  House Rules
-                </p>
-                <ul className="salle-sign-rules-list">
-                  {HOUSE_RULES.map((rule) => (
-                    <li key={rule}>{rule}</li>
-                  ))}
-                </ul>
-              </div>
             </div>
 
-            <div className="salle-popup-body">
-              <div className="salle-scroll-armory" aria-label="Training equipment">
-                {ARMORY.map((item) => (
-                  <span key={item} className="salle-scroll-chip">
-                    {item}
-                  </span>
-                ))}
-              </div>
+            <div className="sr-only" id="salle-welcome-desc">
+              Welcome to the Fencing Academy, a refined Salle d&apos;Armes where
+              gentlemanly combat meets the clockwork arts. House Rules:{" "}
+              {HOUSE_RULES.join("; ")}. Sandbox playground with demo data.
+            </div>
 
-              <div className="salle-scroll-copy salle-popup-copy">
-                <p>
-                  Beneath the brass and theatrics, this is still the finished
-                  butterfly — not the caterpillar setup crawl. Out in the wild you
-                  walk voice notes, station maps, checks, and gates until your bar
-                  is built. <strong>Here</strong> is what it looks like when the
-                  automata stop arguing.
-                </p>
-                <p>
-                  Click the dashboard. Run a count. Poke weekly inputs. Adjust
-                  settings like a duelist who has never heard of &ldquo;read-only.&rdquo;
-                  Break nothing that matters — demo data only, reset anytime from
-                  settings.
-                </p>
-                <p className="salle-scroll-quip">
-                  En garde. Or don&apos;t. The bottles aren&apos;t fighting back.
-                </p>
-              </div>
-
-              <p className="salle-scroll-links">
-                Ready for the real build path? Read{" "}
-                <Link href="/the-process" className="salle-scroll-link">
-                  the process
-                </Link>{" "}
-                or{" "}
-                <Link href="/downloads" className="salle-scroll-link">
-                  download the program
-                </Link>
-                . The gauntlets stay fancier in your imagination either way.
+            <div className="salle-entrance-actions">
+              <p className="salle-entrance-quip">
+                Demo data only. Poke the dashboard, break nothing that matters.
               </p>
-
               <div className="salle-scroll-actions">
                 <AppButton variant="secondary" onClick={onClose} className="salle-scroll-btn">
                   Observe from the Gallery
@@ -149,9 +95,14 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
                   {entering ? "Winding the Automata..." : "Salute & Enter the Salle"}
                 </AppButton>
               </div>
-
-              <p className="salle-scroll-fine">
-                No rapiers were harmed · demo data only · parry responsibly
+              <p className="salle-scroll-links">
+                <Link href="/the-process" className="salle-scroll-link">
+                  The process
+                </Link>
+                {" · "}
+                <Link href="/downloads" className="salle-scroll-link">
+                  Download the program
+                </Link>
               </p>
             </div>
 
