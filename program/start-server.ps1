@@ -6,6 +6,7 @@ $PORT = 5052
 $venvPython = Join-Path $InstallDir ".venv\Scripts\python.exe"
 $serverPy = Join-Path $InstallDir "server.py"
 $logPath = Join-Path $InstallDir "data\osb_server.log"
+$logErr = Join-Path $InstallDir "data\osb_server.err"
 
 if (-not (Test-Path $serverPy)) {
     Write-Host "ERROR: Run Install.bat first."
@@ -30,13 +31,13 @@ if (-not (Test-Path $venvPython)) {
 
 if ($Background) {
     Start-Process -FilePath $venvPython -ArgumentList "`"$serverPy`"" -WorkingDirectory $InstallDir `
-        -WindowStyle Hidden -RedirectStandardOutput $logPath -RedirectStandardError $logPath
+        -WindowStyle Hidden -RedirectStandardOutput $logPath -RedirectStandardError $logErr
     exit 0
 }
 
 Write-Host "Starting Open Source Barware..."
 Start-Process -FilePath $venvPython -ArgumentList "`"$serverPy`"" -WorkingDirectory $InstallDir `
-    -NoNewWindow -RedirectStandardOutput $logPath -RedirectStandardError $logPath
+    -NoNewWindow -RedirectStandardOutput $logPath -RedirectStandardError $logErr
 
 $ok = $false
 for ($i = 0; $i -lt 20; $i++) {

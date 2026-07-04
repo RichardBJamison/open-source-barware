@@ -186,9 +186,10 @@ try {
 Write-Step "[6/7] Starting server..."
 Stop-PortListener -port $PORT
 $logPath = Join-Path $InstallDir "data\osb_server.log"
+$logErr = Join-Path $InstallDir "data\osb_server.err"
 $serverPy = Join-Path $InstallDir "server.py"
 Start-Process -FilePath $venvPython -ArgumentList "`"$serverPy`"" -WorkingDirectory $InstallDir `
-    -WindowStyle Hidden -RedirectStandardOutput $logPath -RedirectStandardError $logPath
+    -WindowStyle Hidden -RedirectStandardOutput $logPath -RedirectStandardError $logErr
 
 if (-not (Wait-ForPing 25)) {
     Write-Host "  ERROR: Server did not respond on http://localhost:$PORT/ping"

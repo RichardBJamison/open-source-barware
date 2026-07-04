@@ -104,12 +104,13 @@ Add-Check "VC-09" "Login startup shortcut registered" {
     "OK"
 }
 
-Add-Check "VC-10" "Server log file writable" {
+Add-Check "VC-10" "Server log files present" {
     $log = Join-Path $InstallDir "data\osb_server.log"
-    if (-not (Test-Path $log)) { throw "log missing" }
-    $len = (Get-Item $log).Length
-    if ($len -lt 1) { throw "log empty" }
-    "$len bytes"
+    $err = Join-Path $InstallDir "data\osb_server.err"
+    if (-not (Test-Path $log)) { throw "stdout log missing" }
+    $total = (Get-Item $log).Length + $(if (Test-Path $err) { (Get-Item $err).Length } else { 0 })
+    if ($total -lt 1) { throw "logs empty" }
+    "$total bytes"
 }
 
 $failed = @($checks | Where-Object { -not $_.Pass })
