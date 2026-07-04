@@ -51,6 +51,12 @@
           </div>
           <p id="metricsBounds" class="field-hint" style="margin-top:8px;"></p>
           <div id="metricsGrid" class="metrics-grid"></div>
+          <p id="metricsNotes" class="field-hint" style="margin-top:12px;"></p>
+        </div>
+        <div class="panel" id="firstWeekPanel">
+          <h2>First week baseline</h2>
+          <p id="firstWeekSummary" class="field-hint" style="margin-top:0;">Loads after your first completed count.</p>
+          <div id="firstWeekGrid" class="metrics-grid"></div>
         </div>
         <div class="panel">
           <h2>Quick links</h2>
@@ -75,40 +81,87 @@
         </div>
       </section>
 
-      <!-- Spreadsheets placeholder -->
+      <!-- Spreadsheets -->
       <section class="admin-view hidden" data-view="spreadsheets">
         <header class="view-header">
           <h1>Spreadsheets</h1>
-          <p>Full workbook view — products, locations, par, counts, variance. (Building next.)</p>
+          <p>Download your live map, walk sheets, and audit workbooks — same exports as setup.</p>
         </header>
-        <div class="panel placeholder-panel">
-          <p>Your approved bar map and cycle data will drive the live workbook here.</p>
+        <div class="panel">
+          <h2>Walk sheets</h2>
+          <p class="field-hint">Field count sheets with blank rows per station.</p>
+          <div class="actions">
+            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=walk_csv" download>Walk sheet (.csv)</a>
+            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=walk_xlsx" download>Walk sheet (.xlsx)</a>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Full audit</h2>
+          <p class="field-hint">Products, stations, par levels, and current levels for spreadsheets or scripts.</p>
+          <div class="actions">
+            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=csv" download>Audit (.csv)</a>
+            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=xlsx" download>Audit (.xlsx)</a>
+            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=xml" download>Audit (.xml)</a>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Reports</h2>
+          <p class="field-hint">First-week baseline JSON — use for AI handoff or custom scripts.</p>
+          <div class="actions">
+            <a class="btn btn-primary btn-sm" href="/api/reports/first-week" target="_blank" rel="noopener">First-week report</a>
+          </div>
         </div>
       </section>
 
-      <!-- In-house placeholder -->
+      <!-- In-house inventory -->
       <section class="admin-view hidden" data-view="inhouse">
         <header class="view-header">
           <h1>In-house inventory</h1>
-          <p>Category rooms: liquor, beer, wine, mixers — dry goods reserved for later.</p>
+          <p id="inhouseNote">What is on hand after your last count — grouped by category.</p>
         </header>
-        <div class="nav-grid">
-          <div class="nav-card"><strong>Liquor</strong><span>Coming soon</span></div>
-          <div class="nav-card"><strong>Beer</strong><span>Coming soon</span></div>
-          <div class="nav-card"><strong>Wine</strong><span>Coming soon</span></div>
-          <div class="nav-card"><strong>Mixers</strong><span>Coming soon</span></div>
-          <div class="nav-card"><strong>Dry goods</strong><span>Reserved</span></div>
+        <div class="panel">
+          <div class="row" style="margin-top:0;">
+            <div>
+              <label for="inhouseCategory">Category room</label>
+              <select id="inhouseCategory">
+                <option value="all">All categories</option>
+                <option value="liquor">Liquor</option>
+                <option value="beer">Beer</option>
+                <option value="wine">Wine</option>
+                <option value="mixers">Mixers</option>
+              </select>
+            </div>
+          </div>
+          <div id="inhouseTotals" class="metrics-grid" style="margin-top:16px;"></div>
+          <div id="inhouseTable" class="review-table-wrap" style="margin-top:16px;"></div>
         </div>
       </section>
 
-      <!-- Weekly inputs placeholder -->
+      <!-- Weekly inputs -->
       <section class="admin-view hidden" data-view="inputs">
         <header class="view-header">
           <h1>Weekly inputs</h1>
-          <p>Count, invoice pictures, and POS downloads for the active cycle window.</p>
+          <p>Drop POS terminal receipts through the week — dated, labeled, kept until the next count.</p>
         </header>
-        <div class="panel placeholder-panel">
-          <p>Weekly packet staging builds in the next slice.</p>
+        <div class="panel">
+          <h2>Add POS report</h2>
+          <label for="posLabel">Label</label>
+          <input id="posLabel" type="text" placeholder="e.g. Tuesday close" />
+          <label for="posNote">Note (optional)</label>
+          <input id="posNote" type="text" placeholder="Toast export, Square, etc." />
+          <label for="posFile">POS file (.csv, .txt, .tsv)</label>
+          <input id="posFile" type="file" accept=".csv,.txt,.tsv,.json,text/csv,text/plain" />
+          <label for="posPaste">Or paste receipt text</label>
+          <textarea id="posPaste" rows="4" placeholder="Paste POS export text if you do not have a file"></textarea>
+          <div class="actions">
+            <button type="button" class="btn btn-primary" id="btnPosUpload">Save POS drop</button>
+          </div>
+          <p id="posStatus" class="status"></p>
+        </div>
+        <div class="panel">
+          <h2>Mid-week POS log</h2>
+          <p class="field-hint">Multiple uploads stack here until your next physical count closes the cycle.</p>
+          <div id="posLogList" class="bars-list"></div>
         </div>
       </section>
 
@@ -197,6 +250,6 @@
       </section>
     </main>
   </div>
-  <script src="/static/js/osb-app.js"></script>
+  <script src="/static/js/osb-app.js?v=20260704-butterfly"></script>
 </body>
 </html>

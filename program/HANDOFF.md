@@ -1,7 +1,7 @@
 # OSB Chrome Program — Handoff
 
 *Updated: 2026-07-04 ~15:40 EDT | agent: GROK | project ID: `open-source-barware`*  
-*Status: **in-progress** — caterpillar complete; **butterfly is next (P0 for 6pm ship)***
+*Status: **in-progress** — caterpillar ✅ · butterfly P0 ✅ · Test 3 ✅ · version `0.3.0-butterfly-2026-07-04`*
 
 ## Nexus pickup
 
@@ -25,34 +25,31 @@ Website `/inventory` = Dojo sandbox only. Real product = this folder.
 |-------|------|--------|
 | `welcome` … `map_review` | 1–6 | ✅ **Locked** — do not rework UX |
 | `first_count` | 7 | ✅ Parser + reconcile + golden gate |
-| `butterfly` | Home admin | ❌ **Shell only** — see gaps below |
+| `butterfly` | Home admin | ✅ **P0 shipped** — see below |
 
 ---
 
-## Critical gap (root cause)
+## Butterfly (shipped 2026-07-04)
 
-`btnFirstCountDone` sets `first_count_complete` + redirects to `/home`, but:
+- Cycle close on `first_count_complete` → `program_state.json` `cycles[]`
+- Live `/api/metrics` + first-week panel on dashboard
+- `/api/in-house` + category table UI
+- Spreadsheets panel — export download links
+- Weekly inputs — POS upload log (`/api/pos/log`)
+- `/api/reports/first-week`
+- `node scripts/run-test3.mjs` — **PASS**
 
-- `state.json` → `cycles[]` is **never written**
-- `_metrics_for_window()` returns placeholder nulls
-- `/api/in-house` returns empty `items`
-- `home.html` spreadsheets + weekly inputs = placeholders
-
-Levels **are** saved on bottles via `POST /api/bar` (`current_level`). Butterfly does not read them yet.
+**Cache bust:** `osb-app.js?v=20260704-butterfly` on `home.html`
 
 ---
 
-## P0 build list (6pm deadline)
+## Remaining (post-P0)
 
-1. Cycle close on `first_count_complete` → `cycles[0]` snapshot  
-2. Real metrics in `_metrics_for_window()`  
-3. `/api/in-house` + in-house UI  
-4. Spreadsheets panel — wire existing export APIs  
-5. Weekly inputs — POS upload log (store + list; parse later)  
-6. `install.sh` — full file copy + `requirements.txt`  
-7. `scripts/run-test3.mjs` — E2E API test through butterfly  
-
-Details: Nexus `SHIP-GAP-AND-TEST3-2026-07-04.md`
+1. Full browser walk-through (welcome → home) on real dictation  
+2. POS parse / mid-week inventory estimate  
+3. Variance / usage metrics (needs POS reconcile)  
+4. Whole-bottle display toggle (`SYNC_FROM_WEB_DOJO.md`)  
+5. Dojo sandbox parity
 
 ---
 

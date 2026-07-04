@@ -11,6 +11,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import math
 import os
 import re
 import uuid
@@ -20,7 +21,7 @@ from typing import Any
 
 from flask import Flask, Response, jsonify, redirect, request, send_from_directory
 
-VERSION = "0.2.0-demo-2026-07-01"
+VERSION = "0.3.0-butterfly-2026-07-04"
 PORT = int(os.environ.get("PORT", "5052"))
 DEMO_MODE = os.environ.get("OSB_DEMO_MODE", "1") != "0"
 
@@ -38,6 +39,7 @@ _CONFIG_FILE = (
 _STATE_FILE = os.path.join(_DATA, "program_state.json")
 _BAR_FILE = os.path.join(_DATA, "bar_data.json")
 _BARS_FILE = os.path.join(_DATA, "bars.json")
+_POS_DIR = os.path.join(_DATA, "pos")
 
 PHASES = (
     "welcome",
@@ -445,6 +447,172 @@ def _bar_bottle_count(bar: dict[str, Any]) -> int:
     return sum(len(s.get("bottles", [])) for s in bar.get("stations", []))
 
 
+def _bucket_category(category: str) -> str:
+    c = (category or "spirits").lower().strip()
+    if any(k in c for k in ("beer", "ipa", "lager", "ale")):
+        return "beer"
+    if "wine" in c or "champagne" in c or "prosecco" in c:
+        return "wine"
+    if "mixer" in c or c in ("soda", "juice", "tonic", "syrup"):
+        return "mixers"
+    return "liquor"
+
+
+def _iter_bar_bottles(bar: dict[str, Any]):
+    for station in bar.get("stations", []):
+        for bottle in station.get("bottles", []):
+            yield station, bottle
+
+
+def _empty_category_totals() -> dict[str, Any]:
+    return {
+        "liquor": {"sku_count": 0, "on_hand_units": 0.0},
+        "beer": {"sku_count": 0, "on_hand_units": 0.0},
+        "wine": {"sku_count": 0, "on_hand_units": 0.0},
+        "mixers": {"sku_count": 0, "on_hand_units": 0.0},
+        "dry_goods": {"sku_count": 0, "on_hand_units": 0, "reserved": True},
+    }
+
+
+def _bar_inventory_stats(bar: dict[str, Any]) -> dict[str, Any]:
+    below_par = 0
+    flagged = 0
+    total_units = 0.0
+    categories = _empty_category_totals()
+    for _station, bottle in _iter_bar_bottles(bar):
+        level = float(bottle.get("current_level", 1.0))
+        par = float(bottle.get("par_level", 1.0))
+        total_units += level
+        if level < par:
+            below_par += 1
+        if bottle.get("parse_flags"):
+            flagged += 1
+        bucket = _bucket_category(str(bottle.get("category", "spirits")))
+        categories[bucket]["sku_count"] += 1
+        categories[bucket]["on_hand_units"] = round(
+            categories[bucket]["on_hand_units"] + level, 2
+        )
+    return {
+        "stations": len(bar.get("stations", [])),
+        "bottles": _bar_bottle_count(bar),
+        "below_par": below_par,
+        "flagged": flagged,
+        "total_units": round(total_units, 2),
+        "categories": categories,
+    }
+
+
+def _bar_snapshot(bar: dict[str, Any]) -> dict[str, Any]:
+    stations: list[dict[str, Any]] = []
+    for station in bar.get("stations", []):
+        stations.append(
+            {
+                "id": station.get("id"),
+                "name": station.get("name"),
+                "type": station.get("type"),
+                "bottles": [
+                    {
+                        "id": b.get("id"),
+                        "name": b.get("name"),
+                        "category": b.get("category"),
+                        "size": b.get("size"),
+                        "par_level": float(b.get("par_level", 1.0)),
+                        "current_level": float(b.get("current_level", 1.0)),
+                    }
+                    for b in station.get("bottles", [])
+                ],
+            }
+        )
+    return {"stations": stations}
+
+
+def _pos_log_file(bar_id: str) -> str:
+    safe = re.sub(r"[^a-zA-Z0-9_-]", "", bar_id or "default")
+    return os.path.join(_POS_DIR, f"{safe}_pos.json")
+
+
+def _load_pos_log(bar_id: str) -> dict[str, Any]:
+    return _read_json(_pos_log_file(bar_id), {"bar_id": bar_id, "entries": []})
+
+
+def _save_pos_log(bar_id: str, log: dict[str, Any]) -> dict[str, Any]:
+    os.makedirs(_POS_DIR, exist_ok=True)
+    log["bar_id"] = bar_id
+    log["updated_at"] = _now()
+    _write_json(_pos_log_file(bar_id), log)
+    return log
+
+
+def _close_cycle(bar: dict[str, Any], cfg: dict[str, Any]) -> dict[str, Any]:
+    bounds = _cycle_bounds(cfg, offset=0)
+    stats = _bar_inventory_stats(bar)
+    state = _load_state()
+    cycles = list(state.get("cycles", []))
+    cycle = {
+        "id": _uid("cycle-"),
+        "bar_id": bar.get("id"),
+        "bar_name": bar.get("name", ""),
+        "cycle_number": len(cycles) + 1,
+        "period_start": bounds["period_start"],
+        "period_end": bounds["period_end"],
+        "completed_at": _now(),
+        "summary": {
+            "stations": stats["stations"],
+            "bottles": stats["bottles"],
+            "matched": stats["bottles"],
+            "surprises": 0,
+            "not_in_count": 0,
+            "below_par": stats["below_par"],
+            "flagged": stats["flagged"],
+            "total_units": stats["total_units"],
+        },
+        "categories": stats["categories"],
+        "snapshot": _bar_snapshot(bar),
+    }
+    cycles.append(cycle)
+    _save_state({"cycles": cycles})
+    return cycle
+
+
+def _cycles_in_window(cycles: list[dict[str, Any]], bounds: dict[str, Any]) -> list[dict[str, Any]]:
+    start = bounds.get("period_start", "")
+    end = bounds.get("period_end", "")
+    if not start or not end:
+        return cycles
+    matched: list[dict[str, Any]] = []
+    for cycle in cycles:
+        completed = (cycle.get("completed_at") or "")[:10]
+        if start <= completed <= end:
+            matched.append(cycle)
+    return matched
+
+
+def _in_house_items(bar: dict[str, Any], category: str = "all") -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    for station, bottle in _iter_bar_bottles(bar):
+        bucket = _bucket_category(str(bottle.get("category", "spirits")))
+        if category not in ("all", "", bucket):
+            continue
+        level = float(bottle.get("current_level", 1.0))
+        items.append(
+            {
+                "id": bottle.get("id"),
+                "name": bottle.get("name"),
+                "category": bucket,
+                "raw_category": bottle.get("category", "spirits"),
+                "size": bottle.get("size", "750ml"),
+                "station_id": station.get("id"),
+                "station_name": station.get("name"),
+                "current_level": level,
+                "par_level": float(bottle.get("par_level", 1.0)),
+                "whole_bottles": math.ceil(level) if level > 0 else 0,
+                "below_par": level < float(bottle.get("par_level", 1.0)),
+            }
+        )
+    items.sort(key=lambda x: (x["category"], x["station_name"], x["name"]))
+    return items
+
+
 def _bar_to_draft_map(bar: dict[str, Any]) -> dict[str, Any]:
     locations = []
     blank_slots: list[dict[str, Any]] = []
@@ -539,8 +707,13 @@ def _cycle_bounds(cfg: dict[str, Any], offset: int = 0) -> dict[str, str]:
 
 
 def _metrics_for_window(cfg: dict[str, Any], window: str, custom_from: str = "", custom_to: str = "") -> dict[str, Any]:
-    """Stub metrics — structure is real; data fills in as cycles complete."""
-    cycles = _load_state().get("cycles", [])
+    """Live metrics from bar inventory + completed cycles."""
+    state = _load_state()
+    all_cycles = state.get("cycles", [])
+    bar = _load_bar()
+    bar_id = bar.get("id", "")
+    bar_cycles = [c for c in all_cycles if c.get("bar_id") == bar_id]
+    stats = _bar_inventory_stats(bar)
     interval = int(cfg.get("cycle", {}).get("interval_days", 7))
 
     if window == "custom" and custom_from and custom_to:
@@ -561,31 +734,57 @@ def _metrics_for_window(cfg: dict[str, Any], window: str, custom_from: str = "",
     else:
         bounds = _cycle_bounds(cfg, offset=0)
 
+    window_cycles = _cycles_in_window(bar_cycles, bounds)
+    last_cycle = bar_cycles[-1] if bar_cycles else None
+    first_cycle = bar_cycles[0] if bar_cycles else None
+    has_data = bool(bar_cycles) or stats["bottles"] > 0
+
+    summary: dict[str, Any] = {
+        "usage_value": None,
+        "purchase_value": None,
+        "variance_value": None,
+        "variance_pct": None,
+        "items_below_par": stats["below_par"],
+        "items_flagged": stats["flagged"],
+        "bottle_count": stats["bottles"],
+        "station_count": stats["stations"],
+        "total_units": stats["total_units"],
+        "pos_uploads": len(_load_pos_log(bar_id).get("entries", [])),
+        "betterments": [],
+        "sales_trend": "flat",
+        "notes": (
+            f"Baseline locked — {stats['bottles']} bottles across {stats['stations']} stations."
+            if has_data
+            else "Complete your first count to populate metrics."
+        ),
+    }
+
+    if last_cycle:
+        summary["last_cycle_number"] = last_cycle.get("cycle_number")
+        summary["last_cycle_bottles"] = last_cycle.get("summary", {}).get("bottles")
+
+    first_week: dict[str, Any] | None = None
+    if first_cycle:
+        first_week = {
+            "cycle_number": first_cycle.get("cycle_number", 1),
+            "completed_at": first_cycle.get("completed_at"),
+            "period_start": first_cycle.get("period_start"),
+            "period_end": first_cycle.get("period_end"),
+            "summary": first_cycle.get("summary", {}),
+            "categories": first_cycle.get("categories", {}),
+        }
+
     return {
         "window": window,
         "bounds": bounds,
         "cycle_label": cfg.get("cycle", {}).get("label", "Inventory cycle"),
         "interval_days": interval,
-        "cycles_in_window": len(cycles),
-        "last_inventory_at": cycles[-1]["completed_at"] if cycles else None,
-        "summary": {
-            "usage_value": None,
-            "purchase_value": None,
-            "variance_value": None,
-            "variance_pct": None,
-            "items_below_par": 0,
-            "items_flagged": 0,
-            "betterments": [],
-            "sales_trend": "flat",
-            "notes": "Metrics populate after the first completed cycle.",
-        },
-        "categories": {
-            "liquor": {"sku_count": 0, "on_hand_units": 0},
-            "beer": {"sku_count": 0, "on_hand_units": 0},
-            "wine": {"sku_count": 0, "on_hand_units": 0},
-            "mixers": {"sku_count": 0, "on_hand_units": 0},
-            "dry_goods": {"sku_count": 0, "on_hand_units": 0, "reserved": True},
-        },
+        "cycles_in_window": len(window_cycles),
+        "cycles_total": len(bar_cycles),
+        "last_inventory_at": last_cycle["completed_at"] if last_cycle else None,
+        "summary": summary,
+        "categories": stats["categories"],
+        "first_week": first_week,
     }
 
 
@@ -692,6 +891,7 @@ def api_state():
 @app.route("/api/config", methods=["POST"])
 def api_config():
     body = request.get_json(force=True) or {}
+    cycle_closed: dict[str, Any] | None = None
     allowed = {
         "bar_name",
         "ai_provider",
@@ -745,6 +945,13 @@ def api_config():
     if body.get("first_count_complete"):
         bar = _load_bar()
         _save_bar_setup(bar["id"], {"first_count_complete": True})
+        cfg_now = _load_config()
+        state = _load_state()
+        existing = [
+            c for c in state.get("cycles", []) if c.get("bar_id") == bar.get("id")
+        ]
+        if not existing:
+            cycle_closed = _close_cycle(bar, cfg_now)
         patch["first_count_complete"] = True
         patch["setup_bar_id"] = ""
         patch["phase"] = "butterfly"
@@ -758,7 +965,10 @@ def api_config():
     public = {k: cfg.get(k) for k in allowed if k in cfg}
     public["ai_api_key_set"] = cfg.get("ai_api_key_set")
     public["api_connection_status"] = cfg.get("api_connection_status")
-    return jsonify({"status": "saved", "config": public})
+    resp: dict[str, Any] = {"status": "saved", "config": public}
+    if cycle_closed:
+        resp["cycle"] = cycle_closed
+    return jsonify(resp)
 
 
 @app.route("/api/phase/advance", methods=["POST"])
@@ -1522,7 +1732,7 @@ def api_select_setup_bar():
     return jsonify({"status": "ok", "bar": bar})
 
 
-# ── Butterfly stubs ───────────────────────────────────────────────────────────
+# ── Butterfly (home base) ─────────────────────────────────────────────────────
 
 @app.route("/api/metrics", methods=["GET"])
 def api_metrics():
@@ -1536,19 +1746,151 @@ def api_metrics():
 @app.route("/api/in-house", methods=["GET"])
 def api_in_house():
     category = request.args.get("category", "all")
+    bar = _load_bar()
+    state = _load_state()
+    bar_cycles = [c for c in state.get("cycles", []) if c.get("bar_id") == bar.get("id")]
+    last_at = bar_cycles[-1]["completed_at"] if bar_cycles else None
+    items = _in_house_items(bar, category)
+    totals = _bar_inventory_stats(bar)
     return jsonify(
         {
             "category": category,
-            "last_reconciled_at": None,
-            "items": [],
-            "note": "In-house inventory populates after first reconciled cycle.",
+            "bar_id": bar.get("id"),
+            "bar_name": bar.get("name", ""),
+            "last_reconciled_at": last_at,
+            "item_count": len(items),
+            "totals": totals,
+            "items": items,
+            "note": (
+                f"{len(items)} products on hand after last count."
+                if items
+                else "Complete your first count to populate in-house inventory."
+            ),
         }
     )
 
 
 @app.route("/api/cycles", methods=["GET"])
 def api_cycles():
-    return jsonify({"cycles": _load_state().get("cycles", [])})
+    cfg = _load_config()
+    bar_id = request.args.get("bar_id") or cfg.get("active_bar_id", "")
+    cycles = _load_state().get("cycles", [])
+    if bar_id:
+        cycles = [c for c in cycles if c.get("bar_id") == bar_id]
+    return jsonify({"cycles": cycles, "bar_id": bar_id})
+
+
+@app.route("/api/reports/first-week", methods=["GET"])
+def api_reports_first_week():
+    cfg = _load_config()
+    bar_id = request.args.get("bar_id") or cfg.get("active_bar_id", "")
+    cycles = [
+        c for c in _load_state().get("cycles", []) if c.get("bar_id") == bar_id
+    ]
+    if not cycles:
+        return jsonify({"error": "No completed cycle yet — finish your first count."}), 404
+    first = cycles[0]
+    bar = _load_bar(bar_id or None)
+    return jsonify(
+        {
+            "report": "first-week",
+            "bar_id": bar_id,
+            "bar_name": bar.get("name", ""),
+            "cycle": first,
+            "generated_at": _now(),
+        }
+    )
+
+
+@app.route("/api/pos/log", methods=["GET"])
+def api_pos_log_list():
+    cfg = _load_config()
+    bar_id = cfg.get("active_bar_id") or _setup_bar_id(cfg)
+    log = _load_pos_log(bar_id)
+    return jsonify(log)
+
+
+@app.route("/api/pos/log", methods=["POST"])
+def api_pos_log_add():
+    cfg = _load_config()
+    bar_id = cfg.get("active_bar_id") or _setup_bar_id(cfg)
+    body = request.get_json(silent=True) or {} if request.is_json else {}
+    label = (request.form.get("label") or body.get("label") or "").strip()
+    note = (request.form.get("note") or body.get("note") or "").strip()
+    if request.is_json:
+        text_body = (body.get("text") or "").strip()
+        if text_body and not request.files:
+            os.makedirs(os.path.join(_POS_DIR, "files"), exist_ok=True)
+            fname = f"{_uid('pos-')}.txt"
+            fpath = os.path.join(_POS_DIR, "files", fname)
+            with open(fpath, "w", encoding="utf-8") as fh:
+                fh.write(text_body)
+            entry = {
+                "id": _uid("pos-"),
+                "label": label or "POS drop",
+                "note": note,
+                "filename": fname,
+                "original_name": "paste.txt",
+                "uploaded_at": _now(),
+                "size_bytes": len(text_body.encode("utf-8")),
+            }
+            log = _load_pos_log(bar_id)
+            log.setdefault("entries", []).insert(0, entry)
+            _save_pos_log(bar_id, log)
+            return jsonify({"status": "saved", "entry": entry})
+
+    upload = request.files.get("file")
+    if not upload or not upload.filename:
+        return jsonify({"error": "POS file or pasted text required."}), 400
+    if not label:
+        label = upload.filename.rsplit(".", 1)[0] or "POS drop"
+
+    os.makedirs(os.path.join(_POS_DIR, "files"), exist_ok=True)
+    safe_ext = re.sub(r"[^a-zA-Z0-9.]", "", os.path.splitext(upload.filename)[1].lower())[:8]
+    stored = f"{_uid('pos-')}{safe_ext}"
+    fpath = os.path.join(_POS_DIR, "files", stored)
+    upload.save(fpath)
+    size = os.path.getsize(fpath)
+
+    entry = {
+        "id": _uid("pos-"),
+        "label": label,
+        "note": note,
+        "filename": stored,
+        "original_name": upload.filename,
+        "uploaded_at": _now(),
+        "size_bytes": size,
+    }
+    log = _load_pos_log(bar_id)
+    log.setdefault("entries", []).insert(0, entry)
+    _save_pos_log(bar_id, log)
+    return jsonify({"status": "saved", "entry": entry})
+
+
+@app.route("/api/pos/log/<entry_id>", methods=["DELETE"])
+def api_pos_log_delete(entry_id: str):
+    cfg = _load_config()
+    bar_id = cfg.get("active_bar_id") or _setup_bar_id(cfg)
+    log = _load_pos_log(bar_id)
+    entries = log.get("entries", [])
+    kept: list[dict[str, Any]] = []
+    removed = None
+    for entry in entries:
+        if entry.get("id") == entry_id:
+            removed = entry
+            fpath = os.path.join(_POS_DIR, "files", entry.get("filename", ""))
+            try:
+                if os.path.isfile(fpath):
+                    os.remove(fpath)
+            except OSError:
+                pass
+        else:
+            kept.append(entry)
+    if not removed:
+        return jsonify({"error": "entry not found"}), 404
+    log["entries"] = kept
+    _save_pos_log(bar_id, log)
+    return jsonify({"status": "deleted", "id": entry_id})
 
 
 if __name__ == "__main__":

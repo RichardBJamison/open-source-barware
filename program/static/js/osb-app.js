@@ -311,6 +311,51 @@ const OSB = {
     const r = await fetch(`/api/metrics?${q}`);
     return r.json();
   },
+
+  async getInHouse(category = "all") {
+    const q = new URLSearchParams({ category });
+    const r = await fetch(`/api/in-house?${q}`);
+    return r.json();
+  },
+
+  async getPosLog() {
+    const r = await fetch("/api/pos/log");
+    return r.json();
+  },
+
+  async uploadPosLog({ label, note, file, text }) {
+    if (text?.trim() && !file) {
+      const r = await fetch("/api/pos/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label, note, text }),
+      });
+      if (!r.ok) {
+        const err = await r.json();
+        throw new Error(err.error || "POS upload failed");
+      }
+      return r.json();
+    }
+    const fd = new FormData();
+    fd.append("label", label || "POS drop");
+    if (note) fd.append("note", note);
+    fd.append("file", file);
+    const r = await fetch("/api/pos/log", { method: "POST", body: fd });
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.error || "POS upload failed");
+    }
+    return r.json();
+  },
+
+  async deletePosLog(entryId) {
+    const r = await fetch(`/api/pos/log/${entryId}`, { method: "DELETE" });
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.error || "Could not delete POS entry");
+    }
+    return r.json();
+  },
 };
 
 function renderStepIndicator(phases, current) {
@@ -3744,18 +3789,115 @@ async function loadMetrics() {
 
   const s = m.summary || {};
   grid.innerHTML = `
-    <div class="metric"><div class="num">${m.cycles_in_window ?? "—"}</div><div class="lbl">Cycles in window</div></div>
-    <div class="metric"><div class="num">${m.interval_days ?? "—"}</div><div class="lbl">Interval (days)</div></div>
+    <div class="metric"><div class="num">${s.bottle_count ?? "—"}</div><div class="lbl">Bottles on map</div></div>
+    <div class="metric"><div class="num">${s.station_count ?? "—"}</div><div class="lbl">Stations</div></div>
+    <div class="metric"><div class="num">${s.total_units ?? "—"}</div><div class="lbl">Total units</div></div>
     <div class="metric"><div class="num">${s.items_below_par ?? "—"}</div><div class="lbl">Below par</div></div>
-    <div class="metric"><div class="num">${s.items_flagged ?? "—"}</div><div class="lbl">Flagged</div></div>
-    <div class="metric"><div class="num">${s.sales_trend ?? "—"}</div><div class="lbl">Sales trend</div></div>
-    <div class="metric"><div class="num">${m.last_inventory_at ? "✓" : "—"}</div><div class="lbl">Last count</div></div>
+    <div class="metric"><div class="num">${m.cycles_total ?? m.cycles_in_window ?? "—"}</div><div class="lbl">Cycles logged</div></div>
+    <div class="metric"><div class="num">${s.pos_uploads ?? "—"}</div><div class="lbl">POS drops</div></div>
   `;
 
   const bounds = document.getElementById("metricsBounds");
   if (bounds && m.bounds) {
-    bounds.textContent = `Window: ${m.bounds.period_start} → ${m.bounds.period_end}`;
+    const last = m.last_inventory_at ? ` · Last count ${m.last_inventory_at.slice(0, 10)}` : "";
+    bounds.textContent = `Window: ${m.bounds.period_start} → ${m.bounds.period_end}${last}`;
   }
+
+  const notes = document.getElementById("metricsNotes");
+  if (notes) notes.textContent = s.notes || "";
+
+  renderFirstWeekPanel(m.first_week);
+}
+
+function renderFirstWeekPanel(firstWeek) {
+  const summary = document.getElementById("firstWeekSummary");
+  const grid = document.getElementById("firstWeekGrid");
+  if (!summary || !grid) return;
+  if (!firstWeek) {
+    summary.textContent = "Complete your first count to lock the week-one baseline.";
+    grid.innerHTML = "";
+    return;
+  }
+  const s = firstWeek.summary || {};
+  const cats = firstWeek.categories || {};
+  summary.textContent = `Cycle ${firstWeek.cycle_number || 1} locked ${(firstWeek.completed_at || "").slice(0, 10)} · ${firstWeek.period_start} → ${firstWeek.period_end}`;
+  grid.innerHTML = `
+    <div class="metric"><div class="num">${s.bottles ?? "—"}</div><div class="lbl">Bottles counted</div></div>
+    <div class="metric"><div class="num">${s.stations ?? "—"}</div><div class="lbl">Stations</div></div>
+    <div class="metric"><div class="num">${cats.liquor?.sku_count ?? "—"}</div><div class="lbl">Liquor SKUs</div></div>
+    <div class="metric"><div class="num">${cats.beer?.sku_count ?? "—"}</div><div class="lbl">Beer SKUs</div></div>
+    <div class="metric"><div class="num">${cats.wine?.sku_count ?? "—"}</div><div class="lbl">Wine SKUs</div></div>
+    <div class="metric"><div class="num">${s.below_par ?? "—"}</div><div class="lbl">Below par at lock</div></div>
+  `;
+}
+
+async function loadInHouse() {
+  const cat = document.getElementById("inhouseCategory")?.value || "all";
+  const data = await OSB.getInHouse(cat);
+  const note = document.getElementById("inhouseNote");
+  if (note) note.textContent = data.note || "";
+
+  const totals = document.getElementById("inhouseTotals");
+  if (totals && data.totals) {
+    const t = data.totals;
+    totals.innerHTML = `
+      <div class="metric"><div class="num">${data.item_count ?? 0}</div><div class="lbl">Products shown</div></div>
+      <div class="metric"><div class="num">${t.bottles ?? 0}</div><div class="lbl">Total SKUs</div></div>
+      <div class="metric"><div class="num">${t.total_units ?? 0}</div><div class="lbl">Units on hand</div></div>
+      <div class="metric"><div class="num">${t.below_par ?? 0}</div><div class="lbl">Below par</div></div>
+    `;
+  }
+
+  const table = document.getElementById("inhouseTable");
+  if (!table) return;
+  const items = data.items || [];
+  if (!items.length) {
+    table.innerHTML = `<p class="field-hint">No inventory lines yet — finish your first count.</p>`;
+    return;
+  }
+  table.innerHTML = `
+    <table class="review-table">
+      <thead><tr><th>Product</th><th>Station</th><th>Category</th><th>Level</th><th>Par</th></tr></thead>
+      <tbody>
+        ${items
+          .map(
+            (it) => `
+          <tr${it.below_par ? ' class="row-flag"' : ""}>
+            <td>${escapeHtml(it.name)} <span class="field-hint">${escapeHtml(it.size || "")}</span></td>
+            <td>${escapeHtml(it.station_name || "")}</td>
+            <td>${escapeHtml(it.category || "")}</td>
+            <td>${escapeHtml(String(it.current_level ?? ""))}</td>
+            <td>${escapeHtml(String(it.par_level ?? ""))}</td>
+          </tr>`
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+async function loadPosLog() {
+  const list = document.getElementById("posLogList");
+  if (!list) return;
+  const data = await OSB.getPosLog();
+  const entries = data.entries || [];
+  if (!entries.length) {
+    list.innerHTML = `<p class="field-hint">No POS drops yet — upload a terminal receipt above.</p>`;
+    return;
+  }
+  list.innerHTML = entries
+    .map(
+      (e) => `
+    <div class="bar-list-item" data-pos-id="${escapeHtml(e.id)}">
+      <div>
+        <strong>${escapeHtml(e.label || "POS drop")}</strong>
+        <span class="field-hint">${escapeHtml((e.uploaded_at || "").slice(0, 16))} · ${escapeHtml(e.original_name || e.filename || "")}</span>
+        ${e.note ? `<span class="field-hint">${escapeHtml(e.note)}</span>` : ""}
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm btn-pos-delete" data-id="${escapeHtml(e.id)}">Remove</button>
+    </div>`
+    )
+    .join("");
 }
 
 function renderApiBadge(status) {
@@ -3868,7 +4010,11 @@ async function initHome() {
   homeListenersBound = true;
 
   document.querySelectorAll(".sidebar-link").forEach((btn) => {
-    btn.addEventListener("click", () => switchAdminView(btn.dataset.view));
+    btn.addEventListener("click", async () => {
+      switchAdminView(btn.dataset.view);
+      if (btn.dataset.view === "inhouse") await loadInHouse();
+      if (btn.dataset.view === "inputs") await loadPosLog();
+    });
   });
 
   document.querySelectorAll("[data-goto]").forEach((btn) => {
@@ -3877,12 +4023,53 @@ async function initHome() {
 
   document.getElementById("metricsWindow")?.addEventListener("change", loadMetrics);
 
+  document.getElementById("inhouseCategory")?.addEventListener("change", loadInHouse);
+
+  document.getElementById("btnPosUpload")?.addEventListener("click", async () => {
+    const label = document.getElementById("posLabel")?.value?.trim();
+    const note = document.getElementById("posNote")?.value?.trim();
+    const file = document.getElementById("posFile")?.files?.[0];
+    const text = document.getElementById("posPaste")?.value?.trim();
+    if (!file && !text) {
+      setStatus("Choose a POS file or paste receipt text.", "posStatus");
+      return;
+    }
+    try {
+      await OSB.uploadPosLog({ label: label || "POS drop", note, file, text });
+      document.getElementById("posFile").value = "";
+      document.getElementById("posPaste").value = "";
+      document.getElementById("posLabel").value = "";
+      document.getElementById("posNote").value = "";
+      setStatus("POS drop saved.", "posStatus");
+      await loadPosLog();
+      await loadMetrics();
+    } catch (e) {
+      setStatus(e.message, "posStatus");
+    }
+  });
+
+  document.getElementById("posLogList")?.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".btn-pos-delete");
+    if (!btn) return;
+    if (!window.confirm("Remove this POS drop?")) return;
+    try {
+      await OSB.deletePosLog(btn.dataset.id);
+      await loadPosLog();
+      await loadMetrics();
+      setStatus("POS drop removed.", "posStatus");
+    } catch (err) {
+      setStatus(err.message, "posStatus");
+    }
+  });
+
   document.getElementById("barSwitcher")?.addEventListener("change", async (e) => {
     await OSB.switchBar(e.target.value);
     await refreshHomeBars();
     const fresh = await OSB.getState();
     document.getElementById("settBarName").value = fresh.config.bar_name || "";
     await loadMetrics();
+    await loadInHouse();
+    await loadPosLog();
   });
 
   document.getElementById("btnAddBar")?.addEventListener("click", async () => {
