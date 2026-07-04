@@ -2,10 +2,8 @@
 
 import { useCallback, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 
 import { AppButton } from "@/components/AppUI";
-
 
 interface DojoWelcomeModalProps {
   open: boolean;
@@ -19,10 +17,6 @@ const HOUSE_RULES = [
   "Bro's before ego's",
   "Leave your nonsense at the door",
 ] as const;
-
-function FrameRivet({ className = "" }: { className?: string }) {
-  return <span className={`salle-frame-rivet ${className}`} aria-hidden="true" />;
-}
 
 export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProps) {
   const [entering, setEntering] = useState(false);
@@ -43,70 +37,52 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
       aria-describedby="salle-welcome-desc"
     >
       <div
-        className="salle-welcome-backdrop absolute inset-0 bg-black/88 backdrop-blur-sm"
-        onClick={onClose}
+        className="salle-welcome-backdrop absolute inset-0 bg-black/90 backdrop-blur-sm"
         aria-hidden="true"
       />
 
       <div
-        className="salle-popup relative z-10 w-full max-w-md sm:max-w-lg"
+        className="salle-sign-popup relative z-10 w-full max-w-[340px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="salle-sign-glow" aria-hidden="true" />
-        <div className="salle-sign-glow salle-sign-glow-outer" aria-hidden="true" />
 
-        <div className="salle-popup-frame">
-          <FrameRivet className="salle-frame-rivet-tl" />
-          <FrameRivet className="salle-frame-rivet-tr" />
-          <FrameRivet className="salle-frame-rivet-bl" />
-          <FrameRivet className="salle-frame-rivet-br" />
+        <div className="salle-sign-popup-body">
+          <div className="salle-sign-popup-scroll">
+            <Image
+              src="/images/salle-darmes-sign.jpg"
+              alt="Salle d'Armes — Clockwork Gymnasium fencing academy sign"
+              width={332}
+              height={1024}
+              priority
+              className="salle-sign-popup-img"
+            />
+          </div>
 
-          <div className="salle-popup-body">
-            <div className="salle-popup-inner salle-welcome-scroll">
-              <div className="salle-entrance">
-                <Image
-                  src="/images/salle-darmes-entrance.jpg"
-                  alt="Salle d'Armes entrance — clockwork fencing academy with wall sign and open doors"
-                  width={834}
-                  height={1024}
-                  priority
-                  className="salle-entrance-img"
-                />
-              </div>
+          <div className="sr-only" id="salle-welcome-desc">
+            Welcome to the Fencing Academy, a refined Salle d&apos;Armes where
+            gentlemanly combat meets the clockwork arts. House Rules:{" "}
+            {HOUSE_RULES.join("; ")}. Sandbox playground with demo data only.
+          </div>
 
-              <div className="sr-only" id="salle-welcome-desc">
-                Welcome to the Fencing Academy, a refined Salle d&apos;Armes where
-                gentlemanly combat meets the clockwork arts. House Rules:{" "}
-                {HOUSE_RULES.join("; ")}. Sandbox playground with demo data.
-              </div>
-            </div>
-
-            <div className="salle-entrance-actions">
-              <p className="salle-entrance-quip">
-                Demo data only. Poke the dashboard, break nothing that matters.
-              </p>
-              <div className="salle-scroll-actions">
-                <AppButton variant="secondary" onClick={onClose} className="salle-scroll-btn">
-                  Observe from the Gallery
-                </AppButton>
-                <AppButton onClick={enterSalle} disabled={entering} className="salle-scroll-btn">
-                  {entering ? "Winding the Automata..." : "Salute & Enter the Salle"}
-                </AppButton>
-              </div>
-              <p className="salle-scroll-links">
-                <Link href="/the-process" className="salle-scroll-link">
-                  The process
-                </Link>
-                {" · "}
-                <Link href="/downloads" className="salle-scroll-link">
-                  Download the program
-                </Link>
-              </p>
-            </div>
-
-            <footer className="salle-scroll-footer">
-              <span id="salle-welcome-title">Clockwork Gymnasium · Sandbox Playground</span>
-            </footer>
+          <div className="salle-sign-popup-actions">
+            <p className="salle-sign-popup-quip" id="salle-welcome-title">
+              Sandbox only — demo bottles, demo counts, zero consequences.
+            </p>
+            <AppButton
+              onClick={enterSalle}
+              disabled={entering}
+              className="salle-sign-popup-btn w-full"
+            >
+              {entering ? "Opening the doors..." : "Salute & Enter the Salle"}
+            </AppButton>
+            <button
+              type="button"
+              onClick={onClose}
+              className="salle-sign-popup-dismiss"
+            >
+              Observe from the gallery
+            </button>
           </div>
         </div>
       </div>

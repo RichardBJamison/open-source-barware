@@ -432,6 +432,79 @@ body { background: var(--bg); color: var(--text); }
   vertical-align: top;
 }
 
+/* Guild sign popup — image only, narrow plaque */
+.salle-sign-popup {
+  animation: dojo-rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  isolation: isolate;
+}
+
+.salle-sign-popup-body {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(94vh - 2rem);
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(224, 192, 128, 0.35),
+    0 0 28px 8px rgba(200, 155, 88, 0.28),
+    0 28px 64px rgba(0, 0, 0, 0.8);
+}
+
+.salle-sign-popup-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  line-height: 0;
+  background: #0a0908;
+}
+
+.salle-sign-popup-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.salle-sign-popup-actions {
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+  padding: 0.85rem 1rem 1rem;
+  background: linear-gradient(180deg, #1f1a14 0%, #12100b 100%);
+  border-top: 1px solid rgba(184, 137, 88, 0.25);
+}
+
+.salle-sign-popup-quip {
+  margin: 0 0 0.7rem;
+  text-align: center;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.salle-sign-popup-btn {
+  position: relative;
+  z-index: 5;
+}
+
+.salle-sign-popup-dismiss {
+  display: block;
+  width: 100%;
+  margin-top: 0.55rem;
+  padding: 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.salle-sign-popup-dismiss:hover {
+  color: var(--copper);
+}
+
 .salle-entrance-actions {
   position: relative;
   z-index: 5;

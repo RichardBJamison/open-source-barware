@@ -13,8 +13,8 @@ import {
   createDojoWeeklyInputs,
 } from "@/lib/dojo-seed";
 
-/** Bumped when entrance art became the welcome popup. */
-export const DOJO_WELCOME_KEY = "osb_salle_entrance_welcome_seen";
+/** Bumped when guild sign art became the welcome popup. */
+export const DOJO_WELCOME_KEY = "osb_salle_sign_welcome_seen";
 export const DOJO_SEEDED_KEY = "osb_dojo_seeded";
 
 const WELCOME_CHANGE_EVENT = "osb-salle-welcome-change";
