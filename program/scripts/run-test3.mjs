@@ -98,15 +98,19 @@ async function main() {
 
   await api("POST", "/api/config", { bar_name: MINI_BAR.bar_name });
   await api("POST", "/api/phase/advance", { phase: "name_bar" });
-  await api("POST", "/api/phase/advance", { phase: "build_bar" });
   await api("POST", "/api/phase/advance", { phase: "voice_walk" });
 
   const saveBar = await api("POST", "/api/bar", MINI_BAR);
   assert(saveBar.ok, "save bar with levels");
 
   await api("POST", "/api/setup/voice-notes", { text: "Well one. Titos 750. Tanqueray 750." });
+  await api("POST", "/api/phase/advance", { phase: "reconcile" });
   const recon = await api("POST", "/api/setup/reconcile", {});
   assert(recon.ok, "reconcile");
+
+  await api("POST", "/api/bar", { ...MINI_BAR, stations_reviewed: true });
+  await api("POST", "/api/phase/advance", { phase: "build_bar" });
+  await api("POST", "/api/phase/advance", { phase: "map_review" });
 
   const approve = await api("POST", "/api/setup/approve-map", {});
   assert(approve.ok, "approve map");

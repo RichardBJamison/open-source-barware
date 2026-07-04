@@ -149,8 +149,8 @@
       <p class="step-eyebrow">Step 1 · Get started</p>
       <h2 class="wizard-title text-center">Your Operation</h2>
       <p class="wizard-lead text-center">
-        You can run as many bars as you need — dining room, patio, event station. Each gets its own page
-        to build wells and stations. You name each bar on the next step.
+        You can run as many bars as you need — dining room, patio, event station. Each gets its own walk.
+        You name each bar on the walk step, then dictate wells, back bar, and coolers as you go.
       </p>
       <p class="field-hint text-center">
         Planning a voice walk? A dedicated dictation app (Wispr Flow, VoiceInk, Whisperboard) saves hours of cleanup
@@ -167,83 +167,33 @@
       </div>
     </section>
 
-    <!-- build_bar -->
-    <section class="panel wizard-panel hidden" data-step="build_bar">
-      <p class="step-eyebrow">Step 2 · Pass 1 — Build your bar</p>
-      <div class="build-bar-name-header">
-        <span class="build-bar-label">Build Your Bar</span>
-        <input
-          id="buildBarName"
-          type="text"
-          class="build-bar-name-input"
-          placeholder="Name this bar — e.g. Main Dining, Patio, Event Bar"
-          autocomplete="organization"
-        />
-      </div>
-      <p class="wizard-lead text-center">
-        This whole page is <strong>one bar</strong> — every station below belongs to it. Starter templates
-        run wells first, then back bar, then coolers. Reorder, rename, remove, or add your own.
-      </p>
-      <p class="coaching-inline coaching-inline--center" style="margin-bottom:16px">
-        <strong>What we need:</strong> Your station names — wells, back bar, coolers — before you walk.<br />
-        <strong>What happens next:</strong> Pass 1 voice walk maps bottles to these stations.
-      </p>
-      <div class="build-bars-toolbar">
-        <div id="buildBarTabs" class="build-bar-tabs" aria-label="Bars you are building"></div>
-        <div class="build-bars-actions">
-          <button class="btn btn-secondary btn-sm" id="btnCreateAdditionalBar" type="button">+ Create additional bar</button>
-          <button class="btn btn-ghost btn-sm bar-delete-btn" id="btnDeleteBar" type="button">Delete this bar</button>
-        </div>
-      </div>
-      <div class="template-legend">
-        <span class="station-badge badge-well">well</span> Main · Service · Point
-        <span class="station-badge badge-backbar">back bar</span> Main · Point · Service
-        <span class="station-badge badge-walkin">walk in</span> Wine · Beer · Walk-in
-      </div>
-      <div id="stationList" class="station-list"></div>
-      <div class="template-actions">
-        <button class="btn btn-ghost btn-sm" id="btnResetTemplates" type="button">Reset starter templates</button>
-      </div>
-      <div class="add-station-box">
-        <p class="box-label">Add a Station</p>
-        <div class="add-station-row">
-          <input id="newStationName" type="text" placeholder="Station name..." />
-          <select id="newStationType">
-            <option value="well">Well</option>
-            <option value="back-bar">Back Bar</option>
-            <option value="storage">Storage</option>
-            <option value="walk-in">Walk-in</option>
-          </select>
-          <button class="btn btn-add" id="btnAddStation" type="button">+ Add</button>
-        </div>
-      </div>
-      <div class="setup-nav setup-nav-trio">
-        <button class="btn btn-secondary" type="button" data-go="name_bar">← Back</button>
-        <a class="btn btn-secondary" href="/help/standard-setups" target="_blank" rel="noopener">Learn Standard Setups</a>
-        <button class="btn btn-primary" id="btnBuildContinue" type="button">Continue</button>
-      </div>
-    </section>
-
     <!-- voice_walk -->
     <section class="panel wizard-panel hidden" data-step="voice_walk">
-      <p class="step-eyebrow">Step 3 · Pass 1 — Walk</p>
-      <p class="step-subtitle">Walk the bar</p>
+      <p class="step-eyebrow">Step 2 · Pass 1 — Walk</p>
+      <p class="step-subtitle">Walk the bar — build it as you go</p>
       <div class="coaching-step-banner coaching-step-banner--pass1">
         <span class="coaching-pass-badge">Pass 1</span>
         <div class="coaching-step-copy">
-          <p><strong>What we need from you:</strong> Bottle names and sizes, station by station. No levels, no par — just where things live.</p>
-          <p><strong>What happens next:</strong> We draft a placement map. You review and fix names/sizes here or in a spreadsheet. Nothing locks until you approve in Review.</p>
+          <p><strong>What we need from you:</strong> Name this bar, then call out each station as you walk — "Well one," "Well two," "Back bar." Bottle names and sizes only; no levels yet.</p>
+          <p><strong>What happens next:</strong> We draft stations and a placement map from your notes. You review names and sizes, then reconcile.</p>
         </div>
       </div>
       <div class="walk-bar-header">
         <div class="walk-bar-title-wrap">
-          <h2 id="walkBarTitle" class="walk-bar-name-display">Your Bar</h2>
+          <label for="walkBarNameInput" class="build-bar-label">Bar name</label>
+          <input
+            id="walkBarNameInput"
+            type="text"
+            class="build-bar-name-input walk-bar-name-input"
+            placeholder="Name this bar — e.g. Main Dining, Patio, Event Bar"
+            autocomplete="organization"
+          />
           <p id="walkBarCounter" class="walk-bar-counter"></p>
         </div>
         <button class="btn btn-secondary btn-sm hidden" id="btnNextWalkBar" type="button">Next Bar →</button>
       </div>
       <p class="wizard-lead text-center">
-        Each station you mapped belongs to <strong id="walkBarNameInline">this bar</strong> only.
+        Stations are created from what you say — <strong id="walkBarNameInline">this bar</strong> only.
         Upload or paste your walk notes below.
       </p>
       <input type="file" id="voiceNotesFile" class="hidden" accept=".txt,.text,.md,.markdown,.rtf,.note,text/plain,text/markdown,text/rtf" />
@@ -257,20 +207,16 @@
           </p>
           <p class="info-body" style="margin-top:10px;">
             Or paste your voice notes directly in the box.
-            <strong>Say only the bottle name and its size — the size is what ends each bottle.</strong>
-            "Tito's 750. Ketel One liter. Bacardi 750." Skip levels, prices, and descriptions on
-            this first walk — that all comes later. When you move to a new spot, call it out:
-            "Well two." "Row three." "Back bar shelf."
+            <strong>Say the station first, then bottle name and size.</strong>
+            "Well one. Tito's 750. Ketel One liter. Well two. Tanqueray 750."
+            When you move to a new spot, call it out: "Well two." "Back bar shelf." "Beer cooler."
           </p>
           <div class="example-box">
             <p class="box-label">Example</p>
             <p class="example-text">
               "Well one. Tito's 750, Ketel One liter, Tanqueray 750, triple sec 750.
-              Row two. Espolon Blanco liter, Evan Williams 750.
+              Well two. Espolon Blanco liter, Evan Williams 750.
               Back bar top shelf. Patron Silver 750, Don Julio 1942 750…"
-            </p>
-            <p class="example-text example-warning" style="margin-top:10px;">
-              If you don't know what to say here, go back to Step 2 — you need your station map before you can walk the bar.
             </p>
           </div>
         </div>
@@ -399,7 +345,7 @@
         </div>
       </div>
       <div class="setup-nav">
-        <button class="btn btn-secondary" type="button" data-go="build_bar">← Back</button>
+        <button class="btn btn-secondary" type="button" data-go="name_bar">← Back</button>
         <button class="btn btn-primary" id="btnWalkContinue" type="button">Review your map first</button>
       </div>
       <div class="hard-reset-row">
@@ -407,9 +353,65 @@
       </div>
     </section>
 
+    <!-- build_bar -->
+    <section class="panel wizard-panel hidden" data-step="build_bar">
+      <p class="step-eyebrow">Step 4 · Pass 1 — Review your bar layout</p>
+      <div class="build-bar-name-header">
+        <span class="build-bar-label">Review Your Bar</span>
+        <input
+          id="buildBarName"
+          type="text"
+          class="build-bar-name-input"
+          placeholder="Name this bar — e.g. Main Dining, Patio, Event Bar"
+          autocomplete="organization"
+        />
+      </div>
+      <p class="wizard-lead text-center">
+        Your walk created these stations — wells, back bar, coolers. Reorder, rename, remove, or add any we missed.
+      </p>
+      <p class="coaching-inline coaching-inline--center" style="margin-bottom:16px">
+        <strong>What we need:</strong> Confirm the station layout matches your real bar.<br />
+        <strong>What happens next:</strong> Review &amp; Confirm — approve the full inventory map before counting.
+      </p>
+      <div class="build-bars-toolbar">
+        <div id="buildBarTabs" class="build-bar-tabs" aria-label="Bars you are building"></div>
+        <div class="build-bars-actions">
+          <button class="btn btn-secondary btn-sm" id="btnCreateAdditionalBar" type="button">+ Create additional bar</button>
+          <button class="btn btn-ghost btn-sm bar-delete-btn" id="btnDeleteBar" type="button">Delete this bar</button>
+        </div>
+      </div>
+      <div class="template-legend">
+        <span class="station-badge badge-well">well</span> Main · Service · Point
+        <span class="station-badge badge-backbar">back bar</span> Main · Point · Service
+        <span class="station-badge badge-walkin">walk in</span> Wine · Beer · Walk-in
+      </div>
+      <div id="stationList" class="station-list"></div>
+      <div class="template-actions">
+        <button class="btn btn-ghost btn-sm" id="btnResetTemplates" type="button">Reset starter templates</button>
+      </div>
+      <div class="add-station-box">
+        <p class="box-label">Add a Station</p>
+        <div class="add-station-row">
+          <input id="newStationName" type="text" placeholder="Station name..." />
+          <select id="newStationType">
+            <option value="well">Well</option>
+            <option value="back-bar">Back Bar</option>
+            <option value="storage">Storage</option>
+            <option value="walk-in">Walk-in</option>
+          </select>
+          <button class="btn btn-add" id="btnAddStation" type="button">+ Add</button>
+        </div>
+      </div>
+      <div class="setup-nav setup-nav-trio">
+        <button class="btn btn-secondary" type="button" data-go="reconcile">← Back</button>
+        <a class="btn btn-secondary" href="/help/standard-setups" target="_blank" rel="noopener">Learn Standard Setups</a>
+        <button class="btn btn-primary" id="btnBuildContinue" type="button">Continue</button>
+      </div>
+    </section>
+
     <!-- reconcile -->
     <section class="panel wizard-panel hidden" data-step="reconcile">
-      <p class="step-eyebrow">Step 4 · Pass 1 — Reconcile</p>
+      <p class="step-eyebrow">Step 3 · Pass 1 — Reconcile</p>
       <h2 class="wizard-title">Reconcile Your Map</h2>
       <p class="wizard-lead">
         Pass 1 wrap-up: we turn your walk into an auditable draft map — with blanks where we're uncertain.
@@ -417,7 +419,7 @@
       </p>
       <div class="coaching-inline coaching-inline--pass1">
         <p><strong>What we need from you:</strong> Run reconciliation, scan the audit, download the map if you want a spreadsheet view.</p>
-        <p><strong>What happens next:</strong> Review &amp; Confirm — your last chance to move bottles before counting.</p>
+        <p><strong>What happens next:</strong> Review your station layout, then approve the map before counting.</p>
       </div>
       <div class="actions">
         <button class="btn btn-primary" id="btnReconcile" type="button">Run reconciliation</button>
@@ -428,7 +430,7 @@
         <button class="btn btn-map-toolkit hidden" id="btnOpenReconcileToolkit" type="button" aria-expanded="false" aria-controls="mapToolkitModal">
           Print / Download MAP
         </button>
-        <button class="btn btn-secondary" id="btnReconcileNext" type="button" data-go="map_review" disabled>Next step →</button>
+        <button class="btn btn-secondary" id="btnReconcileNext" type="button" data-go="build_bar" disabled>Next step →</button>
       </div>
       <div class="hard-reset-row">
         <button class="btn btn-hard-reset" type="button" data-hard-reset>↺ Start over — hard reset</button>
@@ -480,7 +482,7 @@
         </div>
       </div>
       <div class="setup-nav setup-nav-trio has-toolkit">
-        <button class="btn btn-secondary" type="button" data-go="reconcile">← Back</button>
+        <button class="btn btn-secondary" type="button" data-go="build_bar">← Back</button>
         <button class="btn btn-map-toolkit" id="btnOpenMapToolkit" type="button" aria-expanded="false" aria-controls="mapToolkitModal">
           Print / Download MAP
         </button>

@@ -23,9 +23,9 @@ const SETUP_FLOW = [
   "welcome",
   "updates_signup",
   "name_bar",
-  "build_bar",
   "voice_walk",
   "reconcile",
+  "build_bar",
   "map_review",
   "first_count",
 ];
@@ -34,8 +34,8 @@ const STEP_LABELS = {
   welcome: "Start",
   updates_signup: "Updates",
   name_bar: "Name",
-  build_bar: "Build",
   voice_walk: "Walk",
+  build_bar: "Review",
   reconcile: "Reconcile",
   map_review: "Review",
   first_count: "Count",
@@ -2182,13 +2182,15 @@ async function switchWalkBar(barId) {
 
 function updateWalkBarHeader() {
   const name = barState.name?.trim() || "Unnamed bar";
-  const title = document.getElementById("walkBarTitle");
+  const nameInput = document.getElementById("walkBarNameInput");
   const inline = document.getElementById("walkBarNameInline");
   const counter = document.getElementById("walkBarCounter");
   const nextBtn = document.getElementById("btnNextWalkBar");
 
-  if (title) title.textContent = name;
-  if (inline) inline.textContent = name;
+  if (nameInput && document.activeElement !== nameInput) {
+    nameInput.value = name === "Unnamed bar" ? "" : name;
+  }
+  if (inline) inline.textContent = nameInput?.value?.trim() || name || "this bar";
 
   const idx = allBars.findIndex((b) => b.id === barState.id);
   if (counter && allBars.length > 0) {
@@ -2201,6 +2203,8 @@ function updateWalkBarHeader() {
 
 async function initWalkStep(data) {
   allBars = data.bars || [];
+  const cfgName = data.config?.bar_name || barState?.name || "";
+  if (cfgName && barState && !barState.name) barState.name = cfgName;
   updateWalkBarHeader();
 
   const voiceNotes = document.getElementById("voiceNotes");
@@ -2259,6 +2263,16 @@ function scheduleCountParse() {
       setStatus(e.message);
     }
   }, 700);
+}
+
+async function saveWalkBarName() {
+  const input = document.getElementById("walkBarNameInput");
+  if (!input || !barState.id) return;
+  const name = input.value.trim();
+  barState.name = name;
+  await persistBar();
+  if (name) await OSB.saveConfig({ bar_name: name });
+  updateWalkBarHeader();
 }
 
 async function saveBuildBarName() {
@@ -3446,8 +3460,7 @@ async function initSetup() {
   const voiceNotes = document.getElementById("voiceNotes");
   if (voiceNotes && data.state?.voice_notes_text) voiceNotes.value = data.state.voice_notes_text;
 
-  const seed = data.phase === "build_bar" && (data.bar?.station_count || 0) === 0;
-  barState = normalizeBar(await OSB.getBar(seed));
+  barState = normalizeBar(await OSB.getBar(false));
   if (cfg.bar_name && !barState.name) barState.name = cfg.bar_name;
 
   if (data.phase === "updates_signup") {
@@ -3589,8 +3602,16 @@ async function initSetup() {
       await OSB.createBar("", true);
     }
 
-    await OSB.advancePhase("build_bar");
+    await OSB.advancePhase("voice_walk");
     await initSetup();
+  });
+
+  document.getElementById("walkBarNameInput")?.addEventListener("blur", async () => {
+    try {
+      await saveWalkBarName();
+    } catch (e) {
+      setStatus(e.message);
+    }
   });
 
   document.getElementById("buildBarName")?.addEventListener("blur", async () => {
@@ -3621,7 +3642,7 @@ async function initSetup() {
       await saveBuildBarName();
       await persistBar();
       await OSB.createBar("", true);
-      barState = normalizeBar(await OSB.getBar(true));
+      barState = normalizeBar(await OSB.getBar(false));
       editingStationId = null;
       const buildNameEl = document.getElementById("buildBarName");
       if (buildNameEl) {
@@ -3632,7 +3653,7 @@ async function initSetup() {
       allBars = data.bars || [];
       renderBuildBarTabs(allBars, barState.id);
       renderStationList();
-      setStatus("New bar — name it above, then build its stations.");
+      setStatus("New bar — name it on the walk step, then dictate its stations.");
     } catch (e) {
       setStatus(e.message);
     }
@@ -3664,13 +3685,15 @@ async function initSetup() {
       return;
     }
     if (sortedStations().length === 0) {
-      setStatus("Add at least one station.");
+      setStatus("Your walk should have created at least one station — add one if needed.");
       return;
     }
     barState.name = name;
-    await persistBar();
+    if (!barState.setup) barState.setup = {};
+    barState.setup.stations_reviewed = true;
+    await persistBar({ stations_reviewed: true });
     await OSB.saveConfig({ bar_name: name });
-    await OSB.advancePhase("voice_walk");
+    await OSB.advancePhase("map_review");
     await initSetup();
   });
 
@@ -3747,6 +3770,16 @@ async function initSetup() {
   document.getElementById("btnManualBottle")?.addEventListener("click", () => addManualBottle());
 
   document.getElementById("btnWalkContinue")?.addEventListener("click", async () => {
+    const walkName = document.getElementById("walkBarNameInput")?.value?.trim();
+    if (!walkName) {
+      setStatus("Name this bar at the top before continuing.");
+      document.getElementById("walkBarNameInput")?.focus();
+      return;
+    }
+    barState.name = walkName;
+    await persistBar();
+    await OSB.saveConfig({ bar_name: walkName });
+
     if (!walkReviewIsComplete()) {
       const remaining = walkUnverifiedCount();
       if (remaining && scrollToFirstUnverifiedWalkRow()) {

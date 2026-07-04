@@ -2,7 +2,7 @@
 Open Source Barware — Chrome Program Server
 Local Flask app (OVLP POP delivery model).
 
-Caterpillar: welcome → name_bar → build_bar → voice_walk → reconcile → map_review → first_count
+Caterpillar: welcome → name_bar → voice_walk → reconcile → build_bar → map_review → first_count
 Butterfly:   home base admin panel (metrics, spreadsheets, in-house inventory)
 """
 
@@ -45,9 +45,9 @@ PHASES = (
     "welcome",
     "updates_signup",
     "name_bar",
-    "build_bar",
     "voice_walk",
     "reconcile",
+    "build_bar",
     "map_review",
     "first_count",
     "butterfly",
@@ -57,8 +57,8 @@ PHASE_LABELS = {
     "welcome": "Welcome",
     "updates_signup": "Updates",
     "name_bar": "Name",
-    "build_bar": "Build bar",
     "voice_walk": "Walk",
+    "build_bar": "Review bar",
     "reconcile": "Reconcile",
     "map_review": "Review",
     "first_count": "Count",
@@ -154,7 +154,7 @@ def _normalize_phase(phase: str, cfg: dict[str, Any]) -> str:
     if phase in LEGACY_PHASE_MAP:
         mapped = LEGACY_PHASE_MAP[phase]
         if mapped == "name_bar" and cfg.get("bar_name"):
-            return "build_bar"
+            return "voice_walk"
         return mapped
     if phase not in PHASES:
         return "welcome"
@@ -394,13 +394,13 @@ def _infer_bar_setup_phase(bar: dict[str, Any]) -> str:
     if setup.get("map_approved"):
         return "first_count"
     if setup.get("draft_map"):
-        return "map_review"
+        if setup.get("stations_reviewed"):
+            return "map_review"
+        return "build_bar"
     if setup.get("voice_notes") or _bar_bottle_count(bar) > 0:
         return "reconcile"
-    if bar.get("stations"):
+    if bar.get("name") or _load_config().get("bar_name"):
         return "voice_walk"
-    if bar.get("name"):
-        return "build_bar"
     return "name_bar"
 
 
@@ -670,15 +670,15 @@ def _can_advance(cfg: dict[str, Any], target: str) -> tuple[bool, str]:
             _phase_index(current) < _phase_index("name_bar"),
             "Complete the release-list step first.",
         ),
-        "build_bar": (current == "name_bar", "Continue from the previous step first."),
-        "voice_walk": (
-            len(bar.get("stations", [])) > 0 and bool(bar_name),
-            "Name this bar and add at least one station.",
-        ),
+        "voice_walk": (current == "name_bar", "Continue from the previous step first."),
         "reconcile": (has_walk, "Walk the bar — paste voice notes or add bottles."),
-        "map_review": (
+        "build_bar": (
             bool(setup.get("draft_map")),
-            "Run reconciliation before review.",
+            "Run reconciliation before reviewing your bar layout.",
+        ),
+        "map_review": (
+            bool(setup.get("draft_map")) and bool(setup.get("stations_reviewed")),
+            "Review your station layout before approving the map.",
         ),
         "first_count": (bool(setup.get("map_approved")), "Approve the inventory map before counting."),
         "butterfly": (
@@ -1731,11 +1731,12 @@ def api_save_bar():
                 station["bottles"].append(bottle)
             stations.append(station)
         bar["stations"] = stations
+    setup = _bar_setup_state(bar)
     review_status = body.get("walk_review_status", "")
     if review_status in ("pending", "complete", "skipped", "imported"):
-        setup = _bar_setup_state(bar)
         setup["walk_review_status"] = review_status
-        bar["setup"] = setup
+    if body.get("stations_reviewed") is True:
+        setup["stations_reviewed"] = True
     bar = _save_bar(bar)
     return jsonify({"status": "saved", "bar": bar})
 
@@ -1781,7 +1782,7 @@ def api_create_bar():
         patch["setup_bar_id"] = bar["id"]
         cfg = _load_config()
         if cfg.get("phase") == "butterfly":
-            patch["phase"] = "build_bar" if name else "name_bar"
+            patch["phase"] = "voice_walk" if name else "name_bar"
         elif not name:
             patch["phase"] = "name_bar"
     if name:
@@ -1816,7 +1817,7 @@ def api_start_bar_setup():
 
     phase = _infer_bar_setup_phase(bar)
     if phase == "butterfly":
-        phase = "build_bar"
+        phase = "voice_walk"
 
     _save_config(
         {
@@ -1848,7 +1849,7 @@ def api_delete_bar(bar_id: str):
         fresh = _empty_bar_record("")
         fresh["created_at"] = _now()
         fresh["updated_at"] = fresh["created_at"]
-        fresh["stations"] = _stations_from_templates()
+        fresh["stations"] = []
         registry["bars"] = [fresh]
         patch = {
             "active_bar_id": fresh["id"],
@@ -1857,7 +1858,7 @@ def api_delete_bar(bar_id: str):
             "map_approved": False,
         }
         if cfg.get("phase") != "butterfly":
-            patch["phase"] = "build_bar"
+            patch["phase"] = "voice_walk"
     else:
         fallback = registry["bars"][0]
         if cfg.get("active_bar_id") == bar_id:
