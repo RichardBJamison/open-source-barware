@@ -34,13 +34,26 @@ function Show-ServerLogs([string]$logPath, [string]$logErr) {
     }
 }
 
+function Test-PingOk([string]$base) {
+    $uri = "$base/ping"
+    try {
+        $r = Invoke-WebRequest -Uri $uri -UseBasicParsing -TimeoutSec 3
+        if ($r.StatusCode -eq 200) { return $true }
+    } catch {}
+    try {
+        $code = (curl.exe -s -o NUL -w "%{http_code}" $uri 2>$null)
+        if ($code -eq "200") { return $true }
+    } catch {}
+    return $false
+}
+
 function Wait-ForPing([int]$seconds = 20) {
+    $bases = @("http://127.0.0.1:$PORT", "http://localhost:$PORT")
     $deadline = (Get-Date).AddSeconds($seconds)
     while ((Get-Date) -lt $deadline) {
-        try {
-            $r = Invoke-WebRequest -Uri "http://localhost:$PORT/ping" -UseBasicParsing -TimeoutSec 2
-            if ($r.StatusCode -eq 200) { return $true }
-        } catch {}
+        foreach ($base in $bases) {
+            if (Test-PingOk $base) { return $true }
+        }
         Start-Sleep -Seconds 1
     }
     return $false
@@ -193,6 +206,11 @@ try {
 }
 
 Write-Step "[6/7] Starting server..."
+if ($Silent) {
+    try {
+        netsh advfirewall firewall add rule name="OSB-Program-$PORT" dir=in action=allow protocol=TCP localport=$PORT | Out-Null
+    } catch {}
+}
 Stop-PortListener -port $PORT
 $logPath = Join-Path $InstallDir "data\osb_server.log"
 $logErr = Join-Path $InstallDir "data\osb_server.err"

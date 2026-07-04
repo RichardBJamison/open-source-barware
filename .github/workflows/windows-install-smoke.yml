@@ -38,6 +38,10 @@ jobs:
           Expand-Archive -Path $zip -DestinationPath $dest -Force
           Get-ChildItem -Recurse $dest | Select-Object -First 20 FullName
 
+      - name: Allow loopback port (GHA Windows firewall)
+        shell: pwsh
+        run: netsh advfirewall firewall add rule name="OSB-CI-5052" dir=in action=allow protocol=TCP localport=5052
+
       - name: Run installer from extracted package (silent)
         shell: pwsh
         run: |

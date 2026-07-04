@@ -25,7 +25,13 @@ function Add-Check([string]$id, [string]$label, [scriptblock]$test) {
 }
 
 function Get-Http([string]$path) {
-    Invoke-WebRequest -Uri "http://localhost:$Port$path" -UseBasicParsing -TimeoutSec 10
+    $bases = @("http://127.0.0.1:$Port", "http://localhost:$Port")
+    foreach ($base in $bases) {
+        try {
+            return Invoke-WebRequest -Uri "$base$path" -UseBasicParsing -TimeoutSec 10
+        } catch {}
+    }
+    throw "request failed for $path"
 }
 
 Write-Host ""
