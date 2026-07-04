@@ -2549,3 +2549,20 @@ tr.row-flagged td.raw-heard {
   font-size: 0.84rem;
   color: var(--patina-light);
 }
+
+.count-comparison-downloads {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(168, 120, 79, 0.2);
+}
+
+.count-comparison-label {
+  margin: 0 0 6px;
+}
+
+.count-comparison-hint {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}

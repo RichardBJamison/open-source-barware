@@ -1314,24 +1314,233 @@ function buildCountReconcileSummary(matched, notInCount, surprises, stationsCoun
 }
 
 let lastCountReconcile = null;
+let lastCountParsed = [];
+
+const COUNT_COMPARISON_HEADERS = [
+  "station",
+  "status",
+  "map_product",
+  "map_size",
+  "map_par_level",
+  "count_heard",
+  "count_level",
+  "action_required",
+];
+
+function buildCountComparisonRows(report) {
+  if (!report) return [];
+  const rows = [];
+  const statusOrder = {
+    not_on_map: 0,
+    extra_on_shelf: 1,
+    no_level: 2,
+    missing_from_count: 3,
+    matched: 4,
+  };
+
+  for (const s of report.surprises || []) {
+    const status = s.reason === "extra_on_shelf" ? "extra_on_shelf" : s.reason || "not_on_map";
+    rows.push({
+      station: s.entry.station || s.similarTo?.stationName || "",
+      status,
+      map_product: s.similarTo?.name || "",
+      map_size: s.similarTo?.size || "",
+      map_par_level: s.similarTo?.par_level ?? "",
+      count_heard: s.entry.name || "",
+      count_level: s.entry.level ?? "",
+      action_required:
+        status === "extra_on_shelf"
+          ? "Possible extra bottle on shelf — add to map in Review or fix count."
+          : status === "no_level"
+            ? "Say the level (tenths or full) and re-upload."
+            : "Not on your walk map — add in Review or fix the name.",
+    });
+  }
+
+  for (const m of report.notInCount || []) {
+    const b = m.bottle;
+    rows.push({
+      station: b.stationName || "",
+      status: "missing_from_count",
+      map_product: b.name || "",
+      map_size: b.size || "",
+      map_par_level: b.par_level ?? 1,
+      count_heard: "",
+      count_level: "",
+      action_required: "On map from walk — not in your count. Re-count or remove from map.",
+    });
+  }
+
+  for (const m of report.matched || []) {
+    const action = m.crossStation
+      ? `Matched across stations — verify ${m.bottle.stationName}.`
+      : "Levels line up — verify in table if needed.";
+    rows.push({
+      station: m.entry.station || m.bottle.stationName || "",
+      status: "matched",
+      map_product: m.bottle.name || "",
+      map_size: m.bottle.size || "",
+      map_par_level: m.bottle.par_level ?? 1,
+      count_heard: m.entry.name || "",
+      count_level: m.level ?? "",
+      action_required: action,
+    });
+  }
+
+  rows.sort((a, b) => {
+    const st = (a.station || "").localeCompare(b.station || "");
+    if (st !== 0) return st;
+    return (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9);
+  });
+  return rows;
+}
+
+function buildCountComparisonPlainText(report) {
+  const rows = buildCountComparisonRows(report);
+  const barName = barState.name?.trim() || "Your Bar";
+  const lines = [
+    `${barName} — Map vs Count Comparison`,
+    report?.summary || "",
+    "",
+    "Walk map (1st input) vs your count (2nd input) — line by line",
+    "",
+  ];
+  for (const r of rows) {
+    lines.push(
+      `▸ ${r.station} [${r.status}]`,
+      `  Map:    ${r.map_product || "—"} ${r.map_size || ""} (par ${r.map_par_level ?? "—"})`,
+      `  Count:  ${r.count_heard || "—"} @ ${r.count_level !== "" ? r.count_level : "—"}`,
+      `  Action: ${r.action_required}`,
+      ""
+    );
+  }
+  return lines.join("\n").trim();
+}
+
+function countComparisonActionsHtml() {
+  return `
+    <div class="count-comparison-downloads">
+      <p class="box-label count-comparison-label">Map vs count — download line-by-line comparison</p>
+      <p class="count-comparison-hint">Walk map (first input) compared to your count (second input). Take this to the floor to reconcile.</p>
+      <div class="map-download-grid map-download-grid-audit">
+        <button class="btn btn-ghost btn-sm count-export-btn" type="button" data-format="csv">Comparison (.csv)</button>
+        <button class="btn btn-ghost btn-sm count-export-btn" type="button" data-format="xlsx">Comparison (.xlsx)</button>
+        <button class="btn btn-ghost btn-sm count-export-btn" type="button" data-format="xml">Comparison (.xml)</button>
+        <button class="btn btn-ghost btn-sm" type="button" id="btnCountComparisonPrint">Print report</button>
+        <button class="btn btn-ghost btn-sm" type="button" id="btnCountComparisonCopy">Copy report</button>
+      </div>
+    </div>`;
+}
+
+function buildCountComparisonPrintHtml(report) {
+  const rows = buildCountComparisonRows(report);
+  const barName = barState.name?.trim() || "Your Bar";
+  const bodyRows = rows
+    .map(
+      (r) => `
+    <tr class="status-${escapeHtml(r.status)}">
+      <td>${escapeHtml(r.station)}</td>
+      <td>${escapeHtml(r.status)}</td>
+      <td>${escapeHtml(r.map_product)}</td>
+      <td>${escapeHtml(r.map_size)}</td>
+      <td>${escapeHtml(String(r.map_par_level ?? ""))}</td>
+      <td>${escapeHtml(r.count_heard)}</td>
+      <td>${escapeHtml(String(r.count_level ?? ""))}</td>
+      <td>${escapeHtml(r.action_required)}</td>
+    </tr>`
+    )
+    .join("");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>${escapeHtml(barName)} — Count Comparison</title>
+<style>
+  body { font-family: Georgia, serif; margin: 20px; color: #111; font-size: 11px; }
+  h1 { font-size: 1.2rem; }
+  .meta { color: #444; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #999; padding: 5px 6px; text-align: left; vertical-align: top; }
+  th { background: #eee; font-size: 10px; text-transform: uppercase; }
+  tr.status-matched td { background: #f8fff8; }
+  tr.status-missing_from_count td { background: #fff8f0; }
+  tr.status-not_on_map td, tr.status-extra_on_shelf td { background: #fff0f0; }
+</style></head><body>
+  <h1>${escapeHtml(barName)} — Map vs Count</h1>
+  <p class="meta">${escapeHtml(report?.summary || "")}<br/>Walk map (setup) vs live count — reconcile gaps before locking baseline.</p>
+  <table>
+    <thead><tr>
+      <th>Station</th><th>Status</th><th>Map product</th><th>Size</th><th>Par</th>
+      <th>You said</th><th>Your level</th><th>Action</th>
+    </tr></thead>
+    <tbody>${bodyRows}</tbody>
+  </table>
+</body></html>`;
+}
+
+async function downloadCountComparison(format, btn) {
+  if (!lastCountReconcile) {
+    setStatus("Upload and parse a count first.");
+    return false;
+  }
+  const rows = buildCountComparisonRows(lastCountReconcile);
+  if (!rows.length) {
+    setStatus("Nothing to export — check your count notes.");
+    return false;
+  }
+  try {
+    const r = await fetch("/api/export/count-comparison", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        format,
+        bar_name: barState.name?.trim() || "bar",
+        summary: lastCountReconcile.summary || "",
+        rows,
+      }),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || `Download failed (${r.status})`);
+    }
+    const blob = await r.blob();
+    const disp = r.headers.get("Content-Disposition") || "";
+    const match = disp.match(/filename="?([^";]+)"?/i);
+    const ext = format.includes("xlsx") ? "xlsx" : format === "xml" ? "xml" : "csv";
+    const filename = match?.[1] || `count-comparison.${ext}`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+    if (btn) showMapToolkitFeedback(`✓ Downloaded ${filename}`, btn, "✓ Downloaded");
+    else setStatus(`Downloaded ${filename}`);
+    return true;
+  } catch (e) {
+    setStatus(e.message || "Download failed.");
+    return false;
+  }
+}
 
 function renderCountReconcileReport(report) {
   lastCountReconcile = report;
   const el = document.getElementById("countReconcileReport");
   if (!el) return;
 
-  if (!report || (!report.hasIssues && report.matched.length)) {
-    if (report?.matched.length && !report.hasIssues) {
-      el.classList.remove("hidden");
-      el.innerHTML = `
-        <div class="count-reconcile-ok">
-          <strong>Count matches your map.</strong>
-          <span>${escapeHtml(report.summary)} — review levels below, then finish.</span>
-        </div>`;
-      return;
-    }
+  if (!report?.matched?.length && !report?.surprises?.length && !report?.notInCount?.length) {
     el.classList.add("hidden");
     el.innerHTML = "";
+    return;
+  }
+
+  if (!report.hasIssues && report.matched.length) {
+    el.classList.remove("hidden");
+    el.innerHTML = `
+      <div class="count-reconcile-ok">
+        <strong>Count matches your map.</strong>
+        <span>${escapeHtml(report.summary)} — review levels below, then finish.</span>
+      </div>
+      ${countComparisonActionsHtml()}`;
     return;
   }
 
@@ -1348,6 +1557,7 @@ function renderCountReconcileReport(report) {
       <div class="count-reconcile-actions">
         <button type="button" class="btn btn-secondary btn-sm" id="btnGoReconcileMap">Go reconcile in Review →</button>
       </div>
+      ${countComparisonActionsHtml()}
     </div>`;
 
   if (report.stationBuckets?.length) {
@@ -1414,7 +1624,9 @@ function parseCountNotes(text) {
   }
 
   const parsed = parseCountText(text);
+  lastCountParsed = parsed;
   const reconcile = reconcileCountToMap(parsed);
+  reconcile.comparisonRows = buildCountComparisonRows(reconcile);
   renderCountReconcileReport(reconcile);
 
   for (const { bottle: hit, level } of reconcile.matched) {
@@ -3218,6 +3430,41 @@ async function initSetup() {
   });
 
   document.getElementById("countReconcileReport")?.addEventListener("click", async (e) => {
+    const exportBtn = e.target.closest(".count-export-btn");
+    if (exportBtn) {
+      await downloadCountComparison(exportBtn.dataset.format || "csv", exportBtn);
+      return;
+    }
+    if (e.target.closest("#btnCountComparisonPrint")) {
+      if (!lastCountReconcile) return;
+      const html = buildCountComparisonPrintHtml(lastCountReconcile);
+      const win = window.open("", "_blank");
+      if (!win) {
+        setStatus("Allow pop-ups to print the comparison report.");
+        return;
+      }
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      window.setTimeout(() => {
+        try {
+          win.print();
+        } catch {
+          setStatus("Print window opened — use File → Print or Save as PDF.");
+        }
+      }, 400);
+      return;
+    }
+    if (e.target.closest("#btnCountComparisonCopy")) {
+      if (!lastCountReconcile) return;
+      const text = buildCountComparisonPlainText(lastCountReconcile);
+      const ok = await copyTextToClipboard(text);
+      const btn = document.getElementById("btnCountComparisonCopy");
+      if (ok) showMapToolkitFeedback("✓ Copied — paste into Notes or email.", btn, "✓ Copied");
+      else setStatus("Could not copy — download CSV instead.");
+      return;
+    }
     if (!e.target.closest("#btnGoReconcileMap")) return;
     await persistBar();
     await OSB.advancePhase("map_review");

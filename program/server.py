@@ -1143,6 +1143,78 @@ def _export_xlsx(rows: list[dict[str, Any]], headers: list[str], sheet_title: st
     )
 
 
+_COUNT_COMPARISON_HEADERS = [
+    "station", "status", "map_product", "map_size", "map_par_level",
+    "count_heard", "count_level", "action_required",
+]
+
+
+def _export_count_comparison_xml(
+    bar_name: str, summary: str, rows: list[dict[str, Any]]
+) -> str:
+    root = ET.Element("count_comparison")
+    meta = ET.SubElement(root, "meta")
+    ET.SubElement(meta, "bar_name").text = bar_name
+    ET.SubElement(meta, "exported_at").text = _now()
+    ET.SubElement(meta, "summary").text = summary
+    ET.SubElement(meta, "row_count").text = str(len(rows))
+    ET.SubElement(meta, "legend").text = (
+        "map_* = walk/setup (first input); count_* = live count (second input)"
+    )
+    lines_el = ET.SubElement(root, "lines")
+    for row in rows:
+        line = ET.SubElement(lines_el, "line")
+        for key in _COUNT_COMPARISON_HEADERS:
+            ET.SubElement(line, key).text = str(row.get(key, ""))
+    ET.indent(root, space="  ")
+    return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="unicode")
+
+
+@app.route("/api/export/count-comparison", methods=["POST"])
+def api_export_count_comparison():
+    """Map vs count line-by-line comparison — CSV, XLSX, or XML."""
+    body = request.get_json(force=True) or {}
+    fmt = (body.get("format") or "csv").lower()
+    bar_name = (body.get("bar_name") or _load_bar().get("name") or "bar").strip()
+    summary = (body.get("summary") or "").strip()
+    rows = body.get("rows") or []
+    if not isinstance(rows, list):
+        return jsonify({"error": "rows must be an array"}), 400
+    safe = re.sub(r"[^\w\-]+", "_", bar_name).strip("_") or "bar"
+
+    if fmt == "xml":
+        body_xml = _export_count_comparison_xml(bar_name, summary, rows)
+        return Response(
+            body_xml,
+            mimetype="application/xml",
+            headers={"Content-Disposition": f"attachment; filename={safe}_count_comparison.xml"},
+        )
+
+    if fmt in ("xlsx", "xls", "excel"):
+        try:
+            resp = _export_xlsx(rows, _COUNT_COMPARISON_HEADERS, "Map vs Count")
+            resp.headers["Content-Disposition"] = f"attachment; filename={safe}_count_comparison.xlsx"
+            return resp
+        except ImportError:
+            fmt = "csv"
+
+    sbuf = io.StringIO()
+    writer = csv.writer(sbuf)
+    if summary:
+        writer.writerow(["# bar", bar_name])
+        writer.writerow(["# summary", summary])
+        writer.writerow(["# exported_at", _now()])
+        writer.writerow([])
+    writer.writerow(_COUNT_COMPARISON_HEADERS)
+    for r in rows:
+        writer.writerow([r.get(h, "") for h in _COUNT_COMPARISON_HEADERS])
+    return Response(
+        "﻿" + sbuf.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={safe}_count_comparison.csv"},
+    )
+
+
 @app.route("/api/export/bottles", methods=["GET"])
 def api_export_bottles():
     """Full bottle-audit or clipboard walk sheet — CSV, XLSX, or XML."""
