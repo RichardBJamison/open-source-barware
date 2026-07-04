@@ -335,6 +335,27 @@ a { color: var(--copper-bright); }
   width: 100%;
 }
 
+.map-toolkit-feedback {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--patina-light);
+  text-align: center;
+}
+
+.map-toolkit-feedback.hidden {
+  display: none;
+}
+
+.btn-map-action-done {
+  border-color: var(--patina-light) !important;
+  color: var(--patina-light) !important;
+  background: rgba(74, 124, 111, 0.15) !important;
+}
+
+.map-download-grid .btn-map-action-done {
+  color: var(--patina-light) !important;
+}
+
 .map-toolkit-eyebrow {
   font-size: 0.72rem;
   letter-spacing: 0.14em;

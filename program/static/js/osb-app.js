@@ -1902,21 +1902,73 @@ function buildMapPlainText() {
   return lines.join("\n").trim();
 }
 
-async function copyMapToClipboard() {
-  const text = buildMapPlainText();
-  try {
-    await navigator.clipboard.writeText(text);
-    setStatus("Map copied — paste into Notes or keep on your phone while you walk.");
-  } catch {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.className = "hidden";
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-    setStatus("Map copied.");
+function showMapToolkitFeedback(message, btn, doneLabel) {
+  const el = document.getElementById("mapToolkitFeedback");
+  if (el) {
+    el.textContent = message;
+    el.classList.remove("hidden");
   }
+  if (btn) {
+    if (!btn.dataset.defaultLabel) {
+      const inner = btn.querySelector("#btnMapCopyLabel");
+      btn.dataset.defaultLabel = inner ? inner.textContent.trim() : btn.textContent.trim();
+    }
+    btn.classList.add("btn-map-action-done");
+    const label = btn.querySelector("#btnMapCopyLabel");
+    if (doneLabel && label) label.textContent = doneLabel;
+    else if (doneLabel) btn.textContent = doneLabel;
+    window.setTimeout(() => {
+      btn.classList.remove("btn-map-action-done");
+      if (label) label.textContent = btn.dataset.defaultLabel;
+      else btn.textContent = btn.dataset.defaultLabel;
+      el?.classList.add("hidden");
+    }, 2800);
+  }
+  setStatus(message);
+}
+
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      /* fall through */
+    }
+  }
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0, text.length);
+  let ok = false;
+  try {
+    ok = document.execCommand("copy");
+  } catch {
+    ok = false;
+  }
+  ta.remove();
+  return ok;
+}
+
+async function copyMapToClipboard() {
+  await persistBar();
+  const text = buildMapPlainText();
+  if (!text.trim()) {
+    setStatus("Nothing on your map yet — add bottles first.");
+    return false;
+  }
+  const ok = await copyTextToClipboard(text);
+  const btn = document.getElementById("btnMapCopy");
+  if (ok) {
+    showMapToolkitFeedback("✓ Copied — paste into Notes on your phone.", btn, "✓ Copied to clipboard");
+    return true;
+  }
+  setStatus("Could not copy — select and copy from the digital view below.");
+  return false;
 }
 
 function renderMapDigitalView() {
@@ -2005,24 +2057,66 @@ function buildMapPrintHtml() {
   <h1>${escapeHtml(barName)} — Inventory Walk Sheet</h1>
   <p class="lead">Hand this to your barback. Walk station by station. Write levels in tenths. Use blank and ADD rows for bottles you find on the shelf.</p>
   ${stationBlocks || "<p>No bottles mapped yet.</p>"}
-  <script>window.onload = function() { window.print(); }<\/script>
 </body></html>`;
 }
 
 function printMapSheet() {
   const html = buildMapPrintHtml();
-  const win = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
+  const win = window.open("", "_blank");
   if (!win) {
-    setStatus("Allow pop-ups to print the walk sheet, or download the .csv / .xlsx instead.");
-    return;
+    setStatus("Allow pop-ups to print — then choose Save as PDF or your printer.");
+    return false;
   }
+  win.document.open();
   win.document.write(html);
   win.document.close();
+  win.focus();
+  const triggerPrint = () => {
+    try {
+      win.print();
+    } catch {
+      setStatus("Print window opened — use File → Print or Save as PDF.");
+    }
+  };
+  win.addEventListener("load", triggerPrint);
+  window.setTimeout(triggerPrint, 400);
+  return true;
 }
 
-async function downloadMapExport(href) {
+async function downloadMapExport(format, btn) {
   await persistBar();
-  window.location.href = href;
+  const href = `/api/export/bottles?format=${encodeURIComponent(format)}`;
+  try {
+    const r = await fetch(href);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || `Download failed (${r.status})`);
+    }
+    const blob = await r.blob();
+    const disp = r.headers.get("Content-Disposition") || "";
+    const match = disp.match(/filename="?([^";]+)"?/i);
+    const filename = match?.[1] || `map-${format}.${format.includes("xlsx") ? "xlsx" : "csv"}`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+    if (btn) {
+      const defaultLabel = btn.dataset.defaultLabel || btn.textContent;
+      if (!btn.dataset.defaultLabel) btn.dataset.defaultLabel = defaultLabel;
+      showMapToolkitFeedback(`✓ Downloaded ${filename}`, btn, "✓ Downloaded");
+    } else {
+      setStatus(`Downloaded ${filename}`);
+    }
+    return true;
+  } catch (e) {
+    setStatus(e.message || "Download failed.");
+    return false;
+  }
 }
 
 function renderReviewEditor() {
@@ -2640,22 +2734,23 @@ async function initSetup() {
   document.getElementById("btnMapModalCloseBackdrop")?.addEventListener("click", () => setMapToolkitOpen(false));
 
   document.getElementById("btnMapCopy")?.addEventListener("click", async () => {
-    await persistBar();
     await copyMapToClipboard();
   });
 
   document.getElementById("btnMapPrint")?.addEventListener("click", async () => {
     await persistBar();
-    printMapSheet();
-    setStatus("Print dialog opened — hand the sheet to your barback on a clipboard.");
+    const btn = document.getElementById("btnMapPrint");
+    if (printMapSheet()) {
+      showMapToolkitFeedback("Print dialog opening — choose printer or Save as PDF.", btn, "Opening print…");
+    }
   });
 
-  ["btnMapExportWalkCsv", "btnMapExportWalkXlsx", "btnMapExportAuditCsv", "btnMapExportAuditXlsx"].forEach((id) => {
-    document.getElementById(id)?.addEventListener("click", async (e) => {
-      e.preventDefault();
-      const href = e.currentTarget.getAttribute("href");
-      if (href) await downloadMapExport(href);
-    });
+  document.getElementById("btnMapExportWalkCsv")?.addEventListener("click", async (e) => {
+    await downloadMapExport(e.currentTarget.dataset.format || "walk_csv", e.currentTarget);
+  });
+
+  document.getElementById("btnMapExportWalkXlsx")?.addEventListener("click", async (e) => {
+    await downloadMapExport(e.currentTarget.dataset.format || "walk_xlsx", e.currentTarget);
   });
 
   document.getElementById("btnMapDigitalAdd")?.addEventListener("click", () => {

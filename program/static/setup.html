@@ -460,12 +460,13 @@
           </p>
           <div class="map-toolkit-actions">
             <button class="btn btn-secondary" id="btnMapPrint" type="button">Print walk sheet</button>
-            <button class="btn btn-secondary" id="btnMapCopy" type="button">Copy map to clipboard</button>
+            <button class="btn btn-secondary" id="btnMapCopy" type="button">
+              <span id="btnMapCopyLabel">Copy map to clipboard</span>
+            </button>
+            <p id="mapToolkitFeedback" class="map-toolkit-feedback hidden" role="status"></p>
             <div class="map-download-grid">
-              <a class="btn btn-ghost btn-sm" id="btnMapExportWalkCsv" href="/api/export/bottles?format=walk_csv">Walk sheet (.csv)</a>
-              <a class="btn btn-ghost btn-sm" id="btnMapExportWalkXlsx" href="/api/export/bottles?format=walk_xlsx">Walk sheet (.xlsx)</a>
-              <a class="btn btn-ghost btn-sm" id="btnMapExportAuditCsv" href="/api/export/bottles?format=csv">Full audit (.csv)</a>
-              <a class="btn btn-ghost btn-sm" id="btnMapExportAuditXlsx" href="/api/export/bottles?format=xlsx">Full audit (.xlsx)</a>
+              <button class="btn btn-ghost btn-sm" id="btnMapExportWalkCsv" type="button" data-format="walk_csv">Download walk sheet (.csv)</button>
+              <button class="btn btn-ghost btn-sm" id="btnMapExportWalkXlsx" type="button" data-format="walk_xlsx">Download walk sheet (.xlsx)</button>
             </div>
           </div>
           <div class="map-toolkit-digital">
@@ -593,6 +594,6 @@
 
     <p class="status" id="status"></p>
   </div>
-  <script src="/static/js/osb-app.js?v=20260704-map-modal"></script>
+  <script src="/static/js/osb-app.js?v=20260704-map-actions"></script>
 </body>
 </html>
