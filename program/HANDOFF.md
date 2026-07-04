@@ -1,67 +1,69 @@
 # OSB Chrome Program — Handoff
 
-*Updated: 2026-07-04 ~18:05 EDT | agent: GROK | project ID: `open-source-barware`*  
-*Status: **in-progress** — caterpillar ✅ · butterfly P0 ✅ · Analytics+Spreadsheets wired ✅ · Test 3 ✅ · Windows VC green*
+*Updated: 2026-07-04 ~18:15 EDT | agent: GROK | project ID: `open-source-barware`*  
+*Ship version: **`ac43e73`** on `main`*  
+*Status: **in-progress** — caterpillar ✅ · butterfly ✅ · Analytics+Spreadsheets ✅ · installers ✅ · Test 3 ✅ · Windows VC green*
 
 ## Nexus pickup
 
 **Read first:** `~/Me-Nexus/library/open-source-barware/HANDOFF.md`  
-**Full gap + Test 3 spec:** `~/Me-Nexus/library/open-source-barware/SHIP-GAP-AND-TEST3-2026-07-04.md`  
-**Doc index:** `~/Me-Nexus/library/open-source-barware/README.md`
+**Ship snapshot:** `~/Me-Nexus/library/open-source-barware/PROGRAM-SNAPSHOT-2026-07-04.md`  
+**Test 3:** `~/Me-Nexus/library/open-source-barware/TEST3-REPORT-2026-07-04.md`
 
 ---
 
 ## Purpose
 
-Local Chrome-side inventory program. OVLP POP pattern: `install.sh` → `~/osb-program/` → LaunchAgent → bookmark `http://localhost:5052/` in Chrome.
+Local Chrome-side inventory program. OVLP POP pattern:
 
-Website `/inventory` = Dojo sandbox only. Real product = this folder.
+```
+Install.command / Install.bat → ~/osb-program → auto-start → bookmark http://localhost:5052/
+```
 
----
-
-## Lifecycle
-
-| Phase | Step | Status |
-|-------|------|--------|
-| `welcome` … `map_review` | 1–6 | ✅ **Locked** — do not rework UX |
-| `first_count` | 7 | ✅ Parser + reconcile + golden gate |
-| `butterfly` | Home admin | ✅ **P0 shipped** — see below |
+Website `/inventory` = Dojo sandbox only. **This folder is the product.**
 
 ---
 
-## Butterfly (shipped 2026-07-04)
+## Butterfly admin (`/home`)
 
-- Cycle close on `first_count_complete` → `program_state.json` `cycles[]`
-- Live `/api/metrics` + first-week panel on dashboard
-- `/api/in-house` + category table UI
-- Spreadsheets panel — export download links
-- Weekly inputs — POS upload log (`/api/pos/log`)
-- `/api/reports/first-week`
-- `node scripts/run-test3.mjs` — **PASS**
+| Panel | Backend | Status |
+|-------|---------|--------|
+| Dashboard | `GET /api/metrics` | ✅ |
+| Spreadsheets | `GET /api/analytics` + tabs + exports | ✅ |
+| Analytics | `GET /api/analytics` | ✅ (pinned from Dojo `103cf97`) |
+| In-house | `GET /api/in-house` | ✅ |
+| Weekly inputs | `GET/POST /api/pos/log` | ✅ |
+| Settings | bars + `POST /api/config` | ✅ |
 
-**Cache bust:** `osb-app.js?v=20260704-butterfly` on `home.html`
-
----
-
-## Remaining (post-P0)
-
-1. Full browser walk-through (welcome → home) on real dictation  
-2. POS parse / mid-week inventory estimate  
-3. Variance / usage metrics (needs POS reconcile)  
-4. Whole-bottle display toggle (`SYNC_FROM_WEB_DOJO.md`)  
-5. Dojo sandbox parity
+**Cache bust:** `osb-app.js?v=20260704-analytics-spreadsheets`
 
 ---
 
-## What's locked (caterpillar)
+## Installers
 
-- Two-pass coaching (Pass 1 map / Pass 2 count)  
-- Green **Print / Download MAP** modal Steps 5 & 6  
-- Export: `GET /api/export/bottles?format=csv|xlsx|xml|walk_csv|walk_xlsx`  
-- Count comparison: `POST /api/export/count-comparison`  
-- Finish count disabled until `!hasIssues`  
+| Platform | Entry | Installs to |
+|----------|-------|-------------|
+| Mac | `Install.command` | `~/osb-program` + LaunchAgent |
+| Win | `Install.bat` → `install.ps1` | `%USERPROFILE%\osb-program` + Startup shortcut |
+| Zips | `npm run package:program` | `public/downloads/open-source-barware-program-{mac,win}.zip` |
 
-**Tests:** `node scripts/run-test1.mjs` · `node scripts/run-test2.mjs` — both pass at `181a19e`
+**Windows verify (no physical PC):** GHA `windows-install-smoke.yml` → `program/scripts/windows-vc.ps1` (11 checks).
+
+---
+
+## Caterpillar — locked
+
+Steps 1–7. Tests 1–2 pass. Do not rework UX.
+
+---
+
+## Remaining
+
+1. Greystone browser QA on Analytics + Spreadsheet tabs (post-`ac43e73`)  
+2. Cost fields on bottles → analytics dollar accuracy  
+3. POS parse / variance metrics (P2)  
+4. Purchases tab (placeholder)  
+5. Second cycle → velocity/trends populate  
 
 ---
 
@@ -69,12 +71,13 @@ Website `/inventory` = Dojo sandbox only. Real product = this folder.
 
 | File | Role |
 |------|------|
-| `server.py` | Flask, phases, exports, butterfly stubs |
-| `static/js/osb-app.js` | Parsers, setup router, `initHome()` |
-| `static/home.html` | Admin shell (placeholders) |
-| `static/setup.html` | Caterpillar wizard |
-| `install.sh` | Customer installer |
-| `SYNC_FROM_WEB_DOJO.md` | Additive sync from Dojo (POS log, tenths toggle) |
+| `server.py` | Flask, phases, `/api/analytics`, exports, cycles |
+| `static/js/osb-app.js` | Parsers, `initHome()`, `loadAnalytics()`, workbook tabs |
+| `static/home.html` | Admin shell |
+| `static/downloads/Bar-Inventory-Master.xlsx` | Workbook download |
+| `install.ps1` / `Install.command` | Customer installers |
+| `scripts/windows-vc.ps1` | Synthetic Windows VC |
+| `scripts/run-test3.mjs` | E2E harness — **PASS** |
 
 ---
 
@@ -82,36 +85,32 @@ Website `/inventory` = Dojo sandbox only. Real product = this folder.
 
 ```bash
 cd "/Users/richardjamison/Documents/New project/open-source-barware/program"
-source .venv/bin/activate 2>/dev/null || python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python3 server.py
-# → http://localhost:5052/
-curl -s http://localhost:5052/ping
+source .venv/bin/activate && python3 server.py
+# → http://localhost:5052/home
+
 node scripts/run-test1.mjs
 node scripts/run-test2.mjs
+node scripts/run-test3.mjs
+
+cd .. && npm run package:program   # rebuild customer zips
 ```
 
-Restart Flask after `server.py` changes. Cmd+Shift+R after JS/CSS.
+Restart Flask after `server.py` changes. Hard-refresh after JS/CSS.
 
 ---
 
 ## Safety
 
-- Do not delete `data/` — live test bar (~218 bottles)  
-- Do not commit `osb_config.json` or runtime `data/` state  
+- Do not delete `data/` without Richard (Greystone test bar)  
+- Do not commit `osb_config.json` or `data/` runtime state  
 - API keys: customer `~/osb-program/osb_config.json` only  
 
 ---
 
-## Untracked dev file
-
-`scripts/test-count-reconcile.mjs` — one-off harness against `data/bars.json`. Safe to commit or gitignore; not part of Test 1/2/3 suite.
-
----
-
-## Pickup command
+## Pickup
 
 ```bash
-cat ~/Me-Nexus/library/open-source-barware/HANDOFF.md
-cd ~/Documents/New\ project/open-source-barware && git pull && cd program && python3 server.py
+cat ~/Me-Nexus/library/open-source-barware/PROGRAM-SNAPSHOT-2026-07-04.md
+cd ~/Documents/New\ project/open-source-barware && git pull
+cd program && source .venv/bin/activate && python3 server.py
 ```

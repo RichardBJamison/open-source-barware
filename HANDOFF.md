@@ -1,10 +1,24 @@
 # Open Source Barware — Handoff
 
-*Last updated: 2026-07-04 ~15:40 EDT | agent: GROK | project ID: `open-source-barware`*
-*Status: **IN-PROGRESS** — caterpillar ✅ · butterfly P0 for **6pm EDT launch** · Tests 1–2 pass*
+*Last updated: 2026-07-04 ~18:15 EDT | agent: GROK | project ID: `open-source-barware`*
+*Ship version: **`ac43e73`** on `main`*
+*Status: **IN-PROGRESS** — caterpillar ✅ · butterfly ✅ · Dojo+program Analytics/Spreadsheets ✅ · installers ✅ · Test 3 ✅ · launch **10pm EDT***
 
-> **Claude Code pickup:** Read `~/Me-Nexus/library/open-source-barware/HANDOFF.md` and
-> `SHIP-GAP-AND-TEST3-2026-07-04.md` before touching code. Program detail: `program/HANDOFF.md`.
+> **Pickup:** `~/Me-Nexus/library/open-source-barware/HANDOFF.md` + `PROGRAM-SNAPSHOT-2026-07-04.md`  
+> Program detail: `program/HANDOFF.md`
+
+## Ship version summary (`ac43e73`)
+
+- **Dojo (Reeve `103cf97`):** `/inventory/analytics`, `/inventory/spreadsheets`, `Bar-Inventory-Master.xlsx`, `recharts`
+- **Program (Grok):** `GET /api/analytics`, workbook tabs in `/home`, Mac/Win installers, Windows GHA VC green
+- **Tests:** `run-test1.mjs`, `run-test2.mjs`, `run-test3.mjs` (23 assertions) — all pass
+- **Launch gate:** `lib/launch-gate.ts` → July 4, **10pm Eastern** (`LAUNCH_MS = 2026-07-04T22:00:00-04:00`)
+- **Zips:** `npm run package:program` → `public/downloads/open-source-barware-program-{mac,win}.zip`
+
+```bash
+cd ~/Documents/New\ project/open-source-barware && git pull
+cd program && node scripts/run-test3.mjs
+```
 
 ## Purpose
 

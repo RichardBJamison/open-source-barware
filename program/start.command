@@ -1,16 +1,19 @@
 #!/bin/bash
-# Open Source Bar Program — one-click launcher (macOS)
-cd "$(dirname "$0")"
-echo ""
-echo "  Open Source Bar Program"
-echo "  ----------------------------------------"
-if [ ! -d ".venv" ]; then
-  echo "  First run: setting up (installs Flask, ~20s)..."
-  python3 -m venv .venv
+INSTALL_DIR="$HOME/osb-program"
+PORT=5052
+VENV_PY="$INSTALL_DIR/.venv/bin/python3"
+
+clear
+echo "  Open Source Barware — Start"
+if [ ! -f "$INSTALL_DIR/server.py" ]; then
+  echo "  Run Install.command first."
+  read -p "  Press Enter..."; exit 1
 fi
-source .venv/bin/activate
-pip install -q -r requirements.txt 2>/dev/null
-echo "  Ready. Open this in Chrome:  http://localhost:5052/"
-echo "  (Leave this window open. Press Ctrl+C to stop.)"
-echo ""
-python3 server.py
+lsof -ti :$PORT | xargs kill -9 2>/dev/null || true
+"$VENV_PY" "$INSTALL_DIR/server.py" >> "$INSTALL_DIR/data/osb_server.log" 2>&1 &
+for i in $(seq 1 15); do
+  curl -s "http://localhost:${PORT}/ping" >/dev/null 2>&1 && break
+  sleep 1
+done
+open "http://localhost:${PORT}/"
+read -p "  Press Enter to close..."
