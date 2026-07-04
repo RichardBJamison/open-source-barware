@@ -67,6 +67,10 @@ const WALK_NOTES_EXTENSIONS = new Set(["txt", "text", "md", "markdown", "rtf", "
 const WALK_NOTES_ACCEPT_LABEL = ".txt · .md · .markdown · .rtf";
 const BOTTLE_SIZES = ["50ml", "200ml", "375ml", "750ml", "1L", "1.75L"];
 let walkReviewListenersBound = false;
+let walkParseTimer = null;
+let countParseTimer = null;
+let lastParsedWalkText = "";
+let lastParsedCountText = "";
 
 function walkNotesExtension(filename) {
   const parts = (filename || "").split(".");
@@ -673,7 +677,7 @@ function updateWalkContinueButton() {
   if (ready) {
     btn.textContent = "Continue to reconcile →";
   } else if (bottleCount() === 0) {
-    btn.textContent = "Upload notes first";
+    btn.textContent = "Parse my notes to continue";
   } else {
     btn.textContent =
       remaining === 1
@@ -1892,12 +1896,24 @@ function updateCountSummary() {
   const el = document.getElementById("countSummaryText");
   if (!el) return;
   const bottles = allBottles();
-  const entered = bottles.filter((b) => b.count_matched || (b.current_level ?? 1) !== 1).length;
-  let text = `${entered} of ${bottles.length} bottles have levels`;
-  if (lastCountReconcile?.hasIssues) {
-    text += ` — ${lastCountReconcile.surprises.length} surprise(s), ${lastCountReconcile.notInCount.length} missing`;
+  const total = bottles.length;
+  const r = lastCountReconcile;
+
+  if (r && !r.hasIssues && (r.matched?.length || 0) > 0) {
+    el.textContent = `Golden — ${r.matched.length} matched on your map. Levels are locked; finish when ready.`;
+    return;
   }
-  el.textContent = `${text}. Review before finishing.`;
+
+  const matched = r?.matched?.length ?? bottles.filter((b) => b.count_matched).length;
+  let text = `${matched} of ${total} bottles matched in your count`;
+  if (r?.hasIssues) {
+    text += ` — ${r.surprises.length} surprise(s), ${r.notInCount.length} missing. Reconcile before finishing.`;
+  } else if (!countParsed) {
+    text += ". Paste notes, then click Parse my count (or pause typing — we parse automatically).";
+  } else {
+    text += ". Review levels below.";
+  }
+  el.textContent = text;
 }
 
 function renderCountReview() {
@@ -1933,12 +1949,13 @@ function renderCountReview() {
 
 async function processCountNotes(text) {
   if (!text?.trim()) {
-    setStatus(`Upload a count file (${WALK_NOTES_ACCEPT_LABEL}) or paste your notes first.`);
+    setStatus(`Paste your count below, or choose a ${WALK_NOTES_ACCEPT_LABEL} file.`);
     return;
   }
   const { matched, reconcile } = parseCountNotes(text);
   await OSB.uploadCountNotes(text);
   await persistBar();
+  lastParsedCountText = text.trim();
   setCountView(true);
   if (reconcile?.hasIssues) {
     setStatus(
@@ -2023,7 +2040,7 @@ async function initWalkStep(data) {
 
 async function processWalkNotes(text) {
   if (!text?.trim()) {
-    setStatus(`Upload a notes file (${WALK_NOTES_ACCEPT_LABEL}) or paste your notes first.`);
+    setStatus(`Paste your walk notes below, or choose a ${WALK_NOTES_ACCEPT_LABEL} file.`);
     return;
   }
   const added = parseVoiceNotes(text);
@@ -2031,13 +2048,41 @@ async function processWalkNotes(text) {
   if (!barState.setup) barState.setup = {};
   barState.setup.walk_review_status = "pending";
   await persistBar({ walk_review_status: "pending" });
+  lastParsedWalkText = text.trim();
   setWalkView(true);
   updateWalkSummary();
   setStatus(
     added
-      ? `Uploaded ${added} draft rows — review names and sizes before you continue.`
+      ? `Parsed ${added} draft rows — review names and sizes before you continue.`
       : "Notes saved — add bottles manually, then review before you continue."
   );
+}
+
+function scheduleWalkParse() {
+  clearTimeout(walkParseTimer);
+  walkParseTimer = window.setTimeout(async () => {
+    const text = document.getElementById("voiceNotes")?.value?.trim() || "";
+    if (text.length < 24 || text === lastParsedWalkText) return;
+    try {
+      await processWalkNotes(text);
+    } catch (e) {
+      setStatus(e.message);
+    }
+  }, 700);
+}
+
+function scheduleCountParse() {
+  clearTimeout(countParseTimer);
+  countParseTimer = window.setTimeout(async () => {
+    const text = document.getElementById("countNotes")?.value?.trim() || "";
+    if (text.length < 24 || text === lastParsedCountText) return;
+    try {
+      await processCountNotes(text);
+      lastParsedCountText = text;
+    } catch (e) {
+      setStatus(e.message);
+    }
+  }, 700);
 }
 
 async function saveBuildBarName() {
@@ -3428,6 +3473,8 @@ async function initSetup() {
     await initSetup();
   });
 
+  document.getElementById("voiceNotes")?.addEventListener("input", scheduleWalkParse);
+
   document.getElementById("btnUploadNotes")?.addEventListener("click", async () => {
     const text = document.getElementById("voiceNotes")?.value?.trim();
     if (text) {
@@ -3508,14 +3555,14 @@ async function initSetup() {
             : `${remaining} rows still need the OK checkbox — we scrolled to the first one.`
         );
       } else {
-        setStatus("Upload notes or add bottles, then review names and sizes before continuing.");
+        setStatus("Parse my notes or add bottles, then review names and sizes before continuing.");
       }
       return;
     }
     const text = document.getElementById("voiceNotes")?.value?.trim();
     if (text) await OSB.uploadVoiceNotes(text);
     if (bottleCount() === 0 && !text) {
-      setStatus("Upload notes or add at least one bottle for this bar.");
+      setStatus("Parse my notes or add at least one bottle for this bar.");
       return;
     }
     await persistBar();
@@ -3617,6 +3664,8 @@ async function initSetup() {
     }
     setStatus("");
   });
+
+  document.getElementById("countNotes")?.addEventListener("input", scheduleCountParse);
 
   document.getElementById("btnUploadCount")?.addEventListener("click", async () => {
     const text = document.getElementById("countNotes")?.value?.trim();
@@ -3725,7 +3774,7 @@ async function initSetup() {
 
   document.getElementById("btnFirstCountDone")?.addEventListener("click", async () => {
     if (!countParsed) {
-      setStatus("Upload or paste your count first, then review levels in the table.");
+      setStatus("Parse or paste your count first, then review levels in the table.");
       return;
     }
     if (lastCountReconcile?.hasIssues) {
