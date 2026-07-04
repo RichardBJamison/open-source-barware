@@ -1,7 +1,7 @@
 # OSB Chrome Program — Handoff
 
-*Updated: 2026-07-04 ~15:40 EDT | agent: GROK | project ID: `open-source-barware`*  
-*Status: **in-progress** — caterpillar ✅ · butterfly P0 ✅ · Test 3 ✅ · version `0.3.0-butterfly-2026-07-04`*
+*Updated: 2026-07-04 ~18:05 EDT | agent: GROK | project ID: `open-source-barware`*  
+*Status: **in-progress** — caterpillar ✅ · butterfly P0 ✅ · Analytics+Spreadsheets wired ✅ · Test 3 ✅ · Windows VC green*
 
 ## Nexus pickup
 
