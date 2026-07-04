@@ -542,7 +542,15 @@ function moveBottle(bottleId, fromStationId, toStationId) {
 
 function stationIdByName(name) {
   const key = (name || "").trim().toLowerCase();
-  return sortedStations().find((s) => s.name.toLowerCase() === key)?.id ?? null;
+  if (!key) return null;
+  const exact = sortedStations().find((s) => s.name.toLowerCase() === key);
+  if (exact) return exact.id;
+  const norm = key.replace(/[^a-z0-9]/g, "");
+  const fuzzy = sortedStations().find((s) => {
+    const sk = s.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return sk === norm || sk.includes(norm) || norm.includes(sk);
+  });
+  return fuzzy?.id ?? null;
 }
 
 function walkUnverifiedCount() {
@@ -972,6 +980,13 @@ function parseCountLevel(fragment) {
   if (/\b(point\s*five|point\s*5|0\.5|\.5|half)\b/.test(t)) return 0.5;
   const pointTenth = t.match(/\bpoint\s*(\d)\b/);
   if (pointTenth) return parseInt(pointTenth[1], 10) / 10;
+  const dotInPhrase = t.match(/\b\.(\d)\b/);
+  if (dotInPhrase) return parseInt(dotInPhrase[1], 10) / 10;
+  const fracInPhrase = t.match(/\b(\d+)\/(\d+)\b/);
+  if (fracInPhrase) {
+    const den = parseInt(fracInPhrase[2], 10);
+    if (den > 0) return Math.min(99, parseInt(fracInPhrase[1], 10) / den);
+  }
   if (/\bzero\b|\bnone\b|\bout\b/.test(t)) return 0;
   for (const [word, val] of Object.entries(COUNT_LEVEL_WORDS)) {
     if (new RegExp(`\\b${word}\\b`).test(t)) return val;
@@ -985,6 +1000,13 @@ function countLevelOf(token) {
   const t = (token || "").replace(/[.,;:!?]+$/, "").toLowerCase();
   if (!t) return null;
   if (t === "half" || t === "0.5" || t === ".5") return 0.5;
+  const dotTenth = t.match(/^\.(\d)$/);
+  if (dotTenth) return parseInt(dotTenth[1], 10) / 10;
+  const frac = t.match(/^(\d+)\/(\d+)$/);
+  if (frac) {
+    const den = parseInt(frac[2], 10);
+    if (den > 0) return Math.min(99, parseInt(frac[1], 10) / den);
+  }
   if (COUNT_LEVEL_WORDS[t] !== undefined) return COUNT_LEVEL_WORDS[t];
   const num = t.match(/^(\d+(?:\.\d+)?)$/);
   if (num) return Math.min(99, parseFloat(num[1]));
@@ -1014,17 +1036,32 @@ function bottleNameInLine(line, bottleName) {
   return hits >= Math.ceil(tokens.length * 0.55);
 }
 
+function normalizeCountName(s) {
+  return (s || "").toLowerCase().replace(/[''`´]/g, "'").trim();
+}
+
 function scoreCountBottleMatch(spokenName, bottle) {
-  const spoken = spokenName.toLowerCase().trim();
-  const name = (bottle.name || "").toLowerCase().trim();
+  const spoken = normalizeCountName(spokenName);
+  const name = normalizeCountName(bottle.name);
   if (!spoken || !name) return 0;
   if (spoken === name) return 200;
   if (spoken.includes(name) || name.includes(spoken)) return 150 + name.length;
-  const tokens = name.split(/\s+/).filter((tok) => tok.length > 2);
-  if (!tokens.length) return spoken.includes(name.split(" ")[0]) ? 80 : 0;
-  const hits = tokens.filter((tok) => spoken.includes(tok)).length;
-  if (hits < Math.ceil(tokens.length * 0.55)) return 0;
-  return 60 + hits * 10;
+  const spokenTokens = spoken.split(/\s+/).filter((tok) => tok.length > 1);
+  const nameTokens = name.split(/\s+/).filter((tok) => tok.length > 2);
+  if (spokenTokens.length === 1 && nameTokens.length) {
+    const head = spokenTokens[0].replace(/['’]s$/, "");
+    if (name.startsWith(head) || nameTokens[0] === head || nameTokens[0].startsWith(head)) {
+      return 120 + head.length;
+    }
+  }
+  if (!nameTokens.length) return spoken.includes(name.split(" ")[0]) ? 80 : 0;
+  const hits = nameTokens.filter((tok) => spoken.includes(tok)).length;
+  const spokenHits = spokenTokens.filter((tok) => name.includes(tok)).length;
+  const bestHits = Math.max(hits, spokenHits);
+  if (bestHits < 1) return 0;
+  if (spokenTokens.length <= 2 && bestHits >= 1) return 70 + bestHits * 15;
+  if (bestHits < Math.ceil(nameTokens.length * 0.55)) return 0;
+  return 60 + bestHits * 10;
 }
 
 function findCountBottleMatch(spokenName, stationLabel) {
@@ -1062,35 +1099,169 @@ function parseCountText(rawText) {
   let currentStation = null;
   let buf = [];
 
+  function flushEntry(level) {
+    const name = countCleanName(buf.join(" "));
+    if (name && name.length > 1) {
+      entries.push({ name, station: currentStation, level: level ?? null });
+    }
+    buf = [];
+  }
+
   let i = 0;
   while (i < words.length) {
     const st = walkMatchStation(words, i);
     if (st) {
-      if (buf.length) {
-        const name = walkCleanName(buf.join(" "));
-        if (name) entries.push({ name, station: currentStation, level: null });
-        buf = [];
-      }
+      if (buf.length) flushEntry(null);
       currentStation = st.label;
       i += st.consumed;
       continue;
     }
     const lv = countLevelAt(words, i);
     if (lv) {
-      const name = walkCleanName(buf.join(" "));
-      if (name) entries.push({ name, station: currentStation, level: lv.level });
-      buf = [];
+      flushEntry(lv.level);
       i += lv.consumed;
       continue;
     }
     buf.push(words[i]);
     i += 1;
   }
-  if (buf.length) {
-    const name = walkCleanName(buf.join(" "));
-    if (name) entries.push({ name, station: currentStation, level: null });
-  }
+  if (buf.length) flushEntry(null);
   return entries;
+}
+
+function reconcileCountToMap(parsedEntries) {
+  const matched = [];
+  const notInCount = [];
+  const surprises = [];
+  const mapUsed = new Map();
+
+  for (const entry of parsedEntries) {
+    if (entry.level === null) {
+      surprises.push({
+        entry,
+        reason: "no_level",
+        message: `We heard "${entry.name}" but no level — say the tenths or "full".`,
+      });
+      continue;
+    }
+    const hit = findCountBottleMatch(entry.name, entry.station);
+    if (!hit) {
+      surprises.push({
+        entry,
+        reason: "not_on_map",
+        message: `"${entry.name}" at ${entry.level} — not on your approved map. Shelf changed? Reconcile the map first.`,
+      });
+      continue;
+    }
+    const key = `${hit.stationId}:${hit.id}`;
+    if (mapUsed.has(key)) {
+      surprises.push({
+        entry,
+        reason: "extra_on_shelf",
+        similarTo: hit,
+        message: `Another "${entry.name}" at ${entry.level} — map only has one ${hit.name}. Possible new bottle; reconcile your map.`,
+      });
+      continue;
+    }
+    mapUsed.set(key, entry.level);
+    matched.push({ entry, bottle: hit, level: entry.level });
+  }
+
+  for (const b of allBottles()) {
+    const key = `${b.stationId}:${b.id}`;
+    if (!mapUsed.has(key)) {
+      notInCount.push({
+        bottle: b,
+        message: `${b.name} (${b.stationName}) — on your map but not in this count.`,
+      });
+    }
+  }
+
+  return {
+    matched,
+    notInCount,
+    surprises,
+    hasIssues: notInCount.length > 0 || surprises.length > 0,
+    summary: buildCountReconcileSummary(matched, notInCount, surprises),
+  };
+}
+
+function buildCountReconcileSummary(matched, notInCount, surprises) {
+  const parts = [`${matched.length} matched to your map`];
+  if (notInCount.length) parts.push(`${notInCount.length} on map but not counted`);
+  if (surprises.length) parts.push(`${surprises.length} need reconciliation`);
+  return parts.join(" · ");
+}
+
+let lastCountReconcile = null;
+
+function renderCountReconcileReport(report) {
+  lastCountReconcile = report;
+  const el = document.getElementById("countReconcileReport");
+  if (!el) return;
+
+  if (!report || (!report.hasIssues && report.matched.length)) {
+    if (report?.matched.length && !report.hasIssues) {
+      el.classList.remove("hidden");
+      el.innerHTML = `
+        <div class="count-reconcile-ok">
+          <strong>Count matches your map.</strong>
+          <span>${escapeHtml(report.summary)} — review levels below, then finish.</span>
+        </div>`;
+      return;
+    }
+    el.classList.add("hidden");
+    el.innerHTML = "";
+    return;
+  }
+
+  let html = `
+    <div class="count-reconcile-alert">
+      <p class="count-reconcile-head"><strong>Wait — your count doesn't match your map.</strong></p>
+      <p class="count-reconcile-lead">Shelves change. Bartenders grab bottles. This is normal — reconcile before you lock the baseline.</p>
+      <p class="count-reconcile-stats">${escapeHtml(report.summary)}</p>
+    </div>`;
+
+  if (report.surprises.length) {
+    html += `<div class="count-reconcile-section">
+      <p class="box-label">Not on your map — reconcile first</p>
+      <ul class="count-reconcile-list">`;
+    for (const s of report.surprises) {
+      const station = s.entry.station ? ` · ${escapeHtml(s.entry.station)}` : "";
+      html += `<li class="count-reconcile-surprise">
+        <span>${escapeHtml(s.message)}</span>
+        <span class="count-reconcile-meta">Heard: "${escapeHtml(s.entry.name)}"${station} · level ${s.entry.level ?? "?"}</span>
+      </li>`;
+    }
+    html += `</ul></div>`;
+  }
+
+  if (report.notInCount.length) {
+    html += `<div class="count-reconcile-section">
+      <p class="box-label">On your map — not in this count</p>
+      <ul class="count-reconcile-list">`;
+    for (const m of report.notInCount) {
+      html += `<li class="count-reconcile-missing">${escapeHtml(m.message)}</li>`;
+    }
+    html += `</ul></div>`;
+  }
+
+  if (report.matched.length) {
+    html += `<div class="count-reconcile-section">
+      <p class="box-label">Matched — levels applied</p>
+      <ul class="count-reconcile-list count-reconcile-matched-list">`;
+    for (const m of report.matched) {
+      html += `<li class="count-reconcile-matched">
+        <span>${escapeHtml(m.bottle.name)}</span>
+        <span class="count-reconcile-meta">${escapeHtml(m.bottle.stationName)} · heard "${escapeHtml(m.entry.name)}" · ${m.level}</span>
+      </li>`;
+    }
+    html += `</ul></div>`;
+  }
+
+  html += `<p class="count-reconcile-foot">Fix surprises in <strong>Review</strong> (add/remove bottles), or set levels manually below, then finish.</p>`;
+  el.classList.remove("hidden");
+  el.innerHTML = html;
 }
 
 function parseCountNotes(text) {
@@ -1100,21 +1271,32 @@ function parseCountNotes(text) {
 
   for (const b of bottles) {
     const bottle = findBottleRecord(b.id, b.stationId);
-    if (bottle) bottle.count_matched = false;
+    if (bottle) {
+      bottle.count_matched = false;
+      bottle.count_variance = null;
+    }
   }
 
-  for (const entry of parseCountText(text)) {
-    const hit = findCountBottleMatch(entry.name, entry.station);
-    if (!hit || entry.level === null) continue;
+  const parsed = parseCountText(text);
+  const reconcile = reconcileCountToMap(parsed);
+  renderCountReconcileReport(reconcile);
+
+  for (const { bottle: hit, level } of reconcile.matched) {
     const bottle = findBottleRecord(hit.id, hit.stationId);
     if (!bottle) continue;
     const key = `${hit.stationId}:${hit.id}`;
-    bottle.current_level = entry.level;
+    bottle.current_level = level;
     bottle.count_matched = true;
+    bottle.count_variance = "matched";
     if (!matchedKeys.has(key)) {
       matchedKeys.add(key);
       matched += 1;
     }
+  }
+
+  for (const m of reconcile.notInCount) {
+    const bottle = findBottleRecord(m.bottle.id, m.bottle.stationId);
+    if (bottle) bottle.count_variance = "missing";
   }
 
   for (const line of text.split(/\n+/).map((l) => l.trim()).filter(Boolean)) {
@@ -1128,12 +1310,13 @@ function parseCountNotes(text) {
       if (matchedKeys.has(key)) continue;
       bottle.current_level = level;
       bottle.count_matched = true;
+      bottle.count_variance = "matched";
       matchedKeys.add(key);
       matched += 1;
     }
   }
 
-  return matched;
+  return { matched, reconcile, parsed };
 }
 
 function setCountView(parsed) {
@@ -1151,7 +1334,11 @@ function updateCountSummary() {
   if (!el) return;
   const bottles = allBottles();
   const entered = bottles.filter((b) => b.count_matched || (b.current_level ?? 1) !== 1).length;
-  el.textContent = `${entered} of ${bottles.length} bottles have levels — review and fix before finishing.`;
+  let text = `${entered} of ${bottles.length} bottles have levels`;
+  if (lastCountReconcile?.hasIssues) {
+    text += ` — ${lastCountReconcile.surprises.length} surprise(s), ${lastCountReconcile.notInCount.length} missing`;
+  }
+  el.textContent = `${text}. Review before finishing.`;
 }
 
 function renderCountReview() {
@@ -1165,9 +1352,14 @@ function renderCountReview() {
   body.innerHTML = bottles
     .map((b) => {
       const level = b.current_level ?? 1;
-      const status = b.count_matched
-        ? '<span class="report-ok">from notes</span>'
-        : '<span class="report-warn">set level</span>';
+      let status;
+      if (b.count_variance === "missing") {
+        status = '<span class="report-flag">not in count</span>';
+      } else if (b.count_matched) {
+        status = '<span class="report-ok">from notes</span>';
+      } else {
+        status = '<span class="report-warn">set level</span>';
+      }
       return `
         <tr data-bottle="${b.id}" data-station="${b.stationId}">
           <td>${escapeHtml(b.name)}</td>
@@ -1185,15 +1377,19 @@ async function processCountNotes(text) {
     setStatus(`Upload a count file (${WALK_NOTES_ACCEPT_LABEL}) or paste your notes first.`);
     return;
   }
-  const matched = parseCountNotes(text);
+  const { matched, reconcile } = parseCountNotes(text);
   await OSB.uploadCountNotes(text);
   await persistBar();
   setCountView(true);
-  setStatus(
-    matched
-      ? `Matched ${matched} bottles from your count — review levels below.`
-      : "Notes saved — set levels manually in the table below."
-  );
+  if (reconcile?.hasIssues) {
+    setStatus(
+      `Reconcile needed — ${reconcile.surprises.length} surprise(s), ${reconcile.notInCount.length} on map but not counted. See report above.`
+    );
+  } else if (matched) {
+    setStatus(`Matched ${matched} bottles from your count — review levels below.`);
+  } else {
+    setStatus("Notes saved — set levels manually in the table below.");
+  }
 }
 
 async function saveCountDraft() {
@@ -1215,7 +1411,8 @@ async function initCountStep(data) {
   if (countNotes) countNotes.value = notesText;
   if (notesText.trim()) {
     setCountEntryOpen(true);
-    parseCountNotes(notesText);
+    const result = parseCountNotes(notesText);
+    if (result?.reconcile) renderCountReconcileReport(result.reconcile);
     setCountView(true);
   } else {
     setCountEntryOpen(false);
@@ -1458,6 +1655,8 @@ function walkNormalizeText(text) {
   t = t.replace(/\b75[43]\b/g, "750"); // "750" + stray syllable collisions
   t = t.replace(/\b7\/5[43]\b/g, "750");
   t = t.replace(/\b(\d{1,4})750\b/g, "$1 750"); // "666750" glued numbers
+  t = t.replace(/\brow\s+(\d)\/(\d)\b/g, "row $1"); // "row 2/2" → row 2
+  t = t.replace(/\b(\d)\/(\d)\b/g, " $1/$2 "); // keep fractions as tokens
   return t;
 }
 
@@ -1533,6 +1732,14 @@ function walkCleanName(s) {
     .replace(/[.,]+/g, " ")
     .replace(/^0\d+\s+/, "")
     .replace(/\s+/g, " ")
+    .trim();
+}
+
+function countCleanName(s) {
+  return walkCleanName(s)
+    .replace(/^(?:bottle|bottles)\s+/i, "")
+    .replace(/\s+(?:bottle|bottles)$/i, "")
+    .replace(/\beach\s+one\b/gi, "")
     .trim();
 }
 
@@ -2877,6 +3084,13 @@ async function initSetup() {
   document.getElementById("btnFirstCountDone")?.addEventListener("click", async () => {
     if (!countParsed) {
       setStatus("Upload or paste your count first, then review levels in the table.");
+      return;
+    }
+    if (lastCountReconcile?.hasIssues) {
+      setStatus(
+        "Count still has map mismatches — reconcile surprises above or fix levels, then finish."
+      );
+      document.getElementById("countReconcileReport")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     await persistBar();

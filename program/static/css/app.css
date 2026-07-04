@@ -2415,3 +2415,80 @@ tr.row-flagged td.raw-heard {
 .report-flag {
   color: var(--wine-glow);
 }
+
+.count-reconcile-report {
+  margin: 16px 0 20px;
+  padding: 18px 20px;
+  background: linear-gradient(160deg, rgba(107, 45, 60, 0.18), rgba(17, 24, 34, 0.95));
+  border: 1px solid rgba(168, 120, 79, 0.35);
+  border-radius: 8px;
+}
+
+.count-reconcile-report.hidden {
+  display: none;
+}
+
+.count-reconcile-ok {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--patina-light);
+  font-size: 0.9rem;
+}
+
+.count-reconcile-alert {
+  margin-bottom: 14px;
+}
+
+.count-reconcile-head {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: var(--cream);
+}
+
+.count-reconcile-lead,
+.count-reconcile-stats,
+.count-reconcile-foot {
+  margin: 0 0 10px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.count-reconcile-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(168, 120, 79, 0.15);
+}
+
+.count-reconcile-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.count-reconcile-list li {
+  padding: 8px 0;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(168, 120, 79, 0.08);
+}
+
+.count-reconcile-surprise {
+  color: var(--copper-bright);
+}
+
+.count-reconcile-missing {
+  color: var(--wine-glow);
+}
+
+.count-reconcile-matched {
+  color: var(--patina-light);
+}
+
+.count-reconcile-meta {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.76rem;
+  color: var(--text-light);
+}

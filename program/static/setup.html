@@ -507,8 +507,9 @@
           <div class="info-box parse-expect-box">
             <p class="info-title">What happens when you upload</p>
             <p class="info-body">
-              We match your dictation against the <strong>approved map</strong> from Step 5 and draft bottle levels.
-              Messy speech is normal — review every row before you finish. Wrong levels poison every future cycle.
+              We match your dictation against the <strong>approved map</strong> from Step 5 and flag anything that
+              doesn't line up — new bottles on the shelf, items you missed, duplicate counts. Messy speech is normal;
+              reconcile surprises before you lock the baseline.
             </p>
           </div>
           <textarea id="countNotes" placeholder="Or paste your count notes here…"></textarea>
@@ -534,6 +535,7 @@
             <span id="countSummaryText"></span>
             <button class="btn btn-ghost btn-sm" id="btnRecount" type="button">Upload again</button>
           </div>
+          <div id="countReconcileReport" class="count-reconcile-report hidden" role="region" aria-label="Count versus map reconciliation"></div>
           <div class="walk-review-table-wrap scroll-panel">
             <table class="walk-review-table" id="countReviewTable">
               <thead>
@@ -598,6 +600,6 @@
       </div>
     </div>
   </div>
-  <script src="/static/js/osb-app.js?v=20260704-reconcile-toolkit"></script>
+  <script src="/static/js/osb-app.js?v=20260704-count-reconcile"></script>
 </body>
 </html>
