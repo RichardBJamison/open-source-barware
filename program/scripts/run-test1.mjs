@@ -47,7 +47,7 @@ const GROUND_TRUTH = {
       ["Woodford", "750ml"], ["Buffalo Trace", "750ml"], ["Four Roses", "750ml"], ["Wild Turkey", "750ml"],
     ],
     "Beer Cooler": [
-      ["Corona", "750ml"], ["Modelo", "750ml"], ["Heineken", "750ml"], ["Miller Lite", "750ml"], ["Coors Light", "750ml"],
+      ["Corona", "12oz"], ["Modelo", "12oz"], ["Heineken", "12oz"], ["Miller Lite", "12oz"], ["Coors Light", "12oz"],
     ],
     "Liquor Room": [
       ["Tito's Case", "750ml", 6], ["Ketel One Case", "750ml", 8], ["Bacardi Case", "750ml", 6],
@@ -110,8 +110,10 @@ function walkNormalizeText(text) {
 const WALK_SIZE_PATTERNS = [
   [/^1\.75\s*l?$/, "1.75L"],
   [/^handle$/, "1.75L"],
-  [/^12\s*oz$/, "750ml"],
-  [/^12oz$/, "750ml"],
+  [/^24\s*oz$/, "24oz"],
+  [/^16\s*oz$/, "16oz"],
+  [/^12\s*oz$/, "12oz"],
+  [/^12oz$/, "12oz"],
   [/^750(?:ml)?$/, "750ml"],
   [/^375(?:ml)?$/, "375ml"],
   [/^liter$/, "1L"],
@@ -219,7 +221,9 @@ function parseWalkText(rawText) {
   function flushUnsized() {
     const name = walkCleanName(buf.join(" "));
     if (name && name.length > 1) {
-      entries.push(mkEntry(name, "750ml", false, ["no size heard — verify"]));
+      const isBeerStation = /beer\s+cooler/i.test(currentStation || "");
+      const defaultSize = isBeerStation ? "12oz" : "750ml";
+      entries.push(mkEntry(name, defaultSize, false, ["no size heard — verify"]));
     }
     buf = [];
     qty = 1;
@@ -582,6 +586,17 @@ function analyzeWalk(walkResult, applied) {
   }
   if (applied > expectedTotal + 3) {
     issues.push({ severity: "medium", code: "WALK_OVERCOUNT", detail: `${applied} bottles parsed vs ${expectedTotal} expected` });
+  }
+
+  const beerEntries = byStation["Beer Cooler"] || byStation["Beer cooler"] || [];
+  const badBeerSizes = beerEntries.filter((e) => e.size !== "12oz");
+  if (beerEntries.length && badBeerSizes.length) {
+    issues.push({
+      severity: "high",
+      code: "BEER_SIZE_WRONG",
+      detail: `${badBeerSizes.length} beer entries not 12oz`,
+      items: badBeerSizes.map((e) => `${e.name} → ${e.size}`),
+    });
   }
 
   const unsized = walkResult.entries.filter((e) => !e.size_verified);

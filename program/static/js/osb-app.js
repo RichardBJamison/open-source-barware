@@ -44,13 +44,13 @@ const STEP_LABELS = {
 const CATEGORY_KEYWORDS = {
   vodka: ["vodka", "stoli", "tito's", "titos", "ketel", "absolut", "grey goose", "smirnoff"],
   gin: ["gin", "tanqueray", "hendricks", "bombay", "beefeater"],
-  rum: ["rum", "bacardi", "captain", "malibu", "kraken"],
+  rum: ["rum", "bacardi", "captain", "malibu", "kraken", "myers", "appleton", "mount gay", "don q", "plantation", "flor de cana", "pyrat"],
   tequila: ["tequila", "patron", "casamigos", "don julio", "espolon", "hornitos"],
   whiskey: ["whiskey", "whisky", "bourbon", "rye", "jack daniels", "jameson", "makers mark", "bulleit", "woodford"],
   scotch: ["scotch", "glenfiddich", "macallan", "glenlivet", "johnnie walker"],
   cognac: ["cognac", "brandy", "hennessy", "remy martin"],
   liqueur: ["liqueur", "amaretto", "kahlua", "baileys", "campari", "aperol"],
-  beer: ["beer", "ipa", "lager", "ale", "stout", "heineken", "corona", "modelo"],
+  beer: ["beer", "ipa", "lager", "ale", "stout", "porter", "lite", "light", "heineken", "corona", "modelo", "miller", "coors", "budweiser", "bud light", "dos equis", "pacifico", "tecate", "anchor", "stella", "white claw"],
   wine: ["wine", "cabernet", "merlot", "pinot", "chardonnay", "prosecco", "champagne"],
   mixer: ["soda", "juice", "tonic", "syrup", "grenadine", "bitters", "vermouth"],
 };
@@ -65,7 +65,7 @@ let allBars = [];
 
 const WALK_NOTES_EXTENSIONS = new Set(["txt", "text", "md", "markdown", "rtf", "note"]);
 const WALK_NOTES_ACCEPT_LABEL = ".txt · .md · .markdown · .rtf";
-const BOTTLE_SIZES = ["50ml", "200ml", "375ml", "750ml", "1L", "1.75L"];
+const BOTTLE_SIZES = ["12oz", "16oz", "24oz", "50ml", "200ml", "375ml", "750ml", "1L", "1.75L"];
 let walkReviewListenersBound = false;
 let walkParseTimer = null;
 let countParseTimer = null;
@@ -106,7 +106,14 @@ function uid() {
 
 function guessCategory(name) {
   const lower = name.toLowerCase();
+  const priority = ["beer", "wine", "mixer"];
+  for (const category of priority) {
+    for (const kw of CATEGORY_KEYWORDS[category]) {
+      if (lower.includes(kw)) return category;
+    }
+  }
   for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (priority.includes(category)) continue;
     for (const kw of keywords) {
       if (lower.includes(kw)) return category;
     }
@@ -546,6 +553,9 @@ function extractSizeFromRaw(raw) {
   const patterns = [
     [/\b1\.?75\s*l?\b|\bhalf\s*gallon\b|\bhandle\b/i, "1.75L"],
     [/\b1\s*l(?:iter|itre)?\b|\bleader\b|\blitre\b/i, "1L"],
+    [/\b24\s*oz\b/i, "24oz"],
+    [/\b16\s*oz\b/i, "16oz"],
+    [/\b12\s*oz\b/i, "12oz"],
     [/\b750\b|\bseven\s*fifty\b|\b7\s*fifty\b|\b7\/50\b/i, "750ml"],
     [/\b375\b|\bsplit\b/i, "375ml"],
     [/\b200\b/i, "200ml"],
@@ -2267,8 +2277,10 @@ function walkNormalizeText(text) {
 const WALK_SIZE_PATTERNS = [
   [/^1\.75\s*l?$/, "1.75L"],
   [/^handle$/, "1.75L"],
-  [/^12\s*oz$/, "750ml"],
-  [/^12oz$/, "750ml"],
+  [/^24\s*oz$/, "24oz"],
+  [/^16\s*oz$/, "16oz"],
+  [/^12\s*oz$/, "12oz"],
+  [/^12oz$/, "12oz"],
   [/^(?:\.75|0\.75)$/, "750ml"],
   [/^750(?:ml)?$/, "750ml"],
   [/^375(?:ml)?$/, "375ml"],
@@ -2406,11 +2418,13 @@ function parseWalkText(rawText) {
   function flushUnsized() {
     const name = walkCleanName(buf.join(" "));
     if (name && name.length > 1) {
+      const isBeerStation = /beer\s+cooler/i.test(currentStation || "");
+      const defaultSize = isBeerStation ? "12oz" : "750ml";
       const flag =
         name.split(" ").length <= 8
           ? "no size heard — verify"
           : "could not split — edit this one";
-      entries.push(mkEntry(name, "750ml", false, [flag]));
+      entries.push(mkEntry(name, defaultSize, false, [flag]));
     }
     buf = [];
     qty = 1;
@@ -2696,9 +2710,18 @@ function fillReviewAddStationSelect() {
     .join("");
 }
 
+function fillReviewAddSizeSelect() {
+  const sel = document.getElementById("reviewAddSize");
+  if (!sel) return;
+  sel.innerHTML = sizeOptions("750ml");
+}
+
 function toggleReviewAddBox(show) {
   document.getElementById("reviewAddBox")?.classList.toggle("hidden", !show);
-  if (show) fillReviewAddStationSelect();
+  if (show) {
+    fillReviewAddStationSelect();
+    fillReviewAddSizeSelect();
+  }
 }
 
 async function addReviewBottle() {
@@ -3279,6 +3302,7 @@ async function initSetup() {
     updateFirstCountDoneButton();
   }
 
+  fillReviewAddSizeSelect();
   bindWalkReviewListeners();
 
   if (setupListenersBound) return;

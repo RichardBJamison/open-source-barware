@@ -99,7 +99,7 @@ function walkNormalizeText(text) {
 }
 
 const WALK_SIZE_PATTERNS = [
-  [/^1\.75\s*l?$/, "1.75L"], [/^handle$/, "1.75L"], [/^12\s*oz$/, "750ml"], [/^12oz$/, "750ml"],
+  [/^1\.75\s*l?$/, "1.75L"], [/^handle$/, "1.75L"], [/^24\s*oz$/, "24oz"], [/^16\s*oz$/, "16oz"], [/^12\s*oz$/, "12oz"], [/^12oz$/, "12oz"],
   [/^750(?:ml)?$/, "750ml"], [/^375(?:ml)?$/, "375ml"], [/^liter$/, "1L"], [/^1l$/, "1L"],
 ];
 
@@ -202,7 +202,11 @@ function parseWalkText(rawText) {
 
   function flushUnsized() {
     const name = walkCleanName(buf.join(" "));
-    if (name && name.length > 1) entries.push(mkEntry(name, "750ml", false, ["no size heard"]));
+    if (name && name.length > 1) {
+      const isBeerStation = /beer\s+cooler/i.test(currentStation || "");
+      const defaultSize = isBeerStation ? "12oz" : "750ml";
+      entries.push(mkEntry(name, defaultSize, false, ["no size heard"]));
+    }
     buf = [];
     qty = 1;
   }

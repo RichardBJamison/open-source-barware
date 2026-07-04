@@ -1408,7 +1408,7 @@ def api_export_count_comparison():
             resp.headers["Content-Disposition"] = f"attachment; filename={safe}_count_comparison.xlsx"
             return resp
         except ImportError:
-            fmt = "csv"
+            return jsonify({"error": "xlsx export requires openpyxl — run pip install openpyxl"}), 503
 
     sbuf = io.StringIO()
     writer = csv.writer(sbuf)
@@ -1462,7 +1462,7 @@ def api_export_bottles():
             resp.headers["Content-Disposition"] = f"attachment; filename={safe}_walk_sheet.xlsx"
             return resp
         except ImportError:
-            fmt = "walk_csv"
+            return jsonify({"error": "xlsx export requires openpyxl — run pip install openpyxl"}), 503
 
     rows = _bottle_audit_rows(bar)
 
@@ -1472,7 +1472,7 @@ def api_export_bottles():
             resp.headers["Content-Disposition"] = f"attachment; filename={safe}_bottle_audit.xlsx"
             return resp
         except ImportError:
-            fmt = "csv"  # openpyxl not installed — fall back to CSV
+            return jsonify({"error": "xlsx export requires openpyxl — run pip install openpyxl"}), 503
 
     sbuf = io.StringIO()
     writer = csv.writer(sbuf)

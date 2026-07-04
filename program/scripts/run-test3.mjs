@@ -155,6 +155,11 @@ async function main() {
   assert(!homeHtml.includes("Building next."), "home spreadsheets not placeholder");
   assert(!homeHtml.includes("Weekly packet staging"), "home inputs not placeholder");
 
+  const xlsxR = await fetch(`${BASE}/api/export/bottles?format=xlsx`);
+  const xlsxBuf = Buffer.from(await xlsxR.arrayBuffer());
+  assert(xlsxR.status === 200, "bottle audit xlsx 200");
+  assert(xlsxBuf[0] === 0x50 && xlsxBuf[1] === 0x4b, "xlsx zip magic PK header");
+
   const reportOut = {
     ran_at: new Date().toISOString(),
     base: BASE,
