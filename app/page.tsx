@@ -136,73 +136,46 @@ export default function Home() {
       </section>
 
       {/* ── THE PROBLEM ── */}
-      <section className="max-w-6xl mx-auto px-6 py-12 md:py-16">
-        <div className="panel rounded-sm px-6 py-10 md:px-12 md:py-14">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-8 h-[1px] bg-copper/40" />
-            <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
-              The Problem
-            </span>
+      <section className="bg-black px-6 py-14 md:py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="mb-10 text-[10px] uppercase tracking-[0.32em] text-text-light/80">
+            The Problem
+          </p>
+
+          <ProblemHourglass />
+
+          <h2 className="mt-6 font-serif text-4xl leading-[1.08] copper-text md:text-5xl lg:text-[3.25rem]">
+            Every bar manager knows the drill.
+          </h2>
+
+          <div className="mx-auto mt-8 max-w-xl space-y-4 text-center text-sm leading-relaxed text-text-muted md:text-base">
+            <p>
+              End of the calendar month. Grab a barback &amp; clipboard. Count
+              every bottle by tenths. Scribble numbers on paper. Walk to the
+              office. Type it all into a spreadsheet someone made in 2014. Try
+              to reconcile against POS sales. Watch it never add up. Repeat next
+              month.
+            </p>
+            <p>
+              The bar industry has been doing this for decades. And companies
+              have profited from the pain &mdash; selling $3,000 inventory guns,
+              $200/month SaaS platforms, and consulting services that charge by
+              the bottle.
+            </p>
+            <p className="text-cream font-medium">
+              AI changed everything. Now we can build this program for free. So
+              we did.
+            </p>
+            <p className="sr-only">
+              <Link href="/manifesto">Read the full manifesto</Link>
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-center">
-            {/* Headline */}
-            <div className="md:col-span-4 md:text-right">
-              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] copper-text">
-                Every bar
-                <br />
-                manager
-                <br />
-                knows
-                <br />
-                the drill.
-              </h2>
-            </div>
-
-            {/* Hourglass */}
-            <div className="md:col-span-4 flex justify-center">
-              <ProblemHourglass />
-            </div>
-
-            {/* Body */}
-            <div className="md:col-span-4">
-              <div className="space-y-4 text-text-muted leading-relaxed">
-                <p>
-                  End of the calendar month. Grab a barback &amp; clipboard.
-                  Count every bottle by tenths. Scribble numbers on paper. Walk
-                  to the office. Type it all into a spreadsheet someone made in
-                  2014. Try to reconcile against POS sales. Watch it never add
-                  up. Repeat next month.
-                </p>
-                <p>
-                  The bar industry has been doing this for decades. And
-                  companies have profited from the pain &mdash; selling $3,000
-                  inventory guns, $200/month SaaS platforms, and consulting
-                  services that charge by the bottle.
-                </p>
-                <p className="text-cream font-medium">
-                  AI changed everything. Now we can build this program for free.
-                  So we did.
-                </p>
-                <p className="sr-only">
-                  <Link href="/manifesto">Read the full manifesto</Link>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Get Your Time Back */}
-          <div className="mt-10 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.28em] text-text-light">
-            <span className="h-px w-10 bg-copper/30" />
-            <span>Get Your Time Back</span>
-            <span className="h-px w-10 bg-copper/30" />
-          </div>
+          <p className="mt-12 text-[10px] uppercase tracking-[0.28em] text-text-light/70">
+            Get Your Time Back
+          </p>
         </div>
       </section>
-
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="h-px bg-gradient-to-r from-transparent via-copper/25 to-transparent" />
-      </div>
 
       {/* ── WHAT WE BUILT ── program card with steampunk panels */}
       <section className="max-w-6xl mx-auto px-6 pt-8 pb-12 md:pt-10 md:pb-16">
@@ -371,13 +344,16 @@ export default function Home() {
 
 function ProblemHourglass() {
   return (
-    <div aria-hidden="true" className="relative mx-auto w-full max-w-[380px]">
-      {/* Warm glow behind — broad copper aura + golden "sand" light at the base */}
+    <div
+      aria-hidden="true"
+      className="relative mx-auto w-full max-w-[340px] md:max-w-[380px]"
+    >
+      {/* Warm lantern glow — fades into solid black, no hard edge */}
       <div
-        className="pointer-events-none absolute inset-0 z-0"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[140%] w-[160%] -translate-x-1/2 -translate-y-[46%]"
         style={{
           background:
-            "radial-gradient(ellipse 62% 58% at 50% 42%, rgba(168,120,79,0.30) 0%, transparent 70%), radial-gradient(ellipse 55% 34% at 50% 90%, rgba(190,140,86,0.45) 0%, transparent 72%)",
+            "radial-gradient(ellipse 50% 48% at 50% 44%, rgba(168,120,79,0.22) 0%, rgba(0,0,0,0) 68%), radial-gradient(ellipse 42% 28% at 50% 78%, rgba(190,140,86,0.18) 0%, rgba(0,0,0,0) 72%)",
         }}
       />
 
@@ -386,7 +362,13 @@ function ProblemHourglass() {
         alt=""
         width={398}
         height={386}
-        className="relative z-10 mx-auto h-auto w-full drop-shadow-[0_18px_38px_rgba(0,0,0,0.5)] saturate-[1.05] contrast-[1.08] brightness-[1.06]"
+        className="relative z-10 mx-auto h-auto w-full brightness-[1.04] contrast-[1.06] saturate-[1.04]"
+        style={{
+          WebkitMaskImage:
+            "radial-gradient(ellipse 72% 68% at 50% 46%, #000 52%, transparent 100%)",
+          maskImage:
+            "radial-gradient(ellipse 72% 68% at 50% 46%, #000 52%, transparent 100%)",
+        }}
       />
     </div>
   );
