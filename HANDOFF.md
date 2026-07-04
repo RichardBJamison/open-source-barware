@@ -1,7 +1,7 @@
 # Open Source Barware — Handoff
 
-*Last updated: 2026-07-04 | agent: REEVE | project ID: `open-source-barware`*
-*Status: LAUNCH DAY (July 4) — repo clean on `main` @ `09d3b01`, all builds pushed to origin*
+*Last updated: 2026-07-04 | agent: GROK | project ID: `open-source-barware`*
+*Status: PAUSED (lockdown) — repo clean on `main` @ `b137d8a`, all builds pushed to origin*
 
 ## Purpose
 
@@ -278,6 +278,12 @@ Confirm scripts in `package.json` before relying on these commands.
   documenting the process reasoning behind the three dojo changes and asking the
   program build to *verify/fill gaps without rebuilding* what it already has.
   Working tree now clean; `main` pushed to origin.
+- 2026-07-04 GROK: **Lockdown session.** Caterpillar program polish committed
+  (`7efec69`): count upload (Walk-style), walk review gating, reconcile audit,
+  hard-reset, editable map review. Compliance zips rebuilt (`b137d8a`). Nexus
+  library handoff at `~/Me-Nexus/library/open-source-barware/`. Launch readiness
+  analysis: static site fast/stable; GHL signup 503 until token set; overlay until
+  6pm EDT. Verified: `npm run build`, git push, live HTTP 200s.
 
 ## Known issues
 
@@ -334,11 +340,14 @@ Confirm scripts in `package.json` before relying on these commands.
 
 ## Pickup point
 
+**Nexus library (read first):** `~/Me-Nexus/library/open-source-barware/HANDOFF.md`
+**Launch analysis:** `~/Me-Nexus/library/open-source-barware/LAUNCH-READINESS-2026-07-04.md`
+
 ```bash
 cd "/Users/richardjamison/Documents/New project/open-source-barware"
-git pull origin main
-npm run dev
-# Dojo: http://localhost:3000/inventory
-# Setup signup step: http://localhost:3000/inventory/setup
+git pull origin main          # expect b137d8a, clean tree
 npm run lint && npm run build
+open https://opensourcebarware.com
+# Dojo: http://localhost:3000/inventory  (npm run dev)
+# Chrome program: cd program && python3 server.py → http://localhost:5052/
 ```
