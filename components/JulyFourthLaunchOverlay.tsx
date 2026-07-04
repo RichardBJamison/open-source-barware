@@ -10,7 +10,7 @@ import {
   shouldShowPreLaunchOverlay,
 } from "@/lib/launch-gate";
 
-const STORAGE_KEY = "osb-july4-launch-v2";
+const STORAGE_KEY = "osb-july4-launch-v3";
 
 const PARTY_SHOTS = [
   { src: "/images/hero.png", alt: "Bartender behind the bar" },
@@ -156,7 +156,7 @@ export default function JulyFourthLaunchOverlay() {
         </h1>
 
         <p className="mt-4 text-sm uppercase tracking-[0.3em] text-white/70">
-          We are almost finished &mdash; completed by the 4th as planned
+          We are almost finished &mdash; completed by the 4th at 6pm as planned
         </p>
 
         <div className="july4-party-card panel rivets mx-auto mt-8 w-full max-w-lg px-6 py-8 sm:px-10 sm:py-9">
@@ -165,9 +165,9 @@ export default function JulyFourthLaunchOverlay() {
           </p>
 
           <p className="mt-5 text-base leading-relaxed text-text-muted sm:text-lg">
-            We are almost finished and will be completed by the 4th as planned.
-            The site is open now so you can click around, explore the pages, and
-            see how the program works.
+            We are almost finished and will be completed by the 4th at 6pm as
+            planned. The site is open now so you can click around, explore the
+            pages, and see how the program works.
           </p>
 
           <p className="mt-4 text-base leading-relaxed text-cream/90">
@@ -186,12 +186,12 @@ export default function JulyFourthLaunchOverlay() {
               <TimeBlock value={countdown.seconds} label="Secs" />
             </div>
             <p className="mt-3 text-xs uppercase tracking-[0.2em] text-text-light">
-              Noon tomorrow. Then the doors open.
+              6pm Eastern. Then the doors open.
             </p>
           </div>
 
           <p className="mt-6 font-serif text-xl italic text-copper-bright">
-            Come back tomorrow at noon to grab the program. ✨
+            Come back at 6pm on the Fourth to grab the program. ✨
           </p>
 
           <button

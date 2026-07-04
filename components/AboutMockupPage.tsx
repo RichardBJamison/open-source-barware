@@ -17,11 +17,11 @@ export default function AboutMockupPage() {
   const storyRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (window.location.hash === "#story" || window.location.hash === "") {
-      requestAnimationFrame(() => {
-        storyRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
-      });
-    }
+    if (window.location.hash !== "#story") return;
+
+    requestAnimationFrame(() => {
+      storyRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
   }, []);
 
   return (

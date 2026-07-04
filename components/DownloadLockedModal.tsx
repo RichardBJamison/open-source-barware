@@ -29,9 +29,9 @@ export default function DownloadLockedModal({
             Opens on {LAUNCH_LABEL}
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-text-muted">
-            We are almost finished and will be completed by the 4th as planned.
-            Explore the site now &mdash; program files unlock on Independence
-            Day.
+            We are almost finished and will be completed by the 4th at 6pm as
+            planned. Explore the site now &mdash; program files unlock on
+            Independence Day at 6pm Eastern.
           </p>
           <button
             onClick={onClose}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { areDownloadsUnlocked } from "@/lib/launch-gate";
+import { areDownloadsUnlocked, LAUNCH_LABEL } from "@/lib/launch-gate";
 import { useLaunchNow } from "@/lib/use-launch-now";
 import type { ToolPreview } from "./DownloadPreviewModal";
 
@@ -49,7 +49,7 @@ export default function DownloadButton({ tool }: { tool: ToolPreview }) {
         onClick={handleClick}
         className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(168,120,79,0.2)]"
       >
-        {unlocked ? "Download the Program" : "Downloads open July 4"}
+        {unlocked ? "Download the Program" : `Downloads open ${LAUNCH_LABEL}`}
       </button>
       {lockedOpen && <DownloadLockedModal onClose={() => setLockedOpen(false)} />}
       {open && (
