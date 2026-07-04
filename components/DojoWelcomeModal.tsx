@@ -52,8 +52,8 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
             <Image
               src="/images/salle-darmes-sign.jpg"
               alt="Salle d'Armes — Clockwork Gymnasium fencing academy sign"
-              width={332}
-              height={1024}
+              width={832}
+              height={1248}
               priority
               className="salle-sign-popup-img"
             />
