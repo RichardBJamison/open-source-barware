@@ -136,53 +136,66 @@ export default function Home() {
       </section>
 
       {/* ── THE PROBLEM ── */}
-      <section className="max-w-6xl mx-auto px-6 py-12 md:pt-16 md:pb-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12 items-center">
-          <div className="md:col-span-5">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-[1px] bg-copper/40" />
-              <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
-                The Problem
-              </span>
+      <section className="max-w-6xl mx-auto px-6 py-12 md:py-16">
+        <div className="panel rounded-sm px-6 py-10 md:px-12 md:py-14">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-8 h-[1px] bg-copper/40" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
+              The Problem
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-center">
+            {/* Headline */}
+            <div className="md:col-span-4">
+              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] copper-text">
+                Every bar
+                <br />
+                manager
+                <br />
+                knows
+                <br />
+                the drill.
+              </h2>
             </div>
-            <h2 className="font-serif text-3xl md:text-4xl leading-[1.15] copper-text">
-              Every bar
-              <br />
-              manager
-              <br />
-              knows
-              <br />
-              the
-              <br />
-              drill.
-            </h2>
-            <div className="mt-8 max-w-[300px]">
+
+            {/* Hourglass */}
+            <div className="md:col-span-3 flex justify-center">
               <ProblemHourglass />
             </div>
-          </div>
-          <div className="md:col-span-7 lg:col-span-6 lg:col-start-7">
-            <div className="max-w-2xl space-y-5 text-text-muted leading-relaxed text-lg">
-              <p>
-                End of the calendar month. Grab a barback &amp; clipboard. Count
-                every bottle by tenths. Scribble numbers on paper. Walk to the
-                office. Type it all into a spreadsheet someone made in 2014. Try
-                to reconcile against POS sales. Watch it never add up. Repeat next
-                month.
-              </p>
-              <p>
-                The bar industry has been doing this for decades. And companies
-                have profited from the pain &mdash; selling $3,000 inventory
-                guns, $200/month SaaS platforms, and consulting services that
-                charge by the bottle.
-              </p>
-              <p className="text-cream font-medium text-xl">
-                AI changed everything. Now we can build this program for free.
-                So we did.
-              </p>
-              <p className="sr-only">
-                <Link href="/manifesto">Read the full manifesto</Link>
-              </p>
+
+            {/* Body */}
+            <div className="md:col-span-5">
+              <div className="space-y-4 text-text-muted leading-relaxed">
+                <p>
+                  End of the calendar month. Grab a barback &amp; clipboard.
+                  Count every bottle by tenths. Scribble numbers on paper. Walk
+                  to the office. Type it all into a spreadsheet someone made in
+                  2014. Try to reconcile against POS sales. Watch it never add
+                  up. Repeat next month.
+                </p>
+                <p>
+                  The bar industry has been doing this for decades. And
+                  companies have profited from the pain &mdash; selling $3,000
+                  inventory guns, $200/month SaaS platforms, and consulting
+                  services that charge by the bottle.
+                </p>
+                <p className="text-cream font-medium">
+                  AI changed everything. Now we can build this program for free.
+                  So we did.
+                </p>
+                <p className="sr-only">
+                  <Link href="/manifesto">Read the full manifesto</Link>
+                </p>
+              </div>
             </div>
+          </div>
+
+          {/* Get Your Time Back */}
+          <div className="mt-10 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.28em] text-text-light">
+            <span className="h-px w-10 bg-copper/30" />
+            <span>Get Your Time Back</span>
+            <span className="h-px w-10 bg-copper/30" />
           </div>
         </div>
       </section>
@@ -366,14 +379,8 @@ function ProblemHourglass() {
         alt=""
         width={398}
         height={386}
-        className="relative z-10 mx-auto h-auto w-full max-w-[280px] opacity-95 drop-shadow-[0_20px_36px_rgba(0,0,0,0.42)] saturate-[0.92] sepia-[0.1] contrast-[1.06]"
+        className="relative z-10 mx-auto h-auto w-full max-w-[300px] opacity-95 drop-shadow-[0_20px_36px_rgba(0,0,0,0.42)] saturate-[0.92] sepia-[0.1] contrast-[1.06]"
       />
-
-      <div className="relative z-10 mt-3 flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.28em] text-text-light">
-        <span className="h-px w-8 bg-copper/30" />
-        <span>Get Your Time Back</span>
-        <span className="h-px w-8 bg-copper/30" />
-      </div>
     </div>
   );
 }
