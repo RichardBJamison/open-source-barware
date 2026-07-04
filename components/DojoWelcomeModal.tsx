@@ -77,51 +77,27 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
           <FrameRivet className="salle-frame-rivet-br" />
 
           <div className="salle-popup-inner salle-welcome-scroll">
-            <div className="salle-popup-art">
-              <div className="salle-sign-crest">
-                <Image
-                  src="/images/salle-darmes-popup.jpg"
-                  alt="Salle d'Armes crest — clockwork gauntlet and rapier"
-                  width={832}
-                  height={1248}
-                  priority
-                  className="salle-popup-img salle-popup-img-crest"
-                />
-              </div>
-
-              <div className="salle-sign-parchment">
-                <span className="salle-parchment-rivet salle-parchment-rivet-tl" aria-hidden="true" />
-                <span className="salle-parchment-rivet salle-parchment-rivet-tr" aria-hidden="true" />
-                <span className="salle-parchment-rivet salle-parchment-rivet-bl" aria-hidden="true" />
-                <span className="salle-parchment-rivet salle-parchment-rivet-br" aria-hidden="true" />
-
-                <p className="salle-sign-welcome">
-                  Welcome to the Fencing Academy — a refined Salle d&apos;Armes
-                  where gentlemanly combat meets the clockwork arts.
+            <div className="salle-sign-board">
+              <Image
+                src="/images/salle-darmes-popup.jpg"
+                alt="Salle d'Armes — steampunk fencing academy sign"
+                width={832}
+                height={1248}
+                priority
+                className="salle-sign-board-img"
+              />
+              <div
+                className={`salle-sign-rules ${penHand.className}`}
+                aria-labelledby="salle-house-rules-title"
+              >
+                <p id="salle-house-rules-title" className="salle-sign-rules-title">
+                  House Rules
                 </p>
-                <div
-                  className={`salle-sign-rules ${penHand.className}`}
-                  aria-labelledby="salle-house-rules-title"
-                >
-                  <p id="salle-house-rules-title" className="salle-sign-rules-title">
-                    House Rules
-                  </p>
-                  <ul className="salle-sign-rules-list">
-                    {HOUSE_RULES.map((rule) => (
-                      <li key={rule}>{rule}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              <div className="salle-sign-base" aria-hidden="true">
-                <Image
-                  src="/images/salle-darmes-popup.jpg"
-                  alt=""
-                  width={832}
-                  height={1248}
-                  className="salle-popup-img salle-popup-img-base"
-                />
+                <ul className="salle-sign-rules-list">
+                  {HOUSE_RULES.map((rule) => (
+                    <li key={rule}>{rule}</li>
+                  ))}
+                </ul>
               </div>
             </div>
 
