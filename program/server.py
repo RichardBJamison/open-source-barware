@@ -843,7 +843,9 @@ def api_state():
     setup = _bar_setup_state(bar)
     phase = cfg.get("phase", "welcome")
     active_id = cfg.get("active_bar_id", "")
-    setup_id = cfg.get("setup_bar_id", "") or active_id
+    raw_setup_id = cfg.get("setup_bar_id") or ""
+    # Butterfly: never substitute active_bar_id — initHome treats any setup_bar_id as "still in setup"
+    setup_id = raw_setup_id if phase == "butterfly" else (raw_setup_id or active_id)
 
     return jsonify(
         {

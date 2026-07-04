@@ -3983,7 +3983,15 @@ async function refreshHomeBars() {
 
 async function initHome() {
   const data = await OSB.getState();
-  if (data.phase !== "butterfly" || data.config.setup_bar_id) {
+  if (data.phase !== "butterfly") {
+    window.location.href = "/";
+    return;
+  }
+  // Only block home when a different bar is actively in caterpillar setup
+  if (
+    data.config.setup_bar_id &&
+    data.config.setup_bar_id !== data.config.active_bar_id
+  ) {
     window.location.href = "/";
     return;
   }

@@ -118,6 +118,10 @@ async function main() {
   assert(finish.data?.cycle?.id, "cycle closed on finish");
   const state = await api("GET", "/api/state");
   assert(state.data?.phase === "butterfly", "phase butterfly");
+  assert(
+    !state.data?.config?.setup_bar_id,
+    "setup_bar_id empty at butterfly (no active_bar_id fallback)"
+  );
 
   record("\n── Butterfly APIs ──");
   const cycles = await api("GET", "/api/cycles");
