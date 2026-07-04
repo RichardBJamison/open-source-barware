@@ -165,6 +165,12 @@ const OSB = {
     return r.json();
   },
 
+  async hardReset() {
+    const r = await fetch("/api/hard-reset", { method: "POST" });
+    if (!r.ok) throw new Error("Could not reset the program");
+    return r.json();
+  },
+
   async listBars() {
     const r = await fetch("/api/bars");
     return r.json();
@@ -1451,6 +1457,55 @@ function renderReconcilePreview() {
   `;
 }
 
+function renderReconcileReport() {
+  const el = document.getElementById("reconcilePreview");
+  if (!el) return;
+  const stations = sortedStations();
+  let flagged = 0;
+  let unverified = 0;
+  stations.forEach((s) =>
+    (s.bottles || []).forEach((b) => {
+      if (b.parse_flags && b.parse_flags.length) flagged += 1;
+      if (!b.size_verified) unverified += 1;
+    })
+  );
+  let html = `
+    <div class="reconcile-stat-row">
+      <span><strong>${stations.length}</strong> stations</span>
+      <span><strong>${bottleCount()}</strong> bottles</span>
+      <span><strong>${flagged}</strong> flagged</span>
+      <span><strong>${unverified}</strong> sizes to confirm</span>
+    </div>`;
+  for (const s of stations) {
+    const bottles = s.bottles || [];
+    html += `<div class="report-station">
+      <div class="report-station-head"><span>${escapeHtml(s.name)}</span><span class="report-count">${bottles.length}</span></div>`;
+    if (!bottles.length) {
+      html += `<div class="report-empty">No bottles on this station.</div>`;
+    } else {
+      html += `<table class="report-table"><thead><tr><th>Bottle</th><th>Size</th><th>Category</th><th>Status</th></tr></thead><tbody>`;
+      for (const b of bottles) {
+        let status;
+        let cls;
+        if (b.parse_flags && b.parse_flags.length) {
+          status = `⚑ ${escapeHtml(b.parse_flags.join("; "))}`;
+          cls = "report-flag";
+        } else if (!b.size_verified) {
+          status = "size unconfirmed";
+          cls = "report-warn";
+        } else {
+          status = "✓ verified";
+          cls = "report-ok";
+        }
+        html += `<tr><td>${escapeHtml(b.name)}</td><td>${escapeHtml(b.size || "750ml")}</td><td>${escapeHtml(b.category || "spirits")}</td><td class="${cls}">${status}</td></tr>`;
+      }
+      html += `</tbody></table>`;
+    }
+    html += `</div>`;
+  }
+  el.innerHTML = html;
+}
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -1560,6 +1615,23 @@ async function initSetup() {
       setStatus("");
       await initSetup();
     } catch (err) {
+      setStatus(err.message);
+    }
+  });
+
+  document.body.addEventListener("click", async (e) => {
+    const rBtn = e.target.closest("[data-hard-reset]");
+    if (!rBtn || document.body.dataset.app !== "setup") return;
+    const ok = window.confirm(
+      "Hard reset wipes this bar and all setup progress and starts over at Step 1.\n\nYour current data is backed up automatically. Continue?"
+    );
+    if (!ok) return;
+    try {
+      rBtn.disabled = true;
+      await OSB.hardReset();
+      window.location.href = "/";
+    } catch (err) {
+      rBtn.disabled = false;
       setStatus(err.message);
     }
   });
@@ -1813,12 +1885,26 @@ async function initSetup() {
     try {
       await persistBar();
       await OSB.reconcile();
-      await OSB.advancePhase("map_review");
-      setStatus("");
-      await initSetup();
+      renderReconcileReport();
+      document.getElementById("reconcileExport")?.classList.remove("hidden");
+      const rb = document.getElementById("btnReconcile");
+      if (rb) rb.textContent = "Re-run reconciliation";
+      setStatus("Report ready — audit every bottle below, download a sheet if you like, then hit Next step.");
     } catch (e) {
       setStatus(e.message);
     }
+  });
+
+  document.getElementById("btnExportCsv")?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    await persistBar();
+    window.location.href = "/api/export/bottles?format=csv";
+  });
+
+  document.getElementById("btnExportXlsx")?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    await persistBar();
+    window.location.href = "/api/export/bottles?format=xlsx";
   });
 
   document.getElementById("btnApproveMap")?.addEventListener("click", async () => {

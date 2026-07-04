@@ -365,13 +365,23 @@
         We'll turn your walk into an auditable draft map and spreadsheet with intentional blanks for anything unclear.
         With AI connected, reconciliation gets smarter — otherwise we use what you parsed.
       </p>
-      <div id="reconcilePreview" class="reconcile-preview"></div>
       <div class="actions">
         <button class="btn btn-primary" id="btnReconcile" type="button">Run reconciliation</button>
+      </div>
+      <div id="reconcilePreview" class="reconcile-preview"></div>
+      <div id="reconcileExport" class="reconcile-export hidden">
+        <span class="reconcile-export-label">Audit your full setup — export every bottle to check against the shelf:</span>
+        <div class="reconcile-export-actions">
+          <a class="btn btn-secondary btn-sm" id="btnExportCsv" href="/api/export/bottles?format=csv">Download CSV</a>
+          <a class="btn btn-secondary btn-sm" id="btnExportXlsx" href="/api/export/bottles?format=xlsx">Download Excel (.xlsx)</a>
+        </div>
       </div>
       <div class="setup-nav">
         <button class="btn btn-secondary" type="button" data-go="voice_walk">← Back</button>
         <button class="btn btn-secondary" type="button" data-go="map_review">Next step →</button>
+      </div>
+      <div class="hard-reset-row">
+        <button class="btn btn-hard-reset" type="button" data-hard-reset>↺ Start over — hard reset</button>
       </div>
     </section>
 
@@ -388,6 +398,9 @@
         <button class="btn btn-secondary" type="button" data-go="reconcile">← Back</button>
         <button class="btn btn-primary" id="btnApproveMap" type="button">Map approved — start counting</button>
       </div>
+      <div class="hard-reset-row">
+        <button class="btn btn-hard-reset" type="button" data-hard-reset>↺ Start over — hard reset</button>
+      </div>
     </section>
 
     <!-- first_count -->
@@ -403,6 +416,9 @@
       <div class="setup-nav">
         <button class="btn btn-secondary" type="button" data-go="map_review">← Back</button>
         <span class="setup-nav-hint">Finish here to open home base.</span>
+      </div>
+      <div class="hard-reset-row">
+        <button class="btn btn-hard-reset" type="button" data-hard-reset>↺ Start over — hard reset</button>
       </div>
     </section>
 

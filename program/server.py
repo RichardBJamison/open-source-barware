@@ -8,13 +8,16 @@ Butterfly:   home base admin panel (metrics, spreadsheets, in-house inventory)
 
 from __future__ import annotations
 
+import csv
+import io
 import json
 import os
+import re
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from flask import Flask, jsonify, redirect, request, send_from_directory
+from flask import Flask, Response, jsonify, redirect, request, send_from_directory
 
 VERSION = "0.2.0-demo-2026-07-01"
 PORT = int(os.environ.get("PORT", "5052"))
@@ -815,6 +818,32 @@ def api_phase_reset():
     return jsonify({"status": "reset", "phase": "welcome"})
 
 
+@app.route("/api/hard-reset", methods=["POST"])
+def api_hard_reset():
+    """Full wipe back to first-run (Step 1). Archives current data first."""
+    import shutil
+
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    backup_dir = os.path.join(_DATA, "_backups", f"reset-{stamp}")
+    try:
+        os.makedirs(backup_dir, exist_ok=True)
+        for src in (_CONFIG_FILE, _BARS_FILE, _BAR_FILE, _STATE_FILE):
+            if os.path.exists(src):
+                shutil.copy2(src, os.path.join(backup_dir, os.path.basename(src)))
+    except OSError:
+        backup_dir = ""
+
+    for f in (_BARS_FILE, _BAR_FILE, _STATE_FILE):
+        try:
+            if os.path.exists(f):
+                os.remove(f)
+        except OSError:
+            _write_json(f, {"bars": []} if f == _BARS_FILE else {})
+
+    _write_json(_CONFIG_FILE, DEFAULT_CONFIG)
+    return jsonify({"status": "reset", "phase": "welcome", "backup": backup_dir})
+
+
 # ── Caterpillar stubs ───────────────────────────────────────────────────────
 
 @app.route("/api/setup/skip-ai", methods=["POST"])
@@ -869,6 +898,80 @@ def api_reconcile():
         draft["flags"].append("AI not connected — map built from your walk. Connect API in Settings for deeper reconciliation.")
     _save_bar_setup(bar["id"], {"draft_map": draft})
     return jsonify({"status": "draft_ready", "draft_map": draft, "bottle_count": _bar_bottle_count(bar)})
+
+
+_AUDIT_HEADERS = [
+    "station", "product_name", "category", "size", "size_verified",
+    "par_level", "flags", "what_we_heard", "bottle_id",
+]
+
+
+def _bottle_audit_rows(bar: dict[str, Any]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for station in sorted(bar.get("stations", []), key=lambda s: s.get("order", 0)):
+        for b in station.get("bottles", []):
+            rows.append({
+                "station": station.get("name", ""),
+                "product_name": b.get("name", ""),
+                "category": b.get("category", "spirits"),
+                "size": b.get("size", "750ml"),
+                "size_verified": "yes" if b.get("size_verified") else "no",
+                "par_level": b.get("par_level", 1.0),
+                "flags": "; ".join(b.get("parse_flags", []) or []),
+                "what_we_heard": b.get("raw_heard", b.get("name", "")),
+                "bottle_id": b.get("id", ""),
+            })
+    return rows
+
+
+@app.route("/api/export/bottles", methods=["GET"])
+def api_export_bottles():
+    """Full bottle-audit sheet for the setup bar — CSV or XLSX."""
+    fmt = request.args.get("format", "csv").lower()
+    bar = _load_bar()
+    rows = _bottle_audit_rows(bar)
+    safe = re.sub(r"[^\w\-]+", "_", bar.get("name") or "bar").strip("_") or "bar"
+
+    if fmt in ("xlsx", "xls", "excel"):
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font
+
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Bottle Audit"
+            ws.append([h.replace("_", " ").title() for h in _AUDIT_HEADERS])
+            for cell in ws[1]:
+                cell.font = Font(bold=True)
+            for r in rows:
+                ws.append([r[h] for h in _AUDIT_HEADERS])
+            for i, h in enumerate(_AUDIT_HEADERS, start=1):
+                width = 16
+                if rows:
+                    longest = max(len(str(r[h])) + 2 for r in rows)
+                    width = min(40, max(12, len(h) + 2, longest))
+                ws.column_dimensions[chr(64 + i)].width = width
+            buf = io.BytesIO()
+            wb.save(buf)
+            buf.seek(0)
+            return Response(
+                buf.read(),
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename={safe}_bottle_audit.xlsx"},
+            )
+        except ImportError:
+            fmt = "csv"  # openpyxl not installed — fall back to CSV
+
+    sbuf = io.StringIO()
+    writer = csv.writer(sbuf)
+    writer.writerow(_AUDIT_HEADERS)
+    for r in rows:
+        writer.writerow([r[h] for h in _AUDIT_HEADERS])
+    return Response(
+        "﻿" + sbuf.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={safe}_bottle_audit.csv"},
+    )
 
 
 @app.route("/api/setup/approve-map", methods=["POST"])

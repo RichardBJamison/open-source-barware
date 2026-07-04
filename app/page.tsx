@@ -147,7 +147,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-center">
             {/* Headline */}
-            <div className="md:col-span-4">
+            <div className="md:col-span-4 md:text-right">
               <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.05] copper-text">
                 Every bar
                 <br />
@@ -160,12 +160,12 @@ export default function Home() {
             </div>
 
             {/* Hourglass */}
-            <div className="md:col-span-3 flex justify-center">
+            <div className="md:col-span-4 flex justify-center">
               <ProblemHourglass />
             </div>
 
             {/* Body */}
-            <div className="md:col-span-5">
+            <div className="md:col-span-4">
               <div className="space-y-4 text-text-muted leading-relaxed">
                 <p>
                   End of the calendar month. Grab a barback &amp; clipboard.
@@ -371,15 +371,22 @@ export default function Home() {
 
 function ProblemHourglass() {
   return (
-    <div aria-hidden="true" className="relative">
-      <div className="pointer-events-none absolute left-1/2 top-[58%] h-36 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-copper/15 blur-3xl" />
+    <div aria-hidden="true" className="relative mx-auto w-full max-w-[380px]">
+      {/* Warm glow behind — broad copper aura + golden "sand" light at the base */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 62% 58% at 50% 42%, rgba(168,120,79,0.30) 0%, transparent 70%), radial-gradient(ellipse 55% 34% at 50% 90%, rgba(190,140,86,0.45) 0%, transparent 72%)",
+        }}
+      />
 
       <Image
         src="/images/landing-hourglass.png"
         alt=""
         width={398}
         height={386}
-        className="relative z-10 mx-auto h-auto w-full max-w-[300px] opacity-95 drop-shadow-[0_20px_36px_rgba(0,0,0,0.42)] saturate-[0.92] sepia-[0.1] contrast-[1.06]"
+        className="relative z-10 mx-auto h-auto w-full drop-shadow-[0_18px_38px_rgba(0,0,0,0.5)] saturate-[1.05] contrast-[1.08] brightness-[1.06]"
       />
     </div>
   );

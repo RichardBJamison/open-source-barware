@@ -1604,3 +1604,103 @@ tr.row-flagged td.raw-heard {
   color: var(--brass, #c7a76b);
   font-style: italic;
 }
+
+/* Hard reset (start over) — stages after the walk */
+.hard-reset-row {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--gear-border);
+  text-align: center;
+}
+.btn-hard-reset {
+  background: transparent;
+  border: 1px solid rgba(196, 92, 106, 0.45);
+  color: var(--wine-glow);
+  font-size: 0.78rem;
+  padding: 8px 16px;
+  letter-spacing: 0.04em;
+}
+.btn-hard-reset:hover {
+  background: rgba(107, 45, 60, 0.18);
+  border-color: rgba(196, 92, 106, 0.7);
+  color: #e87884;
+}
+
+/* Reconcile audit report + export */
+.reconcile-export {
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--bg-warm);
+  border: 1px solid var(--gear-border);
+  border-radius: 4px;
+}
+.reconcile-export-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.reconcile-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.reconcile-export-actions .btn {
+  text-decoration: none;
+}
+.report-station {
+  margin-top: 14px;
+  border: 1px solid var(--gear-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.report-station-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(17, 24, 34, 0.5);
+  color: var(--cream);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.report-count {
+  color: var(--text-light);
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+.report-empty {
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.report-table th,
+.report-table td {
+  padding: 7px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(168, 120, 79, 0.1);
+}
+.report-table th {
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+.report-table td {
+  color: var(--text-muted);
+}
+.report-ok {
+  color: var(--patina-light);
+}
+.report-warn {
+  color: var(--copper-bright);
+}
+.report-flag {
+  color: var(--wine-glow);
+}
