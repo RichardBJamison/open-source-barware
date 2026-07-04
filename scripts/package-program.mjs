@@ -5,7 +5,7 @@
  *         public/downloads/open-source-barware-program-win.zip
  */
 import archiver from "archiver";
-import { chmodSync, createWriteStream, existsSync, mkdirSync, unlinkSync } from "node:fs";
+import { chmodSync, createWriteStream, existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -38,6 +38,21 @@ const PROGRAM_FILES = [
   "static/js/osb-app.js",
 ];
 
+function listFilesRecursive(dir, base = dir) {
+  const out = [];
+  for (const name of readdirSync(dir)) {
+    const full = path.join(dir, name);
+    if (statSync(full).isDirectory()) out.push(...listFilesRecursive(full, base));
+    else out.push(path.relative(base, full));
+  }
+  return out;
+}
+
+const TEST_KIT_DIR = path.join(programDir, "test-kit");
+const TEST_KIT_FILES = existsSync(TEST_KIT_DIR)
+  ? listFilesRecursive(TEST_KIT_DIR).map((rel) => `test-kit/${rel.replace(/\\/g, "/")}`)
+  : [];
+
 function assertFiles() {
   const missing = PROGRAM_FILES.filter((f) => !existsSync(path.join(programDir, f)));
   if (missing.length) throw new Error(`Missing program files:\n${missing.join("\n")}`);
@@ -53,7 +68,7 @@ async function zipProgram(archiveName, prefix) {
     output.on("close", resolve);
     archive.on("error", reject);
     archive.pipe(output);
-    for (const rel of PROGRAM_FILES) {
+    for (const rel of [...PROGRAM_FILES, ...TEST_KIT_FILES]) {
       archive.file(path.join(programDir, rel), { name: `${prefix}/${rel}` });
     }
     archive.finalize();

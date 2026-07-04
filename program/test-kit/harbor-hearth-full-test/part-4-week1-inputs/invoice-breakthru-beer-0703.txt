@@ -1,0 +1,23 @@
+BREAKTHRU BEVERAGE — OHIO VALLEY
+Invoice #: BT-2291044
+Invoice Date: 07/03/2026
+Ship To: Harbor & Hearth — River Room + Garden Terrace
+PO: HH-BEER-WK27
+
+Product                       Pack    Cases   Unit    Extended
+-----------------------------------------------------------------
+Corona Extra                  24pk     2     $28.50   $57.00
+Modelo Especial               24pk     2     $29.00   $58.00
+Heineken Lager                24pk     1     $31.00   $31.00
+White Claw Variety            24pk     1     $34.00   $34.00
+Stella Artois                 24pk     1     $32.00   $32.00
+Pacifico Clara                24pk     1     $27.50   $27.50
+Michelob Ultra                24pk     1     $26.00   $26.00
+Peroni Nastro (Cellar)        24pk     1     $30.00   $30.00
+
+Subtotal:                                              $295.50
+Keg Deposit (return):                                    $0.00
+Tax:                                                    $23.64
+TOTAL:                                                  $319.14
+
+Driver: Martinez | Received: Harbor loading dock 2:15 PM

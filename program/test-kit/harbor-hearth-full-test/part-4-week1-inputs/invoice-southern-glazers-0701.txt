@@ -1,0 +1,25 @@
+SOUTHERN GLAZER'S WINE & SPIRITS
+Invoice #: SG-8847291
+Invoice Date: 07/01/2026
+Deliver To: Harbor & Hearth — River Room
+Account: HH-RIV-4421
+
+Item                          Size    Qty    Unit Cost    Extended
+-----------------------------------------------------------------
+Tito's Handmade Vodka         750ml    2      $18.50       $37.00
+Ketel One Vodka               750ml    1      $22.00       $22.00
+Grey Goose Vodka              750ml    1      $28.00       $28.00
+Patron Silver Tequila         750ml    2      $32.00       $64.00
+Casamigos Blanco              750ml    1      $38.00       $38.00
+Buffalo Trace Bourbon         750ml    1      $24.00       $24.00
+Jameson Irish Whiskey         750ml    1      $22.00       $22.00
+Macallan 12 Double Cask       750ml    1      $58.00       $58.00
+Caymus Cabernet Sauvignon     750ml    2      $42.00       $84.00
+La Marca Prosecco             750ml    3      $14.00       $42.00
+
+Subtotal:                                              $419.00
+Delivery Fee:                                           $15.00
+Tax:                                                    $34.32
+TOTAL DUE:                                             $468.32
+
+Notes: Deliver before Friday dinner service. Signed by R. Keller 07/01/2026.

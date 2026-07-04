@@ -647,7 +647,17 @@ function runBarTest(groundTruth, walkText, countGolden, countHard) {
   };
 }
 
+export { runBarTest, mkStation };
+
 // ── Run ──────────────────────────────────────────────────────────────────────
+
+const isMain =
+  process.argv[1] &&
+  path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
+
+if (!isMain) {
+  // imported as module
+} else {
 
 console.log("=".repeat(72));
 console.log("TEST 2 — Multi-Bar, Wine Wall, Mis-Order Dictation, Golden + Hard Count");
@@ -701,4 +711,6 @@ try {
 } catch {
   fs.writeFileSync(path.join(__dir, "test2-report.json"), JSON.stringify(report, null, 2));
   console.log("\nReport: scripts/test2-report.json");
+}
+
 }

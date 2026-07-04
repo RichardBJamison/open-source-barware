@@ -1,0 +1,12 @@
+Order ID,Date,Time,Server,Item,Category,Qty,Gross Sales,Net Sales,Void
+30001,2026-07-04,21:45:33,Jenna L,Casamigos,Liquor,12,180.00,180.00,N
+30002,2026-07-04,21:45:33,Jenna L,Don Julio Blanco,Liquor,8,120.00,120.00,N
+30003,2026-07-04,21:45:33,Jenna L,Woodford,Liquor,6,78.00,78.00,N
+30004,2026-07-04,21:45:33,Jenna L,Eagle Rare,Liquor,4,52.00,52.00,N
+30005,2026-07-04,21:45:33,Jenna L,Blantons,Liquor,2,36.00,36.00,N
+30006,2026-07-04,21:45:33,Jenna L,Decoy Pinot Noir,Wine,5,60.00,60.00,N
+30007,2026-07-04,21:45:33,Jenna L,Kendall Jackson Chardonnay,Wine,4,48.00,48.00,N
+30008,2026-07-04,21:45:33,Jenna L,Meomi Pinot Noir,Wine,3,36.00,36.00,N
+30009,2026-07-04,21:45:33,Jenna L,Stella,Beer,28,168.00,168.00,N
+30010,2026-07-04,21:45:33,Jenna L,Pacifico,Beer,19,114.00,114.00,N
+30011,2026-07-04,21:45:33,Jenna L,Michelob Ultra,Beer,31,186.00,186.00,N

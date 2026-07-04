@@ -1,0 +1,13 @@
+Order ID,Date,Time,Server,Item,Category,Qty,Gross Sales,Net Sales,Void
+10001,2026-06-30,23:14:22,Sarah M,Tito's Vodka,Liquor,14,182.00,182.00,N
+10002,2026-06-30,23:14:22,Sarah M,Ketel One,Liquor,6,78.00,78.00,N
+10003,2026-06-30,23:14:22,Sarah M,Tanqueray,Liquor,8,104.00,104.00,N
+10004,2026-06-30,23:14:22,Sarah M,Patron Silver,Liquor,11,165.00,165.00,N
+10005,2026-06-30,23:14:22,Sarah M,Jack Daniels,Liquor,9,117.00,117.00,N
+10006,2026-06-30,23:14:22,Sarah M,Jameson,Liquor,7,91.00,91.00,N
+10007,2026-06-30,23:14:22,Sarah M,Macallan 12,Liquor,3,54.00,54.00,N
+10008,2026-06-30,23:14:22,Sarah M,Caymus Cabernet,Wine,5,75.00,75.00,N
+10009,2026-06-30,23:14:22,Sarah M,La Marca Prosecco,Wine,6,72.00,72.00,N
+10010,2026-06-30,23:14:22,Sarah M,Corona,Beer,42,252.00,252.00,N
+10011,2026-06-30,23:14:22,Sarah M,Modelo,Beer,38,228.00,228.00,N
+10012,2026-06-30,23:14:22,Sarah M,White Claw,Beer,24,144.00,144.00,N

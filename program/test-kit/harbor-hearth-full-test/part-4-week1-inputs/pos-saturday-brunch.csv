@@ -1,0 +1,10 @@
+Order ID,Date,Time,Server,Item,Category,Qty,Gross Sales,Net Sales,Void
+40001,2026-07-05,11:08:44,Chris T,La Marca Prosecco,Wine,9,108.00,108.00,N
+40002,2026-07-05,11:08:44,Chris T,Whispering Angel Rose,Wine,4,48.00,48.00,N
+40003,2026-07-05,11:08:44,Chris T,Aperol Spritz (Aperol),Liquor,15,195.00,195.00,N
+40004,2026-07-05,11:08:44,Chris T,Mimosa (La Marca),Wine,22,264.00,264.00,N
+40005,2026-07-05,11:08:44,Chris T,Bloody Mary (Tito's),Liquor,18,234.00,234.00,N
+40006,2026-07-05,11:08:44,Chris T,Corona,Beer,35,210.00,210.00,N
+40007,2026-07-05,11:08:44,Chris T,White Claw,Beer,27,162.00,162.00,N
+40008,2026-07-05,11:08:44,Chris T,Well Vodka,Liquor,8,64.00,64.00,N
+40009,2026-07-05,11:08:44,Chris T,Well Gin,Liquor,6,48.00,48.00,N

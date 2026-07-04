@@ -1,0 +1,11 @@
+Order ID,Date,Time,Server,Item,Category,Qty,Gross Sales,Net Sales,Void
+20001,2026-07-02,14:22:08,Mike R,Bacardi,Liquor,5,65.00,65.00,N
+20002,2026-07-02,14:22:08,Mike R,Captain Morgan,Liquor,4,52.00,52.00,N
+20003,2026-07-02,14:22:08,Mike R,Grey Goose,Liquor,6,90.00,90.00,N
+20004,2026-07-02,14:22:08,Mike R,Hendricks,Liquor,3,39.00,39.00,N
+20005,2026-07-02,14:22:08,Mike R,Buffalo Trace,Liquor,7,91.00,91.00,N
+20006,2026-07-02,14:22:08,Mike R,Oyster Bay Sauvignon Blanc,Wine,4,48.00,48.00,N
+20007,2026-07-02,14:22:08,Mike R,Josh Cellars Cabernet,Wine,3,36.00,36.00,N
+20008,2026-07-02,14:22:08,Mike R,Heineken,Beer,18,108.00,108.00,N
+20009,2026-07-02,14:22:08,Mike R,Bud Light,Beer,22,132.00,132.00,N
+20010,2026-07-02,14:22:08,Mike R,Miller Lite,Beer,16,96.00,96.00,N
