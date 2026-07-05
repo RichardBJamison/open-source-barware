@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Analytics — Open Source Barware</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e4e4e7;
+    --muted: #71717a;
+    --accent: #c97f3a;
+    --accent2: #e8a964;
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    line-height: 1.5;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .header .live {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--green);
+  }
+  .header .live .dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .controls button, .controls select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .controls button:hover { border-color: var(--accent); }
+  .controls button.active { background: var(--accent); color: #000; border-color: var(--accent); }
+  .controls .refresh-info { font-size: 11px; color: var(--muted); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .metric-card .label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .metric-card .value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .metric-card .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .section h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: var(--accent2);
+  }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+  .bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .bar-row .bar-label {
+    min-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+  }
+  .bar-row .bar-track {
+    flex: 1;
+    height: 22px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-row .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    min-width: 2px;
+    transition: width 0.5s ease;
+  }
+  .bar-row .bar-count {
+    min-width: 40px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  /* Hourly chart */
+  .hourly-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 120px;
+    padding-top: 10px;
+  }
+  .hourly-bar {
+    flex: 1;
+    background: linear-gradient(to top, var(--accent), var(--accent2));
+    border-radius: 3px 3px 0 0;
+    min-height: 2px;
+    position: relative;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .hourly-bar:hover { opacity: 0.8; }
+  .hourly-bar .tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    z-index: 10;
+  }
+  .hourly-bar:hover .tooltip { display: block; }
+  .hourly-labels {
+    display: flex;
+    gap: 3px;
+    margin-top: 4px;
+  }
+  .hourly-labels span {
+    flex: 1;
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  /* Daily trend */
+  .daily-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .daily-table th {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 12px;
+  }
+  .daily-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .daily-table tr:last-child td { border-bottom: none; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag-green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .tag-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .loading {
+    text-align: center;
+    padding: 60px;
+    color: var(--muted);
+    font-size: 16px;
+  }
+  .error {
+    text-align: center;
+    padding: 40px;
+    color: var(--red);
+    font-size: 14px;
+  }
+  a { color: var(--accent2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Open Source Barware — Analytics</h1>
+  </div>
+  <div class="live" id="live-indicator">
+    <div class="dot"></div>
+    <span id="live-count">—</span> active now
+  </div>
+</div>
+
+<div class="controls" id="controls">
+  <button data-days="1">Today</button>
+  <button data-days="3">3 days</button>
+  <button data-days="7" class="active">7 days</button>
+  <button data-days="14">14 days</button>
+  <button data-days="30">30 days</button>
+  <button id="refresh-btn" title="Refresh now">&#x21bb; Refresh</button>
+  <span class="refresh-info" id="last-refresh">Auto-refreshes every 60s</span>
+</div>
+
+<div id="content">
+  <div class="loading">Loading analytics...</div>
+</div>
+
+<script>
+(function() {
+  var currentDays = 7;
+  var refreshInterval;
+
+  function $(id) { return document.getElementById(id); }
+
+  // Controls
+  document.querySelectorAll('[data-days]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('[data-days]').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentDays = parseInt(btn.dataset.days, 10);
+      load();
+    });
+  });
+  $('refresh-btn').addEventListener('click', load);
+
+  function load() {
+    $('last-refresh').textContent = 'Loading...';
+    fetch('/api/stats?days=' + currentDays)
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(render)
+      .catch(function(err) {
+        $('content').innerHTML = '<div class="error">Failed to load analytics: ' + err.message + '</div>';
+        $('last-refresh').textContent = 'Error — click refresh to retry';
+      });
+  }
+
+  function render(data) {
+    var o = data.overview;
+    $('live-count').textContent = o.liveNow;
+    $('last-refresh').textContent = 'Updated ' + new Date(data.generated).toLocaleTimeString();
+
+    var html = '';
+
+    // Metric cards
+    html += '<div class="grid">';
+    html += metricCard('Total Pageviews', fmt(o.totalPageviews), 'This period');
+    html += metricCard('Unique Visitors', fmt(o.uniqueVisitors), pct(o.uniqueVisitors, o.totalPageviews) + ' of total');
+    html += metricCard('Human Visits', fmt(o.humanVisits), fmt(o.botVisits) + ' bots filtered');
+    html += metricCard('New Visitors', fmt(o.newVisitors), fmt(o.returningVisitors) + ' returning');
+    html += metricCard('Avg Load Time', o.avgLoadTime ? (o.avgLoadTime + 'ms') : '—', 'Page load');
+    html += metricCard('All-Time Total', fmt(o.totalAllTime), 'Since tracking began');
+    html += '</div>';
+
+    // Hourly distribution
+    html += '<div class="section">';
+    html += '<h2>Hourly Distribution (UTC)</h2>';
+    var maxH = Math.max.apply(null, data.hourlyDistribution) || 1;
+    html += '<div class="hourly-chart">';
+    for (var h = 0; h < 24; h++) {
+      var val = data.hourlyDistribution[h];
+      var pctH = (val / maxH * 100);
+      html += '<div class="hourly-bar" style="height:' + Math.max(pctH, 1.5) + '%"><div class="tooltip">' + h + ':00 UTC — ' + val + ' views</div></div>';
+    }
+    html += '</div>';
+    html += '<div class="hourly-labels">';
+    for (var h = 0; h < 24; h++) {
+      html += '<span>' + (h % 3 === 0 ? h : '') + '</span>';
+    }
+    html += '</div></div>';
+
+    // Daily trend table
+    if (data.dailyTrend.length > 1) {
+      html += '<div class="section">';
+      html += '<h2>Daily Breakdown</h2>';
+      html += '<table class="daily-table"><thead><tr><th>Date</th><th>Pageviews</th><th>Unique</th><th>Views/Visitor</th></tr></thead><tbody>';
+      data.dailyTrend.slice().reverse().forEach(function(d) {
+        var vpv = d.unique > 0 ? (d.views / d.unique).toFixed(1) : '—';
+        html += '<tr><td>' + d.date + '</td><td>' + fmt(d.views) + '</td><td>' + fmt(d.unique) + '</td><td>' + vpv + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+
+    // Two-column sections
+    html += '<div class="two-col">';
+
+    // Top pages
+    html += '<div class="section"><h2>Top Pages</h2>';
+    html += barChart(data.topPages, o.totalPageviews);
+    html += '</div>';
+
+    // Referrers
+    html += '<div class="section"><h2>Traffic Sources</h2>';
+    if (data.topReferrers.length === 0) {
+      html += '<p style="color:var(--muted);font-size:13px">No external referrers yet</p>';
+    } else {
+      html += barChart(data.topReferrers, o.totalPageviews);
+    }
+    html += '</div>';
+
+    html += '</div>'; // end two-col
+
+    // Geo + Devices
+    html += '<div class="two-col">';
+
+    // Countries
+    html += '<div class="section"><h2>Countries</h2>';
+    html += barChart(data.topCountries, o.totalPageviews);
+    html += '</div>';
+
+    // Cities
+    html += '<div class="section"><h2>Cities</h2>';
+    html += barChart(data.topCities, o.totalPageviews);
+    html += '</div>';
+
+    html += '</div>';
+
+    // Browser/OS/Device
+    html += '<div class="two-col">';
+
+    html += '<div class="section"><h2>Browsers</h2>';
+    html += barChart(data.browsers, o.totalPageviews);
+    html += '</div>';
+
+    html += '<div class="section"><h2>Operating Systems</h2>';
+    html += barChart(data.operatingSystems, o.totalPageviews);
+    html += '</div>';
+
+    html += '</div>';
+
+    html += '<div class="two-col">';
+
+    html += '<div class="section"><h2>Devices</h2>';
+    html += barChart(data.devices, o.totalPageviews);
+    html += '</div>';
+
+    html += '<div class="section"><h2>Screen Sizes</h2>';
+    html += barChart(data.topScreens, o.totalPageviews);
+    html += '</div>';
+
+    html += '</div>';
+
+    // UTM campaigns
+    if (data.utm.sources.length > 0 || data.utm.campaigns.length > 0) {
+      html += '<div class="section"><h2>UTM Campaigns</h2>';
+      html += '<div class="two-col">';
+      html += '<div><h3 style="font-size:13px;color:var(--muted);margin-bottom:8px">Sources</h3>' + barChart(data.utm.sources, campaignVisits(data)) + '</div>';
+      html += '<div><h3 style="font-size:13px;color:var(--muted);margin-bottom:8px">Campaigns</h3>' + barChart(data.utm.campaigns, campaignVisits(data)) + '</div>';
+      html += '</div></div>';
+    }
+
+    // Languages
+    html += '<div class="two-col">';
+    html += '<div class="section"><h2>Languages</h2>';
+    html += barChart(data.languages, o.totalPageviews);
+    html += '</div>';
+
+    // Referrer URLs
+    html += '<div class="section"><h2>Top Referrer URLs</h2>';
+    if (data.topRefUrls.length === 0) {
+      html += '<p style="color:var(--muted);font-size:13px">No external referrer URLs yet</p>';
+    } else {
+      html += barChart(data.topRefUrls.map(function(r) {
+        return { name: truncate(r.name, 60), count: r.count };
+      }), o.totalPageviews);
+    }
+    html += '</div>';
+
+    html += '</div>';
+
+    $('content').innerHTML = html;
+  }
+
+  function metricCard(label, value, sub) {
+    return '<div class="metric-card"><div class="label">' + label + '</div><div class="value">' + value + '</div><div class="sub">' + (sub || '') + '</div></div>';
+  }
+
+  function barChart(items, total) {
+    if (!items || items.length === 0) return '<p style="color:var(--muted);font-size:13px">No data</p>';
+    var maxCount = items[0].count || 1;
+    var html = '<div class="bar-chart">';
+    items.forEach(function(item) {
+      var w = (item.count / maxCount * 100);
+      html += '<div class="bar-row">';
+      html += '<span class="bar-label" title="' + esc(item.name) + '">' + esc(item.name) + '</span>';
+      html += '<span class="bar-track"><span class="bar-fill" style="width:' + w + '%"></span></span>';
+      html += '<span class="bar-count">' + fmt(item.count) + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function fmt(n) {
+    return (n || 0).toLocaleString();
+  }
+
+  function pct(a, b) {
+    if (!b) return '0%';
+    return Math.round(a / b * 100) + '%';
+  }
+
+  function esc(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function truncate(s, n) {
+    return s.length > n ? s.slice(0, n) + '...' : s;
+  }
+
+  function campaignVisits(data) {
+    var t = 0;
+    data.utm.sources.forEach(function(s) { t += s.count; });
+    return t || 1;
+  }
+
+  // Initial load + auto-refresh every 60s
+  load();
+  refreshInterval = setInterval(load, 60000);
+})();
+</script>
+</body>
+</html>
