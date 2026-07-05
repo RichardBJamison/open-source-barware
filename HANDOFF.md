@@ -1,7 +1,38 @@
 # Open Source Barware — Handoff
 
-*Last updated: 2026-07-04 ~18:40 EDT | agent: GROK | project ID: `open-source-barware`*
-*Ship version: **`36b712e`** on `main`*
+*Last updated: 2026-07-05 ~17:35 EDT | agent: GROK | project ID: `open-source-barware`*
+*Ship version: **`f0e4520`** on `main`*
+*Status: **IN-PROGRESS** — July 4 launch live · analytics fixed · Sparring Court reskinned*
+
+## Session 2026-07-05 (GROK) — launch polish + analytics + sandbox
+
+### Shipped (`f0e4520`)
+- **CTAs:** All "Free Download" → "Download Program"; process page → Visit Our Arms + Download Program
+- **July 4 overlay:** Dismiss routes to home (unless clicking in-overlay links)
+- **Analytics:** `VISITOR_COUNTER` KV bound — `/api/stats` works; `/api/marketing-stats` pulls GA4 for OSB, Miami, Resonant, IHS, RBJ
+- **GA4 created:** `intelligenthospitalitysystems.com` (G-CBWFSS7G5X), `miamihiddenbartour.com` (G-SJCKF1EMFL); tags deployed
+- **Sparring Court:** Full admin-panel reskin (glass panels, hero, icon sidebar); site header restored for exit nav
+- **Sandbox branding:** Top bar = martini + Your Sparring Court
+
+### Release-list / download emails (checked 2026-07-05)
+- **KV `OSB_SIGNUPS`:** **0 signups** (`wrangler kv key list --namespace-id 1cc731d2ae40402cb49f4bc104a5cd79` → `[]`)
+- **Program downloads tracked:** 5 all-time, 1 today (first-party `/api/stats` — **no email attached**)
+- **Download page behavior:** Email is **optional**. Users can **Skip — I'll check back every few days** and download Mac/Win zip without joining the list.
+- **Signup API:** `POST /api/updates-subscribe` is live; writes to KV first, then emails owner via Forward Email.
+- **Cloudflare secrets present:** `NOTIFY_EMAIL`, `GHL_API_TOKEN`, GA OAuth — **`FORWARD_EMAIL_USER` / `FORWARD_EMAIL_PASS` not listed** → owner inbox notifications may not fire even when KV captures a signup. Fix: `wrangler pages secret put FORWARD_EMAIL_USER` and `FORWARD_EMAIL_PASS`.
+
+### Pickup commands
+```bash
+cd ~/Documents/New\ project/open-source-barware && git pull
+npm run build && npx wrangler pages deploy out --project-name open-source-barware
+# Check signups:
+npx wrangler kv key list --namespace-id 1cc731d2ae40402cb49f4bc104a5cd79 --prefix signup:
+curl -s 'https://opensourcebarware.com/api/stats?days=1' | python3 -m json.tool
+```
+
+---
+
+*Prior handoff below (2026-07-04 ~18:40 EDT | ship `36b712e`)*
 *Status: **IN-PROGRESS** — walk-first setup ✅ · release-list signup ✅ · butterfly ✅ · Test 3 ✅*
 
 > **Pickup:** `~/Me-Nexus/library/open-source-barware/HANDOFF.md` + `PROGRAM-SNAPSHOT-2026-07-04.md`  
