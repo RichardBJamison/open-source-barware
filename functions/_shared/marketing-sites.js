@@ -1,0 +1,42 @@
+export const MARKETING_SITES = [
+  {
+    id: "osb",
+    name: "Open Source Barware",
+    domain: "opensourcebarware.com",
+    url: "https://opensourcebarware.com",
+    propertyId: "540046010",
+    measurementId: "G-DQJKBWMM8H",
+  },
+  {
+    id: "miami",
+    name: "Miami Hidden Bar Tour",
+    domain: "miamihiddenbartour.com",
+    url: "https://miamihiddenbartour.com",
+    propertyId: "544287094",
+    measurementId: "G-SJCKF1EMFL",
+  },
+  {
+    id: "rwd",
+    name: "Resonant Web Design",
+    domain: "resonantwebdesign.com",
+    url: "https://www.resonantwebdesign.com",
+    propertyId: "544077011",
+    measurementId: "G-K7RCVL5RFQ",
+  },
+  {
+    id: "ihs",
+    name: "Intelligent Hospitality Systems",
+    domain: "intelligenthospitalitysystems.com",
+    url: "https://intelligenthospitalitysystems.com",
+    propertyId: "544254228",
+    measurementId: "G-CBWFSS7G5X",
+  },
+  {
+    id: "rbj",
+    name: "Richard B. Jamison",
+    domain: "richardbjamison.com",
+    url: "https://richardbjamison.com",
+    propertyId: "530264907",
+    measurementId: "G-7748LM48YW",
+  },
+];

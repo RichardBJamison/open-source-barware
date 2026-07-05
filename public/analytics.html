@@ -248,6 +248,58 @@
     color: var(--red);
     font-size: 14px;
   }
+  .site-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  .site-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .site-card h3 {
+    font-size: 14px;
+    margin-bottom: 2px;
+    color: var(--text);
+  }
+  .site-card .domain {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .site-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .site-metrics div {
+    text-align: center;
+  }
+  .site-metrics .num {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .site-metrics .lbl {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .site-error {
+    font-size: 12px;
+    color: var(--red);
+    margin-top: 6px;
+  }
+  .portfolio-total {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
   a { color: var(--accent2); text-decoration: none; }
   a:hover { text-decoration: underline; }
 </style>
@@ -256,7 +308,7 @@
 
 <div class="header">
   <div>
-    <h1>Open Source Barware — Analytics</h1>
+    <h1>Marketing Analytics — Portfolio</h1>
   </div>
   <div class="live" id="live-indicator">
     <div class="dot"></div>
@@ -265,9 +317,9 @@
 </div>
 
 <div class="controls" id="controls">
-  <button data-days="1">Today</button>
+  <button data-days="1" class="active">Today</button>
   <button data-days="3">3 days</button>
-  <button data-days="7" class="active">7 days</button>
+  <button data-days="7">7 days</button>
   <button data-days="14">14 days</button>
   <button data-days="30">30 days</button>
   <button id="refresh-btn" title="Refresh now">&#x21bb; Refresh</button>
@@ -280,7 +332,7 @@
 
 <script>
 (function() {
-  var currentDays = 7;
+  var currentDays = 1;
   var refreshInterval;
 
   function $(id) { return document.getElementById(id); }
@@ -298,24 +350,71 @@
 
   function load() {
     $('last-refresh').textContent = 'Loading...';
-    fetch('/api/stats?days=' + currentDays)
-      .then(function(r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
+    Promise.all([
+      fetch('/api/marketing-stats?days=' + currentDays).then(function(r) {
+        if (!r.ok) throw new Error('marketing HTTP ' + r.status);
+        return r.json();
+      }),
+      fetch('/api/stats?days=' + currentDays).then(function(r) {
+        if (!r.ok) throw new Error('OSB stats HTTP ' + r.status);
         return r.json();
       })
-      .then(render)
+    ])
+      .then(function(results) {
+        render(results[0], results[1]);
+      })
       .catch(function(err) {
         $('content').innerHTML = '<div class="error">Failed to load analytics: ' + err.message + '</div>';
         $('last-refresh').textContent = 'Error — click refresh to retry';
       });
   }
 
-  function render(data) {
-    var o = data.overview;
-    $('live-count').textContent = o.liveNow;
-    $('last-refresh').textContent = 'Updated ' + new Date(data.generated).toLocaleTimeString();
-
+  function renderMarketing(marketing) {
+    var t = marketing.totals;
+    var periodLabel = currentDays === 1 ? 'Today' : (currentDays + ' days');
     var html = '';
+
+    html += '<div class="section">';
+    html += '<h2>Marketing Portfolio — ' + periodLabel + '</h2>';
+    html += '<div class="portfolio-total">';
+    html += metricCard('Portfolio Users', fmt(t.activeUsers), fmt(t.newUsers) + ' new');
+    html += metricCard('Portfolio Sessions', fmt(t.sessions), fmt(t.pageViews) + ' pageviews');
+    html += metricCard('Portfolio Events', fmt(t.events), fmt(t.activeNow) + ' active now');
+    html += '</div>';
+
+    html += '<div class="site-grid">';
+    marketing.sites.forEach(function(site) {
+      html += '<div class="site-card">';
+      html += '<h3><a href="' + esc(site.url) + '" target="_blank" rel="noopener">' + esc(site.name) + '</a></h3>';
+      html += '<div class="domain">' + esc(site.domain) + '</div>';
+      if (site.error) {
+        html += '<div class="site-error">' + esc(site.error) + '</div>';
+      } else {
+        html += '<div class="site-metrics">';
+        html += '<div><div class="num">' + fmt(site.activeUsers) + '</div><div class="lbl">Users</div></div>';
+        html += '<div><div class="num">' + fmt(site.sessions) + '</div><div class="lbl">Sessions</div></div>';
+        html += '<div><div class="num">' + fmt(site.pageViews) + '</div><div class="lbl">Views</div></div>';
+        html += '</div>';
+        html += '<div class="sub" style="font-size:11px;color:var(--muted)">' + fmt(site.activeNow) + ' active now · ' + fmt(site.events) + ' events</div>';
+        if (site.topChannels && site.topChannels.length) {
+          html += '<div style="margin-top:8px;font-size:11px;color:var(--muted)">Top channel: ' + esc(site.topChannels[0].channel) + ' (' + fmt(site.topChannels[0].sessions) + ')</div>';
+        }
+      }
+      html += '</div>';
+    });
+    html += '</div></div>';
+
+    return html;
+  }
+
+  function render(marketing, data) {
+    var o = data.overview;
+    $('live-count').textContent = (marketing.totals.activeNow || 0) + ' portfolio / ' + (o.liveNow || 0) + ' OSB';
+    $('last-refresh').textContent = 'Updated ' + new Date(marketing.generated).toLocaleTimeString();
+
+    var html = renderMarketing(marketing);
+
+    html += '<div class="section"><h2>Open Source Barware — First-Party Detail</h2>';
 
     // Headline counters — visits & downloads
     html += '<div class="section">';
@@ -465,7 +564,7 @@
     }
     html += '</div>';
 
-    html += '</div>';
+    html += '</div></div>';
 
     $('content').innerHTML = html;
   }
