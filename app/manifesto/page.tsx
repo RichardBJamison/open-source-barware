@@ -272,7 +272,7 @@ export default function ManifestoPage() {
             href="/downloads"
             className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
           >
-            Free Download
+            Download Program
           </Link>
         </div>
       </section>

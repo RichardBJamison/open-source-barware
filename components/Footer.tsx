@@ -46,7 +46,7 @@ export default function Footer() {
               <Link href="/about" className="text-sm text-text-muted hover:text-copper transition-colors">About</Link>
               <Link href="/manifesto" className="text-sm text-text-muted hover:text-copper transition-colors">Manifesto</Link>
               <Link href="/resources" className="text-sm text-text-muted hover:text-copper transition-colors">Resources</Link>
-              <Link href="/download" className="text-sm text-text-muted hover:text-copper transition-colors">Free Download</Link>
+              <Link href="/download" className="text-sm text-text-muted hover:text-copper transition-colors">Download Program</Link>
               <Link href="/downloads" className="text-sm text-text-muted hover:text-copper transition-colors">Program Guide</Link>
               <Link href="/open-source-compliance" className="text-sm text-text-muted hover:text-copper transition-colors">Compliance</Link>
               <Link href="/inventory/dashboard" className="text-sm text-text-muted hover:text-copper transition-colors">Salle d&apos;Armes</Link>

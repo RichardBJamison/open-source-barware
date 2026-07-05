@@ -337,7 +337,7 @@ function LaunchThankYou({
             prefetch={false}
             className="july4-cta-primary w-full py-4 text-sm font-black uppercase tracking-[0.18em]"
           >
-            Free Download &mdash; grab the program 🍹
+            Download Program &mdash; grab the program 🍹
           </Link>
           <div className="flex flex-col gap-3 sm:flex-row">
             <a

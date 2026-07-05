@@ -56,7 +56,7 @@ export default function DownloadButton({ tool }: { tool: ToolPreview }) {
         onClick={handleClick}
         className="w-full block bg-copper hover:bg-copper-bright text-bg font-semibold py-3 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_20px_rgba(168,120,79,0.2)]"
       >
-        {unlocked ? "Free Download" : "Downloads not open yet"}
+        {unlocked ? "Download Program" : "Downloads not open yet"}
       </button>
       {lockedOpen && <DownloadLockedModal onClose={() => setLockedOpen(false)} />}
       {open && (

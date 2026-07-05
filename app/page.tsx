@@ -116,7 +116,7 @@ export default function Home() {
                 href="/download"
                 className={primaryCtaClass}
               >
-                <span className="relative z-10">Free Download</span>
+                <span className="relative z-10">Download Program</span>
               </Link>
             </div>
           </div>
@@ -230,7 +230,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-4 text-copper">
               <span className="text-sm font-semibold tracking-wide text-copper">
-                Free Download
+                Download Program
               </span>
               <div className="opacity-70 group-hover:opacity-100 transition-opacity">
                 <BottleIcon />
@@ -328,7 +328,7 @@ export default function Home() {
               href="/download"
               className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
             >
-              Free Download
+              Download Program
             </Link>
             <Link
               href="/download"

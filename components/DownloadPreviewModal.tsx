@@ -327,7 +327,7 @@ export default function DownloadPreviewModal({
               onClick={onConfirm}
               className="w-full bg-copper hover:bg-copper-bright text-bg font-semibold py-3.5 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
             >
-              Free Download
+              Download Program
             </button>
             <p className="text-[10px] text-text-light text-center tracking-wide">
               No signup. No email. Free forever. &mdash; opensourcebarware.com
