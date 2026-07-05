@@ -189,15 +189,9 @@ export default function InventoryShell({
               </svg>
             </button>
 
-            <h1 className="font-serif text-base lg:text-lg copper-text truncate flex items-center gap-2 min-w-0">
-              <CocktailIcon className="w-6 h-6 shrink-0 hidden sm:block" />
-              <span className="truncate">
-                {bar?.name ?? "Salle d'Armes"}
-                <span className="text-text-light font-sans text-xs lg:text-sm tracking-wide">
-                  {" "}
-                  — Home base
-                </span>
-              </span>
+            <h1 className="font-serif text-base lg:text-lg copper-text truncate flex items-center gap-2.5 min-w-0">
+              <CocktailIcon size={24} className="shrink-0" />
+              <span className="truncate">Your Sparring Court</span>
               <span className="salle-sandbox-pill shrink-0 hidden sm:inline-flex">
                 Sandbox
               </span>
