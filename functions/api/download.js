@@ -1,9 +1,5 @@
-import {
-  cors,
-  getVisitorKv,
-  jsonError,
-  todayUtc,
-} from "../_shared/kv.js";
+import { cors, getVisitorKv, jsonError } from "../_shared/kv.js";
+import { updateDownloadRollup } from "../_shared/rollup.js";
 
 // POST /api/download — records a program/file download
 export async function onRequestPost(context) {
@@ -54,9 +50,19 @@ export async function onRequestPost(context) {
     ];
 
     if (vid) {
-      writes.push(
-        kv.put(`dl_uv:${dateStr}:${vid}`, "1", { expirationTtl: 2592000 })
-      );
+      const dayUvKey = `dl_uv:${dateStr}:${vid}`;
+      const seenToday = await kv.get(dayUvKey);
+      writes.push(kv.put(dayUvKey, "1", { expirationTtl: 2592000 }));
+      if (!seenToday) {
+        const dayUvCount =
+          parseInt((await kv.get(`dl_uv_day_count:${dateStr}`)) || "0", 10) + 1;
+        writes.push(
+          kv.put(`dl_uv_day_count:${dateStr}`, String(dayUvCount), {
+            expirationTtl: 2592000,
+          })
+        );
+      }
+
       const everKey = `dl_uv:ever:${vid}`;
       const seenBefore = await kv.get(everKey);
       if (!seenBefore) {
@@ -68,6 +74,7 @@ export async function onRequestPost(context) {
     }
 
     await Promise.all(writes);
+    await updateDownloadRollup(kv, dateStr, download);
 
     return new Response(JSON.stringify({ ok: true, count: total }), {
       headers: cors("GET, POST, OPTIONS"),
