@@ -4,7 +4,7 @@
   "private": true,
   "license": "GPL-3.0-or-later",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 5053",
     "prebuild": "npm run package:compliance",
     "build": "next build",
     "start": "next start",
