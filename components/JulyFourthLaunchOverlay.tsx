@@ -270,7 +270,7 @@ function LiveLaunchContent({ onDismiss }: { onDismiss: () => void }) {
   return (
     <>
       <p className="july4-badge mb-6">
-        🎆 It&rsquo;s live &middot; released today at 10 &rsquo;o clock 🎆
+        🎆 Released yesterday &middot; Independence Day 🎆
       </p>
 
       <PartyShots />
@@ -283,20 +283,20 @@ function LiveLaunchContent({ onDismiss }: { onDismiss: () => void }) {
       </h1>
 
       <p className="mt-4 text-sm uppercase tracking-[0.3em] text-white/70">
-        Free bar inventory for the whole world &mdash; happy Fourth
+        Free bar inventory for the whole world
       </p>
 
       <div className="july4-party-card panel rivets mx-auto mt-8 w-full max-w-xl px-6 py-8 sm:px-10 sm:py-9">
         <p className="font-serif text-2xl italic leading-snug text-cream sm:text-3xl">
-          Thank you for being here today on our first day.
+          We released our open-source software yesterday on Independence Day.
         </p>
 
         <div className="mt-5 space-y-4 text-base leading-relaxed text-text-muted sm:text-lg">
           <p>
-            If you&rsquo;re a first-timer reading this: hey, and welcome. We
-            released Open Source Barware today at 10 o&rsquo;clock &mdash; a free,
-            self-contained bar inventory program that runs on your laptop. No
-            subscription, no cloud, no AI required.
+            If you&rsquo;re a first-timer reading this: hey, and welcome. Open
+            Source Barware went live yesterday on the Fourth at 10
+            o&rsquo;clock &mdash; a free, self-contained bar inventory program
+            that runs on your laptop. No subscription, no cloud, no AI required.
           </p>
 
           <p>
