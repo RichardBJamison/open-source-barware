@@ -414,6 +414,17 @@ export default function AboutMockupPage() {
               <a href="mailto:me@richardbjamison.com">Reach out</a> and we will figure out what
               your operation actually needs.
             </p>
+            <p>
+              This is{" "}
+              <a
+                href="https://intelligenthospitalitysystems.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                intelligenthospitalitysystems.com
+              </a>{" "}
+              &mdash; coming soon.
+            </p>
           </div>
         </section>
       </main>
