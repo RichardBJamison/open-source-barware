@@ -4,141 +4,199 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>The Open Source Bar Program — Home Base</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/css/app.css" />
 </head>
-<body data-app="home">
+<body data-app="home" class="admin-body">
   <div class="demo-ribbon">The Open Source Bar Program · Live demo — field-tested at Agave &amp; Rye</div>
   <div class="admin-shell">
     <aside class="admin-sidebar">
-      <div class="sidebar-brand">
+      <div class="sidebar-glow" aria-hidden="true"></div>
+      <div class="sidebar-brand" id="sidebarBrand">
+        <div class="sidebar-mark" id="sidebarMark">
+          <img id="sidebarLogoImg" class="sidebar-logo-img hidden" alt="" width="40" height="40" />
+          <svg class="sidebar-mark-svg" id="sidebarMarkDefault" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 22V10h4.5c2.8 0 4.5 1.4 4.5 3.6S17.3 17 14.5 17H10v5z" fill="currentColor" opacity="0.9"/></svg>
+          <span class="sidebar-mark-label" id="sidebarMarkLabel">OSB</span>
+        </div>
+        <p class="sidebar-welcome" id="sidebarWelcome">Welcome back</p>
+        <p class="sidebar-business-name hidden" id="sidebarBusinessName"></p>
+        <p class="sidebar-business-address hidden" id="sidebarBusinessAddress"></p>
         <label for="barSwitcher" class="sidebar-bar-label">Active bar</label>
         <select id="barSwitcher" class="bar-switcher"></select>
-        <div class="subbrand" id="sidebarCycleLabel">Inventory cycle</div>
+        <div class="sidebar-cycle-chip" id="sidebarCycleLabel">Inventory cycle</div>
       </div>
-      <nav class="sidebar-nav">
-        <button type="button" class="sidebar-link active" data-view="dashboard">Dashboard</button>
-        <button type="button" class="sidebar-link" data-view="spreadsheets">Spreadsheets</button>
-        <button type="button" class="sidebar-link" data-view="analytics">Analytics</button>
-        <button type="button" class="sidebar-link" data-view="inhouse">In-house inventory</button>
-        <button type="button" class="sidebar-link" data-view="inputs">Weekly inputs</button>
-        <button type="button" class="sidebar-link" data-view="settings">Settings</button>
+      <nav class="sidebar-nav" aria-label="Admin navigation">
+        <button type="button" class="sidebar-link active" data-view="dashboard">
+          <svg class="sidebar-icon" viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="2" width="7" height="7" rx="1" fill="currentColor"/><rect x="11" y="2" width="7" height="4" rx="1" fill="currentColor" opacity="0.55"/><rect x="11" y="8" width="7" height="10" rx="1" fill="currentColor" opacity="0.35"/><rect x="2" y="11" width="7" height="7" rx="1" fill="currentColor" opacity="0.55"/></svg>
+          <span class="sidebar-link-text"><strong>Dashboard</strong><small>Cycle pulse &amp; metrics</small></span>
+        </button>
+        <button type="button" class="sidebar-link" data-view="spreadsheets">
+          <svg class="sidebar-icon" viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="3" width="16" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M2 8h16M7 8v9M12 8v9" stroke="currentColor" stroke-width="1.2"/></svg>
+          <span class="sidebar-link-text"><strong>Inventory / Spreadsheets</strong><small>PARs, variance, orders — live</small></span>
+        </button>
+        <button type="button" class="sidebar-link" data-view="analytics">
+          <svg class="sidebar-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16V8l4-3 4 6 3-4 3 9H3z" fill="currentColor" opacity="0.85"/></svg>
+          <span class="sidebar-link-text"><strong>Analytics</strong><small>Cost %, movers, trends</small></span>
+        </button>
+        <button type="button" class="sidebar-link" data-view="inhouse">
+          <svg class="sidebar-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3h6v3H7V3zm-2 5h10v9H5V8z" fill="currentColor" opacity="0.5"/><path d="M8 11h4v2H8v-2z" fill="currentColor"/></svg>
+          <span class="sidebar-link-text"><strong>In-house</strong><small>What's on the shelf</small></span>
+        </button>
+        <button type="button" class="sidebar-link" data-view="inputs">
+          <svg class="sidebar-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v11M6 9l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M3 15h14v3H3v-3z" fill="currentColor" opacity="0.6"/></svg>
+          <span class="sidebar-link-text"><strong>All inputs</strong><small>POS · invoices · next count</small></span>
+        </button>
+        <button type="button" class="sidebar-link" data-view="settings">
+          <svg class="sidebar-icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3" fill="currentColor"/><path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.5 3.5l1.4 1.4M15.1 15.1l1.4 1.4M3.5 16.5l1.4-1.4M15.1 4.9l1.4-1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="sidebar-link-text"><strong>Settings</strong><small>Your business, bars, optional AI</small></span>
+        </button>
       </nav>
       <div class="sidebar-foot">
-        <span class="subbrand">Home base</span>
+        <p class="sidebar-foot-tag">Home base</p>
+        <p class="sidebar-foot-hint">Your numbers update every time you Process a count.</p>
       </div>
     </aside>
 
     <main class="admin-main">
-      <!-- Dashboard -->
       <section class="admin-view active" data-view="dashboard">
-        <header class="view-header">
-          <h1>Home base</h1>
-          <p>Metrics respect your cycle length — 7 days, 9 days, or whatever you set in Settings.</p>
+        <header class="view-header view-header--dash">
+          <div>
+            <p class="view-eyebrow">Operations</p>
+            <h1>Home base</h1>
+            <p>Your cycle metrics, baseline, and quick paths — all live after Process.</p>
+          </div>
         </header>
-        <div class="panel">
-          <div class="row" style="margin-top:0;">
+        <div id="dashboardHero" class="dashboard-hero hidden">
+          <div class="dashboard-hero-glow" aria-hidden="true"></div>
+          <div class="dashboard-hero-main">
+            <span class="dashboard-hero-badge" id="dashboardHeroCycle">Cycle 1</span>
+            <h2 class="dashboard-hero-title" id="dashboardHeroTitle">Inventory locked</h2>
+            <p class="dashboard-hero-sub" id="dashboardHeroSub">Spreadsheets, analytics, and in-house inventory are live.</p>
+          </div>
+          <div class="dashboard-hero-stats" id="dashboardHeroStats"></div>
+        </div>
+        <div class="panel panel--glass">
+          <div class="panel-head-row">
+            <h2>Cycle metrics</h2>
+            <p id="metricsBounds" class="field-hint panel-head-meta"></p>
+          </div>
+          <div class="metrics-filters">
             <div>
-              <label for="metricsWindow">Metrics timeframe</label>
+              <label for="metricsWindow">Timeframe</label>
               <select id="metricsWindow"></select>
             </div>
             <div>
-              <label for="metricsFrom">Custom from (optional)</label>
+              <label for="metricsFrom">From</label>
               <input id="metricsFrom" type="date" />
             </div>
             <div>
-              <label for="metricsTo">Custom to (optional)</label>
+              <label for="metricsTo">To</label>
               <input id="metricsTo" type="date" />
             </div>
           </div>
-          <p id="metricsBounds" class="field-hint" style="margin-top:8px;"></p>
-          <div id="metricsGrid" class="metrics-grid"></div>
-          <p id="metricsNotes" class="field-hint" style="margin-top:12px;"></p>
+          <div id="metricsGrid" class="metrics-grid metrics-grid--bento"></div>
+          <p id="metricsNotes" class="field-hint metrics-notes"></p>
         </div>
-        <div class="panel" id="firstWeekPanel">
+        <div class="panel panel--glass" id="firstWeekPanel">
           <h2>First week baseline</h2>
-          <p id="firstWeekSummary" class="field-hint" style="margin-top:0;">Loads after your first completed count.</p>
-          <div id="firstWeekGrid" class="metrics-grid"></div>
+          <p id="firstWeekSummary" class="field-hint panel-lead">Loads after your first completed count.</p>
+          <div id="firstWeekGrid" class="metrics-grid metrics-grid--bento"></div>
         </div>
-        <div class="panel">
-          <h2>Quick links</h2>
-          <div class="nav-grid">
-            <button type="button" class="nav-card nav-card-btn" data-goto="inhouse">
+        <div class="panel panel--glass">
+          <h2>Jump to</h2>
+          <div class="nav-grid nav-grid--bento">
+            <button type="button" class="nav-card nav-card-btn nav-card--inhouse" data-goto="inhouse">
+              <span class="nav-card-icon" aria-hidden="true"></span>
               <strong>In-house inventory</strong>
-              <span>What is still on hand after the last count</span>
+              <span>Live shelf levels by category</span>
             </button>
-            <button type="button" class="nav-card nav-card-btn" data-goto="spreadsheets">
-              <strong>Spreadsheets</strong>
-              <span>Full workbook — numbers, variance, costs</span>
+            <button type="button" class="nav-card nav-card-btn nav-card--sheets" data-goto="spreadsheets">
+              <span class="nav-card-icon" aria-hidden="true"></span>
+              <strong>Inventory / Spreadsheets</strong>
+              <span>Set PARs · variance · order list</span>
             </button>
-            <button type="button" class="nav-card nav-card-btn" data-goto="analytics">
+            <button type="button" class="nav-card nav-card-btn nav-card--analytics" data-goto="analytics">
+              <span class="nav-card-icon" aria-hidden="true"></span>
               <strong>Analytics</strong>
-              <span>Program health — cost %, trends, movers</span>
+              <span>Cost %, movers, program health</span>
             </button>
-            <button type="button" class="nav-card nav-card-btn" data-goto="inputs">
-              <strong>Weekly inputs</strong>
-              <span>Count, invoices, POS for this cycle</span>
-            </button>
-            <button type="button" class="nav-card nav-card-btn" data-goto="settings">
-              <strong>Settings</strong>
-              <span>Customizations and API management</span>
+            <button type="button" class="nav-card nav-card-btn nav-card--inputs" data-goto="inputs">
+              <span class="nav-card-icon" aria-hidden="true"></span>
+              <strong>All inputs</strong>
+              <span>POS · invoices · next inventory</span>
             </button>
           </div>
         </div>
       </section>
 
-      <!-- Spreadsheets -->
       <section class="admin-view hidden" data-view="spreadsheets">
         <header class="view-header">
-          <h1>Inventory Workbook</h1>
-          <p>Live spreadsheet view plus exports — same data as the Dojo sandbox.</p>
+          <p class="view-eyebrow">Inventory / Spreadsheets</p>
+          <h1>Your live workbook</h1>
+          <p class="view-lead">This is where your entire inventory system lives — built on the same Excel logic you've used for years. Every Process updates these tabs. Set your <strong>PARs</strong> here first; next week, order straight from <strong>Order Generator</strong>.</p>
         </header>
-        <div class="panel">
-          <div class="actions actions-trio" style="margin-top:0;">
-            <a class="btn btn-primary btn-sm" href="/downloads/Bar-Inventory-Master.xlsx" download>Download workbook (.xlsx)</a>
-            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=xlsx" download>Live audit (.xlsx)</a>
-            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=walk_xlsx" download>Walk sheet (.xlsx)</a>
+        <div class="spreadsheet-layout">
+          <div class="spreadsheet-live">
+            <div class="spreadsheet-live-banner">
+              <span class="spreadsheet-live-badge">Live system</span>
+              <p>Edits here update your map. Variance and cost math recalculate on the next count.</p>
+            </div>
+            <div class="workbook-chrome">
+              <div class="workbook-tabs" id="workbookTabs" role="tablist">
+                <button type="button" class="workbook-tab active" data-sheet="count-sheet">PAR &amp; Count</button>
+                <button type="button" class="workbook-tab" data-sheet="variance">Variance</button>
+                <button type="button" class="workbook-tab" data-sheet="order-generator">Order Generator</button>
+                <button type="button" class="workbook-tab" data-sheet="week-over-week">Week over Week</button>
+                <button type="button" class="workbook-tab" data-sheet="product-master">Product Master</button>
+                <button type="button" class="workbook-tab" data-sheet="dashboard">Summary</button>
+              </div>
+              <div class="panel workbook-panel panel--glass">
+                <div id="workbookContent" class="workbook-content"></div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="workbook-tabs" id="workbookTabs" role="tablist">
-          <button type="button" class="workbook-tab active" data-sheet="dashboard">Dashboard</button>
-          <button type="button" class="workbook-tab" data-sheet="product-master">Product Master</button>
-          <button type="button" class="workbook-tab" data-sheet="count-sheet">Count Sheet</button>
-          <button type="button" class="workbook-tab" data-sheet="variance">Variance</button>
-          <button type="button" class="workbook-tab" data-sheet="order-generator">Order Generator</button>
-        </div>
-        <div class="panel workbook-panel">
-          <div id="workbookContent" class="workbook-content"></div>
-        </div>
-        <div class="panel">
-          <h2>Export toolkit</h2>
-          <p class="field-hint">Same exports as caterpillar setup — audit, walk sheets, count comparison, first-week JSON.</p>
-          <div class="actions">
-            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=csv" download>Audit (.csv)</a>
-            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=xml" download>Audit (.xml)</a>
-            <a class="btn btn-ghost btn-sm" href="/api/export/bottles?format=walk_csv" download>Walk sheet (.csv)</a>
-            <a class="btn btn-primary btn-sm" href="/api/reports/first-week" target="_blank" rel="noopener">First-week report</a>
-          </div>
+          <aside class="panel panel--glass spreadsheet-exports">
+            <p class="spreadsheet-exports-eyebrow">Downloads &amp; exports</p>
+            <h2>Not your live system</h2>
+            <p class="field-hint panel-lead">Blank templates and one-time exports for backup or sharing. Your numbers live in the tabs on the left.</p>
+            <div class="spreadsheet-export-list">
+              <a class="spreadsheet-export-card" href="/downloads/Bar-Inventory-Master.xlsx" download>
+                <strong>Bar Inventory Master</strong>
+                <span>Original .xlsx template — the spreadsheet this program wraps</span>
+              </a>
+              <a class="spreadsheet-export-card" href="/api/export/bottles?format=xlsx" download>
+                <strong>Live audit export</strong>
+                <span>Snapshot of your current map as .xlsx</span>
+              </a>
+              <a class="spreadsheet-export-card" href="/api/export/bottles?format=walk_xlsx" download>
+                <strong>Walk sheet</strong>
+                <span>Station map for your next voice walk</span>
+              </a>
+            </div>
+          </aside>
         </div>
       </section>
 
-      <!-- Analytics -->
       <section class="admin-view hidden" data-view="analytics">
         <header class="view-header">
-          <h1>Program Health</h1>
-          <p>Inventory analytics from your live bar map and completed cycles.</p>
+          <p class="view-eyebrow">Program health</p>
+          <h1>Analytics</h1>
+          <p>Cost structure, velocity, and week-over-week reconciliation at a glance.</p>
         </header>
         <div id="analyticsRoot" class="analytics-root">
           <p class="field-hint">Loading analytics…</p>
         </div>
       </section>
 
-      <!-- In-house inventory -->
       <section class="admin-view hidden" data-view="inhouse">
         <header class="view-header">
+          <p class="view-eyebrow">On hand</p>
           <h1>In-house inventory</h1>
           <p id="inhouseNote">What is on hand after your last count — grouped by category.</p>
         </header>
-        <div class="panel">
+        <div class="panel panel--glass">
           <div class="row" style="margin-top:0;">
             <div>
               <label for="inhouseCategory">Category room</label>
@@ -151,63 +209,134 @@
               </select>
             </div>
           </div>
-          <div id="inhouseTotals" class="metrics-grid" style="margin-top:16px;"></div>
-          <div id="inhouseTable" class="review-table-wrap" style="margin-top:16px;"></div>
+          <div id="inhouseTotals" class="metrics-grid metrics-grid--bento" style="margin-top:16px;"></div>
+          <div id="inhouseTable" class="inhouse-table-wrap" style="margin-top:16px;"></div>
         </div>
       </section>
 
-      <!-- Weekly inputs -->
       <section class="admin-view hidden" data-view="inputs">
         <header class="view-header">
-          <h1>Weekly inputs</h1>
-          <p>Drop POS terminal receipts through the week — dated, labeled, kept until the next count.</p>
+          <p class="view-eyebrow">All inputs</p>
+          <h1>Everything that changes your system</h1>
+          <p class="view-lead">POS receipts, vendor invoices, and your <strong>next physical count</strong> all land here. Mid-week drops stack until you Process the cycle inventory and lock the week.</p>
         </header>
-        <div class="panel">
-          <h2>Add POS report</h2>
-          <label for="posLabel">Label</label>
-          <input id="posLabel" type="text" placeholder="e.g. Tuesday close" />
-          <label for="posNote">Note (optional)</label>
-          <input id="posNote" type="text" placeholder="Toast export, Square, etc." />
-          <label for="posFile">POS file (.csv, .txt, .tsv)</label>
-          <input id="posFile" type="file" accept=".csv,.txt,.tsv,.json,text/csv,text/plain" />
-          <label for="posPaste">Or paste receipt text</label>
-          <textarea id="posPaste" rows="4" placeholder="Paste POS export text if you do not have a file"></textarea>
-          <div class="actions">
-            <button type="button" class="btn btn-primary" id="btnPosUpload">Save POS drop</button>
+
+        <div class="panel panel--glass inputs-cycle-hero" id="inputsCycleHero">
+          <div class="inputs-cycle-head">
+            <span class="inputs-cycle-badge" id="inputsCycleBadge">Cycle input</span>
+            <h2>Begin your next weekly inventory</h2>
+          </div>
+          <p id="inputsCycleStatus" class="inputs-cycle-status">Loading cycle status…</p>
+          <ol class="inputs-cycle-steps">
+            <li>Walk the bar and voice-count every bottle (or paste your count file)</li>
+            <li>Click <strong>Process</strong> — spreadsheets, variance, and week-over-week update</li>
+            <li>Return here for the next week's POS and invoices</li>
+          </ol>
+          <div class="inputs-cycle-actions">
+            <button type="button" class="btn btn-primary btn-lg" id="btnBeginNextInventory">Start next count →</button>
+            <p class="field-hint">Opens <strong>Count</strong> (setup step 5). Your map and PARs stay — only the count is new.</p>
+          </div>
+          <p id="inputsCycleMsg" class="status"></p>
+        </div>
+
+        <div class="inputs-upload-grid">
+          <div class="panel panel--glass">
+            <p class="inputs-type-eyebrow">Mid-week · POS</p>
+            <h2>POS terminal receipts</h2>
+            <p class="field-hint panel-lead">Export from your POS when you have it — <strong>.csv</strong> or <strong>.txt</strong> from Toast, Square, Aloha. Not sure yet? Save a screenshot or paste sales text; we'll wire formats as you go.</p>
+            <label for="posLabel">Label</label>
+            <input id="posLabel" type="text" placeholder="e.g. Tuesday close" />
+            <label for="posNote">Note (optional)</label>
+            <input id="posNote" type="text" placeholder="Toast export, Square, etc." />
+            <label for="posFile">POS file (.csv, .txt, .tsv)</label>
+            <input id="posFile" type="file" accept=".csv,.txt,.tsv,.json,text/csv,text/plain" />
+            <label for="posPaste">Or paste receipt text</label>
+            <textarea id="posPaste" rows="3" placeholder="Paste POS export text"></textarea>
+            <div class="actions">
+              <button type="button" class="btn btn-primary" id="btnPosUpload">Save POS drop</button>
+            </div>
+          </div>
+          <div class="panel panel--glass invoice-panel">
+            <p class="inputs-type-eyebrow">Mid-week · Invoice</p>
+            <h2>Vendor invoices</h2>
+            <p class="field-hint panel-lead"><strong>No AI needed:</strong> paste invoice text or type purchases in your workbook. <strong>With optional AI:</strong> snap a photo on your phone → upload here and we read line items into the input log.</p>
+            <p id="invoiceAiStatus" class="invoice-ai-status field-hint"></p>
+            <label for="invoicePhoto">Invoice photo (phone camera)</label>
+            <input id="invoicePhoto" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/*" capture="environment" />
+            <label for="invoiceLabel">Label</label>
+            <input id="invoiceLabel" type="text" placeholder="e.g. SG spirits 7/1" />
+            <label for="invoiceNote">Vendor (optional)</label>
+            <input id="invoiceNote" type="text" placeholder="Southern Glazer's, Breakthru, etc." />
+            <label for="invoiceFile">Or invoice file (.txt, .csv)</label>
+            <input id="invoiceFile" type="file" accept=".csv,.txt,.tsv,.json,text/csv,text/plain" />
+            <label for="invoicePaste">Or paste invoice text</label>
+            <textarea id="invoicePaste" rows="3" placeholder="Paste invoice line items if you already have text"></textarea>
+            <div class="actions actions-trio">
+              <button type="button" class="btn btn-primary" id="btnInvoiceParse">Read photo (needs AI) →</button>
+              <button type="button" class="btn btn-secondary" id="btnInvoiceUpload">Save raw drop</button>
+            </div>
+            <div id="invoiceParsePreview" class="invoice-parse-preview hidden"></div>
+            <p id="invoiceParseStatus" class="status"></p>
+          </div>
+        </div>
+
+        <div class="panel panel--glass">
+          <h2>Input log</h2>
+          <p class="field-hint panel-lead">Everything staged this cycle — POS, invoices, until Process locks the week.</p>
+          <div class="inputs-log-filters" role="tablist" id="inputsLogFilters">
+            <button type="button" class="inputs-log-filter active" data-log-filter="all">All</button>
+            <button type="button" class="inputs-log-filter" data-log-filter="pos">POS</button>
+            <button type="button" class="inputs-log-filter" data-log-filter="invoice">Invoices</button>
           </div>
           <p id="posStatus" class="status"></p>
-        </div>
-        <div class="panel">
-          <h2>Mid-week POS log</h2>
-          <p class="field-hint">Multiple uploads stack here until your next physical count closes the cycle.</p>
-          <div id="posLogList" class="bars-list"></div>
+          <div id="inputsLogList" class="bars-list inputs-log-list"></div>
         </div>
       </section>
 
-      <!-- Settings -->
       <section class="admin-view hidden" data-view="settings">
         <header class="view-header">
+          <p class="view-eyebrow">Configure</p>
           <h1>Settings</h1>
-          <p>Customizations for your operation and API management for your AI provider.</p>
+          <p>Your business profile, bars, cycle settings — and an <strong>optional</strong> AI connection for invoice photos only.</p>
         </header>
-
         <div class="settings-grid">
-          <div class="panel">
+          <div class="panel panel--glass settings-brand-panel">
+            <h2>Your business</h2>
+            <p class="field-hint panel-lead">Name your panel, add your address, and upload a logo or photo — shows in the sidebar on every visit.</p>
+            <div class="brand-preview" id="brandPreview">
+              <div class="brand-preview-mark" id="brandPreviewMark">
+                <img id="brandPreviewLogo" class="brand-preview-logo hidden" alt="" width="48" height="48" />
+                <span id="brandPreviewInitials" class="brand-preview-initials">OSB</span>
+              </div>
+              <div class="brand-preview-text">
+                <strong id="brandPreviewName">Your business name</strong>
+                <span id="brandPreviewAddress" class="field-hint">Address line</span>
+              </div>
+            </div>
+            <label for="settBusinessName">Business name</label>
+            <input id="settBusinessName" type="text" placeholder="e.g. Agave &amp; Rye" />
+            <label for="settBusinessAddress">Address</label>
+            <input id="settBusinessAddress" type="text" placeholder="Street, city, state" />
+            <label for="settPanelTitle">Panel title <span class="field-hint">(optional — overrides sidebar headline)</span></label>
+            <input id="settPanelTitle" type="text" placeholder="e.g. Beverage control center" />
+            <label for="settBusinessLogo">Logo or photo</label>
+            <input id="settBusinessLogo" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+            <p class="field-hint">Square images work best. Max ~120KB after upload.</p>
+            <div class="actions actions-trio">
+              <button type="button" class="btn btn-primary" id="btnSaveBranding">Save business profile</button>
+              <button type="button" class="btn btn-ghost" id="btnClearLogo">Remove logo</button>
+            </div>
+          </div>
+          <div class="panel panel--glass">
             <h2>Your bars</h2>
-            <p class="field-hint" style="margin-top:0;margin-bottom:16px;">
-              Each bar has its own station map and inventory. Switch active bar in the sidebar, or add a new one.
-            </p>
+            <p class="field-hint panel-lead">Each bar has its own station map and inventory.</p>
             <div id="settingsBarsList" class="bars-list"></div>
             <div class="actions">
               <button type="button" class="btn btn-primary" id="btnAddBar">+ Add another bar</button>
             </div>
           </div>
-
-          <div class="panel">
+          <div class="panel panel--glass">
             <h2>Customizations</h2>
-            <p class="field-hint" style="margin-top:0;margin-bottom:16px;">
-              Bar identity and inventory rhythm. Changes apply to the next cycle window.
-            </p>
             <label for="settBarName">Bar name</label>
             <input id="settBarName" type="text" />
             <label for="settCycleLabel">Cycle label</label>
@@ -231,44 +360,48 @@
               </div>
             </div>
             <label for="settTimezone">Timezone</label>
-            <input id="settTimezone" type="text" placeholder="e.g. America/New_York or Europe/Berlin" />
+            <input id="settTimezone" type="text" placeholder="e.g. America/New_York" />
             <label for="settMetricsWindow">Default metrics window</label>
             <select id="settMetricsWindow"></select>
             <div class="actions">
               <button type="button" class="btn btn-primary" id="btnSaveCustomizations">Save customizations</button>
             </div>
           </div>
-
-          <div class="panel">
-            <h2>API management</h2>
-            <p class="field-hint" style="margin-top:0;margin-bottom:16px;">
-              Connect or update the AI provider that powers reconciliation and reports.
+          <div class="panel panel--glass settings-ai-panel">
+            <p class="settings-ai-eyebrow">Optional add-on</p>
+            <h2>Optional AI connection</h2>
+            <p class="field-hint panel-lead">
+              <strong>The program does not need AI to run.</strong> Walks, counts, reconciliation, and spreadsheets
+              are built in. Connect only if you want phone <strong>invoice photos</strong> read automatically —
+              or for upcoming <strong>wine-cooler video</strong> walks. Otherwise type invoice numbers yourself
+              in All inputs or your workbook.
             </p>
             <div class="api-status-row">
-              <span>Status</span>
+              <span>Invoice photo reading</span>
               <span id="apiStatusBadge" class="status-badge">—</span>
             </div>
             <label for="settAiProvider">AI provider</label>
             <select id="settAiProvider">
-              <option value="">Not selected</option>
+              <option value="">Not connected</option>
               <option value="claude">Claude</option>
               <option value="chatgpt">ChatGPT</option>
               <option value="grok">Grok</option>
               <option value="other">Other</option>
             </select>
             <label for="settApiKey">API key</label>
-            <input id="settApiKey" type="password" placeholder="Paste new key to connect or replace" autocomplete="off" />
+            <input id="settApiKey" type="password" placeholder="Paste key — stored on this Mac only" autocomplete="off" />
             <div class="actions actions-trio">
-              <button type="button" class="btn btn-primary" id="btnSaveApi">Save API connection</button>
-              <a class="btn btn-secondary" href="/help/api-key" target="_blank" rel="noopener">Where to find it</a>
+              <button type="button" class="btn btn-primary" id="btnSaveApi">Save connection</button>
+              <a class="btn btn-secondary" href="/help/api-key" target="_blank" rel="noopener">Where to find a key</a>
               <button type="button" class="btn btn-ghost" id="btnClearApi">Remove key</button>
             </div>
+            <p class="field-hint settings-ai-foot">Your provider may charge per photo batch. Revoke the key anytime from their console.</p>
             <p id="settingsStatus" class="status"></p>
           </div>
         </div>
       </section>
     </main>
   </div>
-  <script src="/static/js/osb-app.js?v=20260704-analytics-spreadsheets"></script>
+  <script src="/static/js/osb-app.js?v=20260705-positioning"></script>
 </body>
 </html>

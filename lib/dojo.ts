@@ -2,6 +2,7 @@ import {
   saveBar,
   saveCount,
   saveInventorySettings,
+  savePosReport,
   saveWeeklyInputDraft,
   clearAll,
   hasInventoryData,
@@ -9,6 +10,7 @@ import {
 import {
   createDojoBar,
   createDojoCounts,
+  createDojoPosReports,
   createDojoSettings,
   createDojoWeeklyInputs,
 } from "@/lib/dojo-seed";
@@ -63,6 +65,7 @@ export function seedDojoPlayground(force = false): void {
   const bar = createDojoBar();
   saveBar(bar);
   createDojoCounts(bar).forEach(saveCount);
+  createDojoPosReports().forEach(savePosReport);
   saveWeeklyInputDraft(createDojoWeeklyInputs());
   saveInventorySettings(createDojoSettings());
   writeFlag(DOJO_SEEDED_KEY);

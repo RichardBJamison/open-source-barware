@@ -1,0 +1,7 @@
+Order ID,Date,Time,Server,Item,Category,Qty,Gross Sales,Net Sales,Void
+20021,2026-07-02,14:20:00,Riley,Tito's Vodka,Liquor,3,39.00,39.00,N
+20022,2026-07-02,14:20:00,Riley,Tanqueray,Liquor,2,26.00,26.00,N
+20023,2026-07-02,14:20:00,Riley,Patron Silver,Liquor,4,60.00,60.00,N
+20024,2026-07-02,14:20:00,Riley,Jack Daniels,Liquor,2,26.00,26.00,N
+20025,2026-07-02,14:20:00,Riley,Jameson,Liquor,3,39.00,39.00,N
+20026,2026-07-02,14:20:00,Riley,Casamigos,Liquor,2,30.00,30.00,N

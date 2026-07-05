@@ -64,6 +64,7 @@ fetch_or_copy() {
 }
 
 fetch_or_copy "server.py"
+fetch_or_copy "invoice_parse.py"
 fetch_or_copy "requirements.txt"
 fetch_or_copy "osb_config.example.json"
 fetch_or_copy "static/setup.html"

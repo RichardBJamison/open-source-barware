@@ -3,23 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Where to Find Your API Key — Open Source Barware</title>
+  <title>Optional AI Connection — Open Source Barware</title>
   <link rel="stylesheet" href="/static/css/app.css" />
 </head>
 <body>
   <div class="shell">
     <header class="header">
       <div class="brand">Open Source Barware</div>
-      <div class="subbrand">Setup waypoint · API key guide</div>
+      <div class="subbrand">Optional add-on · invoice photo reading</div>
     </header>
+
+    <section class="panel">
+      <h2>Do you need this?</h2>
+      <p>
+        <strong>No.</strong> The bar inventory program runs entirely on your laptop without any AI connection.
+        Voice walks, counts, reconciliation, spreadsheets, PAR levels, and weekly Process all work locally.
+        You can paste invoice text or type purchase numbers yourself — that path is fully supported.
+      </p>
+      <p style="margin-top:12px;">
+        Connect an AI key <em>only</em> if you want the program to read <strong>photos of paper invoices</strong>
+        (phone camera uploads in All inputs) and pull line items into your input log. A wine-cooler
+        <strong>video walk</strong> feature is coming; that will also use this optional connection.
+      </p>
+    </section>
 
     <section class="panel">
       <h2>What is an API key?</h2>
       <p>
         Think of it like a private password that lets <em>this inventory program</em> talk to
-        your AI account on your behalf. You create the key inside your AI provider's website.
-        You paste it once into setup. The program stores it <strong>only on this computer</strong>
-        — not on our servers, not in the cloud.
+        your AI account on your behalf — for invoice images only. You create the key inside your
+        AI provider's website. You paste it once into Settings (or during first-time setup).
+        The program stores it <strong>only on this computer</strong> — not on our servers, not in the cloud.
       </p>
       <p style="margin-top:12px;">
         Open Source Barware stays free. Your AI provider may charge for API usage the same way
@@ -28,35 +42,32 @@
     </section>
 
     <section class="panel">
-      <h2>Why we ask for it</h2>
+      <h2>What AI is used for (and what it is not)</h2>
       <ul class="guide-list">
-        <li>Parse your first voice walk into a clean bar map</li>
-        <li>Reconcile messy notes and flag unclear bottle names</li>
-        <li>Build and update your spreadsheet view each cycle</li>
-        <li>Compare counts, invoices, and POS data during weekly reconciliation</li>
+        <li><strong>Invoice photos</strong> — snap Southern Glazer's, Breakthru, or other paper invoices on your phone; upload in All inputs</li>
+        <li><strong>Coming:</strong> wine-cooler video walks parsed from phone video</li>
       </ul>
       <p class="guide-note">
-        Without a connected key, the caterpillar setup cannot finish reconciliation. You can still
-        read this guide, set up later, and revoke the key after testing if you prefer.
+        AI does <strong>not</strong> power voice walks, count parsing, reconciliation, or spreadsheet math.
+        Those run on built-in local parsers — the same path you've been testing without a key.
       </p>
     </section>
 
     <section class="panel provider-panel" id="claude">
       <h2>Claude (Anthropic)</h2>
-      <p class="provider-tag">Recommended if you already use Claude Projects</p>
+      <p class="provider-tag">Good if you already use Claude</p>
       <ol class="guide-steps">
         <li>Sign in at <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a></li>
         <li>Open <strong>API Keys</strong> in the left menu (or Settings → API keys)</li>
-        <li>Click <strong>Create Key</strong>, name it something like <code>OSB Inventory</code></li>
+        <li>Click <strong>Create Key</strong>, name it something like <code>OSB Invoice Photos</code></li>
         <li>Copy the key immediately — you usually cannot view the full key again</li>
-        <li>Paste it into the setup screen on this machine</li>
+        <li>Paste it into Settings → Optional AI on this machine</li>
       </ol>
       <div class="cost-box">
         <strong>Costs</strong>
         <p>
           API billing is separate from a Claude Pro chat subscription. Anthropic charges per
-          token (roughly per amount of text processed). A typical weekly inventory reconciliation
-          is a fraction of a normal chat session, but heavy invoice photo batches cost more.
+          token. A few invoice photos per week is usually modest; large photo batches cost more.
           Check current pricing at
           <a href="https://www.anthropic.com/pricing" target="_blank" rel="noopener">anthropic.com/pricing</a>.
           Set a monthly spend limit in the console if you want a hard cap.
@@ -66,20 +77,20 @@
 
     <section class="panel provider-panel" id="chatgpt">
       <h2>ChatGPT (OpenAI)</h2>
-      <p class="provider-tag">Recommended if your team already lives in ChatGPT</p>
+      <p class="provider-tag">Good if your team already lives in ChatGPT</p>
       <ol class="guide-steps">
         <li>Sign in at <a href="https://platform.openai.com/" target="_blank" rel="noopener">platform.openai.com</a></li>
         <li>Go to <strong>API keys</strong> (profile menu → API keys)</li>
-        <li>Create a new secret key — name it <code>OSB Inventory</code></li>
-        <li>Copy and paste into setup on this computer</li>
+        <li>Create a new secret key — name it <code>OSB Invoice Photos</code></li>
+        <li>Copy and paste into Settings on this computer</li>
         <li>Add a payment method under <strong>Billing</strong> if prompted (API is pay-as-you-go)</li>
       </ol>
       <div class="cost-box">
         <strong>Costs</strong>
         <p>
           ChatGPT Plus ($20/mo) covers the chat app, not API calls. API usage is metered by model
-          and tokens. Inventory text reconciliation is usually low cost; image invoice parsing costs
-          more. Review
+          and tokens. Invoice image parsing costs more than text paste (which needs no key).
+          Review
           <a href="https://openai.com/api/pricing" target="_blank" rel="noopener">openai.com/api/pricing</a>
           and set usage limits under Billing → Limits.
         </p>
@@ -93,14 +104,14 @@
         <li>Sign in at <a href="https://console.x.ai/" target="_blank" rel="noopener">console.x.ai</a></li>
         <li>Open <strong>API Keys</strong> in the developer console</li>
         <li>Create a key and copy it once</li>
-        <li>Paste into setup on this machine</li>
+        <li>Paste into Settings on this machine</li>
       </ol>
       <div class="cost-box">
         <strong>Costs</strong>
         <p>
           Grok API pricing changes with model tier. Check
           <a href="https://x.ai/api" target="_blank" rel="noopener">x.ai/api</a> for current rates.
-          Same rule: weekly text reconciliation is modest; large image batches add up.
+          Same rule: a few invoice photos is modest; large batches add up.
         </p>
       </div>
     </section>
@@ -108,11 +119,10 @@
     <section class="panel">
       <h2>Our recommendations</h2>
       <ul class="guide-list">
+        <li><strong>Skip AI at first</strong> if you type invoice numbers or paste text — the program is built for that.</li>
         <li><strong>Use the AI you already pay for.</strong> No need to add a second subscription just for inventory.</li>
-        <li><strong>Create a dedicated key</strong> named <code>OSB Inventory</code> so you can revoke it without breaking other tools.</li>
-        <li><strong>Set a monthly spend cap</strong> in your provider's console before the first reconciliation run.</li>
-        <li><strong>Start with text-only setup</strong> (voice walk notes) before uploading large invoice image batches.</li>
-        <li><strong>Claude or ChatGPT</strong> are the most tested paths for structured inventory parsing today; Grok works if that is your team's default.</li>
+        <li><strong>Create a dedicated key</strong> named <code>OSB Invoice Photos</code> so you can revoke it without breaking other tools.</li>
+        <li><strong>Set a monthly spend cap</strong> in your provider's console before uploading large photo batches.</li>
         <li><strong>Never email or screenshot your key.</strong> Paste only into this program on the bar's computer.</li>
       </ul>
     </section>
@@ -120,12 +130,13 @@
     <section class="panel">
       <h2>Security checklist</h2>
       <ul class="guide-list">
-        <li>Key is stored in <code>~/osb-program/osb_config.json</code> on this Mac only</li>
+        <li>Key is stored in <code>data/ai_secrets.json</code> on this Mac only (not in the cloud)</li>
         <li>Revoke the key anytime from your provider's console</li>
-        <li>Replacing the key: return to setup, paste the new key, save again</li>
+        <li>Replacing the key: return to Settings → Optional AI, paste the new key, save again</li>
       </ul>
       <div class="actions" style="margin-top:20px;">
-        <a class="btn btn-primary" href="/setup">Back to setup</a>
+        <a class="btn btn-primary" href="/home">Back to home base</a>
+        <a class="btn btn-secondary" href="/setup">Back to setup</a>
       </div>
     </section>
   </div>

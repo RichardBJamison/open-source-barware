@@ -118,6 +118,7 @@ New-Item -ItemType Directory -Force -Path (Join-Path $InstallDir "static\js") | 
 
 $copyList = @(
     "server.py",
+    "invoice_parse.py",
     "requirements.txt",
     "osb_config.example.json",
     "install.ps1",
@@ -125,7 +126,9 @@ $copyList = @(
     "Start.bat",
     "Stop.bat",
     "start-server.ps1",
-    "README-INSTALL.txt"
+    "README-INSTALL.txt",
+    "LICENSE.txt",
+    "VERSION.txt"
 )
 $staticFiles = @(
     "static\setup.html",

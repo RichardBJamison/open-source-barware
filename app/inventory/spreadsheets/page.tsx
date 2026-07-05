@@ -1,75 +1,16 @@
 'use client';
 
-import { useMemo, useState, useSyncExternalStore } from 'react';
-import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import { useHydrated } from '@/components/dojo/useHydrated';
+import { computeAnalytics } from '@/lib/dojo-admin';
 import {
   getBar,
   getCounts,
   getInventorySettings,
-  type Bar,
-  type InventoryCount,
 } from '@/lib/inventory-store';
 
-function useHydrated() {
-  return useSyncExternalStore(
-    () => () => undefined,
-    () => true,
-    () => false
-  );
-}
+type TabId = 'dashboard' | 'product-master' | 'count-sheet' | 'variance' | 'order-generator';
 
-type TabId = 'dashboard' | 'product-master' | 'count-sheet' | 'variance' | 'purchases' | 'order-generator';
-
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'product-master', label: 'Product Master' },
-  { id: 'count-sheet', label: 'Count Sheet' },
-  { id: 'variance', label: 'Variance Analysis' },
-  { id: 'purchases', label: 'Purchases' },
-  { id: 'order-generator', label: 'Order Generator' },
-];
-
-// ── Flat row for product master ──
-interface ProductRow {
-  name: string;
-  category: string;
-  station: string;
-  size: string;
-  cost: number;
-  pourCost: number;
-  costPct: number;
-  currentLevel: number;
-  parLevel: number;
-}
-
-function buildProductRows(bar: Bar): ProductRow[] {
-  const rows: ProductRow[] = [];
-  for (const station of bar.stations) {
-    for (const bottle of station.bottles) {
-      // Pour cost estimate: cost per bottle / ~17 pours per 750ml
-      const poursPerBottle = bottle.size === '1L' ? 22 : bottle.size === '1.75L' ? 39 : 17;
-      const pourCost = bottle.costPerBottle / poursPerBottle;
-      // Cost % assumes average drink price of $12
-      const avgDrinkPrice = 12;
-      const costPct = avgDrinkPrice > 0 ? (pourCost / avgDrinkPrice) * 100 : 0;
-
-      rows.push({
-        name: bottle.name,
-        category: bottle.category,
-        station: station.name,
-        size: bottle.size,
-        cost: bottle.costPerBottle,
-        pourCost,
-        costPct,
-        currentLevel: bottle.currentLevel,
-        parLevel: bottle.parLevel,
-      });
-    }
-  }
-  return rows.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
-}
-
-// ── Variance row ──
 interface VarianceRow {
   name: string;
   station: string;
@@ -80,38 +21,48 @@ interface VarianceRow {
   status: 'over' | 'at' | 'under';
 }
 
-function buildVarianceRows(bar: Bar): VarianceRow[] {
-  const rows: VarianceRow[] = [];
-  for (const station of bar.stations) {
-    for (const bottle of station.bottles) {
-      const variance = bottle.currentLevel - bottle.parLevel;
-      const variancePct = bottle.parLevel > 0 ? (variance / bottle.parLevel) * 100 : 0;
-      const status = variance > 0.05 ? 'over' : variance < -0.05 ? 'under' : 'at';
-      rows.push({
-        name: bottle.name,
-        station: station.name,
-        currentLevel: bottle.currentLevel,
-        parLevel: bottle.parLevel,
-        variance,
-        variancePct,
-        status,
-      });
-    }
-  }
-  return rows.sort((a, b) => a.variance - b.variance);
-}
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'product-master', label: 'Product Master' },
+  { id: 'count-sheet', label: 'Count Sheet' },
+  { id: 'variance', label: 'Variance' },
+  { id: 'order-generator', label: 'Order Generator' },
+];
 
 // ── Main Page ──
 export default function SpreadsheetsPage() {
   const hydrated = useHydrated();
-  const [activeTab, setActiveTab] = useState<TabId>('product-master');
+  const [activeTab, setActiveTab] = useState<TabId>('dashboard');
 
   const bar = hydrated ? getBar() : null;
   const counts = hydrated ? getCounts() : [];
   const settings = hydrated ? getInventorySettings() : null;
 
-  const productRows = useMemo(() => (bar ? buildProductRows(bar) : []), [bar]);
-  const varianceRows = useMemo(() => (bar ? buildVarianceRows(bar) : []), [bar]);
+  const workbook = useMemo(() => {
+    if (!settings) return null;
+    return computeAnalytics(bar, counts, settings);
+  }, [bar, counts, settings]);
+
+  const productRows = workbook?.product_rows ?? [];
+  const varianceRows = useMemo(() => {
+    return productRows
+      .map((row) => {
+        const variance = row.current_level - row.par_level;
+        const variancePct = row.par_level ? (variance / row.par_level) * 100 : 0;
+        const status: VarianceRow['status'] =
+          variance > 0.05 ? 'over' : variance < -0.05 ? 'under' : 'at';
+        return {
+          name: row.name,
+          station: row.station,
+          currentLevel: row.current_level,
+          parLevel: row.par_level,
+          variance,
+          variancePct,
+          status,
+        };
+      })
+      .sort((a, b) => a.variance - b.variance);
+  }, [productRows]);
 
   if (!hydrated) {
     return (
@@ -122,39 +73,32 @@ export default function SpreadsheetsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="glow-dot" />
-            <span className="text-[10px] tracking-[0.3em] uppercase text-patina-light font-medium">
-              Spreadsheet View
-            </span>
-          </div>
-          <h1 className="font-serif text-3xl sm:text-4xl copper-text">Inventory Workbook</h1>
-        </div>
+    <div className="max-w-7xl mx-auto space-y-6">
+      <header className="dojo-view-header">
+        <h1>Inventory Workbook</h1>
+        <p>Live spreadsheet view plus exports — same data as the downloaded program.</p>
+      </header>
 
-        {/* ── Download Buttons ── */}
+      <section className="panel rounded-sm p-5 sm:p-6 rivets">
         <div className="flex flex-wrap gap-3">
           <a
             href="/downloads/Bar-Inventory-Master.xlsx"
             download
-            className="inline-flex items-center gap-2 bg-copper hover:bg-copper-bright text-bg font-semibold px-7 py-3 text-base tracking-wide transition-all hover:shadow-[0_0_24px_rgba(168,120,79,0.4)] rounded-sm"
+            className="inline-flex items-center gap-2 bg-copper hover:bg-copper-bright text-bg font-semibold px-5 py-2.5 text-sm tracking-wide transition-all rounded-sm"
           >
             <DownloadSvg />
-            Download Workbook (.xlsx)
+            Download workbook (.xlsx)
           </a>
           <a
             href="/downloads/Quick-Count-Sheet.xlsx"
             download
-            className="inline-flex items-center gap-2 border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-5 py-3 text-sm tracking-wide transition-all rounded-sm"
+            className="inline-flex items-center gap-2 border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-5 py-2.5 text-sm tracking-wide transition-all rounded-sm"
           >
             <DownloadSvg />
-            Download Blank Template
+            Blank count template
           </a>
         </div>
-      </div>
+      </section>
 
       {/* ── Tabs ── */}
       <div className="border-b border-gear-border mb-6 overflow-x-auto">
@@ -175,107 +119,93 @@ export default function SpreadsheetsPage() {
         </div>
       </div>
 
-      {/* ── Tab Content ── */}
       <div className="panel rounded-sm p-4 sm:p-6 rivets overflow-hidden">
-        {activeTab === 'dashboard' && <DashboardTab bar={bar} counts={counts} settings={settings} />}
+        {activeTab === 'dashboard' && <DashboardTab workbook={workbook} />}
         {activeTab === 'product-master' && <ProductMasterTab rows={productRows} />}
-        {activeTab === 'count-sheet' && <CountSheetTab bar={bar} />}
+        {activeTab === 'count-sheet' && <CountSheetTab rows={productRows} />}
         {activeTab === 'variance' && <VarianceTab rows={varianceRows} />}
-        {activeTab === 'purchases' && <PurchasesTab />}
         {activeTab === 'order-generator' && <OrderGeneratorTab rows={varianceRows} />}
       </div>
 
-      {/* ── Back link ── */}
-      <div className="mt-6">
-        <Link
-          href="/inventory/dashboard"
-          className="text-sm text-text-muted hover:text-copper transition-colors"
-        >
-          &larr; Back to Dashboard
-        </Link>
-      </div>
+      <section className="panel rounded-sm p-5 sm:p-6 rivets">
+        <h2 className="font-serif text-lg text-cream mb-2">Export toolkit</h2>
+        <p className="dojo-field-hint mt-0 mb-4">
+          Same exports as caterpillar setup — audit, walk sheets, count comparison, first-week JSON.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="/downloads/Bar-Inventory-Master.xlsx"
+            download
+            className="border border-gear-border text-text-muted hover:text-copper px-4 py-2 text-sm tracking-wide transition-all rounded-sm"
+          >
+            Audit (.xlsx)
+          </a>
+          <a
+            href="/downloads/Quick-Count-Sheet.xlsx"
+            download
+            className="border border-gear-border text-text-muted hover:text-copper px-4 py-2 text-sm tracking-wide transition-all rounded-sm"
+          >
+            Walk sheet (.xlsx)
+          </a>
+          <span className="border border-gear-border text-text-light px-4 py-2 text-sm tracking-wide rounded-sm opacity-70">
+            First-week report — in downloaded program
+          </span>
+        </div>
+      </section>
     </div>
   );
 }
 
-// ── Tab: Dashboard Summary ──
 function DashboardTab({
-  bar,
-  counts,
-  settings,
+  workbook,
 }: {
-  bar: Bar | null;
-  counts: InventoryCount[];
-  settings: ReturnType<typeof getInventorySettings> | null;
+  workbook: ReturnType<typeof computeAnalytics> | null;
 }) {
-  if (!bar) return <EmptyState />;
+  if (!workbook?.bottle_count) return <EmptyState />;
 
-  const totalProducts = bar.stations.reduce((sum, s) => sum + s.bottles.length, 0);
-  const totalValue = bar.stations.reduce(
-    (sum, s) => sum + s.bottles.reduce((bSum, b) => bSum + b.costPerBottle * b.currentLevel, 0),
-    0
-  );
-  const belowPar = bar.stations.reduce(
-    (sum, s) => sum + s.bottles.filter((b) => b.currentLevel < b.parLevel).length,
-    0
-  );
+  const rows: [string, string][] = [
+    ['Bar name', workbook.bar_name],
+    ['Total products', String(workbook.bottle_count)],
+    ['Stations', String(workbook.station_count)],
+    ['Estimated value', `$${workbook.total_value.toFixed(2)}`],
+    ['Below par', String(workbook.below_par)],
+    ['Cycles logged', String(workbook.cycles_total)],
+    ['Cycle label', workbook.cycle_label],
+    [
+      'Last count',
+      workbook.last_count_at
+        ? workbook.last_count_at.slice(0, 10)
+        : 'Never',
+    ],
+  ];
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="dojo-review-table-wrap">
+      <table className="dojo-review-table">
         <thead>
-          <tr className="border-b border-gear-border">
-            <th className="text-left py-2 px-3 text-text-light text-xs uppercase tracking-wider">Metric</th>
-            <th className="text-right py-2 px-3 text-text-light text-xs uppercase tracking-wider">Value</th>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
           </tr>
         </thead>
-        <tbody className="text-text-light">
-          <tr className="border-b border-gear-border/50">
-            <td className="py-2 px-3">Bar Name</td>
-            <td className="py-2 px-3 text-right text-cream">{bar.name}</td>
-          </tr>
-          <tr className="border-b border-gear-border/50">
-            <td className="py-2 px-3">Total Stations</td>
-            <td className="py-2 px-3 text-right text-cream">{bar.stations.length}</td>
-          </tr>
-          <tr className="border-b border-gear-border/50">
-            <td className="py-2 px-3">Total Products</td>
-            <td className="py-2 px-3 text-right text-cream">{totalProducts}</td>
-          </tr>
-          <tr className="border-b border-gear-border/50">
-            <td className="py-2 px-3">Estimated Inventory Value</td>
-            <td className="py-2 px-3 text-right copper-text font-medium">${totalValue.toFixed(2)}</td>
-          </tr>
-          <tr className="border-b border-gear-border/50">
-            <td className="py-2 px-3">Products Below Par</td>
-            <td className={`py-2 px-3 text-right font-medium ${belowPar > 0 ? 'text-wine-glow' : 'text-patina-light'}`}>
-              {belowPar}
-            </td>
-          </tr>
-          <tr className="border-b border-gear-border/50">
-            <td className="py-2 px-3">Inventory Counts Recorded</td>
-            <td className="py-2 px-3 text-right text-cream">{counts.length}</td>
-          </tr>
-          <tr className="border-b border-gear-border/50">
-            <td className="py-2 px-3">Last Count Date</td>
-            <td className="py-2 px-3 text-right text-cream">
-              {bar.lastCountDate
-                ? new Date(bar.lastCountDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : 'Never'}
-            </td>
-          </tr>
-          <tr>
-            <td className="py-2 px-3">Cycle</td>
-            <td className="py-2 px-3 text-right text-cream">{settings?.cycleLabel || 'Not set'}</td>
-          </tr>
+        <tbody>
+          {rows.map(([metric, value]) => (
+            <tr key={metric}>
+              <td>{metric}</td>
+              <td className="text-cream">{value}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
   );
 }
 
-// ── Tab: Product Master ──
-function ProductMasterTab({ rows }: { rows: ProductRow[] }) {
+function ProductMasterTab({
+  rows,
+}: {
+  rows: ReturnType<typeof computeAnalytics>['product_rows'];
+}) {
   if (rows.length === 0) return <EmptyState />;
 
   return (
@@ -304,9 +234,9 @@ function ProductMasterTab({ rows }: { rows: ProductRow[] }) {
               <td className="py-2 px-3">{row.station}</td>
               <td className="py-2 px-3">{row.size}</td>
               <td className="py-2 px-3 text-right font-mono">${row.cost.toFixed(2)}</td>
-              <td className="py-2 px-3 text-right font-mono">${row.pourCost.toFixed(2)}</td>
-              <td className={`py-2 px-3 text-right font-mono ${row.costPct > 25 ? 'text-wine-glow' : row.costPct > 20 ? 'text-copper' : 'text-patina-light'}`}>
-                {row.costPct.toFixed(1)}%
+              <td className="py-2 px-3 text-right font-mono">${row.pour_cost.toFixed(2)}</td>
+              <td className={`py-2 px-3 text-right font-mono ${row.cost_pct > 25 ? 'text-wine-glow' : row.cost_pct > 20 ? 'text-copper' : 'text-patina-light'}`}>
+                {row.cost_pct.toFixed(1)}%
               </td>
             </tr>
           ))}
@@ -319,9 +249,12 @@ function ProductMasterTab({ rows }: { rows: ProductRow[] }) {
   );
 }
 
-// ── Tab: Count Sheet ──
-function CountSheetTab({ bar }: { bar: Bar | null }) {
-  if (!bar || bar.stations.length === 0) return <EmptyState />;
+function CountSheetTab({
+  rows,
+}: {
+  rows: ReturnType<typeof computeAnalytics>['product_rows'];
+}) {
+  if (rows.length === 0) return <EmptyState />;
 
   return (
     <div className="overflow-x-auto">
@@ -336,22 +269,17 @@ function CountSheetTab({ bar }: { bar: Bar | null }) {
           </tr>
         </thead>
         <tbody className="text-text-light">
-          {bar.stations.map((station) =>
-            station.bottles.map((bottle, i) => (
-              <tr key={bottle.id} className={`border-b border-gear-border/30 ${i % 2 === 0 ? 'bg-bg-warm/20' : ''}`}>
-                <td className="py-2 px-3 text-cream">{station.name}</td>
-                <td className="py-2 px-3">{bottle.name}</td>
-                <td className="py-2 px-3">{bottle.size}</td>
-                <td className="py-2 px-3 text-right font-mono">{bottle.currentLevel.toFixed(1)}</td>
-                <td className="py-2 px-3 text-right font-mono">{bottle.parLevel.toFixed(1)}</td>
-              </tr>
-            ))
-          )}
+          {rows.map((row, i) => (
+            <tr key={`${row.name}-${i}`} className={`border-b border-gear-border/30 ${i % 2 === 0 ? 'bg-bg-warm/20' : ''}`}>
+              <td className="py-2 px-3 text-cream">{row.station}</td>
+              <td className="py-2 px-3">{row.name}</td>
+              <td className="py-2 px-3">{row.size}</td>
+              <td className="py-2 px-3 text-right font-mono">{row.current_level.toFixed(1)}</td>
+              <td className="py-2 px-3 text-right font-mono">{row.par_level.toFixed(1)}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
-      <div className="mt-3 text-xs text-text-muted">
-        Levels shown as fraction of full bottle (0.0 - 1.0+)
-      </div>
     </div>
   );
 }
@@ -405,22 +333,6 @@ function VarianceTab({ rows }: { rows: VarianceRow[] }) {
       <div className="mt-3 text-xs text-text-muted">
         {rows.filter((r) => r.status === 'under').length} product{rows.filter((r) => r.status === 'under').length !== 1 ? 's' : ''} below par
       </div>
-    </div>
-  );
-}
-
-// ── Tab: Purchases (placeholder) ──
-function PurchasesTab() {
-  return (
-    <div className="text-center py-12">
-      <p className="text-text-muted mb-2">Purchase tracking coming soon.</p>
-      <p className="text-xs text-text-muted">
-        Invoice uploads from the{' '}
-        <Link href="/inventory/inputs" className="text-copper hover:text-copper-bright transition-colors underline">
-          Weekly Inputs
-        </Link>{' '}
-        page will populate this sheet.
-      </p>
     </div>
   );
 }
@@ -481,12 +393,12 @@ function EmptyState() {
   return (
     <div className="text-center py-12">
       <p className="text-text-muted mb-4">No inventory data loaded yet.</p>
-      <Link
+      <a
         href="/inventory/dashboard"
         className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 text-sm tracking-wide transition-all"
       >
-        Go to Dashboard
-      </Link>
+        Go to Home base
+      </a>
     </div>
   );
 }

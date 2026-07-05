@@ -1,15 +1,18 @@
-const DEFAULT_LOCATION_ID = "bNT4wp0nukIQdBJbQDaa";
-const GHL_BASE = "https://services.leadconnectorhq.com";
-const SETUP_TAG = "osb-setup-signup";
-const PROGRAM_UPDATES_TAG = "osb-program-updates";
-const HIDDEN_BAR_TOUR_TAG = "osb-hidden-bar-tour";
-const GHL_HEADERS = {
-  Version: "2021-07-28",
-  Accept: "application/json",
-  "Content-Type": "application/json",
-  "User-Agent":
-    "Mozilla/5.0 (compatible; OpenSourceBarware/1.0; +https://opensourcebarware.com)",
-};
+// Open Source Barware — release-list signup
+// Collects an email at signup and delivers it to the owner's mailbox via
+// Forward Email. No CRM / no GHL. The owner's inbox IS the list.
+//
+// Required Cloudflare Pages env:
+//   FORWARD_EMAIL_USER  — a Forward Email alias with a generated password
+//                         (e.g. richard@opensourcebarware.com)
+//   FORWARD_EMAIL_PASS  — that alias's Forward Email mailbox password
+// Optional:
+//   NOTIFY_EMAIL        — where signups are delivered
+//                         (default: richard@opensourcebarware.com)
+//   FORWARD_EMAIL_FROM  — From address/label (default: FORWARD_EMAIL_USER)
+
+const FORWARD_EMAIL_API = "https://api.forwardemail.net/v1/emails";
+const DEFAULT_NOTIFY = "richard@opensourcebarware.com";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -26,104 +29,110 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function ghlHeaders(token) {
-  return { ...GHL_HEADERS, Authorization: `Bearer ${token}` };
-}
+async function sendForwardEmail(env, { to, subject, text, replyTo }) {
+  const user = env.FORWARD_EMAIL_USER;
+  const pass = env.FORWARD_EMAIL_PASS;
+  const auth = btoa(`${user}:${pass}`);
+  const payload = {
+    from: env.FORWARD_EMAIL_FROM || user,
+    to,
+    subject,
+    text,
+  };
+  if (replyTo) payload.replyTo = replyTo;
 
-function signupNotifyLines(details) {
-  return [
-    "New Open Source Barware release-list signup",
-    "",
-    `Email: ${details.email}`,
-    details.city ? `City: ${details.city}, ${details.state || ""}` : "City: (not provided)",
-    `Source: ${details.source}`,
-    `Program updates: ${details.programUpdates ? "yes" : "no"}`,
-    `Hidden Bar Tour: ${details.hiddenBarTour ? "yes" : "no"}`,
-    details.contactId ? `GHL contact: ${details.contactId}` : "",
-  ].filter(Boolean);
-}
-
-async function notifyOwner(env, details) {
-  const token = env.GHL_API_TOKEN;
-  if (!token) return;
-
-  const notifyTo = env.NOTIFY_EMAIL || "richard@opensourcebarware.com";
-  const lines = signupNotifyLines(details);
-  const noteBody = lines.join("\n");
-
-  if (details.contactId) {
-    await fetch(`${GHL_BASE}/contacts/${details.contactId}/notes`, {
-      method: "POST",
-      headers: ghlHeaders(token),
-      body: JSON.stringify({ body: noteBody }),
-    }).catch(() => {});
-
-    const dueDate = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-    await fetch(`${GHL_BASE}/contacts/${details.contactId}/tasks`, {
-      method: "POST",
-      headers: ghlHeaders(token),
-      body: JSON.stringify({
-        title: `OSB signup: ${details.email}`,
-        body: noteBody,
-        dueDate,
-        completed: false,
-      }),
-    }).catch(() => {});
-  }
-
-  const feUser = env.FORWARD_EMAIL_USER;
-  const fePass = env.FORWARD_EMAIL_PASS;
-  if (feUser && fePass) {
-    const auth = btoa(`${feUser}:${fePass}`);
-    await fetch("https://api.forwardemail.net/v1/emails", {
+  try {
+    const res = await fetch(FORWARD_EMAIL_API, {
       method: "POST",
       headers: {
         Authorization: `Basic ${auth}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        from: env.FORWARD_EMAIL_FROM || "releases@opensourcebarware.com",
-        to: notifyTo,
-        subject: `OSB signup: ${details.email}`,
-        text: noteBody,
-      }),
-    }).catch(() => {});
-    return;
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      return { ok: false, status: res.status, detail };
+    }
+    return { ok: true, status: res.status };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      detail: error instanceof Error ? error.message : "unknown",
+    };
   }
+}
 
-  const webhook = env.NOTIFY_WEBHOOK;
-  if (webhook) {
-    await fetch(webhook, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: notifyTo,
-        subject: `OSB signup: ${details.email}`,
-        text: noteBody,
-        email: details.email,
-        source: details.source,
-      }),
-    }).catch(() => {});
+function ownerNotifyText(details) {
+  return [
+    "New Open Source Barware release-list signup",
+    "",
+    `Email: ${details.email}`,
+    details.city
+      ? `City: ${details.city}, ${details.state || ""}`
+      : "City: (not provided)",
+    `Source: ${details.source}`,
+    `Program updates: ${details.programUpdates ? "yes" : "no"}`,
+    `Hidden Bar Tour: ${details.hiddenBarTour ? "yes" : "no"}`,
+    `Received: ${new Date().toISOString()}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function subscriberWelcomeText(details) {
+  const lines = [
+    "Thanks for signing up for Open Source Barware.",
+    "",
+  ];
+  if (details.programUpdates) {
+    lines.push(
+      "You're on the release list — we'll only email you when new additions ship."
+    );
   }
+  if (details.hiddenBarTour) {
+    lines.push(
+      "You're also on the World Hidden Bar Tour invite list for your city."
+    );
+  }
+  lines.push(
+    "",
+    "OpenSourceBarware.com is a free, open-source bar inventory tool. No cost, no strings.",
+    "",
+    "— Open Source Barware",
+    "https://opensourcebarware.com"
+  );
+  return lines.join("\n");
 }
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
 
-export async function onRequestPost(context) {
-  const token = context.env.GHL_API_TOKEN;
-  const locationId = context.env.GHL_LOCATION_ID || DEFAULT_LOCATION_ID;
-
-  if (!token) {
-    return jsonResponse(
-      {
-        error:
-          "Updates signup is not configured on the server yet. Set GHL_API_TOKEN in Cloudflare Pages.",
-      },
-      503
+// Durable safety net: record every valid signup to KV before we try to email.
+// Even if Forward Email is down, the address survives here and can be read back
+// with `wrangler kv key list --binding OSB_SIGNUPS`. Never throws.
+async function persistSignup(env, details) {
+  if (!env.OSB_SIGNUPS) return { stored: false, reason: "no-kv-binding" };
+  try {
+    const stamp = new Date().toISOString();
+    const key = `signup:${stamp}:${details.email}`;
+    await env.OSB_SIGNUPS.put(
+      key,
+      JSON.stringify({ ...details, receivedAt: stamp }),
     );
+    return { stored: true };
+  } catch (error) {
+    return {
+      stored: false,
+      reason: error instanceof Error ? error.message : "kv-put-failed",
+    };
   }
+}
+
+export async function onRequestPost(context) {
+  const { env } = context;
 
   let payload;
   try {
@@ -161,83 +170,71 @@ export async function onRequestPost(context) {
     }
   }
   if (!programUpdates && !hiddenBarTour) {
-    return jsonResponse(
-      { error: "Select at least one email preference." },
-      400
-    );
+    return jsonResponse({ error: "Select at least one email preference." }, 400);
   }
 
-  const tags = [SETUP_TAG];
-  if (programUpdates) tags.push(PROGRAM_UPDATES_TAG);
-  if (hiddenBarTour) tags.push(HIDDEN_BAR_TOUR_TAG);
-
-  const body = {
-    locationId,
+  const details = {
     email,
-    tags,
+    city,
+    state,
     source,
-    country: "US",
+    programUpdates,
+    hiddenBarTour,
   };
-  if (city) body.city = city;
-  if (state) body.state = state;
 
-  try {
-    const ghlResponse = await fetch(`${GHL_BASE}/contacts/upsert`, {
-      method: "POST",
-      headers: ghlHeaders(token),
-      body: JSON.stringify(body),
-    });
+  // 1) Durable capture FIRST — this is the record of truth. As long as this
+  //    succeeds, the address is safe even if every email call below fails.
+  const persisted = await persistSignup(env, details);
 
-    const ghlData = await ghlResponse.json().catch(() => ({}));
+  const notifyTo = env.NOTIFY_EMAIL || DEFAULT_NOTIFY;
 
-    if (!ghlResponse.ok) {
-      const detail =
-        ghlData?.message ||
-        ghlData?.error ||
-        ghlData?.msg ||
-        "Could not save contact.";
-      return jsonResponse({ error: detail }, ghlResponse.status === 401 ? 503 : 502);
-    }
+  // 2) Notify the owner by email (best-effort when we already have durable KV).
+  const mailConfigured = Boolean(
+    env.FORWARD_EMAIL_USER && env.FORWARD_EMAIL_PASS
+  );
+  const ownerResult = mailConfigured
+    ? await sendForwardEmail(env, {
+        to: notifyTo,
+        subject: `New OSB signup: ${email}`,
+        text: ownerNotifyText(details),
+        replyTo: email,
+      })
+    : { ok: false, status: 0, detail: "mail-not-configured" };
 
-    let message = "You are on the list.";
-    if (programUpdates && hiddenBarTour) {
-      message =
-        "You are on the release list and the Hidden Bar Tour invite list for your city.";
-    } else if (hiddenBarTour) {
-      message =
-        "We will email you when World Hidden Bar Tours go online and invite you to your city's discovery run.";
-    } else {
-      message =
-        "You are on the release list. We only email when new additions ship.";
-    }
-
-    const contactId = ghlData?.contact?.id || ghlData?.id || null;
-    try {
-      await notifyOwner(context.env, {
-        email,
-        city,
-        state,
-        source,
-        programUpdates,
-        hiddenBarTour,
-        contactId,
-      });
-    } catch {
-      // GHL save succeeded; notification is best-effort
-    }
-
-    return jsonResponse({
-      ok: true,
-      message,
-      contactId,
-    });
-  } catch (error) {
+  // Only a real failure if we captured the address NOWHERE — not KV, not email.
+  // Then the client keeps it locally and retries, so nothing is ever lost.
+  if (!persisted.stored && !ownerResult.ok) {
     return jsonResponse(
       {
-        error: "Signup service unavailable.",
-        detail: error instanceof Error ? error.message : "unknown",
+        error: "Could not record your signup right now. Please try again shortly.",
+        detail:
+          ownerResult.detail ||
+          persisted.reason ||
+          `status ${ownerResult.status}`,
       },
       502
     );
   }
+
+  // Confirmation to the subscriber is best-effort — the signup already counts.
+  if (mailConfigured) {
+    await sendForwardEmail(env, {
+      to: email,
+      subject: "You're on the Open Source Barware list",
+      text: subscriberWelcomeText(details),
+    }).catch(() => {});
+  }
+
+  let message = "You are on the list.";
+  if (programUpdates && hiddenBarTour) {
+    message =
+      "You are on the release list and the Hidden Bar Tour invite list for your city.";
+  } else if (hiddenBarTour) {
+    message =
+      "We will email you when World Hidden Bar Tours go online and invite you to your city's discovery run.";
+  } else {
+    message = "You are on the release list. We only email when new additions ship.";
+  }
+
+  return jsonResponse({ ok: true, message });
 }

@@ -88,7 +88,8 @@ const sourceFiles = Array.from(
   new Set(listedFiles.split(/\r?\n/).filter(Boolean)),
 )
   .filter((file) => !excludedFromSource.has(file))
-  .filter((file) => !file.startsWith(".git/"));
+  .filter((file) => !file.startsWith(".git/"))
+  .filter((file) => existsSync(path.join(root, file)));
 
 assertFiles(sourceFiles);
 removeIfPresent(sourceArchive);

@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "The Process - Open Source Barware",
   description:
-    "A kitchen-table explanation of the Open Source Barware Chrome-side inventory system, from voice notes and spreadsheets to the AI home base.",
+    "A kitchen-table explanation of the Open Source Barware Chrome-side inventory system — voice notes, spreadsheets, and a self-contained home base that runs on your laptop with no AI required.",
   path: "/the-process",
 });
 
@@ -22,14 +22,14 @@ const productBlocks = [
   },
   {
     label: "The Spine",
-    title: "Voice notes, spreadsheets, and AI",
-    body: "You talk through the bar the way you already walk it. The system turns that into a clean spreadsheet view, then uses AI to help organize, check, and explain the numbers.",
+    title: "Your voice in, a built spreadsheet out",
+    body: "You talk through the bar the way you already walk it. A parser built right into the program — no internet, no AI, no account — reads your words, lays out the map, and does the math. It runs on your laptop and it runs by itself.",
   },
 ];
 
 const homeBaseFeatures = [
   {
-    title: "AI Home Base",
+    title: "Home Base",
     body: "The calm landing page: last inventory, current cycle, what changed, what needs attention, and where to go next.",
   },
   {
@@ -55,12 +55,12 @@ const homeBaseFeatures = [
 ];
 
 const setupGates = [
-  "Choose the AI helper before sensitive inventory information goes in",
-  "Confirm the Chrome-side connection without pasting secret values into reports",
-  "Name every well, back bar, cooler, shelf, room, and storage area",
+  "Everything runs on your laptop — no account, no cloud, nothing to wait on",
+  "Name every bar, well, row, back bar, cooler shelf, and wine space",
   "Ask about unclear brands, bottle sizes, duplicate items, and missing spaces",
   "Review the first map before the first real inventory count begins",
-  "Match weekly count, invoices, and POS report to the same date window",
+  "Match the weekly count, purchases, and POS report to the same date window",
+  "Add AI later — and only if you want invoice photos read for you",
 ];
 
 type ProcessStep = {
@@ -78,86 +78,99 @@ type ProcessStep = {
 const steps: ProcessStep[] = [
   {
     number: "01",
-    title: "Open the Chrome Program",
-    body: "You start in one simple place. The program opens in Chrome, explains what it needs, and keeps the whole first setup moving in order.",
-    note: "This is the caterpillar stage: small, guided, and focused only on getting the room understood.",
+    title: "Install It and Bookmark It",
+    body: "Download the package and double-click the installer. It installs itself into Chrome and opens one Chrome window. Bookmark that window to your bookmark bar — that bookmark is the software. Everything you build lives inside that one page, so you always come back to the same place.",
+    note: "One install, one bookmark. That bookmarked page is your whole system from here on out — nothing else to open, nothing else to learn.",
   },
   {
     number: "02",
-    title: "Choose Your AI Helper",
-    body: "The setup asks which AI provider you want to use. It helps you make the connection, then keeps moving once the system is ready to interpret notes and reports.",
-    note: "Your provider is the helper. The bar map and operating data stay part of your own working system.",
-    cards: [
-      { name: "Claude", path: "Choose provider and connect" },
-      { name: "ChatGPT", path: "Choose provider and connect" },
-      { name: "Grok", path: "Choose provider and connect" },
-    ],
+    title: "Meet the Guided Walkthrough",
+    body: "The first time it opens, you land on the guided walkthrough — the caterpillar. It runs entirely on your laptop: no account to make, no cloud to reach, no AI to connect. It just walks you through loading your whole system one calm step at a time, and all you do is follow along.",
+    note: "This is the caterpillar stage: patient, offline, and focused only on getting your bar understood. Later it emerges into the butterfly — your everyday home base.",
   },
   {
     number: "03",
-    title: "Walk the Bar by Voice",
-    body: "You walk the restaurant the same way you would show it to a new manager. Speak the shelves, wells, coolers, storage rooms, and bottle placements into your phone.",
-    note: "This first pass is a map, not a count. We are teaching the system where things live.",
+    title: "Name Your Bars",
+    body: "First, build the bar in your head by how many physical bars stand in your building. Two bars in the room means two bars in the system. For the first build you name them plainly — Bar 1, Bar 2 — and you can rename them to their real names later. This is just the frame you pour everything else into.",
+    note: "Count the bars in the building, name them Bar 1 / Bar 2 for now. Real names come after the first map is built.",
   },
   {
     number: "04",
-    title: "Turn the Walk Into a First Map",
-    body: "The program takes the voice notes and drafts a readable bar map. It groups products by location and flags anything that sounds unclear or out of place.",
-    note: "Messy speech is normal. The system should ask before it guesses.",
-  },
-  {
-    number: "05",
-    title: "Check the Spreadsheet View",
-    body: "You get a clean spreadsheet-style view of the first map. Blank spaces and questions are left on purpose so a human can verify the real room.",
-    note: "The spreadsheet is not there to make more work. It is the shared table everyone can point to.",
+    title: "Walk Each Bar and Say It Out Loud",
+    body: "Now stand behind the bar and vocalize it the way you already walk it. Go bar by bar, well by well, row by row — say the location, then name the bottles in it. Move top-to-bottom, left-to-right, the same route every time so the map matches the real room.",
+    note: "This first voice note is the seed. Everything the program builds for you grows out of this one walk, so speak it in order.",
     example: {
-      label: "First walk example:",
+      label: "How to say the walk (Bar 1):",
       lines: [
-        "Main well, row one, left to right: Titos 750, Ketel One liter, Captain Morgan 750",
-        "Back bar, top shelf: Casamigos Blanco 750, Cointreau 750, Don Julio Blanco 750",
-        "Liquor room, tequila shelf: Patron Silver, Espolon Blanco, Herradura Reposado",
+        "Bar one. Well one, row one: Titos 750, Ketel One liter, Tanqueray 750",
+        "Well one, row two: Bacardi 750, Captain Morgan 750  (no row three — next well)",
+        "Well two, row one: Espolon, Jameson, Hendrick's",
+        "Back bar right, row one: Casamigos, row two: Don Julio, row three: Clase Azul",
+        "Back bar left, row one, two, three: name the bottles on each",
+        "Cooler shelf one, shelf two, shelf three: this beer, that beer",
+        "Wine shelf and wine cooler: name each the same way",
       ],
     },
   },
   {
+    number: "05",
+    title: "Save the Note — the Program Builds It",
+    body: "Save that first voice note and upload the file into the program. The built-in parser — sitting right there on your laptop, no internet required — reads your words and builds the whole bar: the stations, the rows, the bottle list, and the first spreadsheet map. You talk it once; the program constructs the rest.",
+    note: "One saved walk in, a full structured bar out. No AI, no upload to anyone else's server — the parser lives in the program and does the work itself.",
+  },
+  {
     number: "06",
-    title: "Pass the Checks and Gates",
-    body: "Before the live inventory starts, the system makes sure the setup makes sense. Locations are named, unclear bottles are corrected, and the first map is approved.",
-    note: "This is the check-in moment. The software helps, but the restaurant approves the truth.",
+    title: "Review the First Map",
+    body: "You get a clean spreadsheet-style view of the map it built. Locations are named, look-alike bottles are flagged, and blank spaces are left on purpose so a human can verify the real room before anyone relies on it.",
+    note: "This is the check-in moment. The program does the heavy lifting, but the restaurant approves the truth.",
   },
   {
     number: "07",
-    title: "Run the First Live Count",
-    body: "Now you count quantities and bottle levels against the approved map. The count finally has structure, so it feels less like hunting through a messy room.",
-    note: "The map gives the route. The count gives the numbers.",
+    title: "Download Your Count Sheets",
+    body: "Once the map is populated, download the count sheets. They print with blank spaces beside every bottle so you know exactly what to do — and what to say — when you walk the bar the second time. Prefer digital? Export to CSV or pull them into your own apps.",
+    note: "Printable sheets with spaces for the walk, CSV for your apps. The second count is never a guess about where to start.",
   },
   {
     number: "08",
-    title: "Add Invoices and POS",
-    body: "The weekly packet gets the matching invoices, POS sales report, and manager notes for the same inventory window.",
-    note: "One week, one packet, one story. That is how the numbers stay fair.",
+    title: "Run the Count, Log Your Purchases",
+    body: "Count quantities against the approved map, then bring in the matching paperwork for the same date window. Type your invoice numbers or paste the invoice text — the program's parser handles it locally. Add the POS sales export, drop in manager notes, and you have the full week.",
+    note: "Type it or paste it — that is the default, and it was field-tested that way. Snapping invoice photos is the one optional shortcut, and only if you connect AI (next section).",
   },
   {
     number: "09",
-    title: "Open the AI Home Base",
-    body: "After the first cycle, the guided setup becomes the butterfly: a home base that shows what happened, what changed, and what deserves attention.",
+    title: "Open the Butterfly Home Base",
+    body: "After you Process the first cycle, the caterpillar becomes the butterfly: a calm home base that shows what happened, what changed, and what deserves attention. The same bookmarked page you started with is now your everyday admin panel — live spreadsheets, PAR levels, variance, and order lists, all built in.",
     note: "It should feel like hospitality: calm, clear, useful, and ready when the manager opens it.",
   },
   {
     number: "10",
-    title: "Repeat and Improve",
-    body: "Each new cycle updates the same system. The bar gets cleaner, the reports get easier to read, and the team can see whether the operation is improving.",
-    note: "The real win is not one report. It is getting a little more honest and organized every cycle.",
+    title: "You Have Full Control — and It's Open Source",
+    body: "Inside the admin panel there are plenty of places to change the bars, rename them, and restructure how everything is laid out. The settings give you complete access to how the whole system is built. And because it is open source, nothing is locked away — the program is yours to run, change, and own.",
+    note: "Change the bars, restructure the layout, own the whole thing. Complete access, open source, no lock-in.",
   },
 ];
 
+const optionalAi = {
+  providers: [
+    { name: "Claude", note: "Bring your own key" },
+    { name: "ChatGPT", note: "Bring your own key" },
+    { name: "Grok", note: "Bring your own key" },
+  ],
+  points: [
+    "The whole program works without it. Setup, voice walk, count, reconcile, Process, spreadsheets — all local, all free.",
+    "Connect it only if you want to snap a phone photo of a vendor invoice instead of typing the line items.",
+    "Your key is a private password for invoice photos, stored on your Mac and nowhere else.",
+    "Skip it now, add it later in Settings, or never touch it — your call, every time.",
+  ],
+};
+
 const whatYouNeed = [
-  { item: "Google Chrome", detail: "The working program lives in Chrome so it is easy to open and return to." },
-  { item: "Your AI provider", detail: "Use the helper you already trust, then connect it during setup." },
-  { item: "A phone for voice notes", detail: "Walk the bar naturally and speak the shelves, wells, and rooms as you see them." },
-  { item: "A first bar walk", detail: "The opening pass teaches the system where products live before anyone worries about quantities." },
-  { item: "Invoices and POS report", detail: "These come in once the first real inventory cycle is ready." },
-  { item: "A careful review", detail: "The first map gets checked and approved before the system becomes your home base." },
+  { item: "A laptop and Google Chrome", detail: "The program installs into Chrome and lives on one bookmarked page you always return to. It runs right there — offline, no account, no cloud." },
+  { item: "A phone for voice notes", detail: "Walk each bar and speak it in order — bar, well, row, back bar, cooler, wine — naming the bottles as you go." },
+  { item: "A first bar walk", detail: "That one saved voice note is the seed the built-in parser reads to build your whole bar." },
+  { item: "Your invoices and POS report", detail: "Type or paste the invoice numbers and pull the POS export once the first real cycle is ready." },
+  { item: "A careful review", detail: "The first map gets checked and approved before the program becomes your home base." },
+  { item: "Optional: your own AI key", detail: "Not required for anything. Add it only if you want invoice photos read from your phone instead of typing." },
 ];
 
 const weeklyRhythm = [
@@ -167,7 +180,7 @@ const weeklyRhythm = [
   },
   {
     title: "Add",
-    body: "Bring in invoices, POS sales, delivery notes, and manager context for the same period.",
+    body: "Snap photos of vendor invoices and bring in POS sales, delivery notes, and manager context for the same period.",
   },
   {
     title: "Read",
@@ -178,9 +191,9 @@ const weeklyRhythm = [
 const dataPromises = [
   "Your bar map stays easy for your team to understand.",
   "Your weekly packet stays tied to the correct count window.",
-  "Your AI helper explains the work instead of hiding the work.",
-  "Your setup pauses and asks when something is unclear.",
-  "Your home base makes the next action obvious.",
+  "Your data lives on your laptop — no cloud account holding it hostage.",
+  "Your admin panel lets you rename bars and restructure the layout anytime.",
+  "Your program is open source — yours to run, change, and own with no lock-in.",
 ];
 
 export default function TheProcess() {
@@ -214,9 +227,9 @@ export default function TheProcess() {
           </h1>
 
           <p className="text-text-muted text-xl leading-relaxed max-w-2xl mx-auto mb-6">
-            Open Source Barware starts as a guided setup you can understand in
-            one sitting. You walk the bar by voice, review the spreadsheet view,
-            pass the checks, then open the AI home base for everyday inventory.
+            Install it, bookmark one page in Chrome, and that page becomes your
+            whole system. A guided walkthrough loads your bar from a single voice
+            note, then the same page opens into your everyday inventory home base.
           </p>
 
           <p className="text-text-muted text-lg leading-relaxed max-w-2xl mx-auto">
@@ -238,10 +251,11 @@ export default function TheProcess() {
               What you are actually using
             </h2>
             <p className="text-text-muted leading-relaxed text-lg">
-              Think of it as one calm control panel. At first it helps you set
-              up the room. Once the room is approved, that same place becomes
-              your inventory home base with voice notes, spreadsheets, AI help,
-              checks, and weekly reporting working together.
+              Think of it as one calm control panel that runs on your laptop. At
+              first it helps you set up the room. Once the room is approved, that
+              same place becomes your inventory home base — voice notes, live
+              spreadsheets, checks, and weekly reporting, all working together
+              and all built in.
             </p>
           </div>
 
@@ -351,7 +365,7 @@ export default function TheProcess() {
 
           <PipeLine>
             {steps.map((step, i) => (
-              <PipeNode key={step.number} active={i === 5}>
+              <PipeNode key={step.number} active={i === 3}>
                 <div className="panel p-7 md:p-9 mb-0">
                   <div className="flex items-start gap-5 mb-5">
                     <span className="font-mono text-2xl text-copper flex-shrink-0 mt-1">{step.number}</span>
@@ -416,20 +430,19 @@ export default function TheProcess() {
                 <span className="text-[11px] tracking-[0.3em] uppercase text-patina-light">What You Say Into Your Phone</span>
               </div>
               <div className="font-mono text-sm text-text-muted leading-loose bg-bg/60 p-4 rounded border border-gear-border">
-                <p className="text-text-light mb-1">Main well, row one:</p>
-                <p>Bottle one left to right: Titos 750</p>
-                <p>Ketel One liter</p>
-                <p>Captain Morgan 750</p>
-                <p>Casamigos Blanco 750</p>
-                <p>Cointreau 750</p>
-                <p className="text-text-light mt-3 mb-1">Back bar, top shelf:</p>
-                <p>Left to right: Don Julio Blanco, Espolon, Herradura</p>
-                <p className="text-text-light mt-3 mb-1">Liquor room:</p>
-                <p>Tequila shelf: Patron Silver, Casamigos, Don Julio</p>
-                <p>Vodka shelf: Titos, Ketel One, Grey Goose</p>
+                <p className="text-text-light mb-1">Bar one. Well one, row one:</p>
+                <p>Titos 750, Ketel One liter, Tanqueray 750</p>
+                <p className="text-text-light mt-3 mb-1">Well one, row two:</p>
+                <p>Bacardi 750, Captain Morgan 750 &mdash; no row three</p>
+                <p className="text-text-light mt-3 mb-1">Well two, row one:</p>
+                <p>Espolon, Jameson, Hendrick&apos;s</p>
+                <p className="text-text-light mt-3 mb-1">Back bar right:</p>
+                <p>Row one: Casamigos &middot; row two: Don Julio &middot; row three: Clase Azul</p>
+                <p className="text-text-light mt-3 mb-1">Cooler and wine:</p>
+                <p>Cooler shelf one, two, three &middot; wine shelf, wine cooler</p>
               </div>
               <p className="text-xs text-text-light mt-4 italic">
-                The first pass records placement, not quantities.
+                Bar, well, row, back bar, cooler, wine &mdash; in order. The first pass records placement, not quantities.
               </p>
             </div>
 
@@ -439,22 +452,22 @@ export default function TheProcess() {
                 <span className="text-[11px] tracking-[0.3em] uppercase text-brass-light">What Comes Back to Review</span>
               </div>
               <div className="text-sm text-text-muted leading-relaxed bg-bg/60 p-4 rounded border border-gear-border">
-                <p className="text-text-light text-xs uppercase tracking-wider mb-3">Main Well - Draft Map</p>
+                <p className="text-text-light text-xs uppercase tracking-wider mb-3">Bar 1 · Well 1 - Draft Map</p>
                 <div className="space-y-1 mb-4">
                   <p>Row 1, Slot 1 - <span className="text-copper font-mono">Tito&apos;s 750ml</span></p>
                   <p>Row 1, Slot 2 - <span className="text-copper font-mono">Ketel One 1L</span></p>
-                  <p>Row 1, Slot 3 - <span className="text-copper font-mono">Captain Morgan 750ml</span></p>
-                  <p>Row 1, Slot 4 - <span className="text-copper font-mono">Casamigos Blanco 750ml</span></p>
-                  <p>Row 1, Slot 5 - <span className="text-copper font-mono">Cointreau 750ml</span></p>
+                  <p>Row 1, Slot 3 - <span className="text-copper font-mono">Tanqueray 750ml</span></p>
+                  <p>Row 2, Slot 1 - <span className="text-copper font-mono">Bacardi 750ml</span></p>
+                  <p>Row 2, Slot 2 - <span className="text-copper font-mono">Captain Morgan 750ml</span></p>
                 </div>
-                <p className="text-text-light text-xs uppercase tracking-wider mb-3 border-t border-gear-border pt-3">Liquor Room - Draft Map</p>
+                <p className="text-text-light text-xs uppercase tracking-wider mb-3 border-t border-gear-border pt-3">Bar 1 · Back Bar Right - Draft Map</p>
                 <div className="space-y-1 mb-4">
-                  <p>Tequila Shelf - <span className="text-copper font-mono">Patron, Casamigos, Don Julio</span></p>
-                  <p>Vodka Shelf - <span className="text-copper font-mono">Tito&apos;s, Ketel One, Grey Goose</span></p>
-                  <p>Reserved Blank - <span className="text-copper font-mono">Add missing shelf item</span></p>
+                  <p>Row 1 - <span className="text-copper font-mono">Casamigos</span></p>
+                  <p>Row 2 - <span className="text-copper font-mono">Don Julio</span></p>
+                  <p>Row 3 - <span className="text-copper font-mono">Clase Azul</span></p>
                 </div>
                 <div className="border-t border-gear-border pt-3 bg-rust/10 -mx-4 px-4 py-3 rounded-b text-xs text-rust">
-                  Check-in: confirm whether Cointreau belongs in the well or back bar.
+                  Check-in: Well 1 stopped at Row 2 — confirm there is no Row 3 before moving to Well 2.
                 </div>
               </div>
               <p className="text-xs text-text-light mt-4 italic">
@@ -492,21 +505,79 @@ export default function TheProcess() {
         </div>
       </section>
 
+      {/* OPTIONAL AI */}
+      <section className="border-b border-gear-border">
+        <div className="max-w-5xl mx-auto px-6 py-16 md:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+            <div className="lg:col-span-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="glow-dot" />
+                <p className="text-[11px] tracking-[0.3em] uppercase text-patina-light">
+                  The One Optional Extra
+                </p>
+              </div>
+              <h2 className="font-serif text-4xl md:text-5xl text-cream mb-5">
+                Everything above is free and needs no AI.
+              </h2>
+              <p className="text-text-muted leading-relaxed mb-4">
+                We mean that literally. The walk, the count, the reconcile, the
+                Process, the spreadsheets — all of it runs on your laptop, on its
+                own, at no cost. You could unplug the internet and still close
+                your week.
+              </p>
+              <p className="text-text-muted leading-relaxed">
+                There is exactly one thing you can add if you want a shortcut:
+                connect your own AI key so the program can read a photo of a
+                vendor invoice instead of you typing the line items. That is the
+                whole pitch. No upsell hiding behind it.
+              </p>
+            </div>
+
+            <aside className="lg:col-span-7 panel p-6 md:p-8">
+              <p className="text-[10px] tracking-[0.25em] uppercase text-copper mb-5">
+                Bring Your Own Key — Or Don&apos;t
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-7">
+                {optionalAi.providers.map((p) => (
+                  <div key={p.name} className="bg-bg/60 border border-gear-border rounded p-4">
+                    <p className="text-sm font-semibold text-cream mb-1">{p.name}</p>
+                    <p className="text-xs text-text-light">{p.note}</p>
+                  </div>
+                ))}
+              </div>
+              <ul className="space-y-4">
+                {optionalAi.points.map((point) => (
+                  <li key={point} className="flex gap-4 text-sm text-text-muted leading-relaxed">
+                    <span className="text-copper flex-shrink-0 mt-0.5">&mdash;</span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-text-light italic mt-6 pt-5 border-t border-gear-border">
+                Coming later: point your phone at the wine cooler and let a video
+                walk do the talking. Also optional. Also yours to ignore.
+              </p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
       {/* DATA + TRUST */}
       <section className="border-b border-gear-border bg-bg-warm">
         <div className="max-w-4xl mx-auto px-6 py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
             <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">Your Data</p>
-            <h2 className="font-serif text-3xl text-cream mb-5">Customer-owned, provider-connected.</h2>
+            <h2 className="font-serif text-3xl text-cream mb-5">Customer-owned, laptop-local.</h2>
             <p className="text-text-muted leading-relaxed mb-4">
-              The Chrome-side home base connects to the AI provider you choose.
-              The inventory map, weekly notes, invoice details, POS reports,
-              and spreadsheet outputs are there to serve your operation.
+              The inventory map, weekly notes, invoice details, POS reports, and
+              spreadsheet outputs live on your machine, in files a manager can
+              read without a translator. Nothing gets shipped off to a server to
+              make the program work.
             </p>
             <p className="text-text-muted leading-relaxed">
-              The home base treats provider connections and key setup as
-              sensitive, and it keeps the working files understandable enough
-              for a manager to review without a translator.
+              The only thing that ever reaches out is the optional AI key — and
+              only when you ask it to read an invoice photo. Skip it and the
+              whole system still does its job, start to finish.
             </p>
           </div>
           <div>
@@ -552,7 +623,7 @@ export default function TheProcess() {
               prefetch={false}
               className="inline-block border border-copper/40 text-copper hover:bg-copper/10 font-semibold px-10 py-4 text-base tracking-wide transition-all"
             >
-              Download the Program
+              Free Download
             </Link>
           </div>
           <p className="text-text-light text-sm mt-5">

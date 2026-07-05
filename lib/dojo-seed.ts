@@ -3,6 +3,7 @@ import type {
   Bottle,
   InventoryCount,
   InventorySettings,
+  PosReportEntry,
   WeeklyInputDraft,
 } from "@/lib/inventory-store";
 
@@ -140,13 +141,41 @@ export function createDojoSettings(): InventorySettings {
     aiProvider: "claude",
     apiConnectionStatus: "needs-key",
     cycleLabel: "Weekly beverage inventory",
+    cycleDays: 7,
     weekStartsOn: "Monday",
+    timezone: "America/New_York",
+    metricsDefaultWindow: "current_cycle",
     backupReminderAccepted: true,
     showOpenBottleTenths: true,
     notes:
       "Dojo sandbox — connect your own API key when you download the real program.",
     updatedAt: new Date().toISOString(),
   };
+}
+
+export function createDojoPosReports(): PosReportEntry[] {
+  const tuesday = new Date();
+  tuesday.setDate(tuesday.getDate() - 2);
+
+  return [
+    {
+      id: "dojo-pos-tuesday",
+      label: "Tuesday close",
+      reportDate: tuesday.toISOString().slice(0, 10),
+      note: "Toast export — liquor, beer, wine",
+      files: [
+        {
+          id: "dojo-pos-file-1",
+          name: "toast-tuesday-close.csv",
+          size: 18400,
+          type: "text/csv",
+          lastModified: Date.now(),
+          addedAt: new Date().toISOString(),
+        },
+      ],
+      addedAt: new Date().toISOString(),
+    },
+  ];
 }
 
 export function createDojoWeeklyInputs(): WeeklyInputDraft {

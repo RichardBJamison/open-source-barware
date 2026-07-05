@@ -1,27 +1,7 @@
 /* Open Source Barware — Chrome program client */
 
-const UPDATES_SIGNUP_STORAGE_KEY = "osb_updates_signup";
-const UPDATES_SUBSCRIBE_URL = "/api/updates-subscribe";
-
-const US_STATES = [
-  ["AL", "Alabama"], ["AK", "Alaska"], ["AZ", "Arizona"], ["AR", "Arkansas"],
-  ["CA", "California"], ["CO", "Colorado"], ["CT", "Connecticut"], ["DE", "Delaware"],
-  ["DC", "District of Columbia"], ["FL", "Florida"], ["GA", "Georgia"], ["HI", "Hawaii"],
-  ["ID", "Idaho"], ["IL", "Illinois"], ["IN", "Indiana"], ["IA", "Iowa"],
-  ["KS", "Kansas"], ["KY", "Kentucky"], ["LA", "Louisiana"], ["ME", "Maine"],
-  ["MD", "Maryland"], ["MA", "Massachusetts"], ["MI", "Michigan"], ["MN", "Minnesota"],
-  ["MS", "Mississippi"], ["MO", "Missouri"], ["MT", "Montana"], ["NE", "Nebraska"],
-  ["NV", "Nevada"], ["NH", "New Hampshire"], ["NJ", "New Jersey"], ["NM", "New Mexico"],
-  ["NY", "New York"], ["NC", "North Carolina"], ["ND", "North Dakota"], ["OH", "Ohio"],
-  ["OK", "Oklahoma"], ["OR", "Oregon"], ["PA", "Pennsylvania"], ["RI", "Rhode Island"],
-  ["SC", "South Carolina"], ["SD", "South Dakota"], ["TN", "Tennessee"], ["TX", "Texas"],
-  ["UT", "Utah"], ["VT", "Vermont"], ["VA", "Virginia"], ["WA", "Washington"],
-  ["WV", "West Virginia"], ["WI", "Wisconsin"], ["WY", "Wyoming"],
-];
-
 const SETUP_FLOW = [
   "welcome",
-  "updates_signup",
   "name_bar",
   "voice_walk",
   "reconcile",
@@ -32,7 +12,6 @@ const SETUP_FLOW = [
 
 const STEP_LABELS = {
   welcome: "Start",
-  updates_signup: "Updates",
   name_bar: "Name",
   voice_walk: "Walk",
   build_bar: "Review",
@@ -56,7 +35,6 @@ const CATEGORY_KEYWORDS = {
 };
 
 let setupListenersBound = false;
-let updatesSignupListenersBound = false;
 let homeListenersBound = false;
 let barState = { id: "", name: "", stations: [] };
 let walkParsed = false;
@@ -72,6 +50,27 @@ let walkParseTimer = null;
 let countParseTimer = null;
 let lastParsedWalkText = "";
 let lastParsedCountText = "";
+let walkReviewBars = [];
+let walkParsedBarCount = 1;
+let reconcileRenameBars = [];
+let reconcileRenameIndex = 0;
+/** @type {"append" | "replace"} */
+let walkFileUploadMode = "append";
+/** @type {"append" | "replace"} */
+let countFileUploadMode = "append";
+
+const WALK_BAR_MARKER_WORDS = [
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "nine",
+  "ten",
+];
 
 function walkNotesExtension(filename) {
   const parts = (filename || "").split(".");
@@ -99,6 +98,57 @@ function normalizeUploadedWalkNotes(text, filename) {
     .replace(/\r\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+function walkTextStartsWithBarMarker(text) {
+  const words = walkNormalizeText(text)
+    .split(/\s+/)
+    .map((w) => w.replace(/^[,;:()"']+|[,;:()"']+$/g, ""))
+    .filter(Boolean);
+  for (let i = 0; i < Math.min(words.length, 6); i++) {
+    if (walkMatchBar(words, i)) return true;
+  }
+  return false;
+}
+
+function barNumberFromWalkFilename(filename) {
+  const m = (filename || "").match(/bar[-_\s]?(\d{1,2})/i);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function walkBarMarkerPrefix(n) {
+  const word = WALK_BAR_MARKER_WORDS[n - 1] || String(n);
+  return `Bar ${word}.`;
+}
+
+function ensureWalkBarMarker(text, filename, fileIndex, totalFiles) {
+  const trimmed = text.trim();
+  if (!trimmed) return trimmed;
+  if (walkTextStartsWithBarMarker(trimmed)) return trimmed;
+  const fromFile = barNumberFromWalkFilename(filename);
+  const n = fromFile ?? (totalFiles > 1 || fileIndex > 1 ? fileIndex : null);
+  if (!n) return trimmed;
+  return `${walkBarMarkerPrefix(n)}\n${trimmed}`;
+}
+
+function countParsedWalkBars(text) {
+  if (!text?.trim()) return 0;
+  const { bars } = parseWalkText(text);
+  return bars.length || (text.trim() ? 1 : 0);
+}
+
+function getWalkFileInput() {
+  const input = document.getElementById("voiceNotesFile");
+  if (input) input.multiple = true;
+  return input;
+}
+
+function openWalkFilePicker(mode = "append") {
+  walkFileUploadMode = mode;
+  const input = getWalkFileInput();
+  if (!input) return;
+  input.value = "";
+  input.click();
 }
 
 function uid() {
@@ -157,8 +207,12 @@ const OSB = {
     return r.json();
   },
 
-  async getBar(seed = false) {
-    const r = await fetch(`/api/bar${seed ? "?seed=true" : ""}`);
+  async getBar(seed = false, barId = null) {
+    const qs = new URLSearchParams();
+    if (seed) qs.set("seed", "true");
+    if (barId) qs.set("bar_id", barId);
+    const q = qs.toString();
+    const r = await fetch(`/api/bar${q ? `?${q}` : ""}`);
     return r.json();
   },
 
@@ -181,7 +235,6 @@ const OSB = {
   async hardReset() {
     const r = await fetch("/api/hard-reset", { method: "POST" });
     if (!r.ok) throw new Error("Could not reset the program");
-    setUpdatesSignupStatus("");
     barState = null;
     allBars = [];
     resetCoachingClientState();
@@ -254,6 +307,15 @@ const OSB = {
     return r.json();
   },
 
+  async skipAi() {
+    const r = await fetch("/api/setup/skip-ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    return r.json();
+  },
+
   async advancePhase(phase) {
     const r = await fetch("/api/phase/advance", {
       method: "POST",
@@ -302,6 +364,15 @@ const OSB = {
     return r.json();
   },
 
+  async processInventoryCycle() {
+    const r = await fetch("/api/count/process-cycle", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.error || "Could not process inventory cycle");
+    }
+    return r.json();
+  },
+
   async reconcile() {
     const r = await fetch("/api/setup/reconcile", { method: "POST" });
     if (!r.ok) {
@@ -341,29 +412,75 @@ const OSB = {
     return r.json();
   },
 
-  async uploadPosLog({ label, note, file, text }) {
+  async uploadPosLog({ label, note, file, text, inputType = "pos" }) {
+    const type = inputType === "invoice" ? "invoice" : "pos";
+    const defaultLabel = type === "invoice" ? "Invoice drop" : "POS drop";
     if (text?.trim() && !file) {
       const r = await fetch("/api/pos/log", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label, note, text }),
+        body: JSON.stringify({ label: label || defaultLabel, note, text, input_type: type }),
       });
       if (!r.ok) {
         const err = await r.json();
-        throw new Error(err.error || "POS upload failed");
+        throw new Error(err.error || "Upload failed");
       }
       return r.json();
     }
     const fd = new FormData();
-    fd.append("label", label || "POS drop");
+    fd.append("label", label || defaultLabel);
+    fd.append("input_type", type);
     if (note) fd.append("note", note);
     fd.append("file", file);
     const r = await fetch("/api/pos/log", { method: "POST", body: fd });
     if (!r.ok) {
       const err = await r.json();
-      throw new Error(err.error || "POS upload failed");
+      throw new Error(err.error || "Upload failed");
     }
     return r.json();
+  },
+
+  async beginNextCount() {
+    const r = await fetch("/api/cycle/begin-next-count", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.error || "Could not start next count");
+    }
+    return r.json();
+  },
+
+  async parseInvoice({ imageFile, text, useAi = false }) {
+    if (imageFile) {
+      const fd = new FormData();
+      fd.append("image", imageFile);
+      const r = await fetch("/api/inputs/invoice/parse", { method: "POST", body: fd });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || "Invoice photo parse failed");
+      return data;
+    }
+    const r = await fetch("/api/inputs/invoice/parse", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, use_ai: useAi }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Invoice parse failed");
+    return data;
+  },
+
+  async saveParsedInvoice({ invoice, label, note }) {
+    const r = await fetch("/api/inputs/invoice/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ invoice, label, note }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Could not save parsed invoice");
+    return data;
   },
 
   async deletePosLog(entryId) {
@@ -380,7 +497,7 @@ function renderStepIndicator(phases, current) {
   const el = document.getElementById("stepIndicator");
   if (!el) return;
   const setupPhases = phases.filter(
-    (p) => p.id !== "butterfly" && p.id !== "welcome" && p.id !== "updates_signup"
+    (p) => p.id !== "butterfly" && p.id !== "welcome"
   );
   const idx = setupPhases.findIndex((p) => p.id === current);
   const curIdx = current === "welcome" ? -1 : idx;
@@ -451,235 +568,99 @@ function showOnly(id) {
   });
 }
 
-function getUpdatesSignupStatus() {
-  const value = localStorage.getItem(UPDATES_SIGNUP_STORAGE_KEY);
-  return value === "subscribed" || value === "skipped" ? value : "";
-}
-
-function setUpdatesSignupStatus(status) {
-  if (!status) localStorage.removeItem(UPDATES_SIGNUP_STORAGE_KEY);
-  else localStorage.setItem(UPDATES_SIGNUP_STORAGE_KEY, status);
-}
-
-function validateUpdatesSignup({ email, city, state, hiddenBarTour }) {
-  const trimmedEmail = (email || "").trim();
-  const trimmedCity = (city || "").trim();
-  const trimmedState = (state || "").trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) return "Enter a valid email address.";
-  if (hiddenBarTour) {
-    if (!trimmedCity || trimmedCity.length < 2) return "Enter your city for Hidden Bar Tour invites.";
-    if (!trimmedState) return "Select your state for Hidden Bar Tour invites.";
-  }
-  return null;
-}
-
-async function submitUpdatesSignup({ email, city, state, programUpdates, hiddenBarTour }) {
-  const error = validateUpdatesSignup({ email, city, state, hiddenBarTour });
-  if (error) return { ok: false, message: error };
-  if (!programUpdates && !hiddenBarTour) {
-    return { ok: false, message: "Turn on at least one email preference above." };
-  }
-
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 20000);
-
-  try {
-    const response = await fetch(UPDATES_SUBSCRIBE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email.trim().toLowerCase(),
-        city: city.trim(),
-        state: state.trim().toUpperCase(),
-        source: "chrome-program-setup",
-        programUpdates: programUpdates ?? true,
-        hiddenBarTour: Boolean(hiddenBarTour),
-      }),
-      signal: controller.signal,
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return {
-        ok: false,
-        message: data.error || data.message || "Could not save your signup. Try again in a moment.",
-      };
-    }
-    setUpdatesSignupStatus("subscribed");
-    return {
-      ok: true,
-      message: data.message || "You are on the list. We only email when new releases ship.",
-    };
-  } catch (err) {
-    if (err?.name === "AbortError") {
-      return { ok: false, message: "Signup timed out — check your connection and try again." };
-    }
-    return { ok: false, message: "Network error — check your connection and try again." };
-  } finally {
-    window.clearTimeout(timeout);
-  }
-}
-
-function showUpdatesSuccessToast(message) {
-  const toast = document.getElementById("updatesSuccessToast");
-  const text = document.getElementById("updatesSuccessText");
-  if (!toast || !text) return;
-  text.textContent = message;
-  toast.classList.remove("hidden");
-}
-
-function hideUpdatesSuccessToast() {
-  document.getElementById("updatesSuccessToast")?.classList.add("hidden");
-}
-
-async function handleUpdatesJoin() {
-  const optIn = document.getElementById("updatesOptIn")?.checked;
-  const tourOptIn = document.getElementById("updatesTourOptIn")?.checked;
-  if (!optIn && !tourOptIn) {
-    setUpdatesSignupStatus("skipped");
-    await advanceFromUpdatesSignup();
-    return;
-  }
-
-  const email = document.getElementById("updatesEmail")?.value || "";
-  const city = document.getElementById("updatesCity")?.value || "";
-  const state = document.getElementById("updatesState")?.value || "";
-  const statusEl = document.getElementById("updatesStatus");
-  const joinBtn = document.getElementById("btnUpdatesJoin");
-  if (joinBtn) {
-    joinBtn.disabled = true;
-    joinBtn.textContent = "Sending…";
-  }
-  if (statusEl) {
-    statusEl.textContent = "";
-    statusEl.classList.remove("updates-status-error");
-  }
-
-  try {
-    const result = await submitUpdatesSignup({
-      email,
-      city,
-      state,
-      programUpdates: optIn,
-      hiddenBarTour: tourOptIn,
-    });
-
-    if (!result.ok) {
-      if (statusEl) {
-        statusEl.textContent = result.message;
-        statusEl.classList.add("updates-status-error");
-      }
-      return;
-    }
-
-    showUpdatesSuccessToast(result.message);
-    if (statusEl) statusEl.textContent = "";
-    window.setTimeout(async () => {
-      hideUpdatesSuccessToast();
-      try {
-        await advanceFromUpdatesSignup();
-      } catch (err) {
-        if (statusEl) {
-          statusEl.textContent = err.message || "Could not continue setup.";
-          statusEl.classList.add("updates-status-error");
-        }
-      }
-    }, 900);
-  } catch (err) {
-    if (statusEl) {
-      statusEl.textContent = err.message || "Something went wrong. Try again.";
-      statusEl.classList.add("updates-status-error");
-    }
-  } finally {
-    if (joinBtn) {
-      joinBtn.disabled = false;
-      joinBtn.textContent = "Join the release list";
-    }
-  }
-}
-
-function bindUpdatesSignupListeners() {
-  if (updatesSignupListenersBound) return;
-  updatesSignupListenersBound = true;
-
-  document.getElementById("btnUpdatesSkip")?.addEventListener("click", async () => {
-    try {
-      setUpdatesSignupStatus("skipped");
-      await advanceFromUpdatesSignup();
-    } catch (err) {
-      setStatus(err.message, "updatesStatus");
-    }
-  });
-
-  document.getElementById("btnUpdatesContinue")?.addEventListener("click", async () => {
-    try {
-      await advanceFromUpdatesSignup();
-    } catch (err) {
-      setStatus(err.message, "updatesStatus");
-    }
-  });
-
-  document.getElementById("btnUpdatesJoin")?.addEventListener("click", () => {
-    handleUpdatesJoin();
-  });
-
-  document.getElementById("updatesSuccessDismiss")?.addEventListener("click", async () => {
-    hideUpdatesSuccessToast();
-    try {
-      await advanceFromUpdatesSignup();
-    } catch (err) {
-      setStatus(err.message, "updatesStatus");
-    }
-  });
-}
-
-function populateUpdatesStateSelect() {
-  const select = document.getElementById("updatesState");
-  if (!select || select.options.length > 1) return;
-  US_STATES.forEach(([abbr, name]) => {
-    const opt = document.createElement("option");
-    opt.value = abbr;
-    opt.textContent = name;
-    select.appendChild(opt);
-  });
-}
-
-function renderUpdatesSignupStep() {
-  populateUpdatesStateSelect();
-  const subscribed = getUpdatesSignupStatus() === "subscribed";
-  const form = document.getElementById("updatesSignupForm");
-  const already = document.getElementById("updatesAlreadySubscribed");
-  if (form) form.classList.toggle("hidden", subscribed);
-  if (already) already.classList.toggle("hidden", !subscribed);
-  const tourOptIn = document.getElementById("updatesTourOptIn");
-  const locationRow = document.getElementById("updatesLocationRow");
-  const toggleLocation = () => {
-    if (locationRow) locationRow.classList.toggle("hidden", !tourOptIn?.checked);
-  };
-  if (tourOptIn && !tourOptIn.dataset.bound) {
-    tourOptIn.dataset.bound = "1";
-    tourOptIn.addEventListener("change", toggleLocation);
-  }
-  toggleLocation();
-}
-
-async function advanceFromUpdatesSignup() {
-  await OSB.advancePhase("name_bar");
-  await initSetup();
-}
-
 function setStatus(msg, id = "status") {
   const el = document.getElementById(id);
   if (el) el.textContent = msg;
+}
+
+function showCountBanner(message, variant = "info") {
+  const el = document.getElementById("countBanner");
+  if (!el) {
+    setStatus(message);
+    return;
+  }
+  el.className = `count-banner count-banner--${variant}`;
+  el.textContent = message;
+  el.classList.remove("hidden");
+  if (variant === "error") {
+    el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
+function hideCountBanner() {
+  document.getElementById("countBanner")?.classList.add("hidden");
+}
+
+function showProcessOverlay(title, sub) {
+  const overlay = document.getElementById("processOverlay");
+  if (!overlay) return;
+  const titleEl = document.getElementById("processOverlayTitle");
+  const subEl = document.getElementById("processOverlaySub");
+  if (titleEl) titleEl.textContent = title || "Running inventory math…";
+  if (subEl) subEl.textContent = sub || "Locking your cycle and opening home base.";
+  overlay.classList.remove("hidden");
+}
+
+function hideProcessOverlay() {
+  document.getElementById("processOverlay")?.classList.add("hidden");
 }
 
 function sortedStations() {
   return [...barState.stations].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
+function sortedStationsFor(bar = barState) {
+  return [...(bar?.stations || [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
+
 function allBottles() {
   return sortedStations().flatMap((s) =>
     (s.bottles || []).map((b) => ({ ...b, stationId: s.id, stationName: s.name }))
   );
+}
+
+function allBottlesForReview() {
+  const bars = walkReviewBars.length > 1 ? walkReviewBars : barState ? [barState] : [];
+  return bars.flatMap((bar) =>
+    sortedStationsFor(bar).flatMap((s) =>
+      (s.bottles || []).map((b) => ({
+        ...b,
+        stationId: s.id,
+        stationName: s.name,
+        barId: bar.id,
+        barName: bar.name?.trim() || "Bar",
+      }))
+    )
+  );
+}
+
+async function refreshWalkReviewBars() {
+  const listed = await OSB.listBars();
+  const summaries = listed.bars || [];
+  if (summaries.length <= 1) {
+    walkReviewBars = barState ? [barState] : [];
+    return;
+  }
+  const currentId = barState?.id;
+  walkReviewBars = [];
+  for (const summary of summaries) {
+    walkReviewBars.push(normalizeBar(await OSB.getBar(false, summary.id)));
+  }
+  if (currentId) {
+    barState = walkReviewBars.find((b) => b.id === currentId) || walkReviewBars[0];
+  }
+}
+
+async function withBarContext(barId, fn) {
+  if (!barId || barState?.id === barId) return fn();
+  await OSB.selectSetupBar(barId);
+  barState = normalizeBar(await OSB.getBar(false, barId));
+  try {
+    return await fn();
+  } finally {
+    await refreshWalkReviewBars();
+    if (barState?.id) await OSB.selectSetupBar(barState.id);
+  }
 }
 
 function bottleCount() {
@@ -918,7 +899,8 @@ function stationIdsInCountScope(stationLabel) {
 }
 
 function walkUnverifiedCount() {
-  return allBottles().filter((b) => !b.size_verified).length;
+  const bottles = walkReviewBars.length > 1 ? allBottlesForReview() : allBottles();
+  return bottles.filter((b) => !b.size_verified).length;
 }
 
 function walkReviewIsComplete() {
@@ -982,10 +964,15 @@ function setReviewPath(path) {
 
 function renderWalkReview() {
   const body = document.getElementById("walkReviewBody");
+  const barHead = document.getElementById("walkColBarHead");
   if (!body) return;
-  const bottles = allBottles();
+  const multi = walkReviewBars.length > 1;
+  barHead?.classList.toggle("hidden", !multi);
+
+  const bottles = multi ? allBottlesForReview() : allBottles();
+  const colSpan = multi ? 7 : 6;
   if (!bottles.length) {
-    body.innerHTML = `<tr><td colspan="6" class="bottle-empty">Upload notes to populate this table.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="${colSpan}" class="bottle-empty">Upload notes to populate this table.</td></tr>`;
     updateWalkReviewProgress();
     return;
   }
@@ -1006,19 +993,34 @@ function renderWalkReview() {
         : escapeHtml(raw);
       const unverified = !b.size_verified ? " size-unverified" : "";
       const flaggedCls = flags.length ? " row-flagged" : "";
+      const barCell = multi
+        ? `<td class="walk-col-bar">${escapeHtml(b.barName || "Bar")}</td>`
+        : "";
+      const barAttr = b.barId ? ` data-bar="${b.barId}"` : "";
+      const stationOpts = multi
+        ? stationOptionsForBar(b.barId, b.stationId)
+        : stationOptions(b.stationId);
       return `
-        <tr class="${unverified}${flaggedCls}" data-bottle="${b.id}" data-station="${b.stationId}">
+        <tr class="${unverified}${flaggedCls}" data-bottle="${b.id}" data-station="${b.stationId}"${barAttr}>
+          ${barCell}
           <td class="raw-heard">${rawCell}</td>
-          <td><input type="text" class="review-name" value="${escapeHtml(b.name)}" data-bottle="${b.id}" data-station="${b.stationId}" /></td>
-          <td><select class="review-station" data-bottle="${b.id}" data-station="${b.stationId}">${stationOptions(b.stationId)}</select></td>
-          <td><select class="review-size" data-bottle="${b.id}" data-station="${b.stationId}">${sizeOptions(b.size || "750ml")}</select></td>
-          <td class="size-verified-cell"><input type="checkbox" class="review-verified" data-bottle="${b.id}" data-station="${b.stationId}" ${b.size_verified ? "checked" : ""} title="Size confirmed" /></td>
-          <td><button type="button" class="row-delete" data-del-review="${b.id}" data-station="${b.stationId}" title="Remove row">×</button></td>
+          <td><input type="text" class="review-name" value="${escapeHtml(b.name)}" data-bottle="${b.id}" data-station="${b.stationId}"${barAttr} /></td>
+          <td><select class="review-station" data-bottle="${b.id}" data-station="${b.stationId}"${barAttr}>${stationOpts}</select></td>
+          <td><select class="review-size" data-bottle="${b.id}" data-station="${b.stationId}"${barAttr}>${sizeOptions(b.size || "750ml")}</select></td>
+          <td class="size-verified-cell"><input type="checkbox" class="review-verified" data-bottle="${b.id}" data-station="${b.stationId}"${barAttr} ${b.size_verified ? "checked" : ""} title="Size confirmed" /></td>
+          <td><button type="button" class="row-delete" data-del-review="${b.id}" data-station="${b.stationId}"${barAttr} title="Remove row">×</button></td>
         </tr>
       `;
     })
     .join("");
   updateWalkReviewProgress();
+}
+
+function stationOptionsForBar(barId, selectedId) {
+  const bar = walkReviewBars.find((b) => b.id === barId) || barState;
+  return sortedStationsFor(bar)
+    .map((s) => `<option value="${s.id}"${s.id === selectedId ? " selected" : ""}>${escapeHtml(s.name)}</option>`)
+    .join("");
 }
 
 async function setWalkReviewStatus(status) {
@@ -1147,10 +1149,15 @@ function bindWalkReviewListeners() {
   });
 
   document.getElementById("btnMarkSizesReviewed")?.addEventListener("click", async () => {
-    allBottles().forEach((b) => {
-      const bottle = findBottleRecord(b.id, b.stationId);
-      if (bottle) bottle.size_verified = true;
-    });
+    const rows = walkReviewBars.length > 1 ? allBottlesForReview() : allBottles();
+    for (const b of rows) {
+      await withBarContext(b.barId, async () => {
+        const bottle = findBottleRecord(b.id, b.stationId);
+        if (bottle) bottle.size_verified = true;
+        await persistBar();
+      });
+    }
+    await refreshWalkReviewBars();
     await setWalkReviewStatus("complete");
     renderWalkReview();
     setStatus("Sizes marked reviewed — you can continue when ready.");
@@ -1169,33 +1176,37 @@ function bindWalkReviewListeners() {
     const t = e.target;
     const bottleId = t.dataset.bottle;
     const stationId = t.dataset.station;
+    const barId = t.dataset.bar || barState?.id;
     if (!bottleId || !stationId) return;
 
-    if (t.classList.contains("review-station")) {
-      moveBottle(bottleId, stationId, t.value);
+    await withBarContext(barId, async () => {
+      if (t.classList.contains("review-station")) {
+        moveBottle(bottleId, stationId, t.value);
+        await persistBar();
+        await refreshWalkReviewBars();
+        renderWalkReview();
+        return;
+      }
+
+      const bottle = findBottleRecord(bottleId, stationId);
+      if (!bottle) return;
+
+      if (t.classList.contains("review-name")) bottle.name = t.value.trim() || bottle.name;
+      if (t.classList.contains("review-size")) {
+        bottle.size = t.value;
+        bottle.size_verified = true;
+      }
+      if (t.classList.contains("review-verified")) bottle.size_verified = t.checked;
+      if (bottle.parse_flags?.length) {
+        bottle.parse_flags = [];
+        const row = t.closest("tr");
+        row?.classList.remove("row-flagged");
+        row?.querySelector(".parse-flag")?.remove();
+      }
+
       await persistBar();
-      renderWalkReview();
-      return;
-    }
-
-    const bottle = findBottleRecord(bottleId, stationId);
-    if (!bottle) return;
-
-    if (t.classList.contains("review-name")) bottle.name = t.value.trim() || bottle.name;
-    if (t.classList.contains("review-size")) {
-      bottle.size = t.value;
-      bottle.size_verified = true;
-    }
-    if (t.classList.contains("review-verified")) bottle.size_verified = t.checked;
-    // Any edit resolves the parse flag — the operator has looked at this row.
-    if (bottle.parse_flags?.length) {
-      bottle.parse_flags = [];
-      const row = t.closest("tr");
-      row?.classList.remove("row-flagged");
-      row?.querySelector(".parse-flag")?.remove();
-    }
-
-    await persistBar();
+    });
+    await refreshWalkReviewBars();
     if (walkUnverifiedCount() === 0 && barState.setup?.walk_review_status === "pending") {
       await setWalkReviewStatus("complete");
     } else {
@@ -1203,16 +1214,22 @@ function bindWalkReviewListeners() {
       updateWalkContinueButton();
     }
     const row = t.closest("tr");
-    if (row) row.classList.toggle("size-unverified", !bottle.size_verified);
+    if (row && t.classList.contains("review-verified")) {
+      row.classList.toggle("size-unverified", !t.checked);
+    }
   });
 
   document.getElementById("walkReviewTable")?.addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-del-review]");
     if (!btn) return;
-    const station = barState.stations.find((s) => s.id === btn.dataset.station);
-    if (!station?.bottles) return;
-    station.bottles = station.bottles.filter((b) => b.id !== btn.dataset.delReview);
-    await persistBar();
+    const barId = btn.dataset.bar || barState?.id;
+    await withBarContext(barId, async () => {
+      const station = barState.stations.find((s) => s.id === btn.dataset.station);
+      if (!station?.bottles) return;
+      station.bottles = station.bottles.filter((b) => b.id !== btn.dataset.delReview);
+      await persistBar();
+    });
+    await refreshWalkReviewBars();
     renderWalkReview();
     updateWalkSummary();
     updateWalkContinueButton();
@@ -1550,6 +1567,11 @@ function parseCountText(rawText) {
 }
 
 const COUNT_MATCH_MIN_SCORE = 85;
+/** Minor misses are OK — finish unlocks at this many unresolved gaps or fewer. */
+const COUNT_GAP_TOLERANCE = 2;
+const WALK_SINGLE_BAR_WARN_BOTTLES = 95;
+let countDismissedSurpriseKeys = new Set();
+let countShowFullMap = false;
 
 function findSameNameOnOtherStations(bottle) {
   const spoken = walkCleanName(bottle.name || "");
@@ -1592,13 +1614,54 @@ function findCountBottleMatchScored(spokenName, stationLabel) {
     }
   }
 
-  if (bestInStation && bestInStationScore >= COUNT_MATCH_MIN_SCORE) {
-    return { bottle: bestInStation, score: bestInStationScore, inStation: true };
+  if (stationId) {
+    if (bestInStation && bestInStationScore >= COUNT_MATCH_MIN_SCORE) {
+      return { bottle: bestInStation, score: bestInStationScore, inStation: true };
+    }
+    return null;
   }
   if (best && bestScore >= COUNT_MATCH_MIN_SCORE) {
     return { bottle: best, score: bestScore, inStation: false };
   }
   return null;
+}
+
+function countEntryKey(entry) {
+  return `${entry.station || ""}|${normalizeCountName(entry.name)}|${entry.level ?? ""}`;
+}
+
+function getActiveCountParsed() {
+  return (lastCountParsed || []).filter((e) => !countDismissedSurpriseKeys.has(countEntryKey(e)));
+}
+
+function countUnresolvedGaps(report) {
+  if (!report) return 0;
+  return (report.surprises?.length || 0) + (report.notInCount?.length || 0);
+}
+
+function canFinishCount(report) {
+  if (!countParsed) return false;
+  if (!report?.hasIssues) return true;
+  return countUnresolvedGaps(report) <= COUNT_GAP_TOLERANCE;
+}
+
+function buildCountDiagnosis(report) {
+  const mapTotal = allBottles().length;
+  const missing = report?.notInCount?.length || 0;
+  if (missing < 10 || mapTotal < 12) return null;
+  const pct = mapTotal ? Math.round((missing / mapTotal) * 100) : 0;
+  if (missing > 25 || pct >= 35) {
+    return `Your map has ${mapTotal} bottles but only ${report.matched?.length || 0} matched in the count. That usually means the wrong walk file (multiple bars pasted into one bar) or the wrong count file. Use one walk + one count per bar.`;
+  }
+  return null;
+}
+
+function removeBottleFromMap(bottleId, stationId) {
+  const station = barState.stations.find((s) => s.id === stationId);
+  if (!station?.bottles) return false;
+  const before = station.bottles.length;
+  station.bottles = station.bottles.filter((b) => b.id !== bottleId);
+  return station.bottles.length < before;
 }
 
 function reconcileCountToMap(parsedEntries) {
@@ -1652,6 +1715,7 @@ function reconcileCountToMap(parsedEntries) {
   for (const b of allBottles()) {
     const key = `${b.stationId}:${b.id}`;
     if (mapUsed.has(key)) continue;
+    if (b.count_matched && b.count_variance === "matched") continue;
     if (countedStationIds.size && !countedStationIds.has(b.stationId)) continue;
     const coachingHint = buildMissingFromCountCoaching(b);
     notInCount.push({
@@ -1746,6 +1810,8 @@ function resetCoachingClientState() {
   countParsed = false;
   lastCountReconcile = null;
   lastCountParsed = [];
+  countDismissedSurpriseKeys = new Set();
+  countShowFullMap = false;
 }
 
 function clearCountReconcileReport() {
@@ -1770,23 +1836,139 @@ function resetCountForReupload() {
 
 function updateFirstCountDoneButton() {
   const btn = document.getElementById("btnFirstCountDone");
-  if (!btn) return;
-  if (!countParsed) {
-    btn.disabled = true;
-    btn.textContent = "Upload your count first";
+  const navBtn = document.getElementById("btnTallyFinish");
+  const lead = document.getElementById("countTallyLead");
+  const navHint = document.getElementById("countNavHint");
+
+  function apply(label, enabled, hint, leadText) {
+    if (btn) {
+      btn.disabled = !enabled;
+      btn.textContent = label;
+    }
+    if (navBtn) {
+      navBtn.disabled = !enabled;
+      navBtn.textContent = enabled ? "Open admin →" : label;
+    }
+    if (navHint && hint) navHint.textContent = hint;
+    if (lead && leadText) lead.textContent = leadText;
+  }
+
+  const hasText = Boolean(getCountNotesText());
+
+  if (!countParsed && !hasText) {
+    apply(
+      "Process your count first",
+      false,
+      "Paste count → Process → admin opens automatically.",
+      "Paste your count above, then click Process."
+    );
     return;
   }
+
+  if (!countParsed && hasText) {
+    apply(
+      "Process & open admin",
+      true,
+      "Count pasted — click Process to finish.",
+      "Click Process to match your count and open admin."
+    );
+    return;
+  }
+
+  const matched = lastCountReconcile?.matched?.length ?? 0;
+
   if (lastCountReconcile?.hasIssues) {
-    const gaps =
-      (lastCountReconcile.surprises?.length || 0) + (lastCountReconcile.notInCount?.length || 0);
-    btn.disabled = true;
-    btn.textContent = gaps
-      ? `Reconcile ${gaps} gap${gaps === 1 ? "" : "s"} first`
-      : "Reconcile gaps first";
+    const gaps = countUnresolvedGaps(lastCountReconcile);
+    if (!canFinishCount(lastCountReconcile)) {
+      apply(
+        `Fix ${gaps} gap${gaps === 1 ? "" : "s"} first`,
+        false,
+        `Fix ${gaps} gap${gaps === 1 ? "" : "s"} in the table, then Process again.`,
+        `${matched} matched — fix gaps below, then click Open admin.`
+      );
+      return;
+    }
+    apply(
+      gaps > 0 ? `Open admin (${gaps} minor gap${gaps === 1 ? "" : "s"})` : "Open admin →",
+      true,
+      gaps > 0 ? `${gaps} minor gap${gaps === 1 ? "" : "s"} noted — open admin when ready.` : "Golden — click Open admin or Process again.",
+      gaps > 0
+        ? `${matched} matched · ${gaps} minor gap${gaps === 1 ? "" : "s"} — ready to lock.`
+        : `Golden — ${matched} matched. Click Open admin to lock your baseline.`
+    );
     return;
   }
-  btn.disabled = false;
-  btn.textContent = "First count complete — open home base";
+
+  apply(
+    "Open admin →",
+    true,
+    "Golden — admin opens on Process automatically.",
+    `Golden — ${matched} matched. Click Open admin to lock your baseline.`
+  );
+}
+
+async function runInventoryPipeline() {
+  if (!countParsed) {
+    showCountBanner("Paste your count in the box first, then click Process.", "error");
+    setStatus("Paste your count, then click Process.");
+    document.getElementById("btnProcessCount")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  if (lastCountReconcile?.hasIssues && !canFinishCount(lastCountReconcile)) {
+    const gaps = countUnresolvedGaps(lastCountReconcile);
+    const msg = `${gaps} gap${gaps === 1 ? "" : "s"} blocking admin — fix the table below (up to ${COUNT_GAP_TOLERANCE} minor misses OK). Wrong count file? Use the Twin Well test kit for a golden run.`;
+    showCountBanner(msg, "error");
+    setStatus(msg);
+    document.getElementById("countReviewTable")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  const processBtn = document.getElementById("btnProcessCount");
+  const tallyBtn = document.getElementById("btnTallyFinish");
+  const finishBtn = document.getElementById("btnFirstCountDone");
+  if (processBtn) {
+    processBtn.disabled = true;
+    processBtn.textContent = "Processing…";
+  }
+  if (tallyBtn) tallyBtn.disabled = true;
+  if (finishBtn) finishBtn.disabled = true;
+
+  showProcessOverlay("Running inventory math…", "Locking your cycle — spreadsheets and analytics loading next.");
+  showCountBanner("Processing — opening admin panel…", "success");
+
+  try {
+    await persistBar();
+    const result = await OSB.processInventoryCycle();
+    const skus = result.analytics?.bottle_count ?? result.in_house_count ?? 0;
+    const cycleNum = result.cycle_number ?? 1;
+    const movers = result.week_over_week?.length || result.velocity?.length || 0;
+    const msg =
+      (result.cycles_total || 0) >= 2
+        ? `Cycle ${cycleNum} processed — ${skus} in stock · ${movers} week-over-week changes. Opening admin…`
+        : `Cycle ${cycleNum} locked — ${skus} SKUs · spreadsheets, analytics, and in-house inventory ready. Opening admin…`;
+    showProcessOverlay("Cycle locked", msg);
+    setStatus(msg);
+    window.setTimeout(() => {
+      window.location.replace("/home");
+    }, 500);
+  } catch (e) {
+    hideProcessOverlay();
+    const msg = e?.message || "Could not process cycle — try again.";
+    showCountBanner(msg, "error");
+    setStatus(msg);
+    window.alert(`Inventory cycle could not close:\n\n${msg}`);
+    if (processBtn) {
+      processBtn.disabled = false;
+      processBtn.textContent = "Process & open admin";
+    }
+    updateFirstCountDoneButton();
+    updateCountStickyBar();
+    throw e;
+  }
+}
+
+async function finishFirstCount() {
+  await handleProcessCountClick();
 }
 
 const COUNT_COMPARISON_HEADERS = [
@@ -2042,10 +2224,12 @@ function renderCountReconcileReport(report) {
   const actionCount = report.surprises.length + report.notInCount.length;
   const mapTotal = allBottles().length;
   const stationsCounted = report.countedStationIds?.length || 0;
+  const diagnosis = buildCountDiagnosis(report);
 
   let html = `
     <div class="count-reconcile-alert">
-      <p class="count-reconcile-head"><strong>Not golden yet — reconciliation report</strong></p>
+      <p class="count-reconcile-head"><strong>Fix gaps below — then finish</strong></p>
+      ${diagnosis ? `<p class="count-diagnosis-banner">${escapeHtml(diagnosis)}</p>` : ""}
       <div class="coaching-reconcile-trio">
         <div class="coaching-reconcile-col">
           <p class="coaching-reconcile-label">What we have</p>
@@ -2057,12 +2241,12 @@ function renderCountReconcileReport(report) {
         </div>
         <div class="coaching-reconcile-col coaching-reconcile-col--need">
           <p class="coaching-reconcile-label">What we need</p>
-          <p><strong>${actionCount} gap${actionCount === 1 ? "" : "s"}</strong> before baseline locks — fix the map in Review, edit levels below, or re-upload your count.</p>
+          <p><strong>${actionCount} gap${actionCount === 1 ? "" : "s"}</strong> — use the <strong>Fix</strong> column in the table below. Up to ${COUNT_GAP_TOLERANCE} minor misses can stay and you can still finish.</p>
         </div>
       </div>
       <div class="count-reconcile-actions">
-        <button type="button" class="btn btn-secondary btn-sm" id="btnGoReconcileMap">Go reconcile in Review →</button>
         <button type="button" class="btn btn-ghost btn-sm" id="btnRecountInline">Edit &amp; re-upload count</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="btnGoReconcileMap">Open full map editor →</button>
       </div>
       ${countComparisonActionsHtml()}
     </div>`;
@@ -2114,8 +2298,8 @@ function renderCountReconcileReport(report) {
   }
 
   html += `<p class="count-reconcile-foot">
-    <strong>Your move:</strong> Download the line-by-line comparison, fix gaps on the floor, then come back.
-    Stations you didn't count yet won't show missing bottles — only the sections you walked.
+    <strong>Your move:</strong> Fix each row in the table — set a level, remove a bottle that's gone, or add one you missed.
+    Up to ${COUNT_GAP_TOLERANCE} small gaps can remain when you finish.
   </p>`;
   el.classList.remove("hidden");
   el.innerHTML = html;
@@ -2123,24 +2307,18 @@ function renderCountReconcileReport(report) {
   updateFirstCountDoneButton();
 }
 
-function parseCountNotes(text) {
-  const bottles = allBottles();
+function applyCountReconcileToBottles(reconcile) {
   const matchedKeys = new Set();
   let matched = 0;
+  const bottles = allBottles();
 
   for (const b of bottles) {
     const bottle = findBottleRecord(b.id, b.stationId);
-    if (bottle) {
+    if (bottle && !bottle.count_manual_resolved) {
       bottle.count_matched = false;
       bottle.count_variance = null;
     }
   }
-
-  const parsed = parseCountText(text);
-  lastCountParsed = parsed;
-  const reconcile = reconcileCountToMap(parsed);
-  reconcile.comparisonRows = buildCountComparisonRows(reconcile);
-  renderCountReconcileReport(reconcile);
 
   for (const { bottle: hit, level } of reconcile.matched) {
     const bottle = findBottleRecord(hit.id, hit.stationId);
@@ -2149,6 +2327,7 @@ function parseCountNotes(text) {
     bottle.current_level = level;
     bottle.count_matched = true;
     bottle.count_variance = "matched";
+    bottle.count_manual_resolved = false;
     if (!matchedKeys.has(key)) {
       matchedKeys.add(key);
       matched += 1;
@@ -2160,10 +2339,75 @@ function parseCountNotes(text) {
     if (bottle) bottle.count_variance = "missing";
   }
 
+  return { matched, matchedKeys };
+}
+
+async function refreshCountReconcileAfterFix() {
+  const parsed = getActiveCountParsed();
+  const reconcile = reconcileCountToMap(parsed);
+  reconcile.comparisonRows = buildCountComparisonRows(reconcile);
+  applyCountReconcileToBottles(reconcile);
+  renderCountReconcileReport(reconcile);
+  renderCountReview();
+  updateCountSummary();
+  updateFirstCountDoneButton();
+  await persistBar();
+}
+
+function addBottleFromCountSurprise(surprise) {
+  const entry = surprise.entry;
+  const sid = entry.station ? stationIdByName(entry.station) : null;
+  const station = sid ? barState.stations.find((s) => s.id === sid) : sortedStations()[0];
+  if (!station) return null;
+  if (!station.bottles) station.bottles = [];
+  const bottle = {
+    id: uid(),
+    name: walkTitleCase(countCleanName(entry.name)),
+    raw_heard: entry.name,
+    category: guessCategory(entry.name),
+    size: /beer|corona|modelo|heineken|bud|claw/i.test(entry.name) ? "12oz" : "750ml",
+    size_verified: true,
+    par_level: 1.0,
+    current_level: entry.level ?? 1.0,
+    count_matched: true,
+    count_variance: "matched",
+    count_manual_resolved: true,
+  };
+  station.bottles.push(bottle);
+  countDismissedSurpriseKeys.add(countEntryKey(entry));
+  return bottle;
+}
+
+function parseCountNotes(text) {
+  const matchedKeys = new Set();
+  let matched = 0;
+
+  countDismissedSurpriseKeys = new Set();
+  countShowFullMap = false;
+
+  for (const b of allBottles()) {
+    const bottle = findBottleRecord(b.id, b.stationId);
+    if (bottle) {
+      bottle.count_matched = false;
+      bottle.count_variance = null;
+      bottle.count_manual_resolved = false;
+    }
+  }
+
+  const parsed = parseCountText(text);
+  lastCountParsed = parsed;
+  const reconcile = reconcileCountToMap(getActiveCountParsed());
+  reconcile.comparisonRows = buildCountComparisonRows(reconcile);
+  renderCountReconcileReport(reconcile);
+
+  const applied = applyCountReconcileToBottles(reconcile);
+  matched = applied.matched;
+  for (const k of applied.matchedKeys) matchedKeys.add(k);
+
   for (const line of text.split(/\n+/).map((l) => l.trim()).filter(Boolean)) {
     const level = parseCountLevel(line);
     if (level === null) continue;
-    for (const b of bottles) {
+    for (const b of allBottles()) {
       if (!bottleNameInLine(line, b.name)) continue;
       const bottle = findBottleRecord(b.id, b.stationId);
       if (!bottle) continue;
@@ -2182,13 +2426,14 @@ function parseCountNotes(text) {
 
 function setCountView(parsed) {
   countParsed = parsed;
-  document.getElementById("countUnparsed")?.classList.toggle("hidden", parsed);
+  // Keep count entry + Process button visible — hiding caused "dead button" reports.
   document.getElementById("countParsed")?.classList.toggle("hidden", !parsed);
   if (parsed) {
     updateCountSummary();
     renderCountReview();
   }
   updateFirstCountDoneButton();
+  updateCountStickyBar();
 }
 
 function updateCountSummary() {
@@ -2208,21 +2453,106 @@ function updateCountSummary() {
   if (r?.hasIssues) {
     text += ` — ${r.surprises.length} surprise(s), ${r.notInCount.length} missing. Reconcile before finishing.`;
   } else if (!countParsed) {
-    text += ". Paste notes, then click Parse my count (or pause typing — we parse automatically).";
+    text += ". Paste notes, then click Process.";
   } else {
     text += ". Review levels below.";
   }
   el.textContent = text;
 }
 
+function countGapFixButtonsForMissing(b) {
+  const level = b.current_level ?? 1;
+  return `
+    <div class="count-gap-fix-actions">
+      <input type="number" class="count-level-input count-gap-level" step="0.1" min="0" max="99" value="${level}" data-bottle="${b.id}" data-station="${b.stationId}" aria-label="Level for ${escapeHtml(b.name)}" />
+      <button type="button" class="btn btn-secondary btn-sm btn-count-fix" data-count-fix="mark-counted" data-bottle="${b.id}" data-station="${b.stationId}">Counted</button>
+      <button type="button" class="btn btn-ghost btn-sm btn-count-fix" data-count-fix="remove-map" data-bottle="${b.id}" data-station="${b.stationId}">Not on shelf</button>
+    </div>`;
+}
+
+function countGapFixButtonsForSurprise(s, idx) {
+  if (s.reason === "no_level") {
+    return `<span class="count-gap-hint">Re-upload with a level (e.g. "one" or "point five").</span>`;
+  }
+  if (s.reason === "not_on_map") {
+    return `
+      <div class="count-gap-fix-actions">
+        <button type="button" class="btn btn-secondary btn-sm btn-count-fix" data-count-fix="add-surprise" data-surprise-idx="${idx}">Add to map</button>
+        <button type="button" class="btn btn-ghost btn-sm btn-count-fix" data-count-fix="dismiss-surprise" data-surprise-idx="${idx}">Misheard — ignore</button>
+      </div>`;
+  }
+  if (s.reason === "extra_on_shelf") {
+    return `
+      <div class="count-gap-fix-actions">
+        <button type="button" class="btn btn-secondary btn-sm btn-count-fix" data-count-fix="add-surprise" data-surprise-idx="${idx}">Add duplicate</button>
+        <button type="button" class="btn btn-ghost btn-sm btn-count-fix" data-count-fix="dismiss-surprise" data-surprise-idx="${idx}">Ignore count</button>
+      </div>`;
+  }
+  return "";
+}
+
 function renderCountReview() {
   const body = document.getElementById("countReviewBody");
+  const toolbar = document.getElementById("countReviewToolbar");
   if (!body) return;
   const bottles = allBottles();
+  const reconcile = lastCountReconcile;
+  const hasIssues = reconcile?.hasIssues;
+  const showAll = !hasIssues || countShowFullMap;
+
+  if (toolbar) {
+    toolbar.classList.toggle("hidden", !hasIssues);
+    const toggleBtn = toolbar.querySelector("#btnToggleCountMap");
+    if (toggleBtn) {
+      toggleBtn.textContent = showAll ? "Show gaps only" : "Show full map";
+    }
+  }
+
   if (!bottles.length) {
-    body.innerHTML = `<tr><td colspan="5" class="bottle-empty">No bottles on your map — go back to Review.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="6" class="bottle-empty">No bottles on your map — go back to Review.</td></tr>`;
     return;
   }
+
+  if (hasIssues && !showAll) {
+    const rows = [];
+    for (let i = 0; i < (reconcile.surprises || []).length; i++) {
+      const s = reconcile.surprises[i];
+      const status =
+        s.reason === "not_on_map"
+          ? '<span class="report-flag">heard, not on map</span>'
+          : s.reason === "extra_on_shelf"
+            ? '<span class="report-warn">extra count</span>'
+            : '<span class="report-warn">no level</span>';
+      rows.push(`
+        <tr class="count-gap-row" data-gap="surprise" data-surprise-idx="${i}">
+          <td>${escapeHtml(s.entry.name)}</td>
+          <td>${escapeHtml(s.entry.station || "—")}</td>
+          <td>—</td>
+          <td>${s.entry.level ?? "—"}</td>
+          <td>${status}</td>
+          <td>${countGapFixButtonsForSurprise(s, i)}</td>
+        </tr>`);
+    }
+    for (const m of reconcile.notInCount || []) {
+      const b = m.bottle;
+      rows.push(`
+        <tr class="count-gap-row" data-gap="missing" data-bottle="${b.id}" data-station="${b.stationId}">
+          <td>${escapeHtml(b.name)}</td>
+          <td>${escapeHtml(b.stationName)}</td>
+          <td>${b.par_level ?? 1}</td>
+          <td>—</td>
+          <td><span class="report-flag">not in count</span></td>
+          <td>${countGapFixButtonsForMissing(b)}</td>
+        </tr>`);
+    }
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="6" class="bottle-empty">No gaps — you're good to finish.</td></tr>`;
+      return;
+    }
+    body.innerHTML = rows.join("");
+    return;
+  }
+
   body.innerHTML = bottles
     .map((b) => {
       const level = b.current_level ?? 1;
@@ -2234,6 +2564,7 @@ function renderCountReview() {
       } else {
         status = '<span class="report-warn">set level</span>';
       }
+      const fixCell = hasIssues && b.count_variance === "missing" ? countGapFixButtonsForMissing(b) : "";
       return `
         <tr data-bottle="${b.id}" data-station="${b.stationId}">
           <td>${escapeHtml(b.name)}</td>
@@ -2241,30 +2572,56 @@ function renderCountReview() {
           <td>${b.par_level ?? 1}</td>
           <td><input type="number" class="count-level-input" step="0.1" min="0" max="99" value="${level}" data-bottle="${b.id}" data-station="${b.stationId}" /></td>
           <td>${status}</td>
+          <td>${fixCell}</td>
         </tr>`;
     })
     .join("");
 }
 
-async function processCountNotes(text) {
+async function processCountNotes(text, { closeCycle = true } = {}) {
+  hideCountBanner();
   if (!text?.trim()) {
-    setStatus(`Paste your count below, or choose a ${WALK_NOTES_ACCEPT_LABEL} file.`);
-    return;
+    showCountBanner("Paste your count in the box first, then click Process.", "error");
+    setStatus(`Paste your count below, then click Process.`);
+    return { ok: false, reason: "empty" };
   }
   const { matched, reconcile } = parseCountNotes(text);
   await OSB.uploadCountNotes(text);
   await persistBar();
   lastParsedCountText = text.trim();
   setCountView(true);
-  if (reconcile?.hasIssues) {
-    setStatus(
-      `Reconcile needed — ${reconcile.surprises.length} surprise(s), ${reconcile.notInCount.length} on map but not counted. See report above.`
+
+  if (reconcile?.hasIssues && !canFinishCount(reconcile)) {
+    const gaps = countUnresolvedGaps(reconcile);
+    const msg = `${gaps} gap${gaps === 1 ? "" : "s"} — ${reconcile.surprises.length} surprise(s), ${reconcile.notInCount.length} missing. Fix the table below, then Process again.`;
+    hideProcessOverlay();
+    showCountBanner(msg, "error");
+    setStatus(`Matched ${matched} — ${reconcile.surprises.length} surprise(s), ${reconcile.notInCount.length} missing. Fix gaps, then Process again.`);
+    document.getElementById("countReviewTable")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    updateCountStickyBar();
+    window.alert(
+      `Count has ${gaps} gap${gaps === 1 ? "" : "s"} — admin cannot open yet.\n\n` +
+        `Matched ${matched} of ${allBottles().length} bottles.\n` +
+        `Fix gaps in the table below, or paste the correct count file from the test kit.\n\n` +
+        `(Wrong walk + count combo is the #1 cause.)`
     );
-  } else if (matched) {
-    setStatus(`Matched ${matched} bottles from your count — review levels below.`);
-  } else {
-    setStatus("Notes saved — set levels manually in the table below.");
+    return { ok: false, reason: "gaps", gaps };
   }
+
+  if (!closeCycle) {
+    if (matched) {
+      showCountBanner(`Matched ${matched} bottles — click Open admin when ready.`, "info");
+      setStatus(`Matched ${matched} bottles — click Process when ready to lock the cycle.`);
+    }
+    return { ok: true, preview: true };
+  }
+
+  if (matched) {
+    showCountBanner(`Golden — ${matched} matched. Running inventory math…`, "success");
+    setStatus(`Golden — ${matched} matched. Running inventory math…`);
+  }
+  await runInventoryPipeline();
+  return { ok: true };
 }
 
 async function saveCountDraft() {
@@ -2284,15 +2641,15 @@ async function initCountStep(data) {
   const countNotes = document.getElementById("countNotes");
   const notesText = data.state?.count_notes_text || "";
   if (countNotes) countNotes.value = notesText;
+  setCountEntryOpen(true);
   if (notesText.trim()) {
-    setCountEntryOpen(true);
     const result = parseCountNotes(notesText);
     if (result?.reconcile) renderCountReconcileReport(result.reconcile);
     setCountView(true);
   } else {
-    setCountEntryOpen(false);
     setCountView(false);
   }
+  updateFirstCountDoneButton();
 }
 
 async function switchWalkBar(barId) {
@@ -2303,42 +2660,35 @@ async function switchWalkBar(barId) {
   await initSetup();
 }
 
-function updateWalkBarHeader() {
-  const name = barState.name?.trim() || "Unnamed bar";
-  const nameInput = document.getElementById("walkBarNameInput");
-  const inline = document.getElementById("walkBarNameInline");
-  const counter = document.getElementById("walkBarCounter");
-  const nextBtn = document.getElementById("btnNextWalkBar");
-
-  if (nameInput && document.activeElement !== nameInput) {
-    nameInput.value = name === "Unnamed bar" ? "" : name;
-  }
-  if (inline) inline.textContent = nameInput?.value?.trim() || name || "this bar";
-
-  const idx = allBars.findIndex((b) => b.id === barState.id);
-  if (counter && allBars.length > 0) {
-    counter.textContent = `Bar ${idx + 1} of ${allBars.length}`;
-  }
-  if (nextBtn) {
-    nextBtn.classList.toggle("hidden", allBars.length <= 1);
-  }
-}
-
 async function initWalkStep(data) {
   allBars = data.bars || [];
-  const cfgName = data.config?.bar_name || barState?.name || "";
-  if (cfgName && barState && !barState.name) barState.name = cfgName;
-  updateWalkBarHeader();
 
   const voiceNotes = document.getElementById("voiceNotes");
   if (voiceNotes) voiceNotes.value = data.state?.voice_notes_text || "";
 
   fillManualStationSelect();
-  const hasBottles = bottleCount() > 0;
+  await refreshWalkReviewBars();
+  const hasBottles =
+    walkReviewBars.length > 1
+      ? allBottlesForReview().length > 0
+      : bottleCount() > 0;
   setWalkView(hasBottles);
-  if (hasBottles) updateWalkSummary();
+  if (hasBottles) {
+    renderWalkReview();
+    updateWalkSummary();
+  }
   updateWalkContinueButton();
   bindWalkReviewListeners();
+}
+
+async function loadAllBarsForRename() {
+  const listed = await OSB.listBars();
+  const summaries = listed.bars || [];
+  const bars = [];
+  for (const summary of summaries) {
+    bars.push(normalizeBar(await OSB.getBar(false, summary.id)));
+  }
+  return bars;
 }
 
 async function processWalkNotes(text) {
@@ -2346,19 +2696,143 @@ async function processWalkNotes(text) {
     setStatus(`Paste your walk notes below, or choose a ${WALK_NOTES_ACCEPT_LABEL} file.`);
     return;
   }
-  const added = parseVoiceNotes(text);
+
+  const { bars: barGroups } = parseWalkText(text);
+  walkParsedBarCount = Math.max(1, barGroups.length);
+  let totalAdded = 0;
+  let listed = await OSB.listBars();
+  let registryBars = listed.bars || [];
+  const resumeId = registryBars[0]?.id;
+
+  while (registryBars.length < barGroups.length) {
+    const group = barGroups[registryBars.length];
+    await OSB.createBar(group.label, false);
+    listed = await OSB.listBars();
+    registryBars = listed.bars || [];
+  }
+
+  for (let i = 0; i < barGroups.length; i++) {
+    const group = barGroups[i];
+    const barId = registryBars[i]?.id;
+    if (!barId) continue;
+
+    await OSB.selectSetupBar(barId);
+    barState = normalizeBar(await OSB.getBar(false, barId));
+    barState.name = group.label;
+    barState.stations = [];
+
+    totalAdded += applyWalkEntriesToBar(group.entries);
+
+    if (!barState.setup) barState.setup = {};
+    barState.setup.walk_review_status = "pending";
+    await persistBar({ walk_review_status: "pending" });
+  }
+
+  if (resumeId) {
+    await OSB.selectSetupBar(resumeId);
+    barState = normalizeBar(await OSB.getBar(false, resumeId));
+  }
+  allBars = (await OSB.listBars()).bars || [];
+
   await OSB.uploadVoiceNotes(text);
-  if (!barState.setup) barState.setup = {};
-  barState.setup.walk_review_status = "pending";
-  await persistBar({ walk_review_status: "pending" });
   lastParsedWalkText = text.trim();
+  await refreshWalkReviewBars();
   setWalkView(true);
+  renderWalkReview();
   updateWalkSummary();
-  setStatus(
-    added
-      ? `Parsed ${added} draft rows — review names and sizes before you continue.`
-      : "Notes saved — add bottles manually, then review before you continue."
-  );
+  updateWalkContinueButton();
+  let statusMsg = totalAdded
+    ? `Parsed ${totalAdded} draft rows across ${barGroups.length} bar(s) — review names and sizes before you continue.`
+    : "Notes saved — add bottles manually, then review before you continue.";
+  if (barGroups.length === 1 && totalAdded > WALK_SINGLE_BAR_WARN_BOTTLES) {
+    statusMsg += ` Warning: ${totalAdded} bottles on one bar — did you paste multiple bars into one walk? Split by bar marker (Bar one, Bar two…).`;
+  }
+  setStatus(statusMsg);
+}
+
+async function readWalkFilesFromInput(fileList, { startBarIndex = 1 } = {}) {
+  const files = Array.from(fileList || []);
+  const parts = [];
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (!isAcceptedWalkNotesFile(file)) {
+      const ext = walkNotesExtension(file.name);
+      if (ext === "pdf") {
+        throw new Error("PDF isn't supported — export as Markdown or .txt from your notes app.");
+      }
+      throw new Error(`Unsupported file type. Use ${WALK_NOTES_ACCEPT_LABEL}.`);
+    }
+    const raw = await file.text();
+    const normalized = normalizeUploadedWalkNotes(raw, file.name);
+    const barIndex = startBarIndex + i;
+    parts.push(ensureWalkBarMarker(normalized, file.name, barIndex, files.length));
+  }
+  return parts.join("\n\n");
+}
+
+function getCountFileInput() {
+  const input = document.getElementById("countNotesFile");
+  if (input) input.multiple = true;
+  return input;
+}
+
+function openCountFilePicker(mode = "append") {
+  countFileUploadMode = mode;
+  const input = getCountFileInput();
+  if (!input) return;
+  input.value = "";
+  input.click();
+}
+
+async function readCountFilesFromInput(fileList) {
+  const files = Array.from(fileList || []);
+  const parts = [];
+  for (const file of files) {
+    if (!isAcceptedWalkNotesFile(file)) {
+      const ext = walkNotesExtension(file.name);
+      if (ext === "pdf") {
+        throw new Error("PDF isn't supported — export as Markdown or .txt from your notes app.");
+      }
+      throw new Error(`Unsupported file type. Use ${WALK_NOTES_ACCEPT_LABEL}.`);
+    }
+    const raw = await file.text();
+    parts.push(normalizeUploadedWalkNotes(raw, file.name));
+  }
+  return parts.join("\n\n");
+}
+
+async function ingestCountFiles(fileList, mode = "append") {
+  const countNotes = document.getElementById("countNotes");
+  const existing =
+    mode === "append" && countNotes?.value?.trim() ? countNotes.value.trim() : "";
+  const newText = await readCountFilesFromInput(fileList);
+  const combined = existing ? `${existing}\n\n${newText}` : newText;
+  if (countNotes) countNotes.value = combined;
+  setCountEntryOpen(true);
+  await handleProcessCountClick();
+  const added = Array.from(fileList || []).length;
+  if (added > 1) {
+    setStatus(`Added ${added} count files — merged and parsed. Upload more anytime.`);
+  } else if (existing) {
+    setStatus("Count file added — merged with your previous upload.");
+  }
+}
+
+async function ingestWalkFiles(fileList, mode = "append") {
+  const voiceNotes = document.getElementById("voiceNotes");
+  const existing =
+    mode === "append" && voiceNotes?.value?.trim() ? voiceNotes.value.trim() : "";
+  const startBarIndex = existing ? countParsedWalkBars(existing) + 1 : 1;
+  const newText = await readWalkFilesFromInput(fileList, { startBarIndex });
+  const combined = existing ? `${existing}\n\n${newText}` : newText;
+  if (voiceNotes) voiceNotes.value = combined;
+  await processWalkNotes(combined);
+  const added = Array.from(fileList || []).length;
+  if (added > 1) {
+    setStatus(`Added ${added} files — merged into your walk. Upload more anytime.`);
+  } else if (existing) {
+    setStatus("File added — merged with your previous upload.");
+  }
 }
 
 function scheduleWalkParse() {
@@ -2376,39 +2850,218 @@ function scheduleWalkParse() {
 
 function scheduleCountParse() {
   clearTimeout(countParseTimer);
-  countParseTimer = window.setTimeout(async () => {
+  countParseTimer = window.setTimeout(() => {
     const text = document.getElementById("countNotes")?.value?.trim() || "";
-    if (text.length < 24 || text === lastParsedCountText) return;
-    try {
-      await processCountNotes(text);
-      lastParsedCountText = text;
-    } catch (e) {
-      setStatus(e.message);
+    if (text.length < 12) return;
+    setStatus("Count ready — click Process & open admin when you're set.");
+    updateCountStickyBar();
+  }, 400);
+}
+
+let processClickInFlight = false;
+
+function getCountNotesText() {
+  return document.getElementById("countNotes")?.value?.trim() || "";
+}
+
+function updateCountStickyBar() {
+  const hint = document.getElementById("countStickyHint");
+  const stickyBtn = document.getElementById("btnProcessSticky");
+  if (!hint || !stickyBtn) return;
+  const text = getCountNotesText();
+  if (!text) {
+    hint.textContent = "Paste your count above, then click Process.";
+    stickyBtn.disabled = false;
+    stickyBtn.textContent = "Process & open admin";
+    return;
+  }
+  if (lastCountReconcile?.hasIssues && !canFinishCount(lastCountReconcile)) {
+    const gaps = countUnresolvedGaps(lastCountReconcile);
+    hint.textContent = `${gaps} gap${gaps === 1 ? "" : "s"} blocking — fix the table or use the matching count file from the test kit.`;
+    stickyBtn.disabled = false;
+    stickyBtn.textContent = `Process blocked (${gaps} gaps)`;
+    return;
+  }
+  if (countParsed) {
+    hint.textContent = "Golden match — Process locks your cycle and opens admin.";
+    stickyBtn.disabled = false;
+    stickyBtn.textContent = "Process & open admin →";
+    return;
+  }
+  hint.textContent = "Count pasted — click Process to match against your map.";
+  stickyBtn.disabled = false;
+  stickyBtn.textContent = "Process & open admin";
+}
+
+async function handleProcessCountClick() {
+  if (processClickInFlight) return;
+  const text = getCountNotesText();
+  if (!text) {
+    showCountBanner("Paste your count in the box first, then click Process.", "error");
+    setStatus("Paste your count in the box first, then click Process.");
+    document.getElementById("countNotes")?.focus();
+    return;
+  }
+
+  processClickInFlight = true;
+  const buttons = [
+    document.getElementById("btnProcessCount"),
+    document.getElementById("btnProcessSticky"),
+    document.getElementById("btnFirstCountDone"),
+    document.getElementById("btnTallyFinish"),
+  ].filter(Boolean);
+  for (const b of buttons) {
+    b.disabled = true;
+    if (b.id === "btnProcessCount" || b.id === "btnProcessSticky") b.textContent = "Processing…";
+  }
+  showProcessOverlay("Matching your count…", "Checking bottles against your approved map.");
+
+  try {
+    const result = await processCountNotes(text, { closeCycle: true });
+    if (result?.ok === false && result.reason === "gaps") {
+      hideProcessOverlay();
+      return;
     }
-  }, 700);
+    if (result?.ok === false) {
+      hideProcessOverlay();
+      return;
+    }
+  } catch (e) {
+    hideProcessOverlay();
+    const msg = e?.message || "Process failed — try again.";
+    showCountBanner(msg, "error");
+    setStatus(msg);
+    window.alert(`Process could not finish:\n\n${msg}`);
+  } finally {
+    processClickInFlight = false;
+    updateCountStickyBar();
+    for (const b of buttons) {
+      if (b.id === "btnProcessCount" || b.id === "btnProcessSticky") {
+        b.textContent = "Process & open admin";
+      }
+      b.disabled = false;
+    }
+    updateFirstCountDoneButton();
+  }
 }
 
-async function saveWalkBarName() {
-  const input = document.getElementById("walkBarNameInput");
-  if (!input || !barState.id) return;
-  const name = input.value.trim();
-  barState.name = name;
-  await persistBar();
-  if (name) await OSB.saveConfig({ bar_name: name });
-  updateWalkBarHeader();
+async function saveBarDisplayName(barId, name) {
+  if (!barId || !name) return;
+  await OSB.saveBar({ bar_id: barId, name });
+  if (barState?.id === barId) barState.name = name;
 }
 
-async function saveBuildBarName() {
-  const input = document.getElementById("buildBarName");
-  if (!input || !barState.id) return;
-  const name = input.value.trim();
-  barState.name = name;
-  await OSB.saveBar({
-    bar_id: barState.id,
-    name,
-    stations: sortedStations(),
+function defaultBarLabel(barId) {
+  const idx = allBars.findIndex((b) => b.id === barId);
+  return idx >= 0 ? `Bar ${idx + 1}` : "Bar 1";
+}
+
+function syncReconcileRenameDraftFromInput() {
+  const input = document.getElementById("reconcileBarRenameActive");
+  if (!input || !reconcileRenameBars.length) return;
+  const row = reconcileRenameBars[reconcileRenameIndex];
+  if (!row) return;
+  row.name = input.value.trim() || row.name;
+}
+
+function updateReconcileBarRenameStepper() {
+  const stepper = document.getElementById("reconcileBarRenameStepper");
+  const counter = document.getElementById("reconcileBarRenameCounter");
+  const slot = document.getElementById("reconcileBarRenameSlot");
+  const input = document.getElementById("reconcileBarRenameActive");
+  const prev = document.getElementById("btnReconcileBarPrev");
+  const next = document.getElementById("btnReconcileBarNext");
+  const dots = document.getElementById("reconcileBarRenameDots");
+  if (!stepper || !input || !reconcileRenameBars.length) return;
+
+  const total = reconcileRenameBars.length;
+  const row = reconcileRenameBars[reconcileRenameIndex];
+  if (!row) return;
+
+  counter.textContent = `Bar ${reconcileRenameIndex + 1} of ${total}`;
+  slot.textContent = row.defaultLabel || `Bar ${reconcileRenameIndex + 1}`;
+  input.value = row.name;
+  input.dataset.barId = row.id;
+  input.placeholder = "e.g. River Room, Garden Terrace, The Cellar";
+
+  if (prev) prev.disabled = reconcileRenameIndex === 0;
+  if (next) {
+    next.textContent =
+      reconcileRenameIndex >= total - 1 ? "All bars named ✓" : "Next bar →";
+  }
+
+  if (dots) {
+    dots.innerHTML = reconcileRenameBars
+      .map((b, i) => {
+        const active = i === reconcileRenameIndex ? " active" : "";
+        const named = b.name && b.name !== b.defaultLabel ? " named" : "";
+        return `<button type="button" class="reconcile-bar-dot${active}${named}" data-reconcile-dot="${i}" aria-label="Bar ${i + 1}">${i + 1}</button>`;
+      })
+      .join("");
+    dots.querySelectorAll("[data-reconcile-dot]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        syncReconcileRenameDraftFromInput();
+        reconcileRenameIndex = parseInt(btn.dataset.reconcileDot, 10) || 0;
+        updateReconcileBarRenameStepper();
+      });
+    });
+  }
+}
+
+function renderReconcileBarRename(bars) {
+  const wrap = document.getElementById("reconcileBarRename");
+  const list = document.getElementById("reconcileBarRenameList");
+  const stepper = document.getElementById("reconcileBarRenameStepper");
+  const hint = document.getElementById("reconcileBarRenameHint");
+  if (!wrap || !list) return;
+
+  const rows = bars?.length ? bars : allBars;
+  const multi = rows.length > 1;
+  wrap.classList.toggle("hidden", !multi);
+  if (!multi) {
+    list.innerHTML = "";
+    stepper?.classList.add("hidden");
+    reconcileRenameBars = [];
+    return;
+  }
+
+  if (hint) {
+    hint.textContent = `Your walk created ${rows.length} bars — name each one before you continue. Use Next bar to step through.`;
+  }
+
+  reconcileRenameBars = rows.map((b, i) => {
+    const defaultLabel = `Bar ${i + 1}`;
+    const current = b.name?.trim();
+    const name =
+      current && !/^bar\s*\d+$/i.test(current) ? current : defaultLabel;
+    return { id: b.id, name, defaultLabel };
   });
-  if (name) await OSB.saveConfig({ bar_name: name });
+  reconcileRenameIndex = 0;
+
+  list.innerHTML = "";
+  list.classList.add("hidden");
+  stepper?.classList.remove("hidden");
+  updateReconcileBarRenameStepper();
+}
+
+async function saveReconcileBarNames() {
+  syncReconcileRenameDraftFromInput();
+  const rows = reconcileRenameBars.length
+    ? reconcileRenameBars
+    : Array.from(document.querySelectorAll(".reconcile-bar-name-input")).map((input) => ({
+        id: input.dataset.barId,
+        name: input.value.trim(),
+      }));
+
+  for (const row of rows) {
+    const name = row.name?.trim();
+    const barId = row.id;
+    if (!barId || !name) continue;
+    await saveBarDisplayName(barId, name);
+    if (barState?.id === barId) await OSB.saveConfig({ bar_name: name });
+  }
+  allBars = (await OSB.listBars()).bars || [];
+  await refreshWalkReviewBars();
 }
 
 function renderBuildBarTabs(bars, activeId) {
@@ -2432,7 +3085,6 @@ function renderBuildBarTabs(bars, activeId) {
     btn.addEventListener("click", async () => {
       if (btn.dataset.tabBar === barState.id) return;
       try {
-        await saveBuildBarName();
         await persistBar();
         await OSB.selectSetupBar(btn.dataset.tabBar);
         setStatus("");
@@ -2602,6 +3254,21 @@ function walkSizeOf(token) {
   return null;
 }
 
+const WALK_BAR_RES =
+  /^(bar)\s+(one|two|too|to|three|four|for|five|six|seven|eight|nine|ten|\d{1,2})\b/;
+
+function walkMatchBar(words, i) {
+  const windowText = words.slice(i, i + 3).join(" ");
+  const m = windowText.match(WALK_BAR_RES);
+  if (m && windowText.startsWith(m[0])) {
+    const numWord = WALK_WORD_NUMS[m[2]] ?? m[2];
+    const key = String(numWord);
+    const label = `Bar ${numWord}`;
+    return { key, label, consumed: m[0].trim().split(/\s+/).length };
+  }
+  return null;
+}
+
 const WALK_STATION_RES = [
   /^(well)\s+(one|two|too|to|three|four|for|five|six|seven|eight|nine|ten|\d{1,2})(\s+(primary|secondary|service|point|patio|rear|front|large|small))?(\s+(row|bro)\s+(one|two|too|three|four|five|\d{1,2}))?(\s+(top|bottom|back|front)\s+(left|right|center)(\s+corner)?)?/,
   /^(row|bro)\s+(one|two|too|three|four|five|six|seven|\d{1,2})/,
@@ -2702,20 +3369,44 @@ function parseWalkText(rawText) {
 
   const entries = [];
   const stationsSeen = [];
+  const barBuckets = new Map();
   let currentStation = null;
+  let currentBarKey = "1";
+  let currentBarLabel = "Bar 1";
   let buf = [];
   let qty = 1;
 
+  function ensureBarBucket() {
+    if (!barBuckets.has(currentBarKey)) {
+      barBuckets.set(currentBarKey, {
+        key: currentBarKey,
+        label: currentBarLabel,
+        entries: [],
+        stations: [],
+      });
+    }
+    return barBuckets.get(currentBarKey);
+  }
+
   function mkEntry(name, size, sizeVerified, flags = []) {
-    return {
+    const entry = {
       name: walkTitleCase(name),
       size,
       size_verified: sizeVerified,
       station: currentStation,
+      barKey: currentBarKey,
+      barLabel: currentBarLabel,
       qty,
       raw_heard: name,
       flags,
     };
+    entries.push(entry);
+    const bucket = ensureBarBucket();
+    bucket.entries.push(entry);
+    if (currentStation && !bucket.stations.includes(currentStation)) {
+      bucket.stations.push(currentStation);
+    }
+    return entry;
   }
 
   function flushUnsized() {
@@ -2727,19 +3418,33 @@ function parseWalkText(rawText) {
         name.split(" ").length <= 8
           ? "no size heard — verify"
           : "could not split — edit this one";
-      entries.push(mkEntry(name, defaultSize, false, [flag]));
+      mkEntry(name, defaultSize, false, [flag]);
     }
     buf = [];
     qty = 1;
   }
 
+  ensureBarBucket();
+
   let i = 0;
   while (i < words.length) {
+    const barHit = walkMatchBar(words, i);
+    if (barHit) {
+      if (buf.length) flushUnsized();
+      currentBarKey = barHit.key;
+      currentBarLabel = barHit.label;
+      currentStation = null;
+      ensureBarBucket();
+      i += barHit.consumed;
+      continue;
+    }
     const st = walkMatchStation(words, i);
     if (st) {
       if (buf.length) flushUnsized();
       currentStation = st.label;
       if (!stationsSeen.includes(st.label)) stationsSeen.push(st.label);
+      const bucket = ensureBarBucket();
+      if (!bucket.stations.includes(st.label)) bucket.stations.push(st.label);
       i += st.consumed;
       continue;
     }
@@ -2763,7 +3468,6 @@ function parseWalkText(rawText) {
         } else {
           i += 1;
         }
-        entries.push(entry);
       } else if (entries.length) {
         entries[entries.length - 1].flags.push("extra size heard nearby — check size");
         i += 1;
@@ -2779,7 +3483,11 @@ function parseWalkText(rawText) {
   }
   if (buf.length) flushUnsized();
 
-  return { entries, stations: stationsSeen };
+  const bars = Array.from(barBuckets.values()).sort(
+    (a, b) => parseInt(a.key, 10) - parseInt(b.key, 10)
+  );
+
+  return { entries, stations: stationsSeen, bars };
 }
 
 function walkFindOrCreateStation(label) {
@@ -2812,10 +3520,8 @@ function walkFindOrCreateStation(label) {
   return found;
 }
 
-function parseVoiceNotes(text) {
-  const { entries } = parseWalkText(text);
+function applyWalkEntriesToBar(entries) {
   let added = 0;
-
   for (const e of entries) {
     const station = walkFindOrCreateStation(e.station);
     if (!station) continue;
@@ -2840,6 +3546,11 @@ function parseVoiceNotes(text) {
     added += 1;
   }
   return added;
+}
+
+function parseVoiceNotes(text) {
+  const { entries } = parseWalkText(text);
+  return applyWalkEntriesToBar(entries);
 }
 
 function fillManualStationSelect() {
@@ -2933,9 +3644,12 @@ function categoryOptions(selected) {
 function updateWalkSummary() {
   const el = document.getElementById("parseSummaryText");
   if (!el) return;
-  const count = bottleCount();
-  const withBottles = sortedStations().filter((s) => (s.bottles || []).length > 0).length;
-  el.textContent = `Found ${count} bottles across ${withBottles} stations`;
+  const multi = walkReviewBars.length > 1;
+  const bottles = multi ? allBottlesForReview() : allBottles();
+  const count = bottles.length;
+  const withBottles = new Set(bottles.map((b) => b.stationId)).size;
+  const barNote = multi ? ` across ${walkReviewBars.length} bars` : "";
+  el.textContent = `Found ${count} bottles across ${withBottles} stations${barNote}`;
 }
 
 function setReconcileNextEnabled(enabled) {
@@ -3476,6 +4190,8 @@ async function runReconciliation({ quiet = false } = {}) {
   await persistBar();
   const result = await OSB.reconcile();
   renderStationAuditReport("reconcilePreview");
+  const renameBars = await loadAllBarsForRename();
+  renderReconcileBarRename(renameBars.length ? renameBars : allBars);
   setReconcileToolkitVisible(true);
   const rb = document.getElementById("btnReconcile");
   if (rb) rb.textContent = "Re-run reconciliation";
@@ -3487,6 +4203,11 @@ async function runReconciliation({ quiet = false } = {}) {
 }
 
 async function initReconcileStep(data) {
+  allBars = data.bars || [];
+  await refreshWalkReviewBars();
+  const renameBars = await loadAllBarsForRename();
+  renderReconcileBarRename(renameBars.length ? renameBars : allBars);
+
   if (bottleCount() === 0 && !data.state?.voice_notes_count) {
     renderReconcilePreview();
     return;
@@ -3586,13 +4307,8 @@ async function initSetup() {
   barState = normalizeBar(await OSB.getBar(false));
   if (cfg.bar_name && !barState.name) barState.name = cfg.bar_name;
 
-  if (data.phase === "updates_signup") {
-    renderUpdatesSignupStep();
-  }
   if (data.phase === "build_bar") {
     allBars = data.bars || [];
-    const buildNameEl = document.getElementById("buildBarName");
-    if (buildNameEl) buildNameEl.value = barState.name || "";
     renderBuildBarTabs(allBars, barState.id || cfg.setup_bar_id);
     renderStationList();
   }
@@ -3613,7 +4329,10 @@ async function initSetup() {
   if (data.phase === "first_count") {
     await initCountStep(data);
     updateFirstCountDoneButton();
+    updateCountStickyBar();
   }
+
+  if (data.phase === "welcome") refreshWelcomeAiPanel(cfg);
 
   fillReviewAddSizeSelect();
   bindWalkReviewListeners();
@@ -3638,7 +4357,7 @@ async function initSetup() {
     const rBtn = e.target.closest("[data-hard-reset]");
     if (!rBtn || document.body.dataset.app !== "setup") return;
     const ok = window.confirm(
-      "Hard reset wipes this bar and all setup progress and returns you to the email signup step.\n\nYour current data is backed up automatically. Continue?"
+      "Hard reset wipes this bar and all setup progress and returns you to Welcome.\n\nYour current data is backed up automatically. Continue?"
     );
     if (!ok) return;
     try {
@@ -3654,7 +4373,34 @@ async function initSetup() {
   });
 
   document.getElementById("btnWelcomeNext")?.addEventListener("click", async () => {
-    await OSB.advancePhase("updates_signup");
+    await OSB.skipAi();
+    await OSB.advancePhase("name_bar");
+    await initSetup();
+  });
+
+  document.getElementById("btnWelcomeSkipAi")?.addEventListener("click", async () => {
+    const keyInput = document.getElementById("welcomeApiKey");
+    if (keyInput) keyInput.value = "";
+    await OSB.skipAi();
+    await OSB.advancePhase("name_bar");
+    await initSetup();
+  });
+
+  document.getElementById("btnWelcomeSaveAi")?.addEventListener("click", async () => {
+    const provider = document.getElementById("welcomeAiProvider")?.value;
+    const key = document.getElementById("welcomeApiKey")?.value?.trim();
+    if (!provider || !key) {
+      setStatus("Select a provider and paste an API key — or use Skip / Begin without AI.");
+      return;
+    }
+    const res = await OSB.saveConfig({ ai_provider: provider, ai_api_key: key });
+    if (res.error) {
+      setStatus(res.error);
+      return;
+    }
+    const keyInput = document.getElementById("welcomeApiKey");
+    if (keyInput) keyInput.value = "";
+    await OSB.advancePhase("name_bar");
     await initSetup();
   });
 
@@ -3677,27 +4423,9 @@ async function initSetup() {
     await initSetup();
   });
 
-  document.getElementById("walkBarNameInput")?.addEventListener("blur", async () => {
-    try {
-      await saveWalkBarName();
-    } catch (e) {
-      setStatus(e.message);
-    }
-  });
-
-  document.getElementById("buildBarName")?.addEventListener("blur", async () => {
-    try {
-      await saveBuildBarName();
-      const data = await OSB.getState();
-      renderBuildBarTabs(data.bars || [], barState.id);
-    } catch (e) {
-      setStatus(e.message);
-    }
-  });
-
   document.getElementById("btnDeleteBar")?.addEventListener("click", async () => {
     if (!barState.id) return;
-    const bar = { id: barState.id, name: document.getElementById("buildBarName")?.value || barState.name };
+    const bar = { id: barState.id, name: barState.name || defaultBarLabel(barState.id) };
     if (!(await confirmDeleteBar(bar, allBars.length || 1))) return;
     try {
       await OSB.deleteBar(barState.id);
@@ -3710,21 +4438,16 @@ async function initSetup() {
 
   document.getElementById("btnCreateAdditionalBar")?.addEventListener("click", async () => {
     try {
-      await saveBuildBarName();
       await persistBar();
-      await OSB.createBar("", true);
+      const nextNum = (allBars.length || 0) + 1;
+      await OSB.createBar(`Bar ${nextNum}`, true);
       barState = normalizeBar(await OSB.getBar(false));
       editingStationId = null;
-      const buildNameEl = document.getElementById("buildBarName");
-      if (buildNameEl) {
-        buildNameEl.value = "";
-        buildNameEl.focus();
-      }
       const data = await OSB.getState();
       allBars = data.bars || [];
       renderBuildBarTabs(allBars, barState.id);
       renderStationList();
-      setStatus("New bar — name it on the walk step, then dictate its stations.");
+      setStatus(`Bar ${nextNum} created — add stations or return to the walk step.`);
     } catch (e) {
       setStatus(e.message);
     }
@@ -3749,16 +4472,11 @@ async function initSetup() {
   });
 
   document.getElementById("btnBuildContinue")?.addEventListener("click", async () => {
-    const name = document.getElementById("buildBarName")?.value?.trim();
-    if (!name) {
-      setStatus("Name this bar at the top before continuing.");
-      document.getElementById("buildBarName")?.focus();
-      return;
-    }
     if (sortedStations().length === 0) {
       setStatus("Your walk should have created at least one station — add one if needed.");
       return;
     }
+    const name = barState.name?.trim() || defaultBarLabel(barState.id);
     barState.name = name;
     if (!barState.setup) barState.setup = {};
     barState.setup.stations_reviewed = true;
@@ -3770,58 +4488,52 @@ async function initSetup() {
 
   document.getElementById("voiceNotes")?.addEventListener("input", scheduleWalkParse);
 
-  document.getElementById("btnUploadNotes")?.addEventListener("click", async () => {
+  document.getElementById("btnUploadFiles")?.addEventListener("click", () => {
+    openWalkFilePicker("append");
+  });
+
+  document.getElementById("btnAddMoreWalkFiles")?.addEventListener("click", () => {
+    openWalkFilePicker("append");
+  });
+
+  document.getElementById("btnReplaceWalkFiles")?.addEventListener("click", () => {
+    const ok = window.confirm(
+      "Replace all walk notes with a new upload? Your current draft map will be rebuilt from the new files."
+    );
+    if (!ok) return;
+    const voiceNotes = document.getElementById("voiceNotes");
+    if (voiceNotes) voiceNotes.value = "";
+    lastParsedWalkText = "";
+    openWalkFilePicker("replace");
+  });
+
+  document.getElementById("btnParsePasted")?.addEventListener("click", async () => {
     const text = document.getElementById("voiceNotes")?.value?.trim();
-    if (text) {
-      try {
-        await processWalkNotes(text);
-      } catch (e) {
-        setStatus(e.message);
-      }
-      return;
-    }
-    document.getElementById("voiceNotesFile")?.click();
-  });
-
-  document.getElementById("voiceNotesFile")?.addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!isAcceptedWalkNotesFile(file)) {
-      const ext = walkNotesExtension(file.name);
-      if (ext === "pdf") {
-        setStatus("PDF isn't supported yet — from iPhone Notes, export as Markdown or .txt instead.");
-      } else {
-        setStatus(`That file type isn't supported. Use ${WALK_NOTES_ACCEPT_LABEL} from your notes app.`);
-      }
-      e.target.value = "";
+    if (!text) {
+      setStatus("Paste your walk notes in the box first, or use Upload files here.");
       return;
     }
     try {
-      const raw = await file.text();
-      const text = normalizeUploadedWalkNotes(raw, file.name);
-      document.getElementById("voiceNotes").value = text;
       await processWalkNotes(text);
-    } catch (err) {
-      setStatus(`Could not read that file — try ${WALK_NOTES_ACCEPT_LABEL} from your notes app.`);
-    }
-    e.target.value = "";
-  });
-
-  document.getElementById("btnNextWalkBar")?.addEventListener("click", async () => {
-    if (allBars.length <= 1) return;
-    const idx = allBars.findIndex((b) => b.id === barState.id);
-    const next = allBars[(idx + 1) % allBars.length];
-    try {
-      await switchWalkBar(next.id);
-      setStatus(`Now walking ${next.name || "next bar"}.`);
     } catch (e) {
       setStatus(e.message);
     }
   });
 
+  document.getElementById("voiceNotesFile")?.addEventListener("change", async (e) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    try {
+      await ingestWalkFiles(files, walkFileUploadMode);
+    } catch (err) {
+      setStatus(err.message || `Could not read that file — try ${WALK_NOTES_ACCEPT_LABEL}.`);
+    }
+    e.target.value = "";
+    walkFileUploadMode = "append";
+  });
+
   document.getElementById("btnReparse")?.addEventListener("click", () => {
-    setWalkView(false);
-    document.getElementById("voiceNotesFile")?.click();
+    openWalkFilePicker("append");
   });
 
   document.getElementById("btnVoiceDraft")?.addEventListener("click", async () => {
@@ -3841,16 +4553,6 @@ async function initSetup() {
   document.getElementById("btnManualBottle")?.addEventListener("click", () => addManualBottle());
 
   document.getElementById("btnWalkContinue")?.addEventListener("click", async () => {
-    const walkName = document.getElementById("walkBarNameInput")?.value?.trim();
-    if (!walkName) {
-      setStatus("Name this bar at the top before continuing.");
-      document.getElementById("walkBarNameInput")?.focus();
-      return;
-    }
-    barState.name = walkName;
-    await persistBar();
-    await OSB.saveConfig({ bar_name: walkName });
-
     if (!walkReviewIsComplete()) {
       const remaining = walkUnverifiedCount();
       if (remaining && scrollToFirstUnverifiedWalkRow()) {
@@ -3860,28 +4562,65 @@ async function initSetup() {
             : `${remaining} rows still need the OK checkbox — we scrolled to the first one.`
         );
       } else {
-        setStatus("Parse my notes or add bottles, then review names and sizes before continuing.");
+        setStatus("Upload or paste notes, or add bottles manually, then review before continuing.");
       }
       return;
     }
     const text = document.getElementById("voiceNotes")?.value?.trim();
     if (text) await OSB.uploadVoiceNotes(text);
-    if (bottleCount() === 0 && !text) {
-      setStatus("Parse my notes or add at least one bottle for this bar.");
+    await refreshWalkReviewBars();
+    const totalBottles =
+      walkReviewBars.length > 1 ? allBottlesForReview().length : bottleCount();
+    if (totalBottles === 0 && !text) {
+      setStatus("Upload notes or add at least one bottle before continuing.");
       return;
     }
     await persistBar();
 
-    const idx = allBars.findIndex((b) => b.id === barState.id);
-    if (allBars.length > 1 && idx < allBars.length - 1) {
-      const next = allBars[idx + 1];
-      await switchWalkBar(next.id);
-      setStatus(`Saved. Now walk ${next.name || "the next bar"} — or use Next Bar.`);
-      return;
-    }
-
     await OSB.advancePhase("reconcile");
     await initSetup();
+  });
+
+  document.getElementById("reconcileBarRenameActive")?.addEventListener("input", () => {
+    syncReconcileRenameDraftFromInput();
+  });
+
+  document.getElementById("reconcileBarRenameActive")?.addEventListener(
+    "change",
+    async (e) => {
+      try {
+        syncReconcileRenameDraftFromInput();
+        const barId = e.target.dataset.barId;
+        const name = e.target.value.trim();
+        if (barId && name) await saveBarDisplayName(barId, name);
+      } catch (err) {
+        setStatus(err.message);
+      }
+    }
+  );
+
+  document.getElementById("btnReconcileBarPrev")?.addEventListener("click", () => {
+    syncReconcileRenameDraftFromInput();
+    if (reconcileRenameIndex > 0) {
+      reconcileRenameIndex -= 1;
+      updateReconcileBarRenameStepper();
+    }
+  });
+
+  document.getElementById("btnReconcileBarNext")?.addEventListener("click", () => {
+    syncReconcileRenameDraftFromInput();
+    if (reconcileRenameIndex < reconcileRenameBars.length - 1) {
+      reconcileRenameIndex += 1;
+      updateReconcileBarRenameStepper();
+    }
+  });
+
+  document.getElementById("btnReconcileNext")?.addEventListener("click", async () => {
+    try {
+      await saveReconcileBarNames();
+    } catch (err) {
+      setStatus(err.message);
+    }
   });
 
   document.getElementById("btnReconcile")?.addEventListener("click", async () => {
@@ -3972,53 +4711,50 @@ async function initSetup() {
 
   document.getElementById("countNotes")?.addEventListener("input", scheduleCountParse);
 
-  document.getElementById("btnUploadCount")?.addEventListener("click", async () => {
-    const text = document.getElementById("countNotes")?.value?.trim();
-    if (text) {
-      try {
-        await processCountNotes(text);
-      } catch (e) {
-        setStatus(e.message);
-      }
-      return;
-    }
-    document.getElementById("countNotesFile")?.click();
+  document.getElementById("btnUploadCountFiles")?.addEventListener("click", () => {
+    openCountFilePicker("append");
+  });
+
+  document.getElementById("btnUploadCount")?.addEventListener("click", () => {
+    openCountFilePicker("append");
+  });
+
+  document.getElementById("btnProcessCount")?.addEventListener("click", () => handleProcessCountClick());
+  document.getElementById("btnProcessSticky")?.addEventListener("click", () => handleProcessCountClick());
+
+  document.getElementById("btnAddMoreCountFiles")?.addEventListener("click", () => {
+    openCountFilePicker("append");
+  });
+
+  document.getElementById("btnReplaceCountFiles")?.addEventListener("click", () => {
+    const ok = window.confirm(
+      "Replace all count notes with a new upload? Your current count draft will be rebuilt from the new files."
+    );
+    if (!ok) return;
+    const countNotes = document.getElementById("countNotes");
+    if (countNotes) countNotes.value = "";
+    lastParsedCountText = "";
+    clearCountReconcileReport();
+    openCountFilePicker("replace");
   });
 
   document.getElementById("countNotesFile")?.addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!isAcceptedWalkNotesFile(file)) {
-      const ext = walkNotesExtension(file.name);
-      if (ext === "pdf") {
-        setStatus("PDF isn't supported yet — from iPhone Notes, export as Markdown or .txt instead.");
-      } else {
-        setStatus(`That file type isn't supported. Use ${WALK_NOTES_ACCEPT_LABEL} from your notes app.`);
-      }
-      e.target.value = "";
-      return;
-    }
+    const files = e.target.files;
+    if (!files?.length) return;
     try {
-      const raw = await file.text();
-      const text = normalizeUploadedWalkNotes(raw, file.name);
-      document.getElementById("countNotes").value = text;
-      await processCountNotes(text);
-    } catch {
-      setStatus(`Could not read that file — try ${WALK_NOTES_ACCEPT_LABEL} from your notes app.`);
+      await ingestCountFiles(files, countFileUploadMode);
+    } catch (err) {
+      setStatus(err.message || `Could not read that file — try ${WALK_NOTES_ACCEPT_LABEL}.`);
     }
     e.target.value = "";
+    countFileUploadMode = "append";
   });
 
-  document.getElementById("btnRecount")?.addEventListener("click", () => resetCountForReupload());
-
-  document.getElementById("btnCountDraft")?.addEventListener("click", async () => {
-    try {
-      await saveCountDraft();
-      setStatus("Count draft saved.");
-    } catch (e) {
-      setStatus(e.message);
-    }
+  document.getElementById("btnRecount")?.addEventListener("click", () => {
+    openCountFilePicker("append");
   });
+
+
 
   document.getElementById("countReviewTable")?.addEventListener("change", async (e) => {
     const input = e.target.closest(".count-level-input");
@@ -4026,12 +4762,64 @@ async function initSetup() {
     const bottle = findBottleRecord(input.dataset.bottle, input.dataset.station);
     if (!bottle) return;
     bottle.current_level = parseFloat(input.value) || 0;
-    bottle.count_matched = true;
-    await persistBar();
-    updateCountSummary();
-    const statusCell = input.closest("tr")?.querySelector("td:last-child");
-    if (statusCell) statusCell.innerHTML = '<span class="report-ok">manual</span>';
     updateFirstCountDoneButton();
+  });
+
+  document.getElementById("countReviewTable")?.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-count-fix]");
+    if (!btn) return;
+    const action = btn.dataset.countFix;
+
+    if (action === "mark-counted") {
+      const bottle = findBottleRecord(btn.dataset.bottle, btn.dataset.station);
+      if (!bottle) return;
+      const row = btn.closest("tr");
+      const levelInput = row?.querySelector(".count-gap-level, .count-level-input");
+      bottle.current_level = parseFloat(levelInput?.value) || bottle.current_level || 1;
+      bottle.count_matched = true;
+      bottle.count_variance = "matched";
+      bottle.count_manual_resolved = true;
+      await refreshCountReconcileAfterFix();
+      setStatus(`Marked ${bottle.name} as counted at ${bottle.current_level}.`);
+      return;
+    }
+
+    if (action === "remove-map") {
+      const bottle = findBottleRecord(btn.dataset.bottle, btn.dataset.station);
+      const name = bottle?.name || "Bottle";
+      if (!removeBottleFromMap(btn.dataset.bottle, btn.dataset.station)) return;
+      await refreshCountReconcileAfterFix();
+      setStatus(`Removed ${name} from your map — not on shelf.`);
+      return;
+    }
+
+    if (action === "dismiss-surprise") {
+      const idx = parseInt(btn.dataset.surpriseIdx, 10);
+      const surprise = lastCountReconcile?.surprises?.[idx];
+      if (!surprise) return;
+      countDismissedSurpriseKeys.add(countEntryKey(surprise.entry));
+      await refreshCountReconcileAfterFix();
+      setStatus(`Ignored "${surprise.entry.name}" from your count notes.`);
+      return;
+    }
+
+    if (action === "add-surprise") {
+      const idx = parseInt(btn.dataset.surpriseIdx, 10);
+      const surprise = lastCountReconcile?.surprises?.[idx];
+      if (!surprise) return;
+      const added = addBottleFromCountSurprise(surprise);
+      if (!added) {
+        setStatus("Could not add bottle — pick a station in the map editor.");
+        return;
+      }
+      await refreshCountReconcileAfterFix();
+      setStatus(`Added ${added.name} to your map at level ${added.current_level}.`);
+    }
+  });
+
+  document.getElementById("btnToggleCountMap")?.addEventListener("click", () => {
+    countShowFullMap = !countShowFullMap;
+    renderCountReview();
   });
 
   document.getElementById("countReconcileReport")?.addEventListener("click", async (e) => {
@@ -4077,35 +4865,39 @@ async function initSetup() {
     setStatus("Review your map — add surprises, remove what's gone, then come back to Count.");
   });
 
-  document.getElementById("btnFirstCountDone")?.addEventListener("click", async () => {
-    if (!countParsed) {
-      setStatus("Parse or paste your count first, then review levels in the table.");
-      return;
-    }
-    if (lastCountReconcile?.hasIssues) {
-      setStatus(
-        "Count still has map mismatches — reconcile surprises above or fix levels, then finish."
-      );
-      document.getElementById("countReconcileReport")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
-    await persistBar();
-    await OSB.saveConfig({ first_count_complete: true });
-    await OSB.advancePhase("butterfly");
-    window.location.href = "/home";
-  });
+  document.getElementById("btnFirstCountDone")?.addEventListener("click", () => finishFirstCount());
+  document.getElementById("btnTallyFinish")?.addEventListener("click", () => finishFirstCount());
+  document.getElementById("btnEditCount")?.addEventListener("click", () => resetCountForReupload());
 }
 
 /* ── Home base (butterfly) ── */
 
 function apiStatusLabel(status) {
   const map = {
-    "not-started": "Not started",
-    connected: "Connected",
-    skipped: "Skipped — add key when ready",
-    "needs-key": "Needs API key",
+    "not-started": "Off — program runs without it",
+    connected: "On — invoice photos enabled",
+    skipped: "Off — type numbers yourself",
+    "needs-key": "Off — paste key to enable photos",
   };
   return map[status] || status || "Unknown";
+}
+
+function refreshWelcomeAiPanel(cfg) {
+  const statusEl = document.getElementById("welcomeAiStatus");
+  const provEl = document.getElementById("welcomeAiProvider");
+  if (!statusEl && !provEl) return;
+  const connected = cfg?.api_connection_status === "connected" || cfg?.ai_api_key_set;
+  if (statusEl) {
+    if (connected) {
+      const prov = cfg?.ai_provider || "AI";
+      statusEl.innerHTML = `<span class="invoice-ai-ok">Connected (${escapeHtml(prov)})</span> — invoice photos will work in All inputs. You can still skip and add more keys later in Settings.`;
+    } else if (cfg?.api_connection_status === "skipped") {
+      statusEl.textContent = "AI skipped — the full program still runs. Add a key later in Settings if you want invoice photos.";
+    } else {
+      statusEl.textContent = "Leave the key blank to run the full program without AI. Connect only for invoice photos.";
+    }
+  }
+  if (provEl && cfg?.ai_provider) provEl.value = cfg.ai_provider;
 }
 
 function apiStatusClass(status) {
@@ -4143,13 +4935,21 @@ async function loadMetrics() {
 
   const s = m.summary || {};
   grid.innerHTML = `
-    <div class="metric"><div class="num">${s.bottle_count ?? "—"}</div><div class="lbl">Bottles on map</div></div>
-    <div class="metric"><div class="num">${s.station_count ?? "—"}</div><div class="lbl">Stations</div></div>
-    <div class="metric"><div class="num">${s.total_units ?? "—"}</div><div class="lbl">Total units</div></div>
-    <div class="metric"><div class="num">${s.items_below_par ?? "—"}</div><div class="lbl">Below par</div></div>
-    <div class="metric"><div class="num">${m.cycles_total ?? m.cycles_in_window ?? "—"}</div><div class="lbl">Cycles logged</div></div>
+    <div class="metric metric-hero"><div class="num">${s.bottle_count ?? "—"}</div><div class="lbl">SKUs on map</div></div>
+    <div class="metric metric-hero"><div class="num">${s.station_count ?? "—"}</div><div class="lbl">Stations</div></div>
+    <div class="metric"><div class="num">${s.total_units ?? "—"}</div><div class="lbl">Units on hand</div></div>
+    <div class="metric${s.items_below_par > 0 ? " metric-warn" : ""}"><div class="num">${s.items_below_par ?? "—"}</div><div class="lbl">Below par</div></div>
+    <div class="metric metric-accent"><div class="num">${m.cycles_total ?? m.cycles_in_window ?? "—"}</div><div class="lbl">Cycles logged</div></div>
     <div class="metric"><div class="num">${s.pos_uploads ?? "—"}</div><div class="lbl">POS drops</div></div>
   `;
+
+  let analytics = null;
+  try {
+    analytics = await OSB.getAnalytics();
+  } catch {
+    analytics = null;
+  }
+  renderDashboardHero(m, analytics);
 
   const bounds = document.getElementById("metricsBounds");
   if (bounds && m.bounds) {
@@ -4161,6 +4961,42 @@ async function loadMetrics() {
   if (notes) notes.textContent = s.notes || "";
 
   renderFirstWeekPanel(m.first_week);
+}
+
+function renderDashboardHero(metrics, analytics) {
+  const hero = document.getElementById("dashboardHero");
+  if (!hero) return;
+  const cycles = metrics?.cycles_total ?? metrics?.cycles_in_window ?? 0;
+  const bottles = metrics?.summary?.bottle_count ?? analytics?.bottle_count ?? 0;
+  const value = analytics?.total_value ?? 0;
+  const barName = analytics?.bar_name || "Your bar";
+
+  if (!cycles && !bottles) {
+    hero.classList.add("hidden");
+    return;
+  }
+
+  hero.classList.remove("hidden");
+  const cycleLabel = cycles ? `Cycle ${cycles}` : "Cycle 1";
+  document.getElementById("dashboardHeroCycle")?.replaceChildren(document.createTextNode(cycleLabel));
+  document.getElementById("dashboardHeroTitle")?.replaceChildren(
+    document.createTextNode(`${barName} — inventory live`)
+  );
+  const sub = analytics?.last_count_at
+    ? `Last count ${analytics.last_count_at.slice(0, 10)} · ${bottles} SKUs tracked`
+    : `${bottles} SKUs on your map — spreadsheets and analytics ready`;
+  document.getElementById("dashboardHeroSub")?.replaceChildren(document.createTextNode(sub));
+
+  const statsEl = document.getElementById("dashboardHeroStats");
+  if (statsEl) {
+    const wow = analytics?.week_over_week?.length ?? 0;
+    statsEl.innerHTML = `
+      <div class="dashboard-hero-stat"><span class="dashboard-hero-stat-num">${bottles}</span><span class="dashboard-hero-stat-lbl">SKUs</span></div>
+      <div class="dashboard-hero-stat"><span class="dashboard-hero-stat-num">$${value.toFixed(0)}</span><span class="dashboard-hero-stat-lbl">Est. value</span></div>
+      <div class="dashboard-hero-stat"><span class="dashboard-hero-stat-num">${analytics?.below_par ?? metrics?.summary?.items_below_par ?? 0}</span><span class="dashboard-hero-stat-lbl">Below par</span></div>
+      <div class="dashboard-hero-stat"><span class="dashboard-hero-stat-num">${wow || "—"}</span><span class="dashboard-hero-stat-lbl">WoW changes</span></div>
+    `;
+  }
 }
 
 function renderFirstWeekPanel(firstWeek) {
@@ -4337,38 +5173,68 @@ async function loadAnalytics() {
       )
       .join("");
 
+    const wowRows = (a.week_over_week || []).slice(0, 14);
+    const wowTable =
+      wowRows.length > 0
+        ? `<table class="analytics-wow-table"><thead><tr><th>Product</th><th>Station</th><th>Was</th><th>Now</th><th>Δ</th></tr></thead><tbody>${wowRows
+            .map(
+              (item) => `
+          <tr>
+            <td><strong>${escapeHtml(item.name)}</strong></td>
+            <td class="field-hint">${escapeHtml(item.station)}</td>
+            <td>${item.previous_level.toFixed(2)}</td>
+            <td>${item.current_level.toFixed(2)}</td>
+            <td class="${item.change < 0 ? "analytics-wow-change--down" : item.change > 0 ? "analytics-wow-change--up" : ""}">${item.change >= 0 ? "+" : ""}${item.change.toFixed(2)}</td>
+          </tr>`
+            )
+            .join("")}</tbody></table>`
+        : `<p class="field-hint">Process a second count to see week-over-week reconciliation.</p>`;
+
+    const velocityPills = (a.velocity || [])
+      .slice(0, 10)
+      .map(
+        (item) => `
+      <span class="velocity-pill velocity-pill--${item.direction === "down" ? "down" : "up"}">
+        ${escapeHtml(item.name)}
+        <strong>${item.direction === "down" ? "↓" : "↑"} ${Math.abs(item.change).toFixed(2)}</strong>
+      </span>`
+      )
+      .join("");
+
     root.innerHTML = `
       <div class="analytics-grid">
+        <div class="panel analytics-panel analytics-panel--hero">
+          <div class="analytics-panel-head">
+            <h2>${escapeHtml(a.bar_name || "Your bar")}</h2>
+            <span class="analytics-total">$${(a.total_value || 0).toFixed(0)} on hand</span>
+          </div>
+          <p class="field-hint" style="margin-bottom:14px;">${a.bottle_count || 0} SKUs · ${a.station_count || 0} stations · Cycle ${a.cycles_total || 1}${a.below_par ? ` · <span class="text-wine">${a.below_par} below par</span>` : ""}</p>
+          ${horizontalBars(a.category_values)}
+        </div>
         <div class="panel analytics-panel">
           <h2>Beverage cost %</h2>
           ${costGaugeSvg(a.beverage_cost_pct || 0)}
           <p class="field-hint">Target: 18–24% for spirits programs</p>
         </div>
-        <div class="panel analytics-panel analytics-panel-wide">
-          <div class="analytics-panel-head">
-            <h2>Inventory value by category</h2>
-            <span class="analytics-total">$${(a.total_value || 0).toFixed(0)}</span>
-          </div>
-          ${horizontalBars(a.category_values)}
-        </div>
         <div class="panel analytics-panel">
-          <h2>Category breakdown</h2>
+          <h2>Category mix</h2>
           ${donutLegend(a.category_distribution)}
         </div>
         <div class="panel analytics-panel">
           <h2>Variance alerts</h2>
-          ${
-            alerts ||
-            `<p class="field-hint analytics-ok">✓ All items at or above par</p>`
-          }
+          ${alerts || `<p class="field-hint analytics-ok">All items at or above par</p>`}
+        </div>
+        <div class="panel analytics-panel">
+          <h2>Velocity</h2>
+          <div class="velocity-pills-wrap">${velocityPills || `<p class="field-hint">Need 2+ cycles for movers.</p>`}</div>
         </div>
         <div class="panel analytics-panel">
           <h2>Count trends</h2>
           ${trends || `<p class="field-hint">Complete a count to see trends.</p>`}
         </div>
-        <div class="panel analytics-panel">
-          <h2>Velocity — movers</h2>
-          ${velocity || `<p class="field-hint">Need 2+ cycles to calculate velocity.</p>`}
+        <div class="panel analytics-panel analytics-panel-wide">
+          <h2>Week over week — reconciliation</h2>
+          ${wowTable}
         </div>
       </div>`;
   } catch (e) {
@@ -4376,24 +5242,43 @@ async function loadAnalytics() {
   }
 }
 
-let workbookSheet = "dashboard";
+let workbookSheet = "count-sheet";
 let workbookData = null;
+let brandingLogoData = "";
 
-function renderWorkbookTable(headers, rows) {
-  if (!rows.length) return `<p class="field-hint">No rows to show.</p>`;
+function renderWorkbookTable(headers, rows, { numericFrom = 2 } = {}) {
+  if (!rows.length) return `<p class="field-hint workbook-empty">No rows to show.</p>`;
   return `
-    <div class="review-table-wrap scroll-panel">
-      <table class="review-table">
+    <div class="workbook-table-wrap scroll-panel">
+      <table class="workbook-table review-table">
         <thead><tr>${headers.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
         <tbody>
           ${rows
             .map(
-              (cells) =>
-                `<tr>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`
+              (cells, ri) =>
+                `<tr class="${ri % 2 ? "workbook-row-alt" : ""}">${cells
+                  .map((c, ci) => {
+                    const cls = ci >= numericFrom ? " workbook-num" : "";
+                    return `<td class="${cls.trim()}">${c}</td>`;
+                  })
+                  .join("")}</tr>`
             )
             .join("")}
         </tbody>
       </table>
+      <p class="workbook-row-count">${rows.length} row${rows.length === 1 ? "" : "s"}</p>
+    </div>`;
+}
+
+function renderWorkbookStatCards(items) {
+  return `
+    <div class="workbook-stat-grid">
+      ${items
+        .map(
+          ([label, value, accent]) =>
+            `<div class="workbook-stat${accent ? ` workbook-stat--${accent}` : ""}"><span class="workbook-stat-num">${value}</span><span class="workbook-stat-lbl">${label}</span></div>`
+        )
+        .join("")}
     </div>`;
 }
 
@@ -4403,23 +5288,21 @@ function renderWorkbookSheet(sheet, data) {
   }
 
   if (sheet === "dashboard") {
-    const rows = [
-      ["Bar name", escapeHtml(data.bar_name || "")],
-      ["Total products", String(data.bottle_count || 0)],
-      ["Stations", String(data.station_count || 0)],
-      ["Estimated value", `$${(data.total_value || 0).toFixed(2)}`],
-      ["Below par", String(data.below_par || 0)],
-      ["Cycles logged", String(data.cycles_total || 0)],
-      ["Cycle label", escapeHtml(data.cycle_label || "")],
-      [
-        "Last count",
-        data.last_count_at ? escapeHtml(data.last_count_at.slice(0, 10)) : "Never",
-      ],
-    ];
-    return renderWorkbookTable(
-      ["Metric", "Value"],
-      rows.map(([a, b]) => [a, b])
-    );
+    const lastCount = data.last_count_at ? escapeHtml(data.last_count_at.slice(0, 10)) : "Never";
+    return `
+      ${renderWorkbookStatCards([
+        ["SKUs on map", String(data.bottle_count || 0), "copper"],
+        ["Stations", String(data.station_count || 0), ""],
+        ["Est. value", `$${(data.total_value || 0).toFixed(0)}`, "patina"],
+        ["Below par", String(data.below_par || 0), data.below_par > 0 ? "warn" : ""],
+        ["Cycles", String(data.cycles_total || 0), "accent"],
+        ["WoW rows", String((data.week_over_week || []).length), ""],
+      ])}
+      <div class="workbook-meta-bar">
+        <span><strong>${escapeHtml(data.bar_name || "Bar")}</strong></span>
+        <span>${escapeHtml(data.cycle_label || "Inventory cycle")}</span>
+        <span>Last count ${lastCount}</span>
+      </div>`;
   }
 
   if (sheet === "product-master") {
@@ -4438,16 +5321,68 @@ function renderWorkbookSheet(sheet, data) {
   }
 
   if (sheet === "count-sheet") {
-    return renderWorkbookTable(
-      ["Station", "Product", "Size", "Current", "Par"],
-      data.product_rows.map((r) => [
-        escapeHtml(r.station),
-        escapeHtml(r.name),
-        escapeHtml(r.size),
-        r.current_level.toFixed(1),
-        r.par_level.toFixed(1),
-      ])
-    );
+    const belowPar = data.product_rows.filter((r) => r.current_level < r.par_level).length;
+    const rows = data.product_rows
+      .map((r, ri) => {
+        const under = r.current_level < r.par_level;
+        return `<tr class="${under ? "row-flag" : ri % 2 ? "workbook-row-alt" : ""}" data-bottle-id="${escapeHtml(r.id || "")}" data-station-id="${escapeHtml(r.station_id || "")}">
+          <td>${escapeHtml(r.station)}</td>
+          <td><strong>${escapeHtml(r.name)}</strong></td>
+          <td>${escapeHtml(r.size)}</td>
+          <td class="workbook-num">${r.current_level.toFixed(1)}</td>
+          <td class="workbook-num workbook-par-cell">
+            <input type="number" class="workbook-par-input" step="0.5" min="0" data-par-bottle="${escapeHtml(r.id || "")}" data-par-station="${escapeHtml(r.station_id || "")}" value="${r.par_level.toFixed(1)}" aria-label="PAR for ${escapeHtml(r.name)}" />
+          </td>
+          <td class="workbook-num ${under ? "cell-neg" : ""}">${under ? "Below" : "OK"}</td>
+        </tr>`;
+      })
+      .join("");
+    return `
+      <div class="workbook-par-lead">
+        <p><strong>Set PARs across every SKU.</strong> This is the column your Excel system runs on — variance, below-par alerts, and next week's order list all pull from here.</p>
+        <p class="field-hint">${data.product_rows.length} products · ${belowPar} below par right now</p>
+      </div>
+      <div class="workbook-table-wrap scroll-panel">
+        <table class="workbook-table review-table workbook-par-table">
+          <thead><tr><th>Station</th><th>Product</th><th>Size</th><th>Current</th><th>PAR</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <p class="workbook-row-count">${data.product_rows.length} rows — edit PAR, then Save</p>
+      </div>
+      <div class="workbook-par-actions">
+        <button type="button" class="btn btn-primary" id="btnSaveWorkbookPars">Save PAR changes</button>
+        <span id="workbookParStatus" class="field-hint"></span>
+      </div>`;
+  }
+
+  if (sheet === "week-over-week") {
+    const rows = data.week_over_week || [];
+    if (!rows.length) {
+      return `<p class="field-hint workbook-empty">Need 2 processed counts to show week-over-week reconciliation.</p>`;
+    }
+    return `
+      <p class="workbook-sheet-lead">${rows.length} reconciliation rows — same math you get after Process.</p>
+      <div class="workbook-table-wrap scroll-panel">
+        <table class="workbook-table review-table">
+          <thead><tr><th>Product</th><th>Station</th><th>Previous</th><th>Current</th><th>Change</th></tr></thead>
+          <tbody>
+            ${rows
+              .map((r, ri) => {
+                const ch = r.change;
+                const chCls = ch < 0 ? "cell-neg" : ch > 0 ? "cell-pos" : "";
+                return `<tr class="${ri % 2 ? "workbook-row-alt" : ""}">
+                  <td><strong>${escapeHtml(r.name)}</strong></td>
+                  <td>${escapeHtml(r.station)}</td>
+                  <td class="workbook-num">${r.previous_level.toFixed(2)}</td>
+                  <td class="workbook-num">${r.current_level.toFixed(2)}</td>
+                  <td class="workbook-num ${chCls}">${ch >= 0 ? "+" : ""}${ch.toFixed(2)}</td>
+                </tr>`;
+              })
+              .join("")}
+          </tbody>
+        </table>
+        <p class="workbook-row-count">${rows.length} rows</p>
+      </div>`;
   }
 
   if (sheet === "variance" || sheet === "order-generator") {
@@ -4505,9 +5440,139 @@ async function loadSpreadsheets() {
   try {
     workbookData = await OSB.getAnalytics();
     content.innerHTML = renderWorkbookSheet(workbookSheet, workbookData);
+    bindWorkbookParSave();
   } catch (e) {
     content.innerHTML = `<p class="status">${escapeHtml(e.message)}</p>`;
   }
+}
+
+async function saveWorkbookPars() {
+  const status = document.getElementById("workbookParStatus");
+  const inputs = document.querySelectorAll(".workbook-par-input");
+  if (!inputs.length) return;
+  const parMap = new Map();
+  inputs.forEach((inp) => {
+    const key = `${inp.dataset.parStation}:${inp.dataset.parBottle}`;
+    parMap.set(key, parseFloat(inp.value) || 0);
+  });
+  try {
+    const bar = await OSB.getBar(false);
+    let updated = 0;
+    for (const station of bar.stations || []) {
+      for (const bottle of station.bottles || []) {
+        const key = `${station.id}:${bottle.id}`;
+        if (parMap.has(key)) {
+          bottle.par_level = parMap.get(key);
+          updated += 1;
+        }
+      }
+    }
+    await OSB.saveBar({ stations: bar.stations });
+    if (status) status.textContent = `Saved PAR on ${updated} products.`;
+    workbookData = await OSB.getAnalytics();
+    const content = document.getElementById("workbookContent");
+    if (content && workbookSheet === "count-sheet") {
+      content.innerHTML = renderWorkbookSheet(workbookSheet, workbookData);
+      bindWorkbookParSave();
+    }
+    await loadMetrics();
+    await loadAnalytics();
+  } catch (e) {
+    if (status) status.textContent = e.message || "Could not save PARs.";
+  }
+}
+
+function bindWorkbookParSave() {
+  document.getElementById("btnSaveWorkbookPars")?.addEventListener("click", () => saveWorkbookPars());
+}
+
+function businessInitials(name) {
+  const parts = (name || "OSB").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "OSB";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function applyBranding(cfg) {
+  const b = cfg?.branding || {};
+  const businessName = b.business_name || "";
+  const address = b.business_address || "";
+  const panelTitle = b.panel_title || "";
+  const logo = b.logo_data_url || "";
+  brandingLogoData = logo;
+
+  const welcome = document.getElementById("sidebarWelcome");
+  const bizNameEl = document.getElementById("sidebarBusinessName");
+  const bizAddrEl = document.getElementById("sidebarBusinessAddress");
+  const markLabel = document.getElementById("sidebarMarkLabel");
+  const logoImg = document.getElementById("sidebarLogoImg");
+  const markDefault = document.getElementById("sidebarMarkDefault");
+
+  const displayTitle = panelTitle || businessName || cfg?.bar_name || "Welcome back";
+  if (welcome) welcome.textContent = panelTitle ? "Your panel" : businessName ? "Welcome back" : "Welcome back";
+  if (bizNameEl) {
+    bizNameEl.textContent = businessName || cfg?.bar_name || "";
+    bizNameEl.classList.toggle("hidden", !(businessName || cfg?.bar_name));
+  }
+  if (bizAddrEl) {
+    bizAddrEl.textContent = address;
+    bizAddrEl.classList.toggle("hidden", !address);
+  }
+  if (markLabel) {
+    markLabel.textContent = businessInitials(businessName || cfg?.bar_name || "OSB");
+    markLabel.classList.toggle("hidden", !!logo);
+  }
+  if (logoImg && markDefault) {
+    if (logo) {
+      logoImg.src = logo;
+      logoImg.alt = businessName || "Business logo";
+      logoImg.classList.remove("hidden");
+      markDefault.classList.add("hidden");
+    } else {
+      logoImg.removeAttribute("src");
+      logoImg.classList.add("hidden");
+      markDefault.classList.remove("hidden");
+    }
+  }
+  updateBrandPreview();
+}
+
+function updateBrandPreview() {
+  const name = document.getElementById("settBusinessName")?.value?.trim() || "Your business name";
+  const address = document.getElementById("settBusinessAddress")?.value?.trim() || "Address line";
+  const previewName = document.getElementById("brandPreviewName");
+  const previewAddr = document.getElementById("brandPreviewAddress");
+  const previewInitials = document.getElementById("brandPreviewInitials");
+  const previewLogo = document.getElementById("brandPreviewLogo");
+  if (previewName) previewName.textContent = name;
+  if (previewAddr) previewAddr.textContent = address;
+  if (previewInitials) {
+    previewInitials.textContent = businessInitials(name);
+    previewInitials.classList.toggle("hidden", !!brandingLogoData);
+  }
+  if (previewLogo) {
+    if (brandingLogoData) {
+      previewLogo.src = brandingLogoData;
+      previewLogo.classList.remove("hidden");
+    } else {
+      previewLogo.removeAttribute("src");
+      previewLogo.classList.add("hidden");
+    }
+  }
+}
+
+function readLogoFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve("");
+    if (file.size > 250_000) {
+      reject(new Error("Image too large — use a file under 250KB."));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Could not read image file."));
+    reader.readAsDataURL(file);
+  });
 }
 
 async function loadInHouse() {
@@ -4535,48 +5600,186 @@ async function loadInHouse() {
     return;
   }
   table.innerHTML = `
-    <table class="review-table">
-      <thead><tr><th>Product</th><th>Station</th><th>Category</th><th>Level</th><th>Par</th></tr></thead>
-      <tbody>
-        ${items
-          .map(
-            (it) => `
-          <tr${it.below_par ? ' class="row-flag"' : ""}>
-            <td>${escapeHtml(it.name)} <span class="field-hint">${escapeHtml(it.size || "")}</span></td>
-            <td>${escapeHtml(it.station_name || "")}</td>
-            <td>${escapeHtml(it.category || "")}</td>
-            <td>${escapeHtml(String(it.current_level ?? ""))}</td>
-            <td>${escapeHtml(String(it.par_level ?? ""))}</td>
-          </tr>`
-          )
-          .join("")}
-      </tbody>
-    </table>
+    <div class="workbook-table-wrap scroll-panel inhouse-table-wrap">
+      <table class="workbook-table review-table">
+        <thead><tr><th>Product</th><th>Station</th><th>Category</th><th>Level</th><th>Par</th></tr></thead>
+        <tbody>
+          ${items
+            .map(
+              (it, ri) => `
+            <tr class="${it.below_par ? "row-flag" : ri % 2 ? "workbook-row-alt" : ""}">
+              <td><strong>${escapeHtml(it.name)}</strong> <span class="field-hint">${escapeHtml(it.size || "")}</span></td>
+              <td>${escapeHtml(it.station_name || "")}</td>
+              <td>${escapeHtml(it.category || "")}</td>
+              <td class="workbook-num">${escapeHtml(String(it.current_level ?? ""))}</td>
+              <td class="workbook-num">${escapeHtml(String(it.par_level ?? ""))}</td>
+            </tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+      <p class="workbook-row-count">${items.length} products on shelf</p>
+    </div>
   `;
 }
 
-async function loadPosLog() {
-  const list = document.getElementById("posLogList");
+let inputsLogFilter = "all";
+let pendingInvoiceParse = null;
+
+function refreshInvoiceAiStatus(cfg) {
+  const el = document.getElementById("invoiceAiStatus");
+  if (!el) return;
+  const connected = cfg?.api_connection_status === "connected" || cfg?.ai_api_key_set;
+  if (connected) {
+    const prov = cfg?.ai_provider || "AI";
+    el.innerHTML = `<span class="invoice-ai-ok">Optional AI on (${escapeHtml(prov)})</span> — invoice photos will be read. Text paste and typing still work without AI.`;
+  } else {
+    el.innerHTML = `Invoice photos need optional AI — <a href="#" data-goto="settings" class="invoice-ai-link">connect in Settings</a> or type/paste numbers yourself. The rest of the program runs without AI.`;
+  }
+}
+
+function renderInvoiceParsePreview(invoice) {
+  const box = document.getElementById("invoiceParsePreview");
+  if (!box || !invoice) return;
+  const lines = invoice.lines || [];
+  if (!lines.length) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+  const rows = lines
+    .map(
+      (ln, i) => `<tr class="${i % 2 ? "workbook-row-alt" : ""}">
+        <td><strong>${escapeHtml(ln.product || "")}</strong></td>
+        <td>${escapeHtml(ln.size || "")}</td>
+        <td class="workbook-num">${ln.qty ?? ""}</td>
+        <td class="workbook-num">${ln.unit_cost != null ? `$${Number(ln.unit_cost).toFixed(2)}` : "—"}</td>
+        <td class="workbook-num">${ln.extended != null ? `$${Number(ln.extended).toFixed(2)}` : "—"}</td>
+      </tr>`
+    )
+    .join("");
+  box.classList.remove("hidden");
+  box.innerHTML = `
+    <div class="invoice-parse-head">
+      <strong>${escapeHtml(invoice.vendor || "Parsed invoice")}</strong>
+      <span class="field-hint">${escapeHtml(invoice.invoice_number || "")} ${escapeHtml(invoice.invoice_date || "")} · ${lines.length} lines · ${escapeHtml(invoice.parse_source || "")}</span>
+    </div>
+    <div class="workbook-table-wrap scroll-panel">
+      <table class="workbook-table review-table">
+        <thead><tr><th>Product</th><th>Size</th><th>Qty</th><th>Unit</th><th>Extended</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="btnSaveParsedInvoice">Save to input log →</button>
+      <button type="button" class="btn btn-ghost" id="btnDiscardInvoiceParse">Discard</button>
+    </div>`;
+  document.getElementById("btnSaveParsedInvoice")?.addEventListener("click", savePendingInvoiceParse);
+  document.getElementById("btnDiscardInvoiceParse")?.addEventListener("click", () => {
+    pendingInvoiceParse = null;
+    box.classList.add("hidden");
+    box.innerHTML = "";
+  });
+}
+
+async function savePendingInvoiceParse() {
+  if (!pendingInvoiceParse) return;
+  const label = document.getElementById("invoiceLabel")?.value?.trim();
+  const note = document.getElementById("invoiceNote")?.value?.trim();
+  try {
+    await OSB.saveParsedInvoice({
+      invoice: pendingInvoiceParse,
+      label: label || pendingInvoiceParse.vendor,
+      note,
+    });
+    pendingInvoiceParse = null;
+    document.getElementById("invoiceParsePreview")?.classList.add("hidden");
+    document.getElementById("invoicePhoto").value = "";
+    document.getElementById("invoicePaste").value = "";
+    setStatus("Parsed invoice saved to input log.", "invoiceParseStatus");
+    await loadInputsHub();
+    await loadMetrics();
+  } catch (e) {
+    setStatus(e.message, "invoiceParseStatus");
+  }
+}
+
+function inputTypeLabel(type) {
+  return type === "invoice" ? "Invoice" : "POS";
+}
+
+function inputTypeClass(type) {
+  return type === "invoice" ? "inputs-log-pill--invoice" : "inputs-log-pill--pos";
+}
+
+async function refreshInputsCyclePanel() {
+  const status = document.getElementById("inputsCycleStatus");
+  const badge = document.getElementById("inputsCycleBadge");
+  if (!status) return;
+  try {
+    const data = await OSB.getState();
+    const cycles = data.state?.cycles_count ?? 0;
+    const next = cycles + 1;
+    const barName = data.config?.bar_name || data.bar?.name || "your bar";
+    if (badge) badge.textContent = cycles ? `Cycle ${next} input` : "First cycle input";
+    status.textContent =
+      cycles === 0
+        ? `${barName} — finish your first count from setup, then return here each week.`
+        : `${barName} — ${cycles} cycle${cycles === 1 ? "" : "s"} completed. Ready for cycle ${next}.`;
+  } catch (e) {
+    status.textContent = e.message || "Could not load cycle status.";
+  }
+}
+
+async function loadInputsHub() {
+  await refreshInputsCyclePanel();
+  const data = await OSB.getState();
+  refreshInvoiceAiStatus(data.config);
+  await loadInputsLog();
+}
+
+async function loadInputsLog() {
+  const list = document.getElementById("inputsLogList");
   if (!list) return;
   const data = await OSB.getPosLog();
-  const entries = data.entries || [];
+  let entries = data.entries || [];
+  if (inputsLogFilter !== "all") {
+    entries = entries.filter((e) => (e.input_type || "pos") === inputsLogFilter);
+  }
   if (!entries.length) {
-    list.innerHTML = `<p class="field-hint">No POS drops yet — upload a terminal receipt above.</p>`;
+    const hint =
+      inputsLogFilter === "invoice"
+        ? "No invoices staged yet — upload a vendor drop above."
+        : inputsLogFilter === "pos"
+          ? "No POS drops yet — upload a terminal receipt above."
+          : "No inputs staged yet — add POS, invoices, or start your next count above.";
+    list.innerHTML = `<p class="field-hint">${hint}</p>`;
     return;
   }
   list.innerHTML = entries
-    .map(
-      (e) => `
-    <div class="bar-list-item" data-pos-id="${escapeHtml(e.id)}">
+    .map((e) => {
+      const type = e.input_type || "pos";
+      const parsed = e.parsed_invoice;
+      const parsedNote = parsed?.line_count
+        ? `<span class="field-hint">${parsed.line_count} line items parsed (${escapeHtml(parsed.parse_source || "")})</span>`
+        : "";
+      return `
+    <div class="bar-list-item inputs-log-item" data-pos-id="${escapeHtml(e.id)}">
       <div>
-        <strong>${escapeHtml(e.label || "POS drop")}</strong>
+        <span class="inputs-log-pill ${inputTypeClass(type)}">${inputTypeLabel(type)}</span>
+        <strong>${escapeHtml(e.label || inputTypeLabel(type))}</strong>
         <span class="field-hint">${escapeHtml((e.uploaded_at || "").slice(0, 16))} · ${escapeHtml(e.original_name || e.filename || "")}</span>
         ${e.note ? `<span class="field-hint">${escapeHtml(e.note)}</span>` : ""}
+        ${parsedNote}
       </div>
       <button type="button" class="btn btn-ghost btn-sm btn-pos-delete" data-id="${escapeHtml(e.id)}">Remove</button>
-    </div>`
-    )
+    </div>`;
+    })
     .join("");
+}
+
+async function loadPosLog() {
+  await loadInputsHub();
 }
 
 function renderApiBadge(status) {
@@ -4589,6 +5792,16 @@ function renderApiBadge(status) {
 async function populateSettings(cfg) {
   const barEl = document.getElementById("settBarName");
   if (barEl) barEl.value = cfg.bar_name || "";
+
+  const b = cfg.branding || {};
+  const bizName = document.getElementById("settBusinessName");
+  if (bizName) bizName.value = b.business_name || "";
+  const bizAddr = document.getElementById("settBusinessAddress");
+  if (bizAddr) bizAddr.value = b.business_address || "";
+  const panelTitle = document.getElementById("settPanelTitle");
+  if (panelTitle) panelTitle.value = b.panel_title || "";
+  brandingLogoData = b.logo_data_url || "";
+  applyBranding(cfg);
 
   const labelEl = document.getElementById("settCycleLabel");
   if (labelEl) labelEl.value = cfg.cycle?.label || "Inventory cycle";
@@ -4691,6 +5904,7 @@ async function initHome() {
   );
 
   await populateSettings(cfg);
+  refreshInvoiceAiStatus(cfg);
   await loadMetrics();
 
   if (homeListenersBound) return;
@@ -4702,7 +5916,7 @@ async function initHome() {
       if (btn.dataset.view === "spreadsheets") await loadSpreadsheets();
       if (btn.dataset.view === "analytics") await loadAnalytics();
       if (btn.dataset.view === "inhouse") await loadInHouse();
-      if (btn.dataset.view === "inputs") await loadPosLog();
+      if (btn.dataset.view === "inputs") await loadInputsHub();
     });
   });
 
@@ -4725,6 +5939,7 @@ async function initHome() {
     const content = document.getElementById("workbookContent");
     if (content && workbookData) {
       content.innerHTML = renderWorkbookSheet(workbookSheet, workbookData);
+      bindWorkbookParSave();
     } else {
       await loadSpreadsheets();
     }
@@ -4744,20 +5959,121 @@ async function initHome() {
       return;
     }
     try {
-      await OSB.uploadPosLog({ label: label || "POS drop", note, file, text });
+      await OSB.uploadPosLog({ label, note, file, text, inputType: "pos" });
       document.getElementById("posFile").value = "";
       document.getElementById("posPaste").value = "";
       document.getElementById("posLabel").value = "";
       document.getElementById("posNote").value = "";
       setStatus("POS drop saved.", "posStatus");
-      await loadPosLog();
+      await loadInputsHub();
       await loadMetrics();
     } catch (e) {
       setStatus(e.message, "posStatus");
     }
   });
 
-  document.getElementById("posLogList")?.addEventListener("click", async (e) => {
+  document.querySelector('.admin-view[data-view="inputs"]')?.addEventListener("click", (e) => {
+    const link = e.target.closest(".invoice-ai-link[data-goto]");
+    if (link) {
+      e.preventDefault();
+      switchAdminView("settings");
+    }
+  });
+
+  document.getElementById("btnInvoiceParse")?.addEventListener("click", async () => {
+    const photo = document.getElementById("invoicePhoto")?.files?.[0];
+    const file = document.getElementById("invoiceFile")?.files?.[0];
+    const text = document.getElementById("invoicePaste")?.value?.trim();
+    const statusEl = "invoiceParseStatus";
+    const btn = document.getElementById("btnInvoiceParse");
+    if (!photo && !file && !text) {
+      setStatus("Add a phone photo, file, or paste invoice text first.", statusEl);
+      return;
+    }
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Parsing…";
+    }
+    setStatus(photo ? "Sending photo to AI…" : "Parsing line items…", statusEl);
+    try {
+      let parseText = text;
+      if (!photo && file && !text) {
+        parseText = await file.text();
+      }
+      const res = await OSB.parseInvoice({
+        imageFile: photo || null,
+        text: parseText,
+        useAi: !photo && !!parseText,
+      });
+      pendingInvoiceParse = res.invoice;
+      if (!pendingInvoiceParse?.lines?.length) {
+        throw new Error("No line items found — try a clearer photo or paste the invoice text.");
+      }
+      renderInvoiceParsePreview(pendingInvoiceParse);
+      setStatus(
+        `Parsed ${pendingInvoiceParse.lines.length} lines (${pendingInvoiceParse.parse_source || "ok"}) — review below, then Save.`,
+        statusEl
+      );
+    } catch (e) {
+      setStatus(e.message, statusEl);
+      pendingInvoiceParse = null;
+      document.getElementById("invoiceParsePreview")?.classList.add("hidden");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Parse with AI →";
+      }
+    }
+  });
+
+  document.getElementById("btnInvoiceUpload")?.addEventListener("click", async () => {
+    const label = document.getElementById("invoiceLabel")?.value?.trim();
+    const note = document.getElementById("invoiceNote")?.value?.trim();
+    const file = document.getElementById("invoiceFile")?.files?.[0];
+    const text = document.getElementById("invoicePaste")?.value?.trim();
+    if (!file && !text) {
+      setStatus("Choose an invoice file or paste invoice text.", "posStatus");
+      return;
+    }
+    try {
+      await OSB.uploadPosLog({ label, note, file, text, inputType: "invoice" });
+      document.getElementById("invoiceFile").value = "";
+      document.getElementById("invoicePaste").value = "";
+      document.getElementById("invoiceLabel").value = "";
+      document.getElementById("invoiceNote").value = "";
+      setStatus("Invoice saved.", "posStatus");
+      await loadInputsHub();
+      await loadMetrics();
+    } catch (e) {
+      setStatus(e.message, "posStatus");
+    }
+  });
+
+  document.getElementById("btnBeginNextInventory")?.addEventListener("click", async () => {
+    const ok = window.confirm(
+      "Start your next weekly inventory?\n\nYou'll go to Count (step 5) to paste your new count. Your station map and PARs stay the same — only the count is new.\n\nClick OK to open the count screen."
+    );
+    if (!ok) return;
+    try {
+      const res = await OSB.beginNextCount();
+      setStatus(`Opening count for cycle ${res.next_cycle_number || ""}…`, "inputsCycleMsg");
+      window.location.href = "/setup";
+    } catch (e) {
+      setStatus(e.message, "inputsCycleMsg");
+    }
+  });
+
+  document.getElementById("inputsLogFilters")?.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".inputs-log-filter");
+    if (!btn) return;
+    inputsLogFilter = btn.dataset.logFilter || "all";
+    document.querySelectorAll(".inputs-log-filter").forEach((b) => {
+      b.classList.toggle("active", b === btn);
+    });
+    await loadInputsLog();
+  });
+
+  document.getElementById("inputsLogList")?.addEventListener("click", async (e) => {
     const btn = e.target.closest(".btn-pos-delete");
     if (!btn) return;
     if (!window.confirm("Remove this POS drop?")) return;
@@ -4765,7 +6081,7 @@ async function initHome() {
       await OSB.deletePosLog(btn.dataset.id);
       await loadPosLog();
       await loadMetrics();
-      setStatus("POS drop removed.", "posStatus");
+      setStatus("Input removed.", "posStatus");
     } catch (err) {
       setStatus(err.message, "posStatus");
     }
@@ -4810,7 +6126,60 @@ async function initHome() {
     const cycleText = `${fresh.config.cycle?.label || "Inventory cycle"} · every ${d} day${d === 1 ? "" : "s"}`;
     document.getElementById("sidebarCycleLabel")?.replaceChildren(document.createTextNode(cycleText));
     await refreshHomeBars();
+    applyBranding(fresh.config);
     setStatus("Customizations saved.", "settingsStatus");
+  });
+
+  ["settBusinessName", "settBusinessAddress", "settPanelTitle"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("input", updateBrandPreview);
+  });
+
+  document.getElementById("settBusinessLogo")?.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      brandingLogoData = await readLogoFile(file);
+      updateBrandPreview();
+      applyBranding({
+        branding: {
+          business_name: document.getElementById("settBusinessName")?.value?.trim(),
+          logo_data_url: brandingLogoData,
+        },
+        bar_name: document.getElementById("settBarName")?.value?.trim(),
+      });
+    } catch (err) {
+      setStatus(err.message, "settingsStatus");
+      e.target.value = "";
+    }
+  });
+
+  document.getElementById("btnClearLogo")?.addEventListener("click", () => {
+    brandingLogoData = "";
+    const fileInput = document.getElementById("settBusinessLogo");
+    if (fileInput) fileInput.value = "";
+    updateBrandPreview();
+    applyBranding({
+      branding: { logo_data_url: "" },
+      bar_name: document.getElementById("settBarName")?.value?.trim(),
+    });
+  });
+
+  document.getElementById("btnSaveBranding")?.addEventListener("click", async () => {
+    const res = await OSB.saveConfig({
+      branding: {
+        business_name: document.getElementById("settBusinessName")?.value?.trim(),
+        business_address: document.getElementById("settBusinessAddress")?.value?.trim(),
+        panel_title: document.getElementById("settPanelTitle")?.value?.trim(),
+        logo_data_url: brandingLogoData,
+      },
+    });
+    if (res.error) {
+      setStatus(res.error, "settingsStatus");
+      return;
+    }
+    const fresh = await OSB.getState();
+    applyBranding(fresh.config);
+    setStatus("Business profile saved — sidebar updated.", "settingsStatus");
   });
 
   document.getElementById("btnSaveApi")?.addEventListener("click", async () => {
@@ -4837,7 +6206,6 @@ async function initHome() {
 
 document.addEventListener("DOMContentLoaded", () => {
   if (document.body.dataset.app === "setup") {
-    bindUpdatesSignupListeners();
     initSetup().catch((err) => setStatus(err.message || "Setup failed to load."));
   }
   if (document.body.dataset.app === "home") initHome();

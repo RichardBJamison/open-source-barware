@@ -15,7 +15,7 @@ import math
 import os
 import re
 import urllib.error
-import urllib.request
+
 import uuid
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -42,10 +42,12 @@ _STATE_FILE = os.path.join(_DATA, "program_state.json")
 _BAR_FILE = os.path.join(_DATA, "bar_data.json")
 _BARS_FILE = os.path.join(_DATA, "bars.json")
 _POS_DIR = os.path.join(_DATA, "pos")
+_SECRETS_FILE = os.path.join(_DATA, "ai_secrets.json")
+
+from invoice_parse import parse_invoice  # noqa: E402
 
 PHASES = (
     "welcome",
-    "updates_signup",
     "name_bar",
     "voice_walk",
     "reconcile",
@@ -57,7 +59,6 @@ PHASES = (
 
 PHASE_LABELS = {
     "welcome": "Welcome",
-    "updates_signup": "Updates",
     "name_bar": "Name",
     "voice_walk": "Walk",
     "build_bar": "Review bar",
@@ -69,6 +70,7 @@ PHASE_LABELS = {
 
 LEGACY_PHASE_MAP = {
     "ai_connect": "name_bar",
+    "updates_signup": "name_bar",
 }
 
 DEFAULT_STATIONS: list[dict[str, Any]] = [
@@ -110,6 +112,12 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "last_90_days",
         "custom",
     ],
+    "branding": {
+        "business_name": "",
+        "business_address": "",
+        "panel_title": "",
+        "logo_data_url": "",
+    },
 }
 
 app = Flask(__name__, static_folder=_STATIC, static_url_path="/static")
@@ -167,11 +175,30 @@ def _load_config() -> dict[str, Any]:
     cfg = _read_json(_CONFIG_FILE, {})
     merged = {**DEFAULT_CONFIG, **cfg}
     merged["cycle"] = {**DEFAULT_CONFIG["cycle"], **cfg.get("cycle", {})}
+    merged["branding"] = {**DEFAULT_CONFIG["branding"], **cfg.get("branding", {})}
     normalized = _normalize_phase(merged.get("phase", "welcome"), merged)
     if normalized != merged.get("phase"):
         merged["phase"] = normalized
         _write_json(_CONFIG_FILE, merged)
     return merged
+
+
+def _load_ai_secrets() -> dict[str, Any]:
+    data = _read_json(_SECRETS_FILE, {})
+    return data if isinstance(data, dict) else {}
+
+
+def _save_ai_secrets(data: dict[str, Any]) -> None:
+    _write_json(_SECRETS_FILE, data)
+    try:
+        os.chmod(_SECRETS_FILE, 0o600)
+    except OSError:
+        pass
+
+
+def _ai_credentials(cfg: dict[str, Any]) -> tuple[str, str]:
+    secrets = _load_ai_secrets()
+    return secrets.get("api_key", ""), secrets.get("provider") or cfg.get("ai_provider") or "claude"
 
 
 def _save_config(patch: dict[str, Any]) -> dict[str, Any]:
@@ -550,11 +577,13 @@ def _close_cycle(bar: dict[str, Any], cfg: dict[str, Any]) -> dict[str, Any]:
     stats = _bar_inventory_stats(bar)
     state = _load_state()
     cycles = list(state.get("cycles", []))
+    bar_id = bar.get("id", "")
+    bar_cycles = [c for c in cycles if c.get("bar_id") == bar_id]
     cycle = {
         "id": _uid("cycle-"),
-        "bar_id": bar.get("id"),
+        "bar_id": bar_id,
         "bar_name": bar.get("name", ""),
-        "cycle_number": len(cycles) + 1,
+        "cycle_number": len(bar_cycles) + 1,
         "period_start": bounds["period_start"],
         "period_end": bounds["period_end"],
         "completed_at": _now(),
@@ -667,11 +696,7 @@ def _can_advance(cfg: dict[str, Any], target: str) -> tuple[bool, str]:
     bar_name = bar.get("name") or cfg.get("bar_name", "")
 
     checks = {
-        "updates_signup": (current == "welcome", "Complete welcome first."),
-        "name_bar": (
-            _phase_index(current) < _phase_index("name_bar"),
-            "Complete the release-list step first.",
-        ),
+        "name_bar": (current == "welcome", "Complete welcome first."),
         "voice_walk": (current == "name_bar", "Continue from the previous step first."),
         "reconcile": (has_walk, "Walk the bar — paste voice notes or add bottles."),
         "build_bar": (
@@ -867,6 +892,8 @@ def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, An
 
         product_rows.append(
             {
+                "id": bottle.get("id"),
+                "station_id": station.get("id"),
                 "name": bottle.get("name"),
                 "category": bucket,
                 "station": station.get("name"),
@@ -930,6 +957,41 @@ def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, An
         velocity.sort(key=lambda x: abs(x["change"]), reverse=True)
         velocity = velocity[:10]
 
+    week_over_week: list[dict[str, Any]] = []
+    if len(cycles) >= 2:
+        latest = cycles[-1]
+        previous = cycles[-2]
+        prev_map = _snapshot_level_map(previous)
+        latest_map = _snapshot_level_map(latest)
+        name_station: dict[str, dict[str, str]] = {}
+        for station in (latest.get("snapshot") or {}).get("stations", []):
+            st_name = station.get("name", "")
+            for bottle in station.get("bottles", []):
+                bid = bottle.get("id")
+                if bid:
+                    name_station[bid] = {
+                        "name": bottle.get("name", ""),
+                        "station": st_name,
+                    }
+        for bid, current in latest_map.items():
+            if bid not in prev_map:
+                continue
+            previous_level = prev_map[bid]
+            change = round(current - previous_level, 2)
+            meta = name_station.get(bid, {})
+            week_over_week.append(
+                {
+                    "id": bid,
+                    "name": meta.get("name", bid),
+                    "station": meta.get("station", ""),
+                    "previous_level": previous_level,
+                    "current_level": current,
+                    "change": change,
+                    "direction": "up" if change > 0 else "down" if change < 0 else "flat",
+                }
+            )
+        week_over_week.sort(key=lambda x: abs(x["change"]), reverse=True)
+
     stats = _bar_inventory_stats(bar)
     return {
         "bar_name": bar.get("name", ""),
@@ -948,6 +1010,7 @@ def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, An
         "variance_alerts": variance_alerts,
         "trend_data": trend_data,
         "velocity": velocity,
+        "week_over_week": week_over_week,
         "product_rows": sorted(product_rows, key=lambda r: (r["category"], r["name"])),
         "cycles_total": len(cycles),
         "cycle_label": cfg.get("cycle", {}).get("label", "Inventory cycle"),
@@ -1038,6 +1101,7 @@ def api_state():
                 "cycle": cfg.get("cycle"),
                 "metrics_default_window": cfg.get("metrics_default_window"),
                 "metrics_windows": cfg.get("metrics_windows"),
+                "branding": cfg.get("branding", DEFAULT_CONFIG["branding"]),
             },
             "bars": [_bar_public_summary(b) for b in registry.get("bars", [])],
             "bar": {
@@ -1075,8 +1139,19 @@ def api_config():
         "first_count_complete",
         "metrics_default_window",
         "cycle",
+        "branding",
     }
     patch = {k: body[k] for k in allowed if k in body}
+    if "branding" in patch and isinstance(patch["branding"], dict):
+        current = _load_config().get("branding", DEFAULT_CONFIG["branding"])
+        branding = {**current, **patch["branding"]}
+        logo = branding.get("logo_data_url") or ""
+        if logo and len(logo) > 180_000:
+            return jsonify({"error": "Logo image too large — use a smaller file (under ~120KB)."}), 400
+        for key in ("business_name", "business_address", "panel_title"):
+            if key in branding and branding[key] is not None:
+                branding[key] = str(branding[key]).strip()[:200]
+        patch["branding"] = branding
     if "cycle" in patch:
         cycle = patch["cycle"] if isinstance(patch["cycle"], dict) else {}
         mode = str(cycle.get("mode", "")).lower()
@@ -1131,13 +1206,20 @@ def api_config():
         patch["setup_bar_id"] = ""
         patch["phase"] = "butterfly"
     if body.get("ai_api_key"):
+        key = str(body["ai_api_key"]).strip()
+        provider = str(body.get("ai_provider") or _load_config().get("ai_provider") or "claude").strip()
+        _save_ai_secrets({"api_key": key, "provider": provider})
         patch["ai_api_key_set"] = True
         patch["api_connection_status"] = "connected"
+        if provider:
+            patch["ai_provider"] = provider
     if body.get("clear_api_key"):
+        _save_ai_secrets({})
         patch["ai_api_key_set"] = False
         patch["api_connection_status"] = "needs-key"
     cfg = _save_config(patch)
     public = {k: cfg.get(k) for k in allowed if k in cfg}
+    public["branding"] = cfg.get("branding", DEFAULT_CONFIG["branding"])
     public["ai_api_key_set"] = cfg.get("ai_api_key_set")
     public["api_connection_status"] = cfg.get("api_connection_status")
     resp: dict[str, Any] = {"status": "saved", "config": public}
@@ -1235,90 +1317,9 @@ def api_hard_reset():
         except OSError:
             pass
 
-    reset_cfg = {**DEFAULT_CONFIG, "phase": "updates_signup"}
+    reset_cfg = {**DEFAULT_CONFIG, "phase": "welcome"}
     _write_json(_CONFIG_FILE, reset_cfg)
-    return jsonify({"status": "reset", "phase": "updates_signup", "backup": backup_dir})
-
-
-UPDATES_SUBSCRIBE_UPSTREAM = os.environ.get(
-    "OSB_UPDATES_SUBSCRIBE_URL", "https://opensourcebarware.com/api/updates-subscribe"
-)
-_SIGNUPS_LOG = os.path.join(_DATA, "release_signups.jsonl")
-
-
-def _append_signup_log(entry: dict[str, Any]) -> None:
-    try:
-        os.makedirs(_DATA, exist_ok=True)
-        with open(_SIGNUPS_LOG, "a", encoding="utf-8") as f:
-            f.write(json.dumps({**entry, "logged_at": _now()}) + "\n")
-    except OSError:
-        pass
-
-
-@app.route("/api/updates-subscribe", methods=["OPTIONS"])
-def api_updates_subscribe_options():
-    return Response(
-        "",
-        status=204,
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type",
-        },
-    )
-
-
-@app.route("/api/updates-subscribe", methods=["POST"])
-def api_updates_subscribe_proxy():
-    """Same-origin proxy to production signup API (Chrome program → GHL + notify)."""
-    body = request.get_data()
-    if not body:
-        return jsonify({"error": "JSON body required."}), 400
-
-    try:
-        payload = json.loads(body.decode("utf-8"))
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        return jsonify({"error": "Invalid JSON body."}), 400
-
-    _append_signup_log(
-        {
-            "email": payload.get("email", ""),
-            "programUpdates": payload.get("programUpdates"),
-            "hiddenBarTour": payload.get("hiddenBarTour"),
-            "source": payload.get("source", "chrome-program-setup"),
-        }
-    )
-
-    upstream_req = urllib.request.Request(
-        UPDATES_SUBSCRIBE_UPSTREAM,
-        data=body,
-        headers={
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "User-Agent": (
-                "Mozilla/5.0 (compatible; OpenSourceBarware-Program/1.0; "
-                "+https://opensourcebarware.com)"
-            ),
-        },
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(upstream_req, timeout=20) as upstream_resp:
-            resp_body = upstream_resp.read()
-            status = upstream_resp.status
-    except urllib.error.HTTPError as exc:
-        resp_body = exc.read()
-        status = exc.code
-    except urllib.error.URLError as exc:
-        return jsonify({"error": f"Signup service unreachable: {exc.reason}"}), 502
-
-    try:
-        data = json.loads(resp_body.decode("utf-8")) if resp_body else {}
-    except json.JSONDecodeError:
-        data = {"error": "Invalid response from signup service."}
-        return jsonify(data), 502
-
-    return jsonify(data), status
+    return jsonify({"status": "reset", "phase": "welcome", "backup": backup_dir})
 
 
 # ── Caterpillar stubs ───────────────────────────────────────────────────────
@@ -1343,7 +1344,7 @@ def api_skip_ai():
         {
             "status": "skipped",
             "phase": cfg["phase"],
-            "message": "API connection skipped. Add your key anytime under Settings → API management.",
+            "message": "Optional AI skipped. The full program runs without it. Add a key anytime under Settings → Optional AI for invoice photos.",
         }
     )
 
@@ -1374,6 +1375,83 @@ def api_count_notes():
     notes = [{"id": note_id, "text": text, "uploaded_at": _now()}]
     _save_bar_setup(bar["id"], {"count_notes": notes})
     return jsonify({"status": "saved", "count": 1})
+
+
+@app.route("/api/cycle/begin-next-count", methods=["POST"])
+def api_begin_next_count():
+    """Open Count step for the next inventory cycle — map and PARs unchanged."""
+    cfg = _load_config()
+    bar = _load_bar()
+    bar_id = bar.get("id", "")
+    setup = _bar_setup_state(bar)
+    if not setup.get("map_approved"):
+        return jsonify({"error": "Approve your inventory map before starting a count."}), 400
+    if _bar_bottle_count(bar) < 1:
+        return jsonify({"error": "No bottles on map — complete your walk first."}), 400
+
+    _save_bar_setup(bar_id, {"count_notes": []})
+    _save_config(
+        {
+            "setup_bar_id": bar_id,
+            "active_bar_id": bar_id,
+            "phase": "first_count",
+        }
+    )
+    state = _load_state()
+    cycles_done = len([c for c in state.get("cycles", []) if c.get("bar_id") == bar_id])
+    return jsonify(
+        {
+            "status": "ok",
+            "phase": "first_count",
+            "phase_label": PHASE_LABELS["first_count"],
+            "next_cycle_number": cycles_done + 1,
+            "bar_id": bar_id,
+        }
+    )
+
+
+@app.route("/api/count/process-cycle", methods=["POST"])
+def api_process_inventory_cycle():
+    """Close inventory cycle after count — populates metrics, analytics, spreadsheets, week-over-week."""
+    bar = _load_bar()
+    if _bar_bottle_count(bar) < 1:
+        return jsonify({"error": "No bottles on map — complete your walk first."}), 400
+
+    cfg = _load_config()
+    bar_id = bar.get("id", "")
+    state = _load_state()
+    bar_cycles_before = [c for c in state.get("cycles", []) if c.get("bar_id") == bar_id]
+
+    cycle = _close_cycle(bar, cfg)
+    setup_patch: dict[str, Any] = {"last_count_at": _now(), "first_count_complete": True}
+    _save_bar_setup(bar_id, setup_patch)
+
+    cfg_patch: dict[str, Any] = {
+        "first_count_complete": True,
+        "setup_bar_id": "",
+        "phase": "butterfly",
+    }
+    _save_config(cfg_patch)
+
+    cfg = _load_config()
+    analytics = _analytics_payload(cfg, bar)
+    metrics = _metrics_for_window(cfg, cfg.get("metrics_default_window", "current_cycle"))
+    in_house = _in_house_items(bar, "all")
+
+    return jsonify(
+        {
+            "status": "processed",
+            "cycle": cycle,
+            "cycle_number": cycle.get("cycle_number"),
+            "cycles_total": len([c for c in _load_state().get("cycles", []) if c.get("bar_id") == bar_id]),
+            "is_first_cycle": len(bar_cycles_before) == 0,
+            "analytics": analytics,
+            "metrics": metrics,
+            "in_house_count": len(in_house),
+            "velocity": analytics.get("velocity", []),
+            "week_over_week": analytics.get("week_over_week", []),
+        }
+    )
 
 
 def _reconcile_bar(bar: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -1459,7 +1537,7 @@ def api_reconcile():
     cfg = _load_config()
     if not cfg.get("ai_api_key_set") and cfg.get("api_connection_status") != "connected":
         draft["flags"].append(
-            "AI not connected — map built from your walk. Connect API in Settings for deeper reconciliation."
+            "Optional AI off — map built locally from your walk. Add a key in Settings only if you want invoice photos read."
         )
     _save_bar_setup(bar["id"], {"draft_map": draft})
     return jsonify(
@@ -2081,6 +2159,8 @@ def api_pos_log_add():
     body = request.get_json(silent=True) or {} if request.is_json else {}
     label = (request.form.get("label") or body.get("label") or "").strip()
     note = (request.form.get("note") or body.get("note") or "").strip()
+    raw_type = (request.form.get("input_type") or body.get("input_type") or "pos").strip().lower()
+    input_type = "invoice" if raw_type in ("invoice", "invoices", "vendor") else "pos"
     if request.is_json:
         text_body = (body.get("text") or "").strip()
         if text_body and not request.files:
@@ -2089,9 +2169,11 @@ def api_pos_log_add():
             fpath = os.path.join(_POS_DIR, "files", fname)
             with open(fpath, "w", encoding="utf-8") as fh:
                 fh.write(text_body)
+            default_label = "Invoice drop" if input_type == "invoice" else "POS drop"
             entry = {
                 "id": _uid("pos-"),
-                "label": label or "POS drop",
+                "input_type": input_type,
+                "label": label or default_label,
                 "note": note,
                 "filename": fname,
                 "original_name": "paste.txt",
@@ -2107,7 +2189,7 @@ def api_pos_log_add():
     if not upload or not upload.filename:
         return jsonify({"error": "POS file or pasted text required."}), 400
     if not label:
-        label = upload.filename.rsplit(".", 1)[0] or "POS drop"
+        label = upload.filename.rsplit(".", 1)[0] or ("Invoice drop" if input_type == "invoice" else "POS drop")
 
     os.makedirs(os.path.join(_POS_DIR, "files"), exist_ok=True)
     safe_ext = re.sub(r"[^a-zA-Z0-9.]", "", os.path.splitext(upload.filename)[1].lower())[:8]
@@ -2118,12 +2200,110 @@ def api_pos_log_add():
 
     entry = {
         "id": _uid("pos-"),
+        "input_type": input_type,
         "label": label,
         "note": note,
         "filename": stored,
         "original_name": upload.filename,
         "uploaded_at": _now(),
         "size_bytes": size,
+    }
+    log = _load_pos_log(bar_id)
+    log.setdefault("entries", []).insert(0, entry)
+    _save_pos_log(bar_id, log)
+    return jsonify({"status": "saved", "entry": entry})
+
+
+@app.route("/api/inputs/invoice/parse", methods=["POST"])
+def api_parse_invoice():
+    """Parse invoice from photo (AI vision) or pasted text (local + optional AI)."""
+    cfg = _load_config()
+    api_key, provider = _ai_credentials(cfg)
+
+    upload = request.files.get("image") or request.files.get("file")
+    if upload and upload.filename:
+        raw = upload.read()
+        if len(raw) > 8_000_000:
+            return jsonify({"error": "Image too large — use a photo under 8MB."}), 400
+        ext = os.path.splitext(upload.filename)[1].lower()
+        media = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".webp": "image/webp",
+            ".gif": "image/gif",
+            ".heic": "image/heic",
+        }.get(ext, upload.mimetype or "image/jpeg")
+        try:
+            parsed = parse_invoice(
+                image_bytes=raw, media_type=media, api_key=api_key, provider=provider
+            )
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode("utf-8", errors="replace")[:400]
+            return jsonify({"error": f"AI provider error ({e.code}): {detail}"}), 502
+        except Exception as e:
+            return jsonify({"error": f"Invoice parse failed: {e}"}), 500
+        return jsonify({"status": "parsed", "invoice": parsed})
+
+    body = request.get_json(silent=True) or {}
+    text = (body.get("text") or "").strip()
+    if not text:
+        return jsonify({"error": "Upload an invoice photo or paste invoice text."}), 400
+    prefer_ai = bool(body.get("use_ai")) and bool(api_key)
+    try:
+        parsed = parse_invoice(
+            text=text, api_key=api_key, provider=provider, prefer_ai=prefer_ai
+        )
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", errors="replace")[:400]
+        return jsonify({"error": f"AI provider error ({e.code}): {detail}"}), 502
+    except Exception as e:
+        return jsonify({"error": f"Invoice parse failed: {e}"}), 500
+    return jsonify({"status": "parsed", "invoice": parsed})
+
+
+@app.route("/api/inputs/invoice/save", methods=["POST"])
+def api_save_parsed_invoice():
+    """Save parsed invoice to input log with structured line items."""
+    cfg = _load_config()
+    bar_id = cfg.get("active_bar_id") or _setup_bar_id(cfg)
+    body = request.get_json(force=True) or {}
+    invoice = body.get("invoice") or {}
+    label = (body.get("label") or invoice.get("vendor") or "Invoice drop").strip()
+    note = (body.get("note") or "").strip()
+    lines = invoice.get("lines") or []
+    if not lines:
+        return jsonify({"error": "No line items to save — parse the invoice first."}), 400
+
+    os.makedirs(os.path.join(_POS_DIR, "files"), exist_ok=True)
+    raw_text = invoice.get("raw_text") or json.dumps(invoice, indent=2)
+    fname = f"{_uid('inv-')}.json"
+    fpath = os.path.join(_POS_DIR, "files", fname)
+    with open(fpath, "w", encoding="utf-8") as fh:
+        json.dump(invoice, fh, indent=2)
+
+    entry = {
+        "id": _uid("pos-"),
+        "input_type": "invoice",
+        "label": label[:120],
+        "note": note,
+        "filename": fname,
+        "original_name": "parsed-invoice.json",
+        "uploaded_at": _now(),
+        "size_bytes": len(raw_text.encode("utf-8")),
+        "parsed_invoice": {
+            "vendor": invoice.get("vendor", ""),
+            "invoice_number": invoice.get("invoice_number", ""),
+            "invoice_date": invoice.get("invoice_date", ""),
+            "total": invoice.get("total", 0),
+            "line_count": len(lines),
+            "lines": lines,
+            "parse_source": invoice.get("parse_source", "unknown"),
+        },
     }
     log = _load_pos_log(bar_id)
     log.setdefault("entries", []).insert(0, entry)

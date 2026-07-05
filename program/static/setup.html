@@ -46,8 +46,8 @@
         <p class="coaching-framework-foot">Every input is a proposal. Reconciliation is the conversation until map and count agree.</p>
       </div>
       <ul class="guide-list compact">
-        <li>Name your bar and build your station map — plug-and-play</li>
-        <li><strong>Pass 1:</strong> Walk by voice — placement and sizes only</li>
+        <li><strong>Pass 1:</strong> Walk every bar by voice — say <strong>Bar 1</strong>, <strong>Bar 2</strong>, <strong>Bar 3</strong> as you go</li>
+        <li>Stations inside each bar: Well one, Well two, Back bar, Beer cooler, Wine cooler…</li>
         <li>Reconcile, review, and approve the map contract</li>
         <li><strong>Pass 2:</strong> First live count — lock baseline or fix gaps</li>
       </ul>
@@ -67,80 +67,55 @@
           No special app required — but if your first upload looks rough, try one of the above before your next bar.
         </p>
       </div>
-      <p class="field-hint ai-hint">
-        AI connection is optional during setup — connect anytime under <strong>Settings → API management</strong>.
-      </p>
+      <div class="info-box welcome-core-box">
+        <p class="info-title">This program runs on your machine — no AI required</p>
+        <p class="info-body">
+          Everything you installed is <strong>self-contained</strong>. Voice walks, counts, reconciliation,
+          spreadsheets, PAR levels, and weekly Process all run locally on this laptop. Upload your notes,
+          fix what we got wrong, and lock your inventory — no subscription, no cloud, no API key needed.
+        </p>
+      </div>
+      <div class="welcome-ai-panel" id="welcomeAiPanel">
+        <div class="welcome-ai-head">
+          <p class="welcome-ai-eyebrow">Optional add-on</p>
+          <h3 class="welcome-ai-title">AI connection — only if you want it</h3>
+        </div>
+        <p class="welcome-ai-lead">
+          The core system does <strong>not</strong> use AI. Connect a key only if you want help reading
+          <strong>invoice photos</strong> from your phone (Southern Glazer&rsquo;s, Breakthru, etc.) instead of
+          typing line items yourself. Coming soon: wine-cooler <strong>video walks</strong> parsed from your phone.
+        </p>
+        <p class="field-hint welcome-ai-free-hint">
+          You do <strong>not</strong> need a paid AI subscription for the program itself. Many providers
+          (Claude, ChatGPT, Grok, and others) include API access with plans you may already have — we&rsquo;re
+          a working project and will add more free-friendly options as they emerge. Optional email updates
+          coming for weekly release notes.
+        </p>
+        <ul class="guide-list compact welcome-ai-list">
+          <li><strong>Without AI:</strong> paste invoice text, type numbers in spreadsheets, voice-walk and count as usual</li>
+          <li><strong>With AI:</strong> snap a photo of a paper invoice → line items land in All inputs</li>
+          <li><strong>Later:</strong> add or remove your key anytime under <strong>Settings → Optional AI</strong></li>
+        </ul>
+        <p id="welcomeAiStatus" class="field-hint welcome-ai-status"></p>
+        <label for="welcomeAiProvider">AI provider <span class="field-hint">(only for invoice photos)</span></label>
+        <select id="welcomeAiProvider">
+          <option value="">Not connecting now</option>
+          <option value="claude">Claude</option>
+          <option value="chatgpt">ChatGPT</option>
+          <option value="grok">Grok</option>
+          <option value="other">Other</option>
+        </select>
+        <label for="welcomeApiKey">API key <span class="field-hint">(stored on this computer only)</span></label>
+        <input id="welcomeApiKey" type="password" placeholder="Paste key here — or leave blank and skip" autocomplete="off" />
+        <div class="actions actions-trio welcome-ai-actions">
+          <button type="button" class="btn btn-primary" id="btnWelcomeSaveAi">Connect &amp; continue</button>
+          <button type="button" class="btn btn-secondary" id="btnWelcomeSkipAi">Skip — I&rsquo;ll type invoice numbers</button>
+          <a class="btn btn-ghost" href="/help/api-key" target="_blank" rel="noopener">What is an API key?</a>
+        </div>
+      </div>
       <div class="setup-nav">
         <span></span>
-        <button class="btn btn-primary" id="btnWelcomeNext" type="button">Begin setup</button>
-      </div>
-    </section>
-
-    <!-- updates_signup -->
-    <section class="panel wizard-panel hidden" data-step="updates_signup">
-      <p class="step-eyebrow">Optional</p>
-      <h2 class="wizard-title text-center">Stay on the release list</h2>
-      <p class="wizard-lead text-center">
-        We are still building this program. Join the update list and we will
-        <strong>only email you when new additions ship</strong> — scale import,
-        notifications, full liquor and wine inventory, Hidden Bar Tour news, and
-        everything else on the roadmap. No marketing blasts while we build.
-      </p>
-      <div id="updatesAlreadySubscribed" class="info-box hidden">
-        <p class="info-body">You are already on the list. We only email when new releases ship.</p>
-        <div class="setup-nav" style="margin-top:16px">
-          <span></span>
-          <button class="btn btn-primary" id="btnUpdatesContinue" type="button">Continue setup</button>
-        </div>
-      </div>
-      <div id="updatesSignupForm">
-        <label for="updatesEmail" class="inline-label">Email <span class="required-mark">*</span></label>
-        <input id="updatesEmail" type="email" placeholder="you@yourbar.com" autocomplete="email" required autofocus />
-        <div class="updates-toggle-list" role="group" aria-label="Email preferences">
-          <label class="updates-toggle-card updates-toggle-card--releases" for="updatesOptIn">
-            <input id="updatesOptIn" class="updates-toggle-input" type="checkbox" checked />
-            <span class="updates-toggle-ui" aria-hidden="true">
-              <span class="updates-toggle-track">
-                <span class="updates-toggle-thumb"></span>
-              </span>
-              <span class="updates-toggle-state"></span>
-            </span>
-            <span class="updates-toggle-copy">
-              <span class="updates-toggle-title">Program releases</span>
-              <span class="updates-toggle-desc">Yes — email me only when Open Source Barware ships new additions.</span>
-            </span>
-          </label>
-          <label class="updates-toggle-card updates-toggle-card--tour" for="updatesTourOptIn">
-            <input id="updatesTourOptIn" class="updates-toggle-input" type="checkbox" />
-            <span class="updates-toggle-ui" aria-hidden="true">
-              <span class="updates-toggle-track">
-                <span class="updates-toggle-thumb"></span>
-              </span>
-              <span class="updates-toggle-state"></span>
-            </span>
-            <span class="updates-toggle-copy">
-              <span class="updates-toggle-title">Hidden Bar Tours</span>
-              <span class="updates-toggle-desc">Email me when World Hidden Bar Tours go online. Invite me to the discovery run of your city.</span>
-            </span>
-          </label>
-        </div>
-        <div id="updatesLocationRow" class="updates-location-row hidden">
-          <div>
-            <label for="updatesCity" class="inline-label">City <span class="required-mark">*</span></label>
-            <input id="updatesCity" type="text" placeholder="Cleveland" autocomplete="address-level2" />
-          </div>
-          <div>
-            <label for="updatesState" class="inline-label">State <span class="required-mark">*</span></label>
-            <select id="updatesState">
-              <option value="">Select state</option>
-            </select>
-          </div>
-        </div>
-        <p id="updatesStatus" class="field-hint text-center" role="status"></p>
-        <div class="setup-nav">
-          <button class="btn btn-secondary" id="btnUpdatesSkip" type="button">Skip for now</button>
-          <button class="btn btn-primary" id="btnUpdatesJoin" type="button">Join the release list</button>
-        </div>
+        <button class="btn btn-primary" id="btnWelcomeNext" type="button">Begin setup without AI</button>
       </div>
     </section>
 
@@ -149,12 +124,12 @@
       <p class="step-eyebrow">Step 1 · Get started</p>
       <h2 class="wizard-title text-center">Your Operation</h2>
       <p class="wizard-lead text-center">
-        You can run as many bars as you need — dining room, patio, event station. Each gets its own walk.
-        You name each bar on the walk step, then dictate wells, back bar, and coolers as you go.
+        You can run as many bars as you need — dining room, patio, another floor, another building.
+        On your <strong>first walk</strong> you label them <strong>Bar 1</strong>, <strong>Bar 2</strong>, <strong>Bar 3</strong>
+        as you dictate. You rename them to real names after reconciliation.
       </p>
       <p class="field-hint text-center">
-        Planning a voice walk? A dedicated dictation app (Wispr Flow, VoiceInk, Whisperboard) saves hours of cleanup
-        compared to speaking straight into Apple Notes.
+        Planning a voice walk? Wispr Flow, VoiceInk, or Whisperboard beat raw phone dictation for brand names and sizes.
       </p>
       <label for="cycleMode" class="inline-label">Inventory cycle — shared across all bars</label>
       <select id="cycleMode">
@@ -162,7 +137,7 @@
         <option value="monthly">Monthly — counts start on the 1st</option>
       </select>
       <div class="setup-nav">
-        <button class="btn btn-secondary" type="button" data-go="updates_signup">← Back</button>
+        <button class="btn btn-secondary" type="button" data-go="welcome">← Back</button>
         <button class="btn btn-primary" id="btnNameContinue" type="button">Continue</button>
       </div>
     </section>
@@ -174,49 +149,38 @@
       <div class="coaching-step-banner coaching-step-banner--pass1">
         <span class="coaching-pass-badge">Pass 1</span>
         <div class="coaching-step-copy">
-          <p><strong>What we need from you:</strong> Name this bar, then call out each station as you walk — "Well one," "Well two," "Back bar." Bottle names and sizes only; no levels yet.</p>
-          <p><strong>What happens next:</strong> We draft stations and a placement map from your notes. You review names and sizes, then reconcile.</p>
+          <p><strong>What we need from you:</strong> Upload your walk notes <em>or</em> build the map manually here — your choice. If you upload, start each bar with <strong>Bar 1</strong>, <strong>Bar 2</strong>, <strong>Bar 3</strong>, then stations: "Well one," "Well two," "Back bar," "Beer cooler." Bottle names and sizes only — no levels yet.</p>
+          <p><strong>What happens next:</strong> We draft stations and a placement map from your notes. You review names and sizes, rename your bars at reconciliation, then continue.</p>
         </div>
-      </div>
-      <div class="walk-bar-header">
-        <div class="walk-bar-title-wrap">
-          <label for="walkBarNameInput" class="build-bar-label">Bar name</label>
-          <input
-            id="walkBarNameInput"
-            type="text"
-            class="build-bar-name-input walk-bar-name-input"
-            placeholder="Name this bar — e.g. Main Dining, Patio, Event Bar"
-            autocomplete="organization"
-          />
-          <p id="walkBarCounter" class="walk-bar-counter"></p>
-        </div>
-        <button class="btn btn-secondary btn-sm hidden" id="btnNextWalkBar" type="button">Next Bar →</button>
       </div>
       <p class="wizard-lead text-center">
-        Stations are created from what you say — <strong id="walkBarNameInline">this bar</strong> only.
-        Upload or paste your walk notes below.
+        <strong>Upload everything at once</strong> or paste below — one file per bar or one combined file.
+        You can also skip upload and add every bottle manually on this screen.
       </p>
-      <input type="file" id="voiceNotesFile" class="hidden" accept=".txt,.text,.md,.markdown,.rtf,.note,text/plain,text/markdown,text/rtf" />
+      <input type="file" id="voiceNotesFile" class="hidden" accept=".txt,.text,.md,.markdown,.rtf,.note,text/plain,text/markdown,text/rtf" multiple />
       <div id="walkUnparsed">
+        <div class="upload-zone" id="walkUploadZone">
+          <button class="btn btn-upload-primary" id="btnUploadFiles" type="button">Upload files here</button>
+          <p class="upload-zone-lead">Upload one or <strong>multiple files</strong> — .txt, .md, exports from iPhone Notes, Google Keep, Samsung Notes</p>
+          <p class="upload-zone-sub">We'll merge them and draft your bar map locally. Or paste / type in the box below instead.</p>
+        </div>
         <div class="info-box">
-          <p class="info-title">How it works</p>
+          <p class="info-title">How to speak your walk</p>
           <p class="info-body">
-            <strong>Easiest option:</strong> Paste below (we parse as you type) or click <strong>Parse my notes</strong> — or pick a file from your phone.
-            Speak into <strong>iPhone Notes</strong>, <strong>Google Keep</strong>, <strong>Samsung Notes</strong>,
-            or any app that exports <code>.txt</code> or <code>.md</code> — then transfer the file to this computer and upload.
+            <strong>Bar first, then stations, then bottles.</strong>
+            Different floor or building? Still just Bar 1, Bar 2, Bar 3 — you rename them later.
           </p>
           <p class="info-body" style="margin-top:10px;">
-            Or paste your voice notes directly in the box.
-            <strong>Say the station first, then bottle name and size.</strong>
-            "Well one. Tito's 750. Ketel One liter. Well two. Tanqueray 750."
-            When you move to a new spot, call it out: "Well two." "Back bar shelf." "Beer cooler."
+            <strong>Inside each bar:</strong> Well one row one. Tito's 750. Ketel One liter.
+            Well one row two. Tanqueray 750. Well two. Bacardi 750. Back bar. Patron Silver 750. Beer cooler. Corona 12oz.
+            <strong>Next bar:</strong> Bar two. Well one. Tito's 750…
           </p>
           <div class="example-box">
-            <p class="box-label">Example</p>
+            <p class="box-label">Example — Bar 1 only</p>
             <p class="example-text">
-              "Well one. Tito's 750, Ketel One liter, Tanqueray 750, triple sec 750.
+              "Bar one. Well one row one. Tito's 750, Ketel One liter, Tanqueray 750.
               Well two. Espolon Blanco liter, Evan Williams 750.
-              Back bar top shelf. Patron Silver 750, Don Julio 1942 750…"
+              Back bar top shelf. Patron Silver 750, Don Julio 1942 750. Beer cooler. Corona 12oz…"
             </p>
           </div>
         </div>
@@ -235,12 +199,11 @@
         </div>
         <textarea id="voiceNotes" placeholder="Or paste your voice notes here…"></textarea>
         <div class="actions walk-actions">
-          <button class="btn btn-ghost" id="btnToggleManual" type="button">Or add bottles manually</button>
+          <button class="btn btn-ghost" id="btnToggleManual" type="button">Or build the whole map manually</button>
           <div class="upload-notes-wrap">
-            <button class="btn btn-primary" id="btnUploadNotes" type="button">Parse my notes</button>
+            <button class="btn btn-secondary" id="btnParsePasted" type="button">Parse pasted notes</button>
             <p class="upload-formats">
               Accepts <code>.txt</code> · <code>.md</code> · <code>.markdown</code> · <code>.rtf</code><br />
-              iPhone Notes · Google Keep · Samsung Notes · plain-text exports<br />
               <span class="upload-formats-tip">From iPhone Notes, export as Markdown or .txt (not PDF).</span>
             </p>
           </div>
@@ -262,8 +225,13 @@
           <div class="parse-summary">
             <span class="glow-dot"></span>
             <span id="parseSummaryText"></span>
-            <button class="btn btn-ghost btn-sm" id="btnReparse" type="button">Upload again</button>
+            <div class="parse-summary-actions">
+              <button class="btn btn-upload-again btn-sm" id="btnReparse" type="button">Add more files</button>
+              <button class="btn btn-ghost btn-sm" id="btnAddMoreWalkFiles" type="button">Upload more</button>
+              <button class="btn btn-ghost btn-sm" id="btnReplaceWalkFiles" type="button">Replace all files</button>
+            </div>
           </div>
+          <p class="field-hint parse-more-hint">Select <strong>multiple files at once</strong> or keep pressing Upload to add more — one file per bar or batch them together.</p>
           <p class="review-path-label">Choose how you want to fix this:</p>
           <div class="review-path-picker" role="tablist">
             <button type="button" class="review-path-card active" data-review-path="screen" role="tab" aria-selected="true">
@@ -284,6 +252,7 @@
               <table class="walk-review-table" id="walkReviewTable">
                 <thead>
                   <tr>
+                    <th class="walk-col-bar hidden" id="walkColBarHead">Bar</th>
                     <th>What we heard</th>
                     <th>Product name</th>
                     <th>Station</th>
@@ -356,18 +325,8 @@
     <!-- build_bar -->
     <section class="panel wizard-panel hidden" data-step="build_bar">
       <p class="step-eyebrow">Step 4 · Pass 1 — Review your bar layout</p>
-      <div class="build-bar-name-header">
-        <span class="build-bar-label">Review Your Bar</span>
-        <input
-          id="buildBarName"
-          type="text"
-          class="build-bar-name-input"
-          placeholder="Name this bar — e.g. Main Dining, Patio, Event Bar"
-          autocomplete="organization"
-        />
-      </div>
       <p class="wizard-lead text-center">
-        Your walk created these stations — wells, back bar, coolers. Reorder, rename, remove, or add any we missed.
+        Your walk created these stations — wells, back bar, coolers. Switch tabs per bar. Reorder, rename, remove, or add any we missed.
       </p>
       <p class="coaching-inline coaching-inline--center" style="margin-bottom:16px">
         <strong>What we need:</strong> Confirm the station layout matches your real bar.<br />
@@ -418,8 +377,31 @@
         We never silently fix your bar; you see every gap before you approve.
       </p>
       <div class="coaching-inline coaching-inline--pass1">
-        <p><strong>What we need from you:</strong> Run reconciliation, scan the audit, download the map if you want a spreadsheet view.</p>
-        <p><strong>What happens next:</strong> Review your station layout, then approve the map before counting.</p>
+        <p><strong>What we need from you:</strong> Run reconciliation, scan the audit, and <strong>rename your bars</strong> from Bar 1 / Bar 2 / Bar 3 to real names.</p>
+        <p><strong>What happens next:</strong> Review your station layout per bar, then approve the map before counting.</p>
+      </div>
+      <div id="reconcileBarRename" class="reconcile-bar-rename hidden">
+        <p class="box-label">Name your bars</p>
+        <p class="field-hint" id="reconcileBarRenameHint">Your walk used Bar 1, Bar 2, Bar 3 — give each its real name before you continue.</p>
+        <div id="reconcileBarRenameStepper" class="reconcile-bar-rename-stepper hidden">
+          <p id="reconcileBarRenameCounter" class="reconcile-bar-rename-counter">Bar 1 of 3</p>
+          <div id="reconcileBarRenameDots" class="reconcile-bar-rename-dots" aria-label="Bars to name"></div>
+          <div class="reconcile-bar-rename-row">
+            <span class="reconcile-bar-rename-label" id="reconcileBarRenameSlot">Bar 1</span>
+            <input
+              type="text"
+              id="reconcileBarRenameActive"
+              class="reconcile-bar-name-input build-bar-name-input"
+              placeholder="e.g. River Room, Garden Terrace, The Cellar"
+              autocomplete="organization"
+            />
+          </div>
+          <div class="reconcile-bar-rename-nav">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnReconcileBarPrev" disabled>← Previous bar</button>
+            <button type="button" class="btn btn-primary btn-sm" id="btnReconcileBarNext">Next bar →</button>
+          </div>
+        </div>
+        <div id="reconcileBarRenameList" class="reconcile-bar-rename-list hidden"></div>
       </div>
       <div class="actions">
         <button class="btn btn-primary" id="btnReconcile" type="button">Run reconciliation</button>
@@ -507,6 +489,7 @@
       <p class="wizard-lead">
         This count becomes your baseline for every future cycle. We block a bad baseline — reconcile surprises before you finish.
       </p>
+      <div id="countBanner" class="count-banner hidden" role="alert" aria-live="assertive"></div>
       <div class="count-action-bar">
         <button class="btn btn-secondary" id="btnCountReminders" type="button" aria-expanded="false" aria-controls="countRemindersPanel">
           Best practices
@@ -523,13 +506,18 @@
           <li>When every station is entered, mark the count complete to open home base.</li>
         </ul>
       </div>
-      <div id="countEntryPanel" class="count-entry-panel hidden">
-        <input type="file" id="countNotesFile" class="hidden" accept=".txt,.text,.md,.markdown,.rtf,.note,text/plain,text/markdown,text/rtf" />
+      <div id="countEntryPanel" class="count-entry-panel">
+        <input type="file" id="countNotesFile" class="hidden" accept=".txt,.text,.md,.markdown,.rtf,.note,text/plain,text/markdown,text/rtf" multiple />
         <div id="countUnparsed">
+          <div class="upload-zone" id="countUploadZone">
+            <button class="btn btn-upload-primary" id="btnUploadCountFiles" type="button">Upload count files here</button>
+            <p class="upload-zone-lead">Upload one or <strong>multiple files</strong> — one per bar or one combined count</p>
+            <p class="upload-zone-sub">Keep pressing Upload to add more files if you missed one. We merge and parse everything together.</p>
+          </div>
           <div class="info-box">
             <p class="info-title">How to submit your count</p>
             <p class="info-body">
-              <strong>Easiest option:</strong> Paste below (we parse as you type) or click <strong>Parse my count</strong> — or pick a file from your phone.
+              <strong>Easiest option:</strong> Paste below, then click <strong>Process</strong> — or upload a file from your phone.
               Speak into <strong>iPhone Notes</strong>, <strong>Google Keep</strong>, <strong>Samsung Notes</strong>,
               or any app that exports <code>.txt</code> or <code>.md</code> — then transfer the file to this computer and upload.
             </p>
@@ -549,7 +537,7 @@
             </div>
           </div>
           <div class="info-box parse-expect-box">
-            <p class="info-title">What happens when you parse</p>
+            <p class="info-title">What happens when you Process</p>
             <p class="info-body">
               We match your dictation against the <strong>approved map</strong> from Step 5 and flag anything that
               doesn't line up — new bottles on the shelf, items you missed, duplicate counts. Messy speech is normal;
@@ -559,14 +547,14 @@
           <textarea id="countNotes" placeholder="Or paste your count notes here…"></textarea>
           <div class="actions walk-actions">
             <div class="upload-notes-wrap">
-              <button class="btn btn-primary" id="btnUploadCount" type="button">Parse my count</button>
+              <button class="btn btn-ghost" id="btnUploadCount" type="button">Upload files</button>
               <p class="upload-formats">
                 Accepts <code>.txt</code> · <code>.md</code> · <code>.markdown</code> · <code>.rtf</code><br />
                 iPhone Notes · Google Keep · Samsung Notes · plain-text exports<br />
-                <span class="upload-formats-tip">From iPhone Notes, export as Markdown or .txt (not PDF).</span>
+                <span class="upload-formats-tip">Paste above, then click <strong>Process</strong>.</span>
               </p>
             </div>
-            <button class="btn btn-secondary" id="btnCountDraft" type="button">Save draft</button>
+            <button class="btn btn-primary" id="btnProcessCount" type="button">Process &amp; open admin</button>
           </div>
         </div>
         <div id="countParsed" class="hidden">
@@ -577,9 +565,18 @@
           <div class="parse-summary">
             <span class="glow-dot"></span>
             <span id="countSummaryText"></span>
-            <button class="btn btn-ghost btn-sm" id="btnRecount" type="button">Edit &amp; re-upload count</button>
+            <div class="parse-summary-actions">
+              <button class="btn btn-upload-again btn-sm" id="btnRecount" type="button">Add more files</button>
+              <button class="btn btn-ghost btn-sm" id="btnAddMoreCountFiles" type="button">Upload more</button>
+              <button class="btn btn-ghost btn-sm" id="btnReplaceCountFiles" type="button">Replace all files</button>
+            </div>
           </div>
+          <p class="field-hint parse-more-hint">Select <strong>multiple count files at once</strong> or keep pressing Upload to add more — one file per bar or batch them together.</p>
           <div id="countReconcileReport" class="count-reconcile-report hidden" role="region" aria-label="Count versus map reconciliation"></div>
+          <div id="countReviewToolbar" class="count-review-toolbar hidden">
+            <p class="count-review-toolbar-label">Fix each gap in the table — then finish. Up to 2 minor misses can stay.</p>
+            <button class="btn btn-ghost btn-sm" type="button" id="btnToggleCountMap">Show full map</button>
+          </div>
           <div class="walk-review-table-wrap scroll-panel">
             <table class="walk-review-table" id="countReviewTable">
               <thead>
@@ -589,17 +586,32 @@
                   <th>Par</th>
                   <th>Level</th>
                   <th>Status</th>
+                  <th>Fix</th>
                 </tr>
               </thead>
               <tbody id="countReviewBody"></tbody>
             </table>
           </div>
-          <button class="btn btn-primary" id="btnFirstCountDone" type="button" style="margin-top:16px" disabled>Upload your count first</button>
+          <div class="count-tally-bar" id="countTallyBar">
+            <p class="count-tally-lead" id="countTallyLead">Paste your count above, then click Process.</p>
+            <div class="count-tally-actions">
+              <button class="btn btn-ghost btn-sm" id="btnEditCount" type="button">Edit count notes</button>
+              <button class="btn btn-primary btn-tally" id="btnFirstCountDone" type="button" disabled>Process your count first</button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="setup-nav">
+      <div class="count-process-sticky" id="countProcessSticky">
+        <div class="count-process-sticky-copy">
+          <p class="count-process-sticky-title">Finish this count</p>
+          <p class="count-process-sticky-hint" id="countStickyHint">Paste your count above, then click Process.</p>
+        </div>
+        <button type="button" class="btn btn-primary btn-process-sticky" id="btnProcessSticky">Process &amp; open admin</button>
+      </div>
+      <div class="setup-nav setup-nav-trio" id="countSetupNav">
         <button class="btn btn-secondary" type="button" data-go="map_review">← Back</button>
-        <span class="setup-nav-hint">Finish here to open home base.</span>
+        <span class="setup-nav-hint" id="countNavHint">Paste count → Process → admin opens automatically.</span>
+        <button class="btn btn-primary" id="btnTallyFinish" type="button">Process &amp; open admin</button>
       </div>
       <div class="hard-reset-row">
         <button class="btn btn-hard-reset" type="button" data-hard-reset>↺ Start over — hard reset</button>
@@ -644,12 +656,14 @@
       </div>
     </div>
   </div>
-  <div id="updatesSuccessToast" class="updates-success-toast hidden" role="dialog" aria-modal="true" aria-labelledby="updatesSuccessText">
-    <div class="updates-success-card">
-      <p id="updatesSuccessText">You are on the list.</p>
-      <button class="btn btn-primary" id="updatesSuccessDismiss" type="button">Continue setup</button>
+  <div id="processOverlay" class="process-overlay hidden" role="status" aria-live="polite">
+    <div class="process-overlay-card">
+      <span class="process-overlay-spinner" aria-hidden="true"></span>
+      <p class="process-overlay-title" id="processOverlayTitle">Running inventory math…</p>
+      <p class="process-overlay-sub" id="processOverlaySub">Locking your cycle and opening home base.</p>
+      <p class="process-overlay-fallback"><a href="/home" id="processOverlayHomeLink">Open admin manually</a> if redirect does not start.</p>
     </div>
   </div>
-  <script src="/static/js/osb-app.js?v=20260704-signup-fix"></script>
+  <script src="/static/js/osb-app.js?v=20260705-positioning"></script>
 </body>
 </html>

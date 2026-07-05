@@ -117,25 +117,31 @@ export default function UpdatesSignupStep({
             />
           </label>
 
-          <label className="flex items-start gap-3 border border-gear-border bg-bg/40 px-4 py-3 rounded-sm cursor-pointer">
-            <input
-              type="checkbox"
-              checked={optIn}
-              onChange={(e) => setOptIn(e.target.checked)}
-              className="mt-1"
-            />
+          <label className="flex items-center gap-4 border border-gear-border bg-bg/40 px-4 py-4 rounded-sm cursor-pointer">
+            <span className="osb-toggle">
+              <input
+                type="checkbox"
+                checked={optIn}
+                onChange={(e) => setOptIn(e.target.checked)}
+              />
+              <span className="osb-toggle-track" aria-hidden="true" />
+              <span className="osb-toggle-knob" aria-hidden="true" />
+            </span>
             <span className="text-sm text-text-muted leading-relaxed">
               Yes — email me only when Open Source Barware ships new additions.
             </span>
           </label>
 
-          <label className="flex items-start gap-3 border border-gear-border bg-bg/40 px-4 py-3 rounded-sm cursor-pointer">
-            <input
-              type="checkbox"
-              checked={tourOptIn}
-              onChange={(e) => setTourOptIn(e.target.checked)}
-              className="mt-1"
-            />
+          <label className="flex items-center gap-4 border border-gear-border bg-bg/40 px-4 py-4 rounded-sm cursor-pointer">
+            <span className="osb-toggle">
+              <input
+                type="checkbox"
+                checked={tourOptIn}
+                onChange={(e) => setTourOptIn(e.target.checked)}
+              />
+              <span className="osb-toggle-track" aria-hidden="true" />
+              <span className="osb-toggle-knob" aria-hidden="true" />
+            </span>
             <span className="text-sm text-text-muted leading-relaxed">
               Also invite me to Hidden Bar Tour discovery runs in my city.
             </span>
@@ -151,7 +157,7 @@ export default function UpdatesSignupStep({
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="Cleveland"
+                  placeholder="city"
                   autoComplete="address-level2"
                   className="w-full bg-bg-warm border border-gear-border rounded-sm px-4 py-3 text-cream focus:outline-none focus:border-copper"
                 />

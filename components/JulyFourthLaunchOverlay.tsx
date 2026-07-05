@@ -12,6 +12,8 @@ import {
   shouldShowPreLaunchOverlay,
 } from "@/lib/launch-gate";
 
+// Bumped to v5 for the 10pm launch so the thank-you greets everyone once,
+// even folks who dismissed the pre-launch countdown earlier tonight.
 const STORAGE_KEY = "osb-july4-launch-v5";
 
 const PARTY_SHOTS = [
@@ -21,28 +23,33 @@ const PARTY_SHOTS = [
   { src: "/images/workshop.jpg", alt: "The workshop" },
 ];
 
+const GITHUB = "https://github.com/RichardBJamison/open-source-barware";
+
 export default function JulyFourthLaunchOverlay() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(() =>
+    typeof window !== "undefined" ? Date.now() : 0,
+  );
 
-  const forceOverlay =
-    process.env.NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY === "true";
+  const forceOverlay = process.env.NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY === "true";
   const previewParam =
     searchParams.get("preview") === "july4" ||
     searchParams.get("july4") === "1";
-  const thankYouParam = searchParams.get("thankyou") === "1";
+  // Manual preview of the post-launch thank-you before 10pm: ?thankyou=1
+  const forceThankYou = searchParams.get("thankyou") === "1";
 
   const dismiss = useCallback(() => {
     setDismissed(true);
     setTimeout(() => setVisible(false), 500);
-    if (!previewParam && !forceOverlay && !thankYouParam) {
+    if (!previewParam && !forceOverlay && !forceThankYou) {
       localStorage.setItem(STORAGE_KEY, "1");
     }
-  }, [previewParam, forceOverlay, thankYouParam]);
+  }, [previewParam, forceOverlay, forceThankYou]);
 
+  // Tick every second so the countdown updates and flips to the thank-you at 10pm.
   useEffect(() => {
     if (!visible || dismissed) return;
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -51,30 +58,25 @@ export default function JulyFourthLaunchOverlay() {
 
   useEffect(() => {
     if (pathname?.startsWith("/inventory")) return;
-
-    const current = Date.now();
-    const shouldShow =
+    const now = Date.now();
+    const eligible =
       previewParam ||
-      thankYouParam ||
-      shouldShowPreLaunchOverlay(current, {
-        preview: previewParam,
-        forceOverlay,
-      }) ||
-      isLaunched(current, { preview: previewParam });
-
-    if (!shouldShow) return;
+      forceOverlay ||
+      forceThankYou ||
+      shouldShowPreLaunchOverlay(now, { preview: previewParam, forceOverlay }) ||
+      isLaunched(now, { preview: previewParam });
+    if (!eligible) return;
     if (
       !previewParam &&
       !forceOverlay &&
-      !thankYouParam &&
+      !forceThankYou &&
       localStorage.getItem(STORAGE_KEY)
     ) {
       return;
     }
-
     const timer = setTimeout(() => setVisible(true), 600);
     return () => clearTimeout(timer);
-  }, [pathname, forceOverlay, previewParam, thankYouParam]);
+  }, [pathname, forceOverlay, previewParam, forceThankYou]);
 
   useEffect(() => {
     if (!visible || dismissed) return;
@@ -92,7 +94,7 @@ export default function JulyFourthLaunchOverlay() {
   if (!visible) return null;
 
   const countdown = getLaunchCountdown(now);
-  const showLive = thankYouParam || countdown.finished;
+  const launched = forceThankYou || countdown.finished;
 
   return (
     <div
@@ -133,10 +135,10 @@ export default function JulyFourthLaunchOverlay() {
         className="july4-scroll relative z-[205] mx-auto flex h-full max-h-screen w-full max-w-4xl flex-col items-center justify-center overflow-y-auto px-5 py-20 text-center sm:px-8"
         onClick={(e) => e.stopPropagation()}
       >
-        {showLive ? (
-          <LiveLaunchContent onDismiss={dismiss} />
+        {launched ? (
+          <LaunchThankYou onDismiss={dismiss} />
         ) : (
-          <PreLaunchContent countdown={countdown} onDismiss={dismiss} />
+          <PreLaunchCountdown countdown={countdown} onDismiss={dismiss} />
         )}
 
         <div className="july4-bunting mt-10 flex justify-center gap-1 opacity-90">
@@ -164,7 +166,7 @@ export default function JulyFourthLaunchOverlay() {
   );
 }
 
-function PartyShots() {
+function PartyStrip() {
   return (
     <div className="mb-8 flex justify-center gap-2 sm:gap-3">
       {PARTY_SHOTS.map((shot, i) => (
@@ -189,7 +191,7 @@ function PartyShots() {
   );
 }
 
-function PreLaunchContent({
+function PreLaunchCountdown({
   countdown,
   onDismiss,
 }: {
@@ -200,7 +202,7 @@ function PreLaunchContent({
     <>
       <p className="july4-badge mb-6">🎆 You&rsquo;re early! 🎆</p>
 
-      <PartyShots />
+      <PartyStrip />
 
       <h1
         id="july4-headline"
@@ -266,14 +268,12 @@ function PreLaunchContent({
   );
 }
 
-function LiveLaunchContent({ onDismiss }: { onDismiss: () => void }) {
+function LaunchThankYou({ onDismiss }: { onDismiss: () => void }) {
   return (
     <>
-      <p className="july4-badge mb-6">
-        🎆 Released yesterday &middot; Independence Day 🎆
-      </p>
+      <p className="july4-badge mb-6">🎆 It&rsquo;s live &middot; released tonight at 10 &#39;o clock 🎆</p>
 
-      <PartyShots />
+      <PartyStrip />
 
       <h1
         id="july4-headline"
@@ -283,32 +283,29 @@ function LiveLaunchContent({ onDismiss }: { onDismiss: () => void }) {
       </h1>
 
       <p className="mt-4 text-sm uppercase tracking-[0.3em] text-white/70">
-        Free bar inventory for the whole world
+        Free bar inventory for the whole world &mdash; happy Fourth
       </p>
 
       <div className="july4-party-card panel rivets mx-auto mt-8 w-full max-w-xl px-6 py-8 sm:px-10 sm:py-9">
         <p className="font-serif text-2xl italic leading-snug text-cream sm:text-3xl">
-          We released our open-source software yesterday on Independence Day.
+          Thank you for being here on night one.
         </p>
 
         <div className="mt-5 space-y-4 text-base leading-relaxed text-text-muted sm:text-lg">
           <p>
-            If you&rsquo;re a first-timer reading this: hey, and welcome. Open
-            Source Barware went live yesterday on the Fourth at 10
-            o&rsquo;clock &mdash; a free, self-contained bar inventory program
-            that runs on your laptop. No subscription, no cloud, no AI required.
+            If you&rsquo;re a first-timer reading this: hey, and welcome. We
+            released Open Source Barware tonight at 10 o&rsquo;clock &mdash; a
+            free, self-contained bar inventory program that runs on your laptop.
+            No subscription, no cloud, no AI required.
           </p>
-
           <p>
-            It took roughly{" "}
-            <strong className="text-cream">a hundred hours</strong> of coffee,
-            late nights, and carefully brain-numbing work to get this thing off
-            the ground &mdash; and I am immensely proud of it. I expect a few
-            tiny glitches in the first week; that&rsquo;s just me being honest.
-            Nothing major &mdash; everything works fine. So go kick it around and
-            have fun. I&rsquo;m on the fast fixes.
+            It took roughly <strong className="text-cream">a hundred hours</strong>{" "}
+            of coffee, late nights, and carefully brain-numbing work to get this
+            thing off the ground &mdash; and I am immensely proud of it. I expect
+            a few tiny glitches in the first week; that&rsquo;s just me being
+            honest. Nothing major &mdash; everything works fine. So go kick it
+            around and have fun. I&rsquo;m on the fast fixes.
           </p>
-
           <p className="text-cream/90">
             Keep in touch for updates &mdash; we push new builds every few days.
             Come build it with us: star the repo and open issues on{" "}
@@ -320,17 +317,16 @@ function LiveLaunchContent({ onDismiss }: { onDismiss: () => void }) {
 
         <div className="mt-7 flex flex-col gap-3">
           <Link
-            href="/downloads"
+            href="/download"
             onClick={onDismiss}
             prefetch={false}
             className="july4-cta-primary w-full py-4 text-sm font-black uppercase tracking-[0.18em]"
           >
             Free Download &mdash; grab the program 🍹
           </Link>
-
           <div className="flex flex-col gap-3 sm:flex-row">
             <a
-              href="https://github.com/RichardBJamison/open-source-barware"
+              href={GITHUB}
               target="_blank"
               rel="noopener noreferrer"
               onClick={onDismiss}

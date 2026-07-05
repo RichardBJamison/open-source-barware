@@ -133,6 +133,15 @@ export default function ManifestoPage() {
               &mdash; are now buildable by the people who actually live the
               problem every close.
             </p>
+            <p>
+              Here&rsquo;s the part worth saying plainly, though:{" "}
+              <span className="text-cream">we built it with AI, but you
+              don&rsquo;t need any to run it.</span> The program does the whole
+              job right on your laptop &mdash; walk, count, reconcile, Process,
+              spreadsheets &mdash; on its own, offline, for free. The only
+              optional AI is a small shortcut that reads invoice photos so you
+              don&rsquo;t have to type them. Skip it and nothing breaks.
+            </p>
             <p className="text-cream font-medium">
               So instead of pitching investors on a subscription model, we
               just built the thing and gave it away.
@@ -263,7 +272,7 @@ export default function ManifestoPage() {
             href="/downloads"
             className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
           >
-            Download the Program
+            Free Download
           </Link>
         </div>
       </section>

@@ -266,24 +266,10 @@ export default function AnalyticsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      {/* ── Page Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="glow-dot" />
-            <span className="text-[10px] tracking-[0.3em] uppercase text-patina-light font-medium">
-              Inventory Analytics
-            </span>
-          </div>
-          <h1 className="font-serif text-3xl sm:text-4xl copper-text">Program Health</h1>
-        </div>
-        <Link
-          href="/inventory/dashboard"
-          className="border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-5 py-2.5 text-sm tracking-wide transition-all"
-        >
-          Back to Dashboard
-        </Link>
-      </div>
+      <header className="dojo-view-header mb-8">
+        <h1>Program Health</h1>
+        <p>Inventory analytics from your live bar map and completed cycles.</p>
+      </header>
 
       {/* ── Top row: Gauge + Summary Stats ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
