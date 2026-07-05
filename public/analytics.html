@@ -317,14 +317,26 @@
 
     var html = '';
 
-    // Metric cards
+    // Headline counters — visits & downloads
+    html += '<div class="section">';
+    html += '<h2>Visits &amp; Downloads</h2>';
     html += '<div class="grid">';
-    html += metricCard('Total Pageviews', fmt(o.totalPageviews), 'This period');
-    html += metricCard('Unique Visitors', fmt(o.uniqueVisitors), pct(o.uniqueVisitors, o.totalPageviews) + ' of total');
+    html += metricCard('All-Time Visits', fmt(o.totalAllTime), fmt(o.uniqueVisitorsEver || 0) + ' unique ever');
+    html += metricCard('Today Unique Visits', fmt(o.todayUniqueVisitors || 0), 'UTC day');
+    html += metricCard('Week Unique Visits', fmt(o.weekUniqueVisitors || 0), 'Rolling 7 days');
+    html += metricCard('All-Time Downloads', fmt(o.totalDownloadsAllTime || 0), fmt(o.uniqueDownloadersEver || 0) + ' unique ever');
+    html += metricCard('Today Downloads', fmt(o.todayDownloads || 0), fmt(o.todayUniqueDownloaders || 0) + ' unique today');
+    html += metricCard('Week Downloads', fmt(o.weekDownloads || 0), fmt(o.weekUniqueDownloaders || 0) + ' unique this week');
+    html += '</div></div>';
+
+    // Period detail
+    html += '<div class="grid">';
+    html += metricCard('Period Pageviews', fmt(o.totalPageviews), currentDays + '-day window');
+    html += metricCard('Period Unique Visitors', fmt(o.uniqueVisitors), pct(o.uniqueVisitors, o.totalPageviews) + ' of period');
+    html += metricCard('Period Downloads', fmt(o.periodDownloads || 0), fmt(o.periodUniqueDownloaders || 0) + ' unique in period');
     html += metricCard('Human Visits', fmt(o.humanVisits), fmt(o.botVisits) + ' bots filtered');
     html += metricCard('New Visitors', fmt(o.newVisitors), fmt(o.returningVisitors) + ' returning');
     html += metricCard('Avg Load Time', o.avgLoadTime ? (o.avgLoadTime + 'ms') : '—', 'Page load');
-    html += metricCard('All-Time Total', fmt(o.totalAllTime), 'Since tracking began');
     html += '</div>';
 
     // Hourly distribution
@@ -348,10 +360,10 @@
     if (data.dailyTrend.length > 1) {
       html += '<div class="section">';
       html += '<h2>Daily Breakdown</h2>';
-      html += '<table class="daily-table"><thead><tr><th>Date</th><th>Pageviews</th><th>Unique</th><th>Views/Visitor</th></tr></thead><tbody>';
+      html += '<table class="daily-table"><thead><tr><th>Date</th><th>Pageviews</th><th>Unique</th><th>Downloads</th><th>Views/Visitor</th></tr></thead><tbody>';
       data.dailyTrend.slice().reverse().forEach(function(d) {
         var vpv = d.unique > 0 ? (d.views / d.unique).toFixed(1) : '—';
-        html += '<tr><td>' + d.date + '</td><td>' + fmt(d.views) + '</td><td>' + fmt(d.unique) + '</td><td>' + vpv + '</td></tr>';
+        html += '<tr><td>' + d.date + '</td><td>' + fmt(d.views) + '</td><td>' + fmt(d.unique) + '</td><td>' + fmt(d.downloads || 0) + '</td><td>' + vpv + '</td></tr>';
       });
       html += '</tbody></table></div>';
     }
@@ -424,11 +436,23 @@
       html += '</div></div>';
     }
 
-    // Languages
+    // Downloads + Languages
     html += '<div class="two-col">';
+    html += '<div class="section"><h2>Top Downloads</h2>';
+    if (!data.topDownloads || data.topDownloads.length === 0) {
+      html += '<p style="color:var(--muted);font-size:13px">No downloads tracked yet</p>';
+    } else {
+      html += barChart(data.topDownloads, o.periodDownloads || 1);
+    }
+    html += '</div>';
+
     html += '<div class="section"><h2>Languages</h2>';
     html += barChart(data.languages, o.totalPageviews);
     html += '</div>';
+
+    html += '</div>';
+
+    html += '<div class="two-col">';
 
     // Referrer URLs
     html += '<div class="section"><h2>Top Referrer URLs</h2>';

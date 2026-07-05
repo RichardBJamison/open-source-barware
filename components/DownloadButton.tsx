@@ -35,6 +35,13 @@ export default function DownloadButton({ tool }: { tool: ToolPreview }) {
 
   function handleConfirm() {
     setOpen(false);
+    if (typeof window !== "undefined" && "osbTrackDownload" in window) {
+      (
+        window as Window & {
+          osbTrackDownload?: (file: string, label?: string) => void;
+        }
+      ).osbTrackDownload?.(tool.href, tool.title);
+    }
     const a = document.createElement("a");
     a.href = tool.href;
     a.download = "";

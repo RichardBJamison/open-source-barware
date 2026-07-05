@@ -117,6 +117,7 @@ export default function RootLayout({
             gtag('config', '${GA_MEASUREMENT_ID}');
           `}
         </Script>
+        <Script src="/osb-analytics.js" strategy="afterInteractive" />
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased">
         <script

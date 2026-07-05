@@ -1,3 +1,11 @@
 name = "open-source-barware"
 compatibility_date = "2024-09-23"
 pages_build_output_dir = "out"
+
+[[kv_namespaces]]
+binding = "VISITOR_COUNTER"
+id = "ea495eafc1904a36b558bcb2117bebe6"
+
+[[kv_namespaces]]
+binding = "OSB_SIGNUPS"
+id = "1cc731d2ae40402cb49f4bc104a5cd79"

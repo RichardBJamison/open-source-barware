@@ -1,117 +1,118 @@
+import { cors, getVisitorKv, jsonError } from "../_shared/kv.js";
+
 // POST /api/track — records a detailed pageview
 export async function onRequestPost(context) {
   const { request, env } = context;
 
-  // Cloudflare-provided geo/network data
-  const cf = request.cf || {};
-  const country = cf.country || request.headers.get("cf-ipcountry") || "";
-  const city = cf.city || "";
-  const region = cf.region || "";
-  const regionCode = cf.regionCode || "";
-  const timezone = cf.timezone || "";
-  const continent = cf.continent || "";
-
-  // Parse client-sent JSON body
-  let body = {};
   try {
-    body = await request.json();
-  } catch (_) {
-    // bare beacon with no body — still record the hit
+    const kv = getVisitorKv(env);
+
+    const cf = request.cf || {};
+    const country = cf.country || request.headers.get("cf-ipcountry") || "";
+    const city = cf.city || "";
+    const region = cf.region || "";
+    const regionCode = cf.regionCode || "";
+    const timezone = cf.timezone || "";
+    const continent = cf.continent || "";
+
+    let body = {};
+    try {
+      body = await request.json();
+    } catch {
+      // bare beacon with no body — still record the hit
+    }
+
+    const ua = request.headers.get("user-agent") || "";
+    const serverRef = request.headers.get("referer") || "";
+
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10);
+    const hourStr = String(now.getUTCHours()).padStart(2, "0");
+    const vid = String(body.vid || "").slice(0, 64);
+
+    const visit = {
+      ts: now.toISOString(),
+      page: body.page || "/",
+      path: body.path || "/",
+      title: body.title || "",
+      ref: body.referrer || serverRef,
+      refDomain: extractDomain(body.referrer || serverRef),
+      ua: ua.slice(0, 300),
+      browser: parseBrowser(ua),
+      os: parseOS(ua),
+      device: parseDeviceType(ua),
+      country,
+      city,
+      region,
+      regionCode,
+      timezone,
+      continent,
+      screen: body.screen || "",
+      viewport: body.viewport || "",
+      lang: body.lang || "",
+      connection: body.connection || "",
+      loadTime: body.loadTime || 0,
+      vid,
+      returning: body.returning || false,
+      sessionPageviews: body.sessionPageviews || 1,
+      utm_source: body.utm_source || "",
+      utm_medium: body.utm_medium || "",
+      utm_campaign: body.utm_campaign || "",
+      utm_term: body.utm_term || "",
+      utm_content: body.utm_content || "",
+    };
+
+    const rand = crypto.randomUUID().slice(0, 8);
+    const pvKey = `pv:${dateStr}:${hourStr}:${rand}`;
+
+    const totalRaw = await kv.get("total_visits");
+    const total = parseInt(totalRaw || "0", 10) + 1;
+
+    const writes = [
+      kv.put(pvKey, JSON.stringify(visit), { expirationTtl: 2592000 }),
+      kv.put("total_visits", String(total)),
+    ];
+
+    if (vid) {
+      writes.push(
+        kv.put(`uv:${dateStr}:${vid}`, "1", { expirationTtl: 2592000 })
+      );
+      const everKey = `uv:ever:${vid}`;
+      const seenBefore = await kv.get(everKey);
+      if (!seenBefore) {
+        writes.push(kv.put(everKey, "1"));
+        const uniqueEver =
+          parseInt((await kv.get("unique_visitors_ever")) || "0", 10) + 1;
+        writes.push(kv.put("unique_visitors_ever", String(uniqueEver)));
+      }
+    }
+
+    await Promise.all(writes);
+
+    return new Response(JSON.stringify({ ok: true, count: total }), {
+      headers: cors("GET, POST, OPTIONS"),
+    });
+  } catch (err) {
+    return jsonError(err.message || "pageview tracking failed");
   }
-
-  const ua = request.headers.get("user-agent") || "";
-  const serverRef = request.headers.get("referer") || "";
-
-  const now = new Date();
-  const dateStr = now.toISOString().slice(0, 10);
-  const hourStr = String(now.getUTCHours()).padStart(2, "0");
-
-  const visit = {
-    ts: now.toISOString(),
-    // Page info
-    page: body.page || "/",
-    path: body.path || "/",
-    title: body.title || "",
-    // Referrer
-    ref: body.referrer || serverRef,
-    refDomain: extractDomain(body.referrer || serverRef),
-    // Device / UA
-    ua: ua.slice(0, 300),
-    browser: parseBrowser(ua),
-    os: parseOS(ua),
-    device: parseDeviceType(ua),
-    // Geo (from Cloudflare edge)
-    country,
-    city,
-    region,
-    regionCode,
-    timezone,
-    continent,
-    // Client-reported
-    screen: body.screen || "",
-    viewport: body.viewport || "",
-    lang: body.lang || "",
-    connection: body.connection || "",
-    loadTime: body.loadTime || 0,
-    // Visitor identity
-    vid: body.vid || "",
-    returning: body.returning || false,
-    sessionPageviews: body.sessionPageviews || 1,
-    // UTM / campaign
-    utm_source: body.utm_source || "",
-    utm_medium: body.utm_medium || "",
-    utm_campaign: body.utm_campaign || "",
-    utm_term: body.utm_term || "",
-    utm_content: body.utm_content || "",
-  };
-
-  // Generate a short unique key
-  const rand = crypto.randomUUID().slice(0, 8);
-  const pvKey = `pv:${dateStr}:${hourStr}:${rand}`;
-
-  // Write visit record (30-day TTL) + bump total counter
-  // 2 KV writes per pageview keeps us within free-tier limits
-  const totalRaw = await env.VISITOR_COUNTER.get("total_visits");
-  const total = parseInt(totalRaw || "0", 10) + 1;
-
-  await Promise.all([
-    env.VISITOR_COUNTER.put(pvKey, JSON.stringify(visit), {
-      expirationTtl: 2592000,
-    }),
-    env.VISITOR_COUNTER.put("total_visits", String(total)),
-  ]);
-
-  return new Response(JSON.stringify({ ok: true, count: total }), {
-    headers: cors(),
-  });
 }
 
-// GET /api/track — simple count (backward compat for local dashboard)
+// GET /api/track — simple count (backward compat)
 export async function onRequestGet({ env }) {
-  const count = parseInt(
-    (await env.VISITOR_COUNTER.get("total_visits")) || "0",
-    10
-  );
-  return new Response(JSON.stringify({ count }), { headers: cors() });
+  try {
+    const kv = getVisitorKv(env);
+    const count = parseInt((await kv.get("total_visits")) || "0", 10);
+    return new Response(JSON.stringify({ count }), { headers: cors("GET, POST, OPTIONS") });
+  } catch (err) {
+    return jsonError(err.message || "pageview count failed");
+  }
 }
 
-// OPTIONS — CORS preflight
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
-    headers: cors(),
+    headers: cors("GET, POST, OPTIONS"),
   });
-}
-
-// ── helpers ──────────────────────────────────────────────────────────
-
-function cors() {
-  return {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
 }
 
 function extractDomain(url) {
