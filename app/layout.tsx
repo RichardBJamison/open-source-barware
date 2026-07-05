@@ -125,9 +125,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <ConditionalSiteChrome>
-          <Header />
-        </ConditionalSiteChrome>
+        <Header />
         <main className="flex-1">{children}</main>
         <ConditionalSiteChrome>
           <Footer />

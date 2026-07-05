@@ -1349,11 +1349,11 @@ body { background: var(--bg); color: var(--text); }
     var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  min-height: 100vh;
+  min-height: calc(100vh - 73px);
 }
 
 .inventory-app .admin-shell {
-  min-height: 100vh;
+  min-height: calc(100vh - 73px);
 }
 
 .inventory-app .admin-sidebar {

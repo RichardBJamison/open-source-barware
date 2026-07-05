@@ -100,7 +100,7 @@ export default function InventoryShell({
   };
 
   return (
-    <div className="admin-shell flex min-h-screen flex-col">
+    <div className="admin-shell flex min-h-[calc(100vh-73px)] flex-col">
       <DojoWelcomeModal open={hydrated && needsWelcome} onClose={finishWelcome} />
 
       <div className="dojo-demo-ribbon">
@@ -117,8 +117,8 @@ export default function InventoryShell({
 
         <aside
           className={`
-          admin-sidebar fixed lg:sticky top-0 left-0 z-50 lg:z-auto
-          h-screen lg:min-h-[calc(100vh-2rem)]
+          admin-sidebar fixed lg:sticky top-[73px] lg:top-0 left-0 z-50 lg:z-auto
+          h-[calc(100vh-73px)] lg:min-h-[calc(100vh-73px)]
           flex flex-col shrink-0
           transition-transform duration-300 lg:transition-none
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
