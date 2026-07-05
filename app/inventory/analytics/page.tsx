@@ -245,7 +245,7 @@ export default function AnalyticsPage() {
   if (!bar || allBottles.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 text-center">
-        <div className="panel rounded-sm p-8 sm:p-12 rivets">
+        <div className="panel panel--glass">
           <p className="text-text-muted mb-4">No inventory data to analyze yet.</p>
           <p className="text-text-light text-sm mb-6">
             Load a bar and run at least one count to see analytics here.
@@ -266,7 +266,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <header className="dojo-view-header mb-8">
+      <header className="view-header mb-8">
         <h1>Program Health</h1>
         <p>Inventory analytics from your live bar map and completed cycles.</p>
       </header>
@@ -274,7 +274,7 @@ export default function AnalyticsPage() {
       {/* ── Top row: Gauge + Summary Stats ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
         {/* Cost % Gauge */}
-        <div className="panel rounded-sm p-6 rivets lg:col-span-1 flex flex-col items-center justify-center">
+        <div className="panel panel--glass lg:col-span-1 flex flex-col items-center justify-center">
           <span className="text-[10px] tracking-[0.2em] uppercase text-text-light mb-4">
             Beverage Cost %
           </span>
@@ -285,7 +285,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Inventory Value by Category (bar chart) */}
-        <div className="panel rounded-sm p-6 rivets lg:col-span-2">
+        <div className="panel panel--glass lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <span className="text-[10px] tracking-[0.2em] uppercase text-text-light">
               Inventory Value by Category
@@ -335,7 +335,7 @@ export default function AnalyticsPage() {
       {/* ── Middle row: Pie chart + Variance Alerts ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
         {/* Category Breakdown (donut) */}
-        <div className="panel rounded-sm p-6 rivets">
+        <div className="panel panel--glass">
           <span className="text-[10px] tracking-[0.2em] uppercase text-text-light block mb-4">
             Category Breakdown
           </span>
@@ -390,7 +390,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Variance Alerts */}
-        <div className="panel rounded-sm p-6 rivets">
+        <div className="panel panel--glass">
           <div className="flex items-center justify-between mb-4">
             <span className="text-[10px] tracking-[0.2em] uppercase text-text-light">
               Variance Alerts
@@ -437,7 +437,7 @@ export default function AnalyticsPage() {
       {/* ── Bottom row: Trends + Velocity ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Trend Indicators */}
-        <div className="panel rounded-sm p-6 rivets">
+        <div className="panel panel--glass">
           <span className="text-[10px] tracking-[0.2em] uppercase text-text-light block mb-4">
             Count Trends
           </span>
@@ -489,7 +489,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Velocity */}
-        <div className="panel rounded-sm p-6 rivets">
+        <div className="panel panel--glass">
           <span className="text-[10px] tracking-[0.2em] uppercase text-text-light block mb-4">
             Velocity — Movers
           </span>

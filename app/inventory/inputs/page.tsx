@@ -94,14 +94,14 @@ export default function InventoryInputsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <header className="dojo-view-header">
+      <header className="view-header">
         <h1>Weekly inputs</h1>
         <p>
           Drop POS terminal receipts through the week — dated, labeled, kept until the next count.
         </p>
       </header>
 
-      <section className="panel rounded-sm p-5 sm:p-6 rivets space-y-4">
+      <section className="panel panel--glass space-y-4">
         <h2 className="font-serif text-lg text-cream">Add POS report</h2>
 
         <label className="flex flex-col gap-2">
@@ -185,7 +185,7 @@ export default function InventoryInputsPage() {
         {status ? <p className="text-sm text-patina-light">{status}</p> : null}
       </section>
 
-      <section className="panel rounded-sm p-5 sm:p-6 rivets">
+      <section className="panel panel--glass">
         <h2 className="font-serif text-lg text-cream mb-2">Mid-week POS log</h2>
         <p className="dojo-field-hint mt-0 mb-4">
           Multiple uploads stack here until your next physical count closes the cycle.

@@ -3,6 +3,7 @@ import { Caveat, Inter, Playfair_Display } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Suspense } from "react";
+import ConditionalSiteChrome from "@/components/ConditionalSiteChrome";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JulyFourthLaunchOverlay from "@/components/JulyFourthLaunchOverlay";
@@ -124,11 +125,17 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Header />
+        <ConditionalSiteChrome>
+          <Header />
+        </ConditionalSiteChrome>
         <main className="flex-1">{children}</main>
-        <Footer />
+        <ConditionalSiteChrome>
+          <Footer />
+        </ConditionalSiteChrome>
         <Suspense fallback={null}>
-          <JulyFourthLaunchOverlay />
+          <ConditionalSiteChrome>
+            <JulyFourthLaunchOverlay />
+          </ConditionalSiteChrome>
         </Suspense>
       </body>
     </html>

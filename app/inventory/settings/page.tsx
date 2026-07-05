@@ -130,13 +130,13 @@ export default function InventorySettingsPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <header className="dojo-view-header">
+      <header className="view-header">
         <h1>Settings</h1>
         <p>Customizations for your operation and API management for your AI provider.</p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="panel rounded-sm p-5 sm:p-6 rivets">
+        <section className="panel panel--glass">
           <h2 className="font-serif text-lg text-cream mb-2">Your bars</h2>
           <p className="dojo-field-hint mt-0 mb-4">
             Each bar has its own station map and inventory. Switch active bar in the sidebar, or add a new one.
@@ -160,7 +160,7 @@ export default function InventorySettingsPage() {
           </button>
         </section>
 
-        <section className="panel rounded-sm p-5 sm:p-6 rivets space-y-4">
+        <section className="panel panel--glass space-y-4">
           <h2 className="font-serif text-lg text-cream">Customizations</h2>
           <p className="dojo-field-hint mt-0">
             Bar identity and inventory rhythm. Changes apply to the next cycle window.
@@ -267,7 +267,7 @@ export default function InventorySettingsPage() {
           </button>
         </section>
 
-        <section className="panel rounded-sm p-5 sm:p-6 rivets space-y-4 lg:col-span-2">
+        <section className="panel panel--glass space-y-4 lg:col-span-2">
           <h2 className="font-serif text-lg text-cream">API management</h2>
           <p className="dojo-field-hint mt-0">
             Connect or update the AI provider that powers reconciliation and reports.
@@ -341,7 +341,7 @@ export default function InventorySettingsPage() {
           </div>
         </section>
 
-        <section className="panel rounded-sm p-5 sm:p-6 rivets lg:col-span-2">
+        <section className="panel panel--glass lg:col-span-2">
           <h2 className="font-serif text-lg text-cream mb-2">Salle sandbox tools</h2>
           <p className="dojo-field-hint mt-0 mb-4">
             Export experiments or reset to the Agave &amp; Rye demo bar. The downloaded program stores data on your machine the same way.

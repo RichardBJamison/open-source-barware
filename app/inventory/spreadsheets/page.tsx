@@ -74,12 +74,12 @@ export default function SpreadsheetsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <header className="dojo-view-header">
+      <header className="view-header">
         <h1>Inventory Workbook</h1>
         <p>Live spreadsheet view plus exports — same data as the downloaded program.</p>
       </header>
 
-      <section className="panel rounded-sm p-5 sm:p-6 rivets">
+      <section className="panel panel--glass">
         <div className="flex flex-wrap gap-3">
           <a
             href="/downloads/Bar-Inventory-Master.xlsx"
@@ -119,7 +119,7 @@ export default function SpreadsheetsPage() {
         </div>
       </div>
 
-      <div className="panel rounded-sm p-4 sm:p-6 rivets overflow-hidden">
+      <div className="panel panel--glass overflow-hidden">
         {activeTab === 'dashboard' && <DashboardTab workbook={workbook} />}
         {activeTab === 'product-master' && <ProductMasterTab rows={productRows} />}
         {activeTab === 'count-sheet' && <CountSheetTab rows={productRows} />}
@@ -127,7 +127,7 @@ export default function SpreadsheetsPage() {
         {activeTab === 'order-generator' && <OrderGeneratorTab rows={varianceRows} />}
       </div>
 
-      <section className="panel rounded-sm p-5 sm:p-6 rivets">
+      <section className="panel panel--glass">
         <h2 className="font-serif text-lg text-cream mb-2">Export toolkit</h2>
         <p className="dojo-field-hint mt-0 mb-4">
           Same exports as caterpillar setup — audit, walk sheets, count comparison, first-week JSON.

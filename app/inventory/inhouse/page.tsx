@@ -38,7 +38,7 @@ export default function InHousePage() {
 
   if (!bar || !data) {
     return (
-      <div className="max-w-2xl mx-auto text-center panel rounded-sm p-8 rivets">
+      <div className="max-w-2xl mx-auto text-center panel panel--glass">
         <p className="text-text-muted">Load the demo bar from Home base first.</p>
       </div>
     );
@@ -46,12 +46,12 @@ export default function InHousePage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <header className="dojo-view-header">
+      <header className="view-header">
         <h1>In-house inventory</h1>
         <p>{data.note}</p>
       </header>
 
-      <section className="panel rounded-sm p-5 sm:p-6 rivets">
+      <section className="panel panel--glass">
         <label className="flex flex-col gap-2 max-w-xs">
           <span className="text-xs uppercase tracking-[0.15em] text-text-light">
             Category room

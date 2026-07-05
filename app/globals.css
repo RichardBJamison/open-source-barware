@@ -1323,3 +1323,546 @@ body { background: var(--bg); color: var(--text); }
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50% { transform: translateY(-4px) rotate(2deg); }
 }
+
+/* ── Inventory app — mirrors downloaded program admin panel ── */
+
+.inventory-app {
+  --bg: #080c12;
+  --bg-warm: #0c1018;
+  --bg-panel: #111822;
+  --bg-card: #16202e;
+  --text: #e0e6ef;
+  --text-muted: #8b95a8;
+  --text-light: #5c6578;
+  --cream: #e8e0d4;
+  --brass: #c7a76b;
+  --patina-light: #6fa896;
+  --wine-glow: #c45c6a;
+  --gear-border: rgba(168, 120, 79, 0.22);
+  --font-sans: var(--font-admin), var(--font-inter), system-ui, sans-serif;
+}
+
+.inventory-app.admin-body {
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(168, 120, 79, 0.14), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 0%, rgba(74, 124, 111, 0.1), transparent 50%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+.inventory-app .admin-shell {
+  min-height: 100vh;
+}
+
+.inventory-app .admin-sidebar {
+  position: relative;
+  width: 268px;
+  padding: 28px 18px;
+  background: linear-gradient(180deg, rgba(17, 24, 34, 0.98) 0%, rgba(12, 16, 24, 0.99) 100%);
+  border-right: 1px solid rgba(168, 120, 79, 0.28);
+  overflow: hidden;
+}
+
+.inventory-app .sidebar-glow {
+  position: absolute;
+  top: -40px;
+  left: -20px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(168, 120, 79, 0.18), transparent 70%);
+  pointer-events: none;
+}
+
+.inventory-app .sidebar-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.inventory-app .sidebar-mark-label {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--copper-bright);
+  letter-spacing: 0.06em;
+}
+
+.inventory-app .sidebar-welcome {
+  font-size: 0.78rem;
+  color: var(--patina-light);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.inventory-app .sidebar-business-name {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--cream);
+  margin-bottom: 14px;
+}
+
+.inventory-app .sidebar-bar-label {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+
+.inventory-app .sidebar-cycle-chip {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background: rgba(168, 120, 79, 0.08);
+  border: 1px solid rgba(168, 120, 79, 0.22);
+  border-radius: 20px;
+}
+
+.inventory-app .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-right: 4px;
+}
+
+.inventory-app .sidebar-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  border-radius: 0 6px 6px 0;
+  padding: 12px 12px 12px 10px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.inventory-app .sidebar-link:hover {
+  background: rgba(168, 120, 79, 0.06);
+}
+
+.inventory-app .sidebar-link.active {
+  background: rgba(168, 120, 79, 0.1);
+  border-left-color: var(--copper-bright);
+}
+
+.inventory-app .sidebar-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--text-light);
+  transition: color 0.15s;
+}
+
+.inventory-app .sidebar-link-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.inventory-app .sidebar-link-text strong {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.inventory-app .sidebar-link-text small {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  line-height: 1.3;
+}
+
+.inventory-app .sidebar-link:hover .sidebar-icon,
+.inventory-app .sidebar-link.active .sidebar-icon {
+  color: var(--copper-bright);
+}
+
+.inventory-app .sidebar-link.active .sidebar-link-text strong {
+  color: var(--copper-bright);
+}
+
+.inventory-app .sidebar-foot {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(168, 120, 79, 0.15);
+}
+
+.inventory-app .sidebar-add-bar {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--copper);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+.inventory-app .sidebar-add-bar:hover {
+  color: var(--copper-bright);
+}
+
+.inventory-app .sidebar-foot-tag {
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--copper);
+  margin-bottom: 4px;
+}
+
+.inventory-app .sidebar-foot-hint {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  line-height: 1.4;
+}
+
+.inventory-app .sidebar-exit-link {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 0.72rem;
+  color: var(--text-light);
+  text-decoration: none;
+}
+
+.inventory-app .sidebar-exit-link:hover {
+  color: var(--copper-bright);
+}
+
+.inventory-app .admin-main {
+  background: transparent;
+}
+
+.inventory-app .admin-main-inner {
+  padding: 24px 28px 40px;
+  max-width: 1100px;
+}
+
+.inventory-app .admin-mobile-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(168, 120, 79, 0.2);
+  background: rgba(12, 16, 24, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.inventory-app .admin-menu-btn {
+  color: var(--copper-bright);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.inventory-app .admin-mobile-title {
+  font-family: var(--font-serif);
+  color: var(--copper-bright);
+  flex: 1;
+}
+
+.inventory-app .view-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--patina-light);
+  margin-bottom: 6px;
+}
+
+.inventory-app .view-header h1 {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  color: var(--copper-bright);
+  margin-bottom: 8px;
+}
+
+.inventory-app .view-header p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  max-width: 42rem;
+}
+
+.inventory-app .view-header {
+  margin-bottom: 20px;
+}
+
+.inventory-app .panel {
+  background: var(--bg-card);
+  border: 1px solid var(--gear-border);
+  border-radius: 6px;
+  padding: 22px 24px;
+  margin-bottom: 16px;
+}
+
+.inventory-app .panel h2 {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  color: var(--copper-bright);
+  margin-bottom: 8px;
+}
+
+.inventory-app .panel--glass {
+  background: linear-gradient(145deg, rgba(22, 32, 46, 0.88), rgba(14, 20, 30, 0.92));
+  border-color: rgba(168, 120, 79, 0.26);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+}
+
+.inventory-app .panel-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.inventory-app .panel-head-row h2 {
+  margin-bottom: 0;
+}
+
+.inventory-app .panel-head-meta {
+  margin: 0 !important;
+}
+
+.inventory-app .panel-lead {
+  margin-top: 0 !important;
+  margin-bottom: 14px !important;
+}
+
+.inventory-app .metrics-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.inventory-app .metrics-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inventory-app .metrics-filter span {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+.inventory-app .metrics-notes {
+  margin-top: 14px !important;
+  padding-top: 12px;
+  border-top: 1px solid rgba(168, 120, 79, 0.12);
+}
+
+.inventory-app .dashboard-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  padding: 22px 24px;
+  border-radius: 6px;
+  border: 1px solid rgba(168, 120, 79, 0.45);
+  background: linear-gradient(125deg, rgba(28, 38, 54, 0.95) 0%, rgba(14, 20, 32, 0.98) 60%, rgba(74, 124, 111, 0.08) 100%);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+}
+
+.inventory-app .dashboard-hero-glow {
+  position: absolute;
+  right: -60px;
+  top: -40px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(199, 167, 107, 0.2), transparent 65%);
+  pointer-events: none;
+}
+
+.inventory-app .dashboard-hero-main {
+  position: relative;
+  z-index: 1;
+}
+
+.inventory-app .dashboard-hero-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--patina-light);
+  border: 1px solid rgba(111, 168, 150, 0.35);
+  padding: 4px 10px;
+  border-radius: 3px;
+  margin-bottom: 10px;
+}
+
+.inventory-app .dashboard-hero-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--copper-bright);
+  margin-bottom: 6px;
+}
+
+.inventory-app .dashboard-hero-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.inventory-app .dashboard-hero-stats {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  align-content: center;
+}
+
+.inventory-app .dashboard-hero-stat {
+  background: var(--bg-panel);
+  border: 1px solid rgba(168, 120, 79, 0.22);
+  border-radius: 4px;
+  padding: 14px 12px;
+  text-align: center;
+}
+
+.inventory-app .dashboard-hero-stat-num {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  color: var(--copper-bright);
+}
+
+.inventory-app .dashboard-hero-stat-lbl {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+.inventory-app .dojo-metrics-grid--bento {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.inventory-app .dojo-metric {
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.inventory-app .dojo-metric:hover {
+  transform: translateY(-2px);
+  border-color: rgba(168, 120, 79, 0.45);
+}
+
+.inventory-app .dojo-metric-hero {
+  border-color: rgba(168, 120, 79, 0.4);
+  background: linear-gradient(180deg, rgba(22, 32, 46, 0.9), rgba(17, 24, 34, 0.95));
+}
+
+.inventory-app .dojo-metric-patina .dojo-metric-num {
+  color: var(--patina-light);
+}
+
+.inventory-app .dojo-nav-grid--bento {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.inventory-app .dojo-nav-card {
+  position: relative;
+  padding-left: 18px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.inventory-app .dojo-nav-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  border-color: rgba(168, 120, 79, 0.45);
+}
+
+.inventory-app .dojo-nav-card--inhouse {
+  border-left: 3px solid var(--patina);
+}
+
+.inventory-app .dojo-nav-card--sheets {
+  border-left: 3px solid var(--copper);
+}
+
+.inventory-app .dojo-nav-card--analytics {
+  border-left: 3px solid var(--brass);
+}
+
+.inventory-app .dojo-nav-card--inputs {
+  border-left: 3px solid var(--wine-glow);
+}
+
+.inventory-app .dojo-nav-card--settings {
+  border-left: 3px solid var(--text-light);
+}
+
+.inventory-app .admin-loading,
+.inventory-app .admin-empty-state {
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inventory-app .admin-loading-pulse {
+  color: var(--text-muted);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.inventory-app .admin-empty-card {
+  max-width: 32rem;
+  text-align: center;
+  padding: 2.5rem 2rem;
+}
+
+.inventory-app .admin-empty-card h1 {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  color: var(--copper-bright);
+  margin: 8px 0 12px;
+}
+
+.inventory-app .admin-cta-btn {
+  margin-top: 20px;
+  background: linear-gradient(135deg, var(--copper-dark), var(--copper-bright));
+  color: var(--bg);
+  font-weight: 600;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.inventory-app .admin-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(168, 120, 79, 0.35);
+}
+
+@media (max-width: 900px) {
+  .inventory-app .dashboard-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-app .admin-main-inner {
+    padding: 16px;
+  }
+}

@@ -182,7 +182,7 @@ function GearBackground() {
 /* ─── Panel wrapper ─── */
 function WizardPanel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="panel rivets rounded-sm p-8 md:p-12 relative grain">
+    <div className="panel panel--glass p-8 md:p-12 relative grain">
       {children}
     </div>
   );
