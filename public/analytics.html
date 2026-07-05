@@ -250,6 +250,68 @@
   }
   a { color: var(--accent2); text-decoration: none; }
   a:hover { text-decoration: underline; }
+  .download-gauge-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    margin-bottom: 20px;
+  }
+  .download-gauge-visual {
+    position: relative;
+    width: min(240px, 42vw);
+    line-height: 0;
+  }
+  .download-gauge-visual img {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 16px 36px rgba(0,0,0,0.55));
+  }
+  .download-gauge-readout {
+    position: absolute;
+    left: 50%;
+    top: 53.6%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .download-gauge-readout-bg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3.4em;
+    padding: 0.14em 0.42em;
+    background: #11100f;
+    border-radius: 2px;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.75);
+  }
+  .download-gauge-readout-num {
+    font-family: "Courier New", monospace;
+    font-size: clamp(1rem, 3.5vw, 1.55rem);
+    font-weight: 700;
+    color: #ece6d9;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .download-gauge-meta h3 {
+    font-size: 18px;
+    color: var(--accent2);
+    margin-bottom: 8px;
+  }
+  .download-gauge-meta p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 4px 0;
+  }
+  .download-gauge-meta .big {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1;
+    margin: 8px 0 4px;
+  }
 </style>
 </head>
 <body>
@@ -320,6 +382,17 @@
     // Headline counters — visits & downloads
     html += '<div class="section">';
     html += '<h2>Visits &amp; Downloads</h2>';
+    html += '<div class="download-gauge-panel">';
+    html += '<div class="download-gauge-visual">';
+    html += '<img src="/images/download-gauge.jpg" alt="Open Source Barware download counter gauge" width="683" height="1024" />';
+    html += '<div class="download-gauge-readout"><span class="download-gauge-readout-bg"><span class="download-gauge-readout-num" id="gauge-download-count">' + fmt(o.totalDownloadsAllTime || 0) + '</span></span></div>';
+    html += '</div>';
+    html += '<div class="download-gauge-meta">';
+    html += '<h3>Open Source Downloads</h3>';
+    html += '<div class="big">' + fmt(o.totalDownloadsAllTime || 0) + '</div>';
+    html += '<p>All-time program downloads</p>';
+    html += '<p>' + fmt(o.uniqueDownloadersEver || 0) + ' unique downloaders &middot; ' + fmt(o.todayDownloads || 0) + ' today &middot; ' + fmt(o.weekDownloads || 0) + ' this week</p>';
+    html += '</div></div>';
     html += '<div class="grid">';
     html += metricCard('All-Time Visits', fmt(o.totalAllTime), fmt(o.uniqueVisitorsEver || 0) + ' unique ever');
     html += metricCard('Today Unique Visits', fmt(o.todayUniqueVisitors || 0), fmt(o.todayVisitTotal || 0) + ' total today');

@@ -1,6 +1,7 @@
 import Link from "next/link";
+import DownloadGauge from "@/components/DownloadGauge";
 import OptimizedPicture from "@/components/OptimizedPicture";
-import { Gear, GearDivider, BottleIcon } from "@/components/SteampunkElements";
+import { Gear, BottleIcon } from "@/components/SteampunkElements";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -178,7 +179,7 @@ export default function DownloadsPage() {
         </div>
       </section>
 
-      <GearDivider />
+      <DownloadGauge caption="Total program downloads" />
 
       {/* ── GPL PACKAGE ── */}
       <section className="max-w-6xl mx-auto px-6 pt-10 md:pt-14">
