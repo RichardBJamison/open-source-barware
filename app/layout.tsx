@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import JulyFourthLaunchOverlay from "@/components/JulyFourthLaunchOverlay";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 
-const GA_MEASUREMENT_ID = "G-DQJKBWMM8H";
+const GA_MEASUREMENT_ID = "G-ZM3BBYW5PY";
 
 const inter = Inter({
   variable: "--font-inter",
