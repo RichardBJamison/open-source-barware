@@ -377,7 +377,7 @@ export default function AboutMockupPage() {
 
         <section className="osb-about-story" aria-labelledby="about-story-heading">
           <div className="osb-about-story-inner">
-            <h2 id="about-story-heading">Why we built this</h2>
+            <h2 id="about-story-heading">Why I built this</h2>
             <p>
               Open Source Barware started with a problem every working bar manager recognizes:
               close out, grab the clipboard, count bottles by tenths, walk to the office, type
@@ -386,7 +386,7 @@ export default function AboutMockupPage() {
               sold inventory guns, monthly SaaS fees, and consulting priced by the bottle.
             </p>
             <p>
-              We built the program we wished existed. It is free, open source, and designed around
+              I built the program I wished existed. It is free, open source, and designed around
               how bars actually run — voice notes on a walk-through, a spreadsheet everyone can
               read, weekly inputs for counts and invoices, and an AI home base that explains what
               changed instead of hiding behind a dashboard. No signup wall. No email capture. No
@@ -465,6 +465,30 @@ export default function AboutMockupPage() {
               There are a lot of good reasons to buy us a drink. Your support keeps the free program
               moving and funds the next layer of tools, tours, and trade knowledge we are building
               for the people behind the stick.
+            </p>
+
+            <h2>Enterprise &amp; multi-venue</h2>
+            <p>
+              A lot of people are going to download this with multiple bars — and that is exactly
+              what it is built for. But some operators run something bigger: multiple venues, each
+              with its own liquor room, storage cases, and a lot of hands in the count. Same
+              program, harder scale.
+            </p>
+            <p>
+              I can customize this entire build for groups that need more than the free download.
+              Multiple locations feeding one main system through API integrations. A different look
+              and workflow for each restaurant in a chain, or each beverage program under one roof.
+              Country clubs tied into the member inventory system they already run. However your
+              operation is wired, I can build it — there are a million ways to do it right, and I
+              have done this kind of work before.
+            </p>
+            <p>
+              If you are running venues at enterprise scale and want Open Source Barware tailored
+              to your group — not the off-the-shelf version — I would love to talk. I am a joy to
+              work with, I love getting into the marketing side of it, and I take the build as
+              seriously as the bar count.{" "}
+              <a href="mailto:me@richardbjamison.com">Reach out</a> and we will figure out what
+              your operation actually needs.
             </p>
           </div>
         </section>
