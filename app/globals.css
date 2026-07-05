@@ -162,6 +162,235 @@ body { background: var(--bg); color: var(--text); }
   background: linear-gradient(to right, transparent, var(--gear-border), transparent);
 }
 
+/* ── GPL download section + steampunk clock ── */
+.gpl-download-section {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 0;
+}
+
+.gpl-download-heading {
+  text-align: center;
+  max-width: 40rem;
+  margin: 0 auto 1.75rem;
+  padding-bottom: 0.5rem;
+}
+
+.gpl-download-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 0.85rem;
+}
+
+.gpl-download-title {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: clamp(1.65rem, 3.2vw, 2.15rem);
+  line-height: 1.2;
+  color: var(--cream);
+}
+
+.gpl-download-panel {
+  padding: 1.5rem;
+  background: linear-gradient(180deg, rgba(12, 10, 8, 0.96) 0%, rgba(8, 7, 6, 0.98) 100%);
+  border-color: rgba(168, 120, 79, 0.14);
+}
+
+.gpl-download-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 42%) minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: center;
+}
+
+.gpl-download-clock-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.gpl-download-actions-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.gpl-download-copy {
+  color: var(--text-muted);
+  line-height: 1.75;
+  font-size: 0.98rem;
+  max-width: 36rem;
+}
+
+.gpl-download-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.gpl-download-card {
+  border: 1px solid var(--gear-border);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1.15rem 1.1rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  text-decoration: none;
+}
+
+.gpl-download-card:hover {
+  border-color: rgba(168, 120, 79, 0.45);
+  background: rgba(168, 120, 79, 0.05);
+}
+
+.gpl-download-card-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--copper);
+  margin-bottom: 0.65rem;
+}
+
+.gpl-download-card-text {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--cream);
+}
+
+.download-clock {
+  width: min(100%, 320px);
+  margin: 0 auto;
+}
+
+.download-clock-frame {
+  position: relative;
+  width: 100%;
+  line-height: 0;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.download-clock-art {
+  width: 100%;
+  height: auto;
+  display: block;
+  mix-blend-mode: multiply;
+  filter: contrast(1.08) saturate(0.92) brightness(0.92);
+  opacity: 0.97;
+}
+
+.download-clock-display {
+  position: absolute;
+  left: 21%;
+  top: 20.2%;
+  width: 58%;
+  height: 10.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: #0a0908;
+  border-radius: 2px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.85);
+}
+
+.download-clock-dials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 1.1vw, 7px);
+  width: 100%;
+  height: 100%;
+  padding: 0 6%;
+}
+
+.download-clock-loading {
+  font-family: var(--font-inter), monospace;
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  letter-spacing: 0.35em;
+  color: #d8ccb8;
+}
+
+.rotary-digit {
+  flex: 1 1 0;
+  max-width: 2.1rem;
+  height: 100%;
+  min-height: 1.65rem;
+}
+
+.rotary-digit-bezel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #3a342c 0%, #1e1b17 42%, #12100e 100%);
+  border: 1px solid rgba(184, 137, 88, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.65),
+    0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.rotary-digit-drum {
+  display: flex;
+  flex-direction: column;
+  height: 1000%;
+  transition: transform 0.85s cubic-bezier(0.22, 0.85, 0.25, 1);
+  will-change: transform;
+}
+
+.rotary-digit-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 10%;
+  font-family: var(--font-inter), "Courier New", monospace;
+  font-size: clamp(0.95rem, 2.8vw, 1.35rem);
+  font-weight: 700;
+  color: #f2ead8;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
+  font-variant-numeric: tabular-nums;
+}
+
+.rotary-digit-glare {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    transparent 38%,
+    transparent 62%,
+    rgba(0, 0, 0, 0.22) 100%
+  );
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .gpl-download-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .gpl-download-clock-col {
+    order: -1;
+  }
+
+  .download-clock {
+    width: min(280px, 78vw);
+  }
+}
+
+@media (max-width: 540px) {
+  .gpl-download-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 
 /* ── Copper underline ── */
