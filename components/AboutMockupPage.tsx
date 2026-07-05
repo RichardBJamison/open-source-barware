@@ -400,9 +400,11 @@ export default function AboutMockupPage() {
               I can customize this entire build for groups that need more than the free download.
               Multiple locations feeding one main system through API integrations. A different look
               and workflow for each restaurant in a chain, or each beverage program under one roof.
-              Country clubs tied into the member inventory system they already run. However your
-              operation is wired, I can build it — there are a million ways to do it right, and I
-              have done this kind of work before.
+              For country and private clubs: restaurant inventory, membership-base purchasing, and
+              every outlet in the club rolled into one collective reporting overview — so leadership
+              sees the whole beverage program in one place, not twelve separate spreadsheets.
+              However your operation is wired, I can build it — there are a million ways to do it
+              right, and I have done this kind of work before.
             </p>
             <p>
               If you are running venues at enterprise scale and want Open Source Barware tailored
