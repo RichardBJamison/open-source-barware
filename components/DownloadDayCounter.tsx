@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { getProgramDay } from "@/lib/launch-gate";
 import { useLaunchNow } from "@/lib/use-launch-now";
 
@@ -13,13 +12,14 @@ export default function DownloadDayCounter() {
     <div className="download-day-counter" aria-labelledby="download-day-label">
       <div className="download-day-counter-glow" aria-hidden="true" />
       <div className="download-day-counter-frame">
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src="/images/download-day-counter.jpg"
           alt="Steampunk download counter showing today's program downloads"
           width={683}
           height={1024}
           className="download-day-counter-art"
-          priority
+          decoding="async"
         />
       </div>
 

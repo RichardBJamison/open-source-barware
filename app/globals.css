@@ -251,15 +251,15 @@ body { background: var(--bg); color: var(--text); }
   width: 100%;
   line-height: 0;
   background: #000;
-  isolation: isolate;
 }
 
 .download-day-counter-art {
   width: 100%;
   height: auto;
   display: block;
-  mix-blend-mode: multiply;
-  filter: contrast(1.06) saturate(0.95) brightness(0.96);
+  filter: contrast(1.06) saturate(0.97) brightness(0.9);
+  -webkit-mask-image: radial-gradient(ellipse 74% 70% at 50% 42%, #000 52%, transparent 100%);
+  mask-image: radial-gradient(ellipse 74% 70% at 50% 42%, #000 52%, transparent 100%);
 }
 
 .download-day-counter-meta {
