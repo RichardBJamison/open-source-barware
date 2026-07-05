@@ -90,7 +90,7 @@ export default function Header() {
             href="/download"
             className="relative bg-copper hover:bg-copper-bright text-bg font-semibold px-6 py-2.5 tracking-wide transition-all hover:shadow-[0_0_20px_rgba(168,120,79,0.3)]"
           >
-            Free Download
+            Download Program
           </Link>
         </div>
 
@@ -113,7 +113,7 @@ export default function Header() {
           <Link href="/about" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">About</Link>
           <Link href="/resources" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">Resources</Link>
           <Link href="/inventory/dashboard" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">Salle d&apos;Armes</Link>
-          <Link href="/download" onClick={() => setMenuOpen(false)} className="bg-copper text-bg font-semibold px-6 py-2.5 tracking-wide text-center">Free Download</Link>
+          <Link href="/download" onClick={() => setMenuOpen(false)} className="bg-copper text-bg font-semibold px-6 py-2.5 tracking-wide text-center">Download Program</Link>
         </div>
       )}
     </header>

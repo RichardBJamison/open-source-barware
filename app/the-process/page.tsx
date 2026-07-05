@@ -612,18 +612,18 @@ export default function TheProcess() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/inventory"
+              href="/inventory/dashboard"
               prefetch={false}
               className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-base tracking-wide transition-all hover:shadow-[0_0_40px_rgba(168,120,79,0.3)]"
             >
-              Open the Trial Home Base
+              Visit Our Arms
             </Link>
             <Link
-              href="/downloads"
+              href="/download"
               prefetch={false}
               className="inline-block border border-copper/40 text-copper hover:bg-copper/10 font-semibold px-10 py-4 text-base tracking-wide transition-all"
             >
-              Free Download
+              Download Program
             </Link>
           </div>
           <p className="text-text-light text-sm mt-5">

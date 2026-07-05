@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import FireworksCanvas from "@/components/FireworksCanvas";
 import {
@@ -27,6 +27,7 @@ const GITHUB = "https://github.com/RichardBJamison/open-source-barware";
 
 export default function JulyFourthLaunchOverlay() {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -41,13 +42,21 @@ export default function JulyFourthLaunchOverlay() {
   // Manual preview of the post-launch thank-you before 10pm: ?thankyou=1
   const forceThankYou = searchParams.get("thankyou") === "1";
 
-  const dismiss = useCallback(() => {
-    setDismissed(true);
-    setTimeout(() => setVisible(false), 500);
-    if (!previewParam && !forceOverlay && !forceThankYou) {
-      localStorage.setItem(STORAGE_KEY, "1");
-    }
-  }, [previewParam, forceOverlay, forceThankYou]);
+  const dismiss = useCallback(
+    (options?: { goHome?: boolean }) => {
+      setDismissed(true);
+      setTimeout(() => setVisible(false), 500);
+      if (!previewParam && !forceOverlay && !forceThankYou) {
+        localStorage.setItem(STORAGE_KEY, "1");
+      }
+      if (options?.goHome && pathname && pathname !== "/") {
+        router.push("/");
+      }
+    },
+    [pathname, previewParam, forceOverlay, forceThankYou, router],
+  );
+
+  const dismissToHome = useCallback(() => dismiss({ goHome: true }), [dismiss]);
 
   // Tick every second so the countdown updates and flips to the thank-you at 10pm.
   useEffect(() => {
@@ -81,7 +90,7 @@ export default function JulyFourthLaunchOverlay() {
   useEffect(() => {
     if (!visible || dismissed) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") dismiss();
+      if (e.key === "Escape") dismissToHome();
     };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
@@ -89,7 +98,7 @@ export default function JulyFourthLaunchOverlay() {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
     };
-  }, [visible, dismissed, dismiss]);
+  }, [visible, dismissed, dismissToHome]);
 
   if (!visible) return null;
 
@@ -109,7 +118,7 @@ export default function JulyFourthLaunchOverlay() {
 
       <div
         className="july4-backdrop absolute inset-0"
-        onClick={dismiss}
+        onClick={dismissToHome}
         aria-hidden="true"
       />
 
@@ -136,9 +145,9 @@ export default function JulyFourthLaunchOverlay() {
         onClick={(e) => e.stopPropagation()}
       >
         {launched ? (
-          <LaunchThankYou onDismiss={dismiss} />
+          <LaunchThankYou onDismiss={dismiss} onDismissToHome={dismissToHome} />
         ) : (
-          <PreLaunchCountdown countdown={countdown} onDismiss={dismiss} />
+          <PreLaunchCountdown countdown={countdown} onDismissToHome={dismissToHome} />
         )}
 
         <div className="july4-bunting mt-10 flex justify-center gap-1 opacity-90">
@@ -193,10 +202,10 @@ function PartyStrip() {
 
 function PreLaunchCountdown({
   countdown,
-  onDismiss,
+  onDismissToHome,
 }: {
   countdown: ReturnType<typeof getLaunchCountdown>;
-  onDismiss: () => void;
+  onDismissToHome: () => void;
 }) {
   return (
     <>
@@ -251,14 +260,14 @@ function PreLaunchCountdown({
         </p>
 
         <button
-          onClick={onDismiss}
+          onClick={onDismissToHome}
           className="july4-cta-primary mt-8 w-full py-4 text-sm font-black uppercase tracking-[0.18em]"
         >
           Okay, let me explore
         </button>
 
         <button
-          onClick={onDismiss}
+          onClick={onDismissToHome}
           className="mt-3 w-full py-2 text-xs uppercase tracking-[0.22em] text-text-light transition-colors hover:text-copper"
         >
           or click anywhere &middot; we&rsquo;re not keeping you
@@ -268,7 +277,13 @@ function PreLaunchCountdown({
   );
 }
 
-function LaunchThankYou({ onDismiss }: { onDismiss: () => void }) {
+function LaunchThankYou({
+  onDismiss,
+  onDismissToHome,
+}: {
+  onDismiss: () => void;
+  onDismissToHome: () => void;
+}) {
   return (
     <>
       <p className="july4-badge mb-6">🎆 It&rsquo;s live &middot; released tonight at 10 &#39;o clock 🎆</p>
@@ -350,7 +365,7 @@ function LaunchThankYou({ onDismiss }: { onDismiss: () => void }) {
         </p>
 
         <button
-          onClick={onDismiss}
+          onClick={onDismissToHome}
           className="mt-4 w-full py-2 text-xs uppercase tracking-[0.22em] text-text-light transition-colors hover:text-copper"
         >
           or click anywhere to come in
