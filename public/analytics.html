@@ -322,8 +322,8 @@
     html += '<h2>Visits &amp; Downloads</h2>';
     html += '<div class="grid">';
     html += metricCard('All-Time Visits', fmt(o.totalAllTime), fmt(o.uniqueVisitorsEver || 0) + ' unique ever');
-    html += metricCard('Today Unique Visits', fmt(o.todayUniqueVisitors || 0), 'UTC day');
-    html += metricCard('Week Unique Visits', fmt(o.weekUniqueVisitors || 0), 'Rolling 7 days');
+    html += metricCard('Today Unique Visits', fmt(o.todayUniqueVisitors || 0), fmt(o.todayVisitTotal || 0) + ' total today');
+    html += metricCard('Week Unique Visits', fmt(o.weekUniqueVisitors || 0), fmt(o.weekVisitTotal || 0) + ' total this week');
     html += metricCard('All-Time Downloads', fmt(o.totalDownloadsAllTime || 0), fmt(o.uniqueDownloadersEver || 0) + ' unique ever');
     html += metricCard('Today Downloads', fmt(o.todayDownloads || 0), fmt(o.todayUniqueDownloaders || 0) + ' unique today');
     html += metricCard('Week Downloads', fmt(o.weekDownloads || 0), fmt(o.weekUniqueDownloaders || 0) + ' unique this week');

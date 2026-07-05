@@ -59,15 +59,45 @@ export async function onRequestGet(context) {
       10
     );
 
-    const todayUniqueVisitors = await countKeysByPrefix(kv, `uv:${today}:`);
-    const todayUniqueDownloaders = await countKeysByPrefix(kv, `dl_uv:${today}:`);
+    const todayVisitsFromRecords = visits.filter((v) => v.ts?.startsWith(today));
+    const todayDownloadsFromRecords = downloads.filter((d) =>
+      d.ts?.startsWith(today)
+    );
+    const todayUniqueVisitors = Math.max(
+      await countKeysByPrefix(kv, `uv:${today}:`),
+      new Set(todayVisitsFromRecords.filter((v) => v.vid).map((v) => v.vid)).size
+    );
+    const todayUniqueDownloaders = Math.max(
+      await countKeysByPrefix(kv, `dl_uv:${today}:`),
+      new Set(todayDownloadsFromRecords.filter((d) => d.vid).map((d) => d.vid))
+        .size
+    );
 
+    const todayVisitTotal = Math.max(
+      parseInt((await kv.get(`visits_day:${today}`)) || "0", 10),
+      todayVisitsFromRecords.length
+    );
+    const todayDownloadTotal = Math.max(
+      parseInt((await kv.get(`downloads_day:${today}`)) || "0", 10),
+      todayDownloadsFromRecords.length
+    );
+
+    let weekVisitTotal = 0;
+    let weekDownloadTotal = 0;
     let weekUniqueVisitors = 0;
     let weekUniqueDownloaders = 0;
     const weekVisitorIds = new Set();
     const weekDownloaderIds = new Set();
 
     for (const date of weekDates) {
+      weekVisitTotal += parseInt(
+        (await kv.get(`visits_day:${date}`)) || "0",
+        10
+      );
+      weekDownloadTotal += parseInt(
+        (await kv.get(`downloads_day:${date}`)) || "0",
+        10
+      );
       const uvCount = await countKeysByPrefix(kv, `uv:${date}:`);
       weekUniqueVisitors += uvCount;
       const dlUvCount = await countKeysByPrefix(kv, `dl_uv:${date}:`);
@@ -85,8 +115,7 @@ export async function onRequestGet(context) {
       }
     }
 
-    const todayDownloads = downloads.filter((d) => d.ts?.startsWith(today));
-    const weekDownloads = downloads.filter((d) =>
+    const weekDownloadsFromRecords = downloads.filter((d) =>
       weekDates.includes(d.ts?.slice(0, 10))
     );
 
@@ -212,14 +241,16 @@ export async function onRequestGet(context) {
           liveNow,
           uniqueVisitorsEver,
           todayUniqueVisitors,
+          todayVisitTotal,
           weekUniqueVisitors: Math.max(weekUniqueVisitors, weekVisitorIds.size),
+          weekVisitTotal: Math.max(weekVisitTotal, visits.length),
           totalDownloadsAllTime,
           periodDownloads: downloads.length,
           periodUniqueDownloaders: uniqueDownloadVids.size,
           uniqueDownloadersEver,
-          todayDownloads: todayDownloads.length,
+          todayDownloads: todayDownloadTotal,
           todayUniqueDownloaders,
-          weekDownloads: weekDownloads.length,
+          weekDownloads: Math.max(weekDownloadTotal, weekDownloadsFromRecords.length),
           weekUniqueDownloaders: Math.max(
             weekUniqueDownloaders,
             weekDownloaderIds.size

@@ -68,9 +68,15 @@ export async function onRequestPost(context) {
     const totalRaw = await kv.get("total_visits");
     const total = parseInt(totalRaw || "0", 10) + 1;
 
+    const dayVisitsRaw = (await kv.get(`visits_day:${dateStr}`)) || "0";
+    const dayVisits = parseInt(dayVisitsRaw, 10) + 1;
+
     const writes = [
       kv.put(pvKey, JSON.stringify(visit), { expirationTtl: 2592000 }),
       kv.put("total_visits", String(total)),
+      kv.put(`visits_day:${dateStr}`, String(dayVisits), {
+        expirationTtl: 2592000,
+      }),
     ];
 
     if (vid) {

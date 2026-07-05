@@ -42,9 +42,15 @@ export async function onRequestPost(context) {
     const totalRaw = (await kv.get("total_downloads")) || "0";
     const total = parseInt(totalRaw, 10) + 1;
 
+    const dayDownloadsRaw = (await kv.get(`downloads_day:${dateStr}`)) || "0";
+    const dayDownloads = parseInt(dayDownloadsRaw, 10) + 1;
+
     const writes = [
       kv.put(dlKey, JSON.stringify(download), { expirationTtl: 2592000 }),
       kv.put("total_downloads", String(total)),
+      kv.put(`downloads_day:${dateStr}`, String(dayDownloads), {
+        expirationTtl: 2592000,
+      }),
     ];
 
     if (vid) {
