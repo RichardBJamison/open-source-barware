@@ -136,74 +136,6 @@ export default function AboutMockupPage() {
           pointer-events: none !important;
         }
 
-        .osb-credit-role-wrap {
-          position: absolute;
-          z-index: 3;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          pointer-events: none;
-          height: 2.4%;
-          width: 27%;
-          background: linear-gradient(180deg, #15120f 0%, #100e0b 100%);
-        }
-
-        .osb-credit-role-richard {
-          left: 7.2%;
-          top: 83.5%;
-        }
-
-        .osb-credit-role-bill {
-          left: 36.5%;
-          top: 79.6%;
-          height: 6.4%;
-          width: 27%;
-        }
-
-        .osb-credit-role-nito {
-          left: 65.8%;
-          top: 83.5%;
-        }
-
-        .osb-credit-role-text {
-          font-family: var(--font-inter), system-ui, sans-serif;
-          font-size: clamp(0.48rem, 0.82vw, 0.6rem);
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: #8f8474;
-          font-weight: 500;
-        }
-
-        .osb-credit-role-bill .osb-credit-role-text {
-          font-size: clamp(0.62rem, 1.05vw, 0.78rem);
-          letter-spacing: 0.14em;
-          color: #d8ccb8;
-          font-weight: 600;
-        }
-
-        @media (max-width: 720px) {
-          .osb-credit-role-wrap {
-            height: 2.8%;
-            width: 29%;
-          }
-
-          .osb-credit-role-richard {
-            left: 5%;
-            top: 84.2%;
-          }
-
-          .osb-credit-role-bill {
-            left: 35.5%;
-            top: 80.2%;
-            height: 7%;
-          }
-
-          .osb-credit-role-nito {
-            left: 66%;
-            top: 84.2%;
-          }
-        }
-
         .osb-timeline-quip {
           position: absolute;
           z-index: 3;
@@ -307,16 +239,6 @@ export default function AboutMockupPage() {
               aria-label={link.label}
             />
           ))}
-
-          <div className="osb-credit-role-wrap osb-credit-role-richard" aria-hidden="true">
-            <span className="osb-credit-role-text">Founder</span>
-          </div>
-          <div className="osb-credit-role-wrap osb-credit-role-bill" aria-hidden="true">
-            <span className="osb-credit-role-text">Advisor</span>
-          </div>
-          <div className="osb-credit-role-wrap osb-credit-role-nito" aria-hidden="true">
-            <span className="osb-credit-role-text">Test Pilot</span>
-          </div>
 
           <div className="osb-sr-copy">
             <h1>A real bar problem, built with the people living it.</h1>
