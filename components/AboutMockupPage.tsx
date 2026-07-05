@@ -388,21 +388,23 @@ export default function AboutMockupPage() {
             <p>
               We built the program we wished existed. It is free, open source, and designed around
               how bars actually run — voice notes on a walk-through, a spreadsheet everyone can
-              read, weekly inputs for counts and invoices, and an AI home base that explains what
-              changed instead of hiding behind a dashboard. No signup wall. No email capture. No
-              investor deck between you and a clean count.
+              read, weekly inputs for counts and invoices, and a home base that explains what
+              changed instead of hiding behind a dashboard. It all runs on your laptop, on its own —
+              no AI, no cloud, no subscription. No signup wall. No email capture. No investor deck
+              between you and a clean count.
             </p>
 
             <h2>What &ldquo;open source&rdquo; means here</h2>
             <p>
               The program, documentation, and operating logic are meant to stay in the open. You can
-              download the system, run it in Chrome, connect the AI provider you already trust, and
-              keep your own inventory map and weekly packet on your terms. Fork it. Improve it. Share
-              it with the next bar that is tired of renting their own workflow.
+              download the system, run it in Chrome, and keep your own inventory map and weekly
+              packet on your terms — no account, no cloud, no AI required. Add your own AI key later
+              only if you want invoice photos read for you. Fork it. Improve it. Share it with the
+              next bar that is tired of renting their own workflow.
             </p>
             <ul>
               <li>One free Chrome-side program — not six upsells dressed as a toolkit.</li>
-              <li>Customer-owned data with provider-connected AI, not a black-box platform.</li>
+              <li>Customer-owned data that lives on your laptop, not a black-box cloud platform.</li>
               <li>Checks and gates before the first live count, so the map is right before the math.</li>
               <li>Weekly rhythm: count the room, add invoices and POS, read the story.</li>
             </ul>

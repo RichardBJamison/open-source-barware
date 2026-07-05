@@ -5,7 +5,16 @@
  *         public/downloads/open-source-barware-program-win.zip
  */
 import archiver from "archiver";
-import { chmodSync, createWriteStream, existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:fs";
+import {
+  chmodSync,
+  copyFileSync,
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  statSync,
+  unlinkSync,
+} from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,11 +22,16 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const programDir = path.join(root, "program");
 const outDir = path.join(root, "public", "downloads");
 
+const LICENSE_SRC = path.join(root, "public", "downloads", "LICENSE.txt");
+
 const PROGRAM_FILES = [
   "server.py",
+  "invoice_parse.py",
   "requirements.txt",
   "osb_config.example.json",
   "README-INSTALL.txt",
+  "LICENSE.txt",
+  "VERSION.txt",
   "install.sh",
   "install.ps1",
   "Install.command",
@@ -26,7 +40,6 @@ const PROGRAM_FILES = [
   "Start.bat",
   "Stop.command",
   "Stop.bat",
-  "start.command",
   "start-server.ps1",
   "scripts/windows-vc.ps1",
   "static/downloads/Bar-Inventory-Master.xlsx",
@@ -55,7 +68,13 @@ const TEST_KIT_FILES = existsSync(TEST_KIT_DIR)
 
 function assertFiles() {
   const missing = PROGRAM_FILES.filter((f) => !existsSync(path.join(programDir, f)));
+  if (!existsSync(LICENSE_SRC)) missing.push("public/downloads/LICENSE.txt (source for LICENSE.txt)");
   if (missing.length) throw new Error(`Missing program files:\n${missing.join("\n")}`);
+}
+
+function stageLicenseInProgramDir() {
+  const dest = path.join(programDir, "LICENSE.txt");
+  copyFileSync(LICENSE_SRC, dest);
 }
 
 async function zipProgram(archiveName, prefix) {
@@ -76,8 +95,9 @@ async function zipProgram(archiveName, prefix) {
   return outPath;
 }
 
+stageLicenseInProgramDir();
 assertFiles();
-for (const cmd of ["Install.command", "Start.command", "Stop.command", "start.command"]) {
+for (const cmd of ["Install.command", "Start.command", "Stop.command"]) {
   try {
     chmodSync(path.join(programDir, cmd), 0o755);
   } catch {}

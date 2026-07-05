@@ -207,7 +207,7 @@ export default function ResourcesPage() {
               href="/downloads"
               className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-4 text-sm tracking-wide transition-all"
             >
-              Download the Program
+              Free Download
             </Link>
             <Link
               href="/manifesto"

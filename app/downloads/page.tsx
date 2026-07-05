@@ -34,20 +34,20 @@ const toolGuides = [
   {
     number: "02",
     title: "Quick Count Template",
-    format: "PDF + XLS",
+    format: "PDF · CSV · XLS",
     id: "quick-count-template",
     description:
-      "A printable walk sheet for fast weekly counting when the manager wants paper in hand.",
+      "Once the map is populated, download count sheets with blank spaces so you know exactly what to do — and what to say — on your second walk.",
     chromeFit:
-      "The Chrome program generates the template from the latest approved inventory map, so it changes when the bar layout, product list, or categories change.",
+      "The Chrome program generates the sheet from your approved bar map, ordered bar → well → row → back bar → cooler → wine, so it always matches the real room. Download it as a printable PDF, or export to CSV to pull into your own apps.",
     looksLike: [
-      "A simple print sheet ordered by the customer's real walking route",
-      "Blank count fields beside each bottle, shelf, well, cooler, and storage area",
-      "A matching XLS version so paper counts can be entered back into the program",
+      "A print sheet ordered by your real walking route, bar by bar and row by row",
+      "Blank count spaces beside every bottle, well, back bar, cooler shelf, and wine space",
+      "PDF for paper in hand, plus CSV/XLS exports for spreadsheets and mobile apps",
     ],
     process: [
-      "Print or open the sheet before walking the bar.",
-      "Count by the same left-to-right route used during setup.",
+      "After the first map is built, download the count sheet as PDF or CSV.",
+      "Carry it on the second walk and count by the same order you spoke the first time.",
       "Enter the results into Weekly Inputs so the admin panel updates the cycle.",
     ],
   },
@@ -59,14 +59,14 @@ const toolGuides = [
     description:
       "The calculation layer that compares inventory movement against POS sales and delivery invoices.",
     chromeFit:
-      "Variance becomes part of the admin panel. Weekly Inputs feeds it with three things: the count, invoice pictures, and POS downloads.",
+      "Variance becomes part of the admin panel. All inputs feeds it with your count, purchases (typed, pasted, or optional invoice photos), and POS exports.",
     looksLike: [
       "Opening inventory plus invoice purchases minus ending inventory",
       "POS sales imported by the same weekly cycle",
       "Category, bottle, and shift-level flags for unexplained gaps",
     ],
     process: [
-      "Upload invoice photos from the inventory period.",
+      "Add purchases — type them, paste invoice text, or optionally upload invoice photos with AI connected.",
       "Upload the POS sales export for the same dates.",
       "The system compares expected usage against actual count movement and updates the report.",
     ],
@@ -93,22 +93,22 @@ const toolGuides = [
   },
   {
     number: "05",
-    title: "AI Bottle Counter",
-    format: "Vision",
-    id: "ai-bottle-counter",
+    title: "Invoice Photo Reader",
+    format: "Optional AI",
+    id: "invoice-photo-reader",
     description:
-      "A guided photo-assisted counting feature for estimating bottle fill levels when visual review is faster than typing.",
+      "The one optional add-on. Snap a phone photo of a vendor invoice and let it read the line items — instead of typing them. Everything else works without it.",
     chromeFit:
-      "This is a feature inside the Chrome program, not a separate script. It supports the count workflow when the customer takes shelf or bottle pictures.",
+      "This is the only place AI ever enters the program, and only if you connect your own key. Skip it and you type or paste invoice text — the local parser handles that on its own, exactly as the system was field-tested.",
     looksLike: [
-      "A photo intake step connected to the approved location map",
-      "AI estimates that still ask the manager to confirm uncertain bottles",
-      "Corrections that feed back into the inventory count for that cycle",
+      "A photo button on the invoice panel, clearly labeled \"needs AI\"",
+      "Type-or-paste always sitting right beside it as the default path",
+      "Read line items you confirm before they touch the weekly numbers",
     ],
     process: [
-      "Open the count flow for a mapped section.",
-      "Take or upload the shelf image.",
-      "Confirm the fill estimates before they update the weekly count.",
+      "Optional: add your own AI key in Settings — a private password stored on your Mac.",
+      "Snap the Southern Glazer's or Breakthru invoice on your phone and upload it.",
+      "Confirm the parsed line items; without a key, just type or paste instead.",
     ],
   },
   {
@@ -135,7 +135,7 @@ const toolGuides = [
 
 const weeklyInputs = [
   "Enter your inventory count this week",
-  "Enter your invoice pictures",
+  "Snap photos of your vendor invoices",
   "Enter your POS downloads",
 ];
 
@@ -179,6 +179,32 @@ export default function DownloadsPage() {
       </section>
 
       <GearDivider />
+
+      {/* ── CHROME PROGRAM CTA ── */}
+      <section className="max-w-6xl mx-auto px-6 pt-10 md:pt-14">
+        <div className="panel rounded-sm p-6 md:p-8 border border-copper/25">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <p className="text-[11px] tracking-[0.3em] uppercase text-patina-light mb-3">
+                Version 1.0 · July 4, 7:30 PM
+              </p>
+              <h2 className="font-serif text-2xl md:text-3xl text-cream mb-2">
+                Ready to install the Chrome program?
+              </h2>
+              <p className="text-text-muted text-sm leading-relaxed max-w-xl">
+                Mac and Windows installers, release-list signup, and early-production
+                notes live on the download page.
+              </p>
+            </div>
+            <Link
+              href="/download"
+              className="shrink-0 inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide text-center transition-all hover:shadow-[0_0_24px_rgba(168,120,79,0.25)]"
+            >
+              Free Download
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* ── GPL PACKAGE ── */}
       <section className="max-w-6xl mx-auto px-6 pt-10 md:pt-14">
@@ -352,9 +378,10 @@ export default function DownloadsPage() {
                 Weekly Inputs drive the updates.
               </h2>
               <p className="text-text-muted leading-relaxed">
-                The admin panel now needs an Inputs area. Each week the manager
-                enters the count, invoice pictures, and POS downloads in one
-                place so the system can update inventory, variance, and reports.
+                Each week the manager drops three things into one place: the
+                count, the invoices (type or paste — photos optional), and the
+                POS downloads. From there the program updates inventory,
+                variance, and reports on its own.
               </p>
             </div>
             <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -434,7 +461,7 @@ export default function DownloadsPage() {
               timing="Post-Launch"
               status="planned"
               items={[
-                "AI bottle level reader",
+                "Wine cooler video walk (optional AI)",
       "Mobile counting view",
                 "POS data import tools",
                 "Multi-location support",

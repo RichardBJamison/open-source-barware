@@ -555,7 +555,10 @@ function runBarTest(groundTruth, walkText, countGolden, countHard) {
         best = b;
       }
     }
-    if (bestInStation && bestInStationScore >= COUNT_MATCH_MIN_SCORE) return { bottle: bestInStation, inStation: true };
+    if (stationId) {
+      if (bestInStation && bestInStationScore >= COUNT_MATCH_MIN_SCORE) return { bottle: bestInStation, inStation: true };
+      return null;
+    }
     if (best && bestScore >= COUNT_MATCH_MIN_SCORE) return { bottle: best, inStation: false };
     return null;
   }

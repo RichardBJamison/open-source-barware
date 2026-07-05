@@ -34,13 +34,13 @@ fi
 
 echo "  [2/7] Installing to $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR/data" "$INSTALL_DIR/static/css" "$INSTALL_DIR/static/js"
-for rel in server.py requirements.txt osb_config.example.json install.sh Install.command Start.command Stop.command start.command README-INSTALL.txt install.ps1 Install.bat Start.bat Stop.bat start-server.ps1; do
+for rel in server.py invoice_parse.py requirements.txt osb_config.example.json install.sh Install.command Start.command Stop.command README-INSTALL.txt LICENSE.txt VERSION.txt install.ps1 Install.bat Start.bat Stop.bat start-server.ps1; do
   if [ -f "$SOURCE_DIR/$rel" ]; then
     cp "$SOURCE_DIR/$rel" "$INSTALL_DIR/$rel"
     chmod +x "$INSTALL_DIR/$rel" 2>/dev/null || true
   fi
 done
-for rel in static/setup.html static/home.html static/api-guide.html static/standard-setups.html static/css/app.css static/js/osb-app.js; do
+for rel in static/setup.html static/home.html static/api-guide.html static/standard-setups.html static/css/app.css static/js/osb-app.js static/downloads/Bar-Inventory-Master.xlsx; do
   mkdir -p "$INSTALL_DIR/$(dirname "$rel")"
   cp "$SOURCE_DIR/$rel" "$INSTALL_DIR/$rel"
 done

@@ -1,6 +1,11 @@
 export const LAUNCH_MS = new Date("2026-07-04T22:00:00-04:00").getTime();
 export const LAUNCH_LABEL = "July 4 at 10pm";
 
+/** Richard flips this off in env when installers are ready to ship. */
+export function isManualDownloadLockOn() {
+  return process.env.NEXT_PUBLIC_DOWNLOADS_MANUAL_LOCK === "true";
+}
+
 type LaunchOptions = {
   preview?: boolean;
   forceOverlay?: boolean;
@@ -37,7 +42,15 @@ export function shouldShowPreLaunchOverlay(
 }
 
 export function areDownloadsUnlocked(now = Date.now(), opts: LaunchOptions = {}) {
+  if (isManualDownloadLockOn()) return false;
   return isLaunched(now, opts);
+}
+
+export function getDownloadLockMessage() {
+  if (isManualDownloadLockOn()) {
+    return "Installer downloads are not open yet — join the release list and we'll email when the build is ready.";
+  }
+  return `Downloads open ${LAUNCH_LABEL} Eastern.`;
 }
 
 export function getLaunchCountdown(now = Date.now()) {

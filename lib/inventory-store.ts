@@ -85,7 +85,11 @@ export interface InventorySettings {
   aiProvider: "claude" | "chatgpt" | "grok" | "other" | "";
   apiConnectionStatus: "not-started" | "needs-key" | "connected" | "blocked";
   cycleLabel: string;
+  /** Inventory rhythm length in days (matches Chrome program Settings). */
+  cycleDays: number;
   weekStartsOn: string;
+  timezone: string;
+  metricsDefaultWindow: string;
   backupReminderAccepted: boolean;
   /** Show the open-bottle tenths (e.g. 2.4) on the dashboard, or just whole bottle counts. */
   showOpenBottleTenths: boolean;
@@ -118,7 +122,10 @@ export const DEFAULT_INVENTORY_SETTINGS: InventorySettings = {
   aiProvider: "",
   apiConnectionStatus: "not-started",
   cycleLabel: "Weekly beverage inventory",
+  cycleDays: 7,
   weekStartsOn: "Monday",
+  timezone: "America/New_York",
+  metricsDefaultWindow: "current_cycle",
   backupReminderAccepted: false,
   showOpenBottleTenths: true,
   notes: "",

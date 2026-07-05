@@ -1,7 +1,7 @@
 "use client";
 
 import { Gear } from "@/components/SteampunkElements";
-import { LAUNCH_LABEL } from "@/lib/launch-gate";
+import { getDownloadLockMessage } from "@/lib/launch-gate";
 
 export default function DownloadLockedModal({
   onClose,
@@ -26,12 +26,11 @@ export default function DownloadLockedModal({
             Downloads locked
           </p>
           <h2 className="mt-3 font-serif text-2xl text-cream">
-            Opens on {LAUNCH_LABEL}
+            Not open yet
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-text-muted">
-            Thanks for stopping by &mdash; go enjoy the fireworks. Explore the
-            site now; program downloads unlock on Independence Day at 10pm
-            Eastern.
+            {getDownloadLockMessage()} Explore the Salle sandbox and program
+            guide while you wait.
           </p>
           <button
             onClick={onClose}

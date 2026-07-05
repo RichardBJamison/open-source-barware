@@ -636,14 +636,15 @@ function Step3({
                 <div>
                   <p className="text-cream text-sm font-medium mb-2">How it works</p>
                   <p className="text-text-muted text-sm leading-relaxed">
-                    Walk to each station. Using voice notes on your phone, list every bottle.
-                    Say the station name, then each product. Paste the transcription below.
+                    Stand behind the bar and say it in order: well, row, back bar, cooler, wine.
+                    Name the location, then each bottle in it — move left-to-right, top-to-bottom.
+                    This one voice note is the seed the whole bar is built from. Paste the transcription below.
                   </p>
                   <div className="mt-3 bg-bg/60 border border-gear-border/50 rounded-sm p-3">
                     <p className="text-[10px] tracking-widest uppercase text-text-light mb-2">Example</p>
                     <p className="text-text-muted text-xs leading-relaxed italic">
-                      &quot;Well one: Tito&apos;s vodka, Stoli vodka, Ketel One, Tanqueray gin, Bacardi rum, Captain Morgan, Espolon tequila, Jameson whiskey.
-                      Back Bar Top Shelf: Patron Silver, Don Julio 1942, Clase Azul, Hendrick&apos;s gin, Grey Goose.&quot;
+                      &quot;Well one, row one: Tito&apos;s, Ketel One, Tanqueray. Row two: Bacardi, Captain Morgan — no row three.
+                      Well two, row one: Espolon, Jameson. Back bar top shelf: Patron Silver, Don Julio 1942, Clase Azul, Grey Goose.&quot;
                     </p>
                   </div>
                 </div>

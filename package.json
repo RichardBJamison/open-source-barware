@@ -1,11 +1,11 @@
 {
   "name": "open-source-barware",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run package:compliance",
+    "prebuild": "npm run package:program && npm run package:compliance && node scripts/apply-download-lock.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -26,6 +26,7 @@
     "archiver": "^7.0.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "playwright": "^1.61.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

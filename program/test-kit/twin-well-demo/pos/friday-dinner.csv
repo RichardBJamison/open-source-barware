@@ -1,0 +1,7 @@
+Order ID,Date,Time,Server,Item,Category,Qty,Gross Sales,Net Sales,Void
+20031,2026-07-04,21:10:00,Alex,Ketel One,Liquor,5,65.00,65.00,N
+20032,2026-07-04,21:10:00,Alex,Grey Goose,Liquor,4,52.00,52.00,N
+20033,2026-07-04,21:10:00,Alex,Bacardi,Liquor,3,39.00,39.00,N
+20034,2026-07-04,21:10:00,Alex,Makers Mark,Liquor,4,52.00,52.00,N
+20035,2026-07-04,21:10:00,Alex,Hendricks,Liquor,3,39.00,39.00,N
+20036,2026-07-04,21:10:00,Alex,Don Julio,Liquor,4,60.00,60.00,N

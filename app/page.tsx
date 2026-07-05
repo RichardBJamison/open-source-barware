@@ -12,7 +12,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "Open Source Barware — Free Bar Inventory Program",
   description:
-    "The free bar inventory program built by bartenders, tested in a real restaurant. No subscriptions. No upsells. Just a system that works.",
+    "A self-contained bar inventory program — runs on your laptop, no subscription, no cloud. AI optional for invoice photos only.",
   path: "/",
 });
 
@@ -34,9 +34,9 @@ const workshopTools = [
   },
   {
     number: "03",
-    title: "AI Bottle Counter",
+    title: "Optional Invoice Photos",
     description:
-      "Snap a shelf photo and let AI read bottle levels from the image.",
+      "Type invoice numbers yourself — or connect AI to read paper invoice photos from your phone.",
   },
   {
     number: "04",
@@ -93,9 +93,10 @@ export default function Home() {
             </h1>
 
             <p className="text-text-muted text-lg md:text-xl leading-relaxed max-w-md mb-12">
-              We have now created the program we wished existed. It is
-              free for you &mdash; use your AI. No subscriptions. No vendor
-              lock-in. Just count your bottles and go home.
+              A brilliantly built inventory program that lives on your laptop.
+              Voice-walk, count, reconcile, and Process &mdash; no AI required.
+              Optional AI only if you want invoice photos read for you.
+              Free. No subscriptions. No vendor lock-in.
             </p>
 
             <div className="flex flex-wrap gap-4">
@@ -112,10 +113,10 @@ export default function Home() {
                 Read Our Story
               </Link>
               <Link
-                href="/downloads"
+                href="/download"
                 className={primaryCtaClass}
               >
-                <span className="relative z-10">Download the Program</span>
+                <span className="relative z-10">Free Download</span>
               </Link>
             </div>
           </div>
@@ -210,7 +211,7 @@ export default function Home() {
         </div>
 
         <Link
-          href="/downloads"
+          href="/download"
           aria-label="Download the complete Open Source Barware program"
           className="group block panel card-lift rounded-sm p-6 md:p-8 relative rivets focus:outline-none focus-visible:ring-2 focus-visible:ring-copper/70"
         >
@@ -229,7 +230,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-4 text-copper">
               <span className="text-sm font-semibold tracking-wide text-copper">
-                Download the Program
+                Free Download
               </span>
               <div className="opacity-70 group-hover:opacity-100 transition-opacity">
                 <BottleIcon />
@@ -324,13 +325,13 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
-              href="/downloads"
+              href="/download"
               className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
             >
-              Download the Program
+              Free Download
             </Link>
             <Link
-              href="/downloads"
+              href="/download"
               className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-10 py-4 text-sm tracking-wide transition-all"
             >
               Explore Community Resources

@@ -1,0 +1,13 @@
+Order ID,Date,Time,Server,Item,Category,Qty,Gross Sales,Net Sales,Void
+20001,2026-06-30,23:45:00,Morgan,Tito's Vodka,Liquor,6,78.00,78.00,N
+20002,2026-06-30,23:45:00,Morgan,Ketel One,Liquor,4,52.00,52.00,N
+20003,2026-06-30,23:45:00,Morgan,Grey Goose,Liquor,3,39.00,39.00,N
+20004,2026-06-30,23:45:00,Morgan,Tanqueray,Liquor,5,65.00,65.00,N
+20005,2026-06-30,23:45:00,Morgan,Bacardi,Liquor,4,52.00,52.00,N
+20006,2026-06-30,23:45:00,Morgan,Patron Silver,Liquor,7,105.00,105.00,N
+20007,2026-06-30,23:45:00,Morgan,Jack Daniels,Liquor,5,65.00,65.00,N
+20008,2026-06-30,23:45:00,Morgan,Jameson,Liquor,3,39.00,39.00,N
+20009,2026-06-30,23:45:00,Morgan,Makers Mark,Liquor,4,52.00,52.00,N
+20010,2026-06-30,23:45:00,Morgan,Hendricks,Liquor,2,26.00,26.00,N
+20011,2026-06-30,23:45:00,Morgan,Casamigos,Liquor,6,90.00,90.00,N
+20012,2026-06-30,23:45:00,Morgan,Don Julio,Liquor,5,75.00,75.00,N
