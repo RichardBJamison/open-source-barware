@@ -1879,7 +1879,7 @@ body { background: var(--bg); color: var(--text); }
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   margin: 0 auto;
   max-width: 52rem;
   padding: 0.5rem 0 0.25rem;
@@ -1946,9 +1946,9 @@ body { background: var(--bg); color: var(--text); }
 .download-gauge-display-mask {
   position: absolute;
   left: 39.5%;
-  top: 34.8%;
+  top: 30.2%;
   width: 42%;
-  height: 31.7%;
+  height: 33.9%;
   z-index: 3;
   display: flex;
   align-items: center;
@@ -1998,14 +1998,26 @@ body { background: var(--bg); color: var(--text); }
   }
 }
 
+.download-gauge-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  width: 100%;
+  margin-top: 0.85rem;
+  padding: 0 0.15rem 0 0;
+}
+
 .download-gauge-caption {
-  margin: 0.85rem auto 0;
-  max-width: 28rem;
-  text-align: center;
+  margin: 0;
+  flex: 1 1 auto;
+  max-width: 36rem;
+  text-align: left;
   font-size: 0.7rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-light);
+  line-height: 1.5;
 }
 
 .download-gauge-kofi {
@@ -2013,8 +2025,9 @@ body { background: var(--bg); color: var(--text); }
   align-items: center;
   justify-content: center;
   gap: 0.55rem;
-  margin: 1.15rem auto 0;
+  margin: 0;
   padding: 0.55rem 1rem;
+  flex-shrink: 0;
   border: 1px solid var(--gear-border);
   border-radius: 999px;
   color: var(--text-muted);
@@ -2041,12 +2054,24 @@ body { background: var(--bg); color: var(--text); }
   flex-shrink: 0;
 }
 
+@media (max-width: 768px) {
+  .download-gauge-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
+  }
+
+  .download-gauge-kofi {
+    align-self: flex-end;
+  }
+}
+
 @media (max-width: 640px) {
   .download-gauge-display-mask {
     left: 39.2%;
-    top: 35%;
+    top: 30.5%;
     width: 42.5%;
-    height: 30%;
+    height: 32%;
     padding: 0 1%;
   }
 

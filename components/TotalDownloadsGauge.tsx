@@ -57,11 +57,11 @@ export default function TotalDownloadsGauge() {
     >
       <div className={`download-gauge-frame ${ready ? "download-gauge-frame--ready" : ""}`}>
         <img
-          src="/images/total-downloads-gauge.jpg?v=2"
+          src="/images/total-downloads-gauge.jpg?v=3"
           alt=""
           className="download-gauge-art"
           width={1024}
-          height={335}
+          height={313}
           loading="lazy"
           decoding="async"
         />
@@ -81,28 +81,30 @@ export default function TotalDownloadsGauge() {
         </div>
       </div>
 
-      <p className="download-gauge-caption">
-        Live count — every installer pulled from this page since its release July
-        4th 2026.
-      </p>
+      <div className="download-gauge-footer">
+        <p className="download-gauge-caption">
+          Live count — every installer pulled from this page since its release July
+          4th 2026.
+        </p>
 
-      <a
-        href={KOFI_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="download-gauge-kofi"
-      >
-        <img
-          src="/images/ko-fi-icon.png"
-          alt=""
-          width={28}
-          height={28}
-          className="download-gauge-kofi-icon"
-          loading="lazy"
-          decoding="async"
-        />
-        <span>Buy Me a Coffee</span>
-      </a>
+        <a
+          href={KOFI_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="download-gauge-kofi"
+        >
+          <img
+            src="/images/ko-fi-icon.png"
+            alt=""
+            width={28}
+            height={28}
+            className="download-gauge-kofi-icon"
+            loading="lazy"
+            decoding="async"
+          />
+          <span>Buy Me a Coffee</span>
+        </a>
+      </div>
     </div>
   );
 }
