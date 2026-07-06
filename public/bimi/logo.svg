@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny-ps" width="512" height="512" viewBox="0 0 512 512">
-  <title>Open Source Barware</title>
-  <rect width="512" height="512" fill="#0c0a09"/>
-  <g fill="none" stroke="#d97706" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M156 132 L256 92 L356 132 L296 292 L216 292 Z"/>
-    <line x1="256" y1="292" x2="256" y2="372"/>
-    <line x1="206" y1="372" x2="306" y2="372"/>
-    <line x1="276" y1="112" x2="316" y2="92"/>
-    <circle cx="322" cy="88" r="14" fill="#d97706" stroke="none"/>
-    <circle cx="176" cy="372" r="16" fill="#d97706" stroke="none"/>
-    <circle cx="212" cy="388" r="14" fill="#d97706" stroke="none"/>
-  </g>
+<title>Open Source Barware</title>
+<rect width="512" height="512" fill="#0c0a09"/>
+<circle cx="256" cy="256" r="226" fill="none" stroke="#b06a3b" stroke-width="9"/>
+<circle cx="256" cy="256" r="214" fill="none" stroke="#b06a3b" stroke-width="3"/>
+<g fill="#b06a3b"><circle cx="452.0" cy="256.0" r="3.2"/><circle cx="450.9" cy="276.5" r="3.2"/><circle cx="447.7" cy="296.8" r="3.2"/><circle cx="442.4" cy="316.6" r="3.2"/><circle cx="435.1" cy="335.7" r="3.2"/><circle cx="425.7" cy="354.0" r="3.2"/><circle cx="414.6" cy="371.2" r="3.2"/><circle cx="401.7" cy="387.1" r="3.2"/><circle cx="387.1" cy="401.7" r="3.2"/><circle cx="371.2" cy="414.6" r="3.2"/><circle cx="354.0" cy="425.7" r="3.2"/><circle cx="335.7" cy="435.1" r="3.2"/><circle cx="316.6" cy="442.4" r="3.2"/><circle cx="296.8" cy="447.7" r="3.2"/><circle cx="276.5" cy="450.9" r="3.2"/><circle cx="256.0" cy="452.0" r="3.2"/><circle cx="235.5" cy="450.9" r="3.2"/><circle cx="215.2" cy="447.7" r="3.2"/><circle cx="195.4" cy="442.4" r="3.2"/><circle cx="176.3" cy="435.1" r="3.2"/><circle cx="158.0" cy="425.7" r="3.2"/><circle cx="140.8" cy="414.6" r="3.2"/><circle cx="124.9" cy="401.7" r="3.2"/><circle cx="110.3" cy="387.1" r="3.2"/><circle cx="97.4" cy="371.2" r="3.2"/><circle cx="86.3" cy="354.0" r="3.2"/><circle cx="76.9" cy="335.7" r="3.2"/><circle cx="69.6" cy="316.6" r="3.2"/><circle cx="64.3" cy="296.8" r="3.2"/><circle cx="61.1" cy="276.5" r="3.2"/><circle cx="60.0" cy="256.0" r="3.2"/><circle cx="61.1" cy="235.5" r="3.2"/><circle cx="64.3" cy="215.2" r="3.2"/><circle cx="69.6" cy="195.4" r="3.2"/><circle cx="76.9" cy="176.3" r="3.2"/><circle cx="86.3" cy="158.0" r="3.2"/><circle cx="97.4" cy="140.8" r="3.2"/><circle cx="110.3" cy="124.9" r="3.2"/><circle cx="124.9" cy="110.3" r="3.2"/><circle cx="140.8" cy="97.4" r="3.2"/><circle cx="158.0" cy="86.3" r="3.2"/><circle cx="176.3" cy="76.9" r="3.2"/><circle cx="195.4" cy="69.6" r="3.2"/><circle cx="215.2" cy="64.3" r="3.2"/><circle cx="235.5" cy="61.1" r="3.2"/><circle cx="256.0" cy="60.0" r="3.2"/><circle cx="276.5" cy="61.1" r="3.2"/><circle cx="296.8" cy="64.3" r="3.2"/><circle cx="316.6" cy="69.6" r="3.2"/><circle cx="335.7" cy="76.9" r="3.2"/><circle cx="354.0" cy="86.3" r="3.2"/><circle cx="371.2" cy="97.4" r="3.2"/><circle cx="387.1" cy="110.3" r="3.2"/><circle cx="401.7" cy="124.9" r="3.2"/><circle cx="414.6" cy="140.8" r="3.2"/><circle cx="425.7" cy="158.0" r="3.2"/><circle cx="435.1" cy="176.3" r="3.2"/><circle cx="442.4" cy="195.4" r="3.2"/><circle cx="447.7" cy="215.2" r="3.2"/><circle cx="450.9" cy="235.5" r="3.2"/></g>
+<g fill="none" stroke="#b06a3b" stroke-width="11" stroke-linejoin="round" stroke-linecap="round">
+<path d="M150 128 L362 128 L256 254 Z"/>
+<line x1="256" y1="254" x2="256" y2="372"/>
+<path d="M204 384 Q256 366 308 384"/>
+<line x1="152" y1="152" x2="214" y2="146"/>
+</g>
+<circle cx="196" cy="150" r="15" fill="none" stroke="#b06a3b" stroke-width="7"/>
+<g fill="#b06a3b">
+<circle cx="150" cy="264" r="7"/>
+<circle cx="362" cy="264" r="7"/>
+<circle cx="256" cy="60" r="7"/>
+<circle cx="256" cy="452" r="7"/>
+</g>
+<rect x="210" y="406" width="92" height="34" rx="6" fill="none" stroke="#b06a3b" stroke-width="5"/>
+<g fill="none" stroke="#b06a3b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+<ellipse cx="230" cy="423" rx="8" ry="11"/>
+<path d="M262 415 Q249 415 249 420 Q249 424 256 424 Q263 424 263 428 Q263 433 250 432"/>
+<path d="M275 412 L275 434 L284 434 Q290 434 290 429 Q290 424 284 424 L275 424 M284 424 Q289 424 289 419 Q289 412 283 412 L275 412"/>
+</g>
 </svg>
