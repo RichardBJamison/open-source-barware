@@ -35,6 +35,7 @@ const PROGRAM_FILES = [
   "install.sh",
   "install.ps1",
   "Install.command",
+  "START-HERE-MAC.html",
   "Install.bat",
   "Start.command",
   "Start.bat",

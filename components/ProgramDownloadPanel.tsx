@@ -275,13 +275,22 @@ export default function ProgramDownloadPanel() {
               Download the Chrome program
             </h2>
             <p className="text-text-muted leading-relaxed text-sm">
-              Unzip and double-click <code className="text-copper">Install.command</code> (Mac)
+              Unzip the folder, then run <code className="text-copper">Install.command</code> (Mac)
               or <code className="text-copper">Install.bat</code> (Windows). It installs
               into Chrome and opens one window. <strong className="text-cream">Bookmark
               that page to your bookmark bar — that bookmark is the software</strong>, and
               everything you build lives inside it. The guided walkthrough opens the first
               time and loads your whole bar step by step.
             </p>
+            <div className="mt-4 border border-[rgba(232,197,71,0.35)] bg-[rgba(232,197,71,0.08)] px-4 py-3 text-sm leading-relaxed">
+              <p className="text-[#e8c547] font-semibold mb-1">Mac first-time install</p>
+              <p className="text-text-muted">
+                macOS may block <code className="text-copper">Install.command</code> as an
+                unidentified developer. Open <code className="text-copper">START-HERE-MAC.html</code> in
+                the zip for steps, or <strong className="text-cream">right-click Install.command → Open → Open</strong> once.
+                We are working on Apple notarization; this one-time approval is normal for free downloads.
+              </p>
+            </div>
             {!unlocked && (
               <p className="text-copper text-sm mt-4">
                 {getDownloadLockMessage()}
@@ -303,7 +312,7 @@ export default function ProgramDownloadPanel() {
                 Mac installer zip
               </span>
               <span className="block text-sm text-text-muted">
-                Install.command → ~/osb-program
+                START-HERE-MAC.html, then Install.command → ~/osb-program
               </span>
             </button>
             <button

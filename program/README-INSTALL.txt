@@ -18,9 +18,16 @@ MAC INSTALL (5 minutes)
 -----------------------
 1. Double-click the downloaded .zip once to unzip it.
 2. Open the folder "open-source-barware-program".
-3. Double-click Install.command
-4. If Mac says "unidentified developer":
-   Right-click Install.command → Open → Open
+3. Double-click START-HERE-MAC.html (opens in your browser — no Mac block).
+   Or read step 4 here if you prefer.
+4. macOS will block a normal double-click on Install.command ("unidentified
+   developer"). That is expected for free software without an Apple cert.
+   FIX: Right-click Install.command → Open → Open (confirm once).
+   Terminal option:
+     cd ~/Downloads/open-source-barware-program
+     xattr -cr .
+     chmod +x Install.command
+     ./Install.command
 5. Wait for "Setup complete!" — Chrome opens to your program.
 6. Bookmark http://localhost:5052/ in Chrome. That bookmark IS the software.
 
