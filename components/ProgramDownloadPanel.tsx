@@ -266,74 +266,67 @@ export default function ProgramDownloadPanel() {
 
       {/* Downloads */}
       <div className="panel rounded-sm p-8 md:p-10" id="program-downloads">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <div className="lg:col-span-5">
-            <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">
-              Install
-            </p>
-            <h2 className="font-serif text-3xl text-cream mb-4">
-              Download the Chrome program
-            </h2>
-            <p className="text-text-muted leading-relaxed text-sm">
-              Unzip the folder, then run <code className="text-copper">Install.command</code> (Mac)
-              or <code className="text-copper">Install.bat</code> (Windows). It installs
-              into Chrome and opens one window. <strong className="text-cream">Bookmark
-              that page to your bookmark bar — that bookmark is the software</strong>, and
-              everything you build lives inside it. The guided walkthrough opens the first
-              time and loads your whole bar step by step.
-            </p>
-            <div className="mt-4 border border-[rgba(232,197,71,0.35)] bg-[rgba(232,197,71,0.08)] px-4 py-3 text-sm leading-relaxed">
-              <p className="text-[#e8c547] font-semibold mb-1">Mac first-time install</p>
-              <p className="text-text-muted">
-                macOS may block <code className="text-copper">Install.command</code> as an
-                unidentified developer. Open <code className="text-copper">START-HERE-MAC.html</code> in
-                the zip for steps, or <strong className="text-cream">right-click Install.command → Open → Open</strong> once.
-                We are working on Apple notarization; this one-time approval is normal for free downloads.
-              </p>
-            </div>
-            {!unlocked && (
-              <p className="text-copper text-sm mt-4">
-                {getDownloadLockMessage()}
-              </p>
-            )}
-          </div>
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button
-              type="button"
-              onClick={() =>
-                triggerDownload(MAC_ZIP, "Mac program (.zip)")
-              }
-              className="border border-gear-border bg-bg/50 p-6 text-left transition-colors hover:border-copper/50 hover:bg-bg-warm/80"
-            >
-              <span className="block text-[10px] tracking-[0.25em] uppercase text-copper mb-3">
-                macOS
-              </span>
-              <span className="block font-serif text-xl text-cream mb-2">
-                Mac installer zip
-              </span>
-              <span className="block text-sm text-text-muted">
-                START-HERE-MAC.html, then Install.command → ~/osb-program
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                triggerDownload(WIN_ZIP, "Windows program (.zip)")
-              }
-              className="border border-gear-border bg-bg/50 p-6 text-left transition-colors hover:border-copper/50 hover:bg-bg-warm/80"
-            >
-              <span className="block text-[10px] tracking-[0.25em] uppercase text-copper mb-3">
-                Windows
-              </span>
-              <span className="block font-serif text-xl text-cream mb-2">
-                Windows installer zip
-              </span>
-              <span className="block text-sm text-text-muted">
-                Install.bat → %USERPROFILE%\osb-program
-              </span>
-            </button>
-          </div>
+        <p className="text-[11px] tracking-[0.3em] uppercase text-text-light mb-4">
+          Install
+        </p>
+        <h2 className="font-serif text-3xl text-cream mb-6">
+          Download the Chrome program
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
+          <button
+            type="button"
+            onClick={() =>
+              triggerDownload(MAC_ZIP, "Mac program (.zip)")
+            }
+            className="border border-gear-border bg-bg/50 p-6 text-left transition-colors hover:border-copper/50 hover:bg-bg-warm/80"
+          >
+            <span className="block text-[10px] tracking-[0.25em] uppercase text-copper mb-3">
+              macOS
+            </span>
+            <span className="block font-serif text-xl text-cream mb-2">
+              Mac installer zip
+            </span>
+            <span className="block text-sm text-text-muted">
+              Install.command → ~/osb-program
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              triggerDownload(WIN_ZIP, "Windows program (.zip)")
+            }
+            className="border border-gear-border bg-bg/50 p-6 text-left transition-colors hover:border-copper/50 hover:bg-bg-warm/80"
+          >
+            <span className="block text-[10px] tracking-[0.25em] uppercase text-copper mb-3">
+              Windows
+            </span>
+            <span className="block font-serif text-xl text-cream mb-2">
+              Windows installer zip
+            </span>
+            <span className="block text-sm text-text-muted">
+              Install.bat → %USERPROFILE%\osb-program
+            </span>
+          </button>
         </div>
+
+        <div className="mt-6 max-w-3xl space-y-2 text-sm text-text-muted leading-relaxed">
+          <p>
+            Unzip, run the installer, bookmark the page it opens —{" "}
+            <strong className="text-cream">that bookmark is the software</strong>.
+          </p>
+          <p>
+            <span className="text-text-light">Mac:</span> if blocked, right-click{" "}
+            <code className="text-copper">Install.command</code> → Open once, or open{" "}
+            <code className="text-copper">START-HERE-MAC.html</code> in the zip.
+          </p>
+        </div>
+
+        {!unlocked && (
+          <p className="text-copper text-sm mt-4 max-w-3xl">
+            {getDownloadLockMessage()}
+          </p>
+        )}
         {status && !subscribed && (
           <p className="text-sm text-text-muted text-center mt-6">{status}</p>
         )}
