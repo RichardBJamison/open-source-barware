@@ -1,68 +1,64 @@
-# Open Source Barware — Download Gauge Handoff
+# Open Source Barware — Download Page Handoff
 
 *2026-07-06 | agent: GROK | project ID: `opensourcebarware`*
+*Ship: `eab32b0` · https://opensourcebarware.com/download*
 
-## What shipped
+## Summary
 
-Steampunk **Total Downloads** counter on `/download`, placed **below** the Mac/Windows install buttons and above Community.
+Full `/download` page pass: live download counter, email signup defaults, Ko-fi support, Mac Gatekeeper docs, install layout cleanup. All deployed to Cloudflare Pages production.
 
-- **Visual:** `public/images/total-downloads-gauge.jpg` (display panel blanked; live digits overlaid)
-- **Component:** `components/TotalDownloadsGauge.tsx`
-- **Styles:** `app/globals.css` (DSEG7 7-segment font, cyan glow, slot alignment)
-- **Public count API:** `GET /api/download-count` → `{ total: number }` from `VISITOR_COUNTER` KV key `total_downloads`
-- **Increment API:** `POST /api/download` (existing) bumps `total_downloads` by 1 per tracked download
+## Commits (newest first)
 
-## Live counter flow
+| Commit | What |
+|--------|------|
+| `eab32b0` | Install section: cards first, short notes below |
+| `9dd71c3` | `START-HERE-MAC.html` + Gatekeeper docs in zip |
+| `327f7ae` | Both signup toggles ON; remove Skip button |
+| `73b7e4b` | Gauge: crop gray bar, inline caption + Ko-fi row |
+| `5394d6b` | Ko-fi Buy Me a Coffee link |
+| `030ca7b` | Live total-downloads gauge + `/api/download-count` |
 
-1. User clicks Mac or Windows installer on `/download` (or any `.zip` / `download` link site-wide).
-2. `public/osb-analytics.js` → `trackDownload()` → `POST /api/download`.
-3. KV `total_downloads` increments by **exactly 1** (deduped: same file within 1.5s ignored; programmatic anchor clicks use `data-osb-no-track` to avoid double fire).
-4. API response `{ ok: true, count: N }` dispatches browser event `osb-download-count`.
-5. Gauge listens for that event and updates digits immediately (6-digit zero-padded, e.g. `000027`).
-6. On page load, gauge also fetches `GET /api/download-count`.
+## Download counter
 
-## Files touched
+- **Read:** `GET /api/download-count` → `{ total }` from KV `total_downloads`
+- **Write:** `POST /api/download` (existing) increments by 1
+- **UI:** `components/TotalDownloadsGauge.tsx` — 6-digit DSEG7 overlay on `public/images/total-downloads-gauge.jpg`
+- **Live update:** `public/osb-analytics.js` dispatches `osb-download-count` with API response count
+- **Dedup:** 1.5s per file; programmatic downloads use `data-osb-no-track` on anchor
+
+## Signup form
+
+- `ProgramDownloadPanel.tsx`: `programUpdates` + `hiddenBarTour` both default `true`
+- Skip button removed; only **Join the release list**
+- City/state show when Hidden Bar Tour is on (default)
+
+## Mac install / Gatekeeper
+
+- Unsigned `Install.command` → macOS blocks double-click on first download per machine
+- **Workaround:** right-click → Open → Open once (same file, same Mac: double-click works after)
+- **In zip:** `program/START-HERE-MAC.html` (opens in browser, no block)
+- **Permanent fix:** Apple Developer ID + notarization (not done yet)
+
+## Key files
 
 | File | Role |
 |------|------|
-| `components/TotalDownloadsGauge.tsx` | Gauge UI + live count |
-| `components/ProgramDownloadPanel.tsx` | Placement + single-track download buttons |
-| `components/DownloadButton.tsx` | Same anti-double-track for modal downloads |
+| `components/TotalDownloadsGauge.tsx` | Gauge + Ko-fi + caption footer |
+| `components/ProgramDownloadPanel.tsx` | Signup, install cards, placement |
 | `public/osb-analytics.js` | Download tracking + count event |
-| `functions/api/download-count.js` | Public read endpoint |
-| `functions/api/download.js` | Write endpoint (pre-existing) |
-| `public/images/total-downloads-gauge.jpg` | Steampunk art asset |
-| `app/globals.css` | Gauge layout + digit styling |
+| `functions/api/download-count.js` | Public count API |
+| `program/START-HERE-MAC.html` | Mac Gatekeeper guide in zip |
+| `app/globals.css` | Gauge + footer styles |
 
-## Verify after deploy
+## Verify
 
 ```bash
-# Live count
 curl -s https://opensourcebarware.com/api/download-count
-
-# Full analytics (needs key if ANALYTICS_KEY set)
-curl -s 'https://opensourcebarware.com/api/stats?days=7' | python3 -m json.tool
-
-# Deploy
-cd ~/Documents/New\ project/open-source-barware
-npm run build
-npx wrangler pages deploy out --project-name=open-source-barware --branch=main --commit-dirty=true
+# Manual: /download → download zip → gauge +1 without refresh
+# Manual: signup with email + city/state → success toast
 ```
 
-**Manual test:** Open `/download`, note count, download Mac zip, confirm gauge ticks up by 1 without refresh.
+## KV bindings (required)
 
-## KV binding (required)
-
-Cloudflare Pages production must bind **`VISITOR_COUNTER`** (`ea495eafc1904a36b558bcb2117bebe6` in `wrangler.toml`). Without it, `/api/download-count` and `/api/download` fail.
-
-## Not in scope
-
-- Gauge does not appear on `/downloads` (program guide page) — only `/download`.
-- Count tracks first-party `/api/download` events, not raw CDN/nginx zip hits unless they go through site analytics JS.
-
-## Next agent pickup
-
-```bash
-cd ~/Documents/New\ project/open-source-barware && git pull
-# Handoff: HANDOFF-DOWNLOAD-GAUGE-2026-07-06.md + HANDOFF.md
-```
+- `VISITOR_COUNTER` — download count + analytics
+- `OSB_SIGNUPS` — release-list signups

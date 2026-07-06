@@ -1,22 +1,32 @@
 # Open Source Barware — Handoff
 
 *Last updated: 2026-07-06 | agent: GROK | project ID: `opensourcebarware`*
-*Status: **IN-PROGRESS** — download gauge live · per-download counter wired*
+*Ship: **`eab32b0`** on `main` · production: https://opensourcebarware.com*
+*Status: **SHIPPED** — `/download` page polish (gauge, signup, install UX)*
 *Detail: `HANDOFF-DOWNLOAD-GAUGE-2026-07-06.md`*
 
-## Session 2026-07-06 (GROK) — download page total counter
+## Session 2026-07-06 (GROK) — `/download` page
 
-### Shipped
-- **Total Downloads gauge** on `/download` (below install buttons): steampunk art + 6-digit live overlay (`000027` style)
-- **`GET /api/download-count`** — public read of `total_downloads` KV
-- **Per-download increment** — `POST /api/download` + `osb-analytics.js`; gauge updates instantly via `osb-download-count` event; deduped to +1 per click
-- **Assets:** `public/images/total-downloads-gauge.jpg`, `components/TotalDownloadsGauge.tsx`
+### Shipped (`030ca7b` → `eab32b0`)
+- **Total Downloads gauge** — steampunk art, 6-digit live overlay, below install cards; Ko-fi link + caption on one footer row
+- **`GET /api/download-count`** + instant refresh via `osb-download-count` event; deduped `POST /api/download` (+1 per click)
+- **Signup** — both toggles default ON; Skip button removed; Join the release list only
+- **Mac Gatekeeper** — `START-HERE-MAC.html` in Mac zip; short note under download cards (right-click → Open once)
+- **Install layout** — download cards first, two-line instructions underneath (no yellow warning panel)
+
+### Live checks (2026-07-06)
+- `curl -s https://opensourcebarware.com/api/download-count` → **13** all-time (field test on second laptop confirmed tracking)
+- Mac install: Gatekeeper block expected until right-click Open or Terminal `xattr -cr` — **Apple notarization not yet done** ($99/yr)
+
+### Open loops
+- **Apple Developer ID + notarization** — removes Mac “unidentified developer” for all users
+- **`FORWARD_EMAIL_*` secrets** — signup may land in KV but owner email may not fire (see 2026-07-05 handoff)
 
 ### Pickup
 ```bash
 cd ~/Documents/New\ project/open-source-barware && git pull
-npm run build && npx wrangler pages deploy out --project-name=open-source-barware --branch=main
 curl -s https://opensourcebarware.com/api/download-count
+npm run build && npx wrangler pages deploy out --project-name=open-source-barware --branch=main
 ```
 
 ---
@@ -37,7 +47,7 @@ curl -s https://opensourcebarware.com/api/download-count
 ### Release-list / download emails (checked 2026-07-05)
 - **KV `OSB_SIGNUPS`:** **0 signups** (`wrangler kv key list --namespace-id 1cc731d2ae40402cb49f4bc104a5cd79` → `[]`)
 - **Program downloads tracked:** 5 all-time, 1 today (first-party `/api/stats` — **no email attached**)
-- **Download page behavior:** Email is **optional**. Users can **Skip — I'll check back every few days** and download Mac/Win zip without joining the list.
+- **Download page behavior (2026-07-05):** Email was optional with Skip. **As of 2026-07-06:** Skip removed; both lists default ON — see session block above.
 - **Signup API:** `POST /api/updates-subscribe` is live; writes to KV first, then emails owner via Forward Email.
 - **Cloudflare secrets present:** `NOTIFY_EMAIL`, `GHL_API_TOKEN`, GA OAuth — **`FORWARD_EMAIL_USER` / `FORWARD_EMAIL_PASS` not listed** → owner inbox notifications may not fire even when KV captures a signup. Fix: `wrangler pages secret put FORWARD_EMAIL_USER` and `FORWARD_EMAIL_PASS`.
 
