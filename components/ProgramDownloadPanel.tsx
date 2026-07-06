@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   getUpdatesSignupStatus,
-  setUpdatesSignupStatus,
   submitUpdatesSignup,
   US_STATES,
 } from "@/lib/updates-signup";
@@ -33,15 +32,14 @@ export default function ProgramDownloadPanel() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [programUpdates, setProgramUpdates] = useState(true);
-  const [hiddenBarTour, setHiddenBarTour] = useState(false);
+  const [hiddenBarTour, setHiddenBarTour] = useState(true);
   const [status, setStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [skipped, setSkipped] = useState(priorStatus === "skipped");
   const [subscribed, setSubscribed] = useState(priorStatus === "subscribed");
 
   async function joinList() {
     if (!programUpdates && !hiddenBarTour) {
-      skipForNow();
+      setStatus("Select at least one list to join.");
       return;
     }
 
@@ -66,12 +64,6 @@ export default function ProgramDownloadPanel() {
 
     setStatus(result.message);
     setSubscribed(true);
-  }
-
-  function skipForNow() {
-    setUpdatesSignupStatus("skipped");
-    setSkipped(true);
-    setStatus("");
   }
 
   function triggerDownload(href: string, label: string) {
@@ -128,10 +120,9 @@ export default function ProgramDownloadPanel() {
             release notes when something actually ships.
           </p>
           <p>
-            If you skip email, check back here every{" "}
-            <strong className="text-cream">three to four days</strong> for the
-            first month. We read every message we get and fold fixes into the
-            next build.
+            Join the release list below and we will email when the next build
+            ships. We read every message we get and fold fixes into the next
+            build.
           </p>
         </div>
       </div>
@@ -148,8 +139,8 @@ export default function ProgramDownloadPanel() {
                 Get release builds in your inbox
               </h2>
               <p className="text-text-muted text-sm md:text-base leading-relaxed">
-                Two optional lists — toggle what you want. Email is how we ship
-                fixes fast during month one.
+                Both lists are on by default — toggle off anything you do not
+                want. Email is how we ship fixes fast during month one.
               </p>
             </div>
 
@@ -249,15 +240,7 @@ export default function ProgramDownloadPanel() {
               </p>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                type="button"
-                onClick={skipForNow}
-                disabled={submitting}
-                className="border border-gear-border text-text-muted hover:text-copper hover:border-copper/40 px-10 py-4 text-sm tracking-wide transition-all"
-              >
-                Skip — I&rsquo;ll check back every few days
-              </button>
+            <div className="flex justify-center">
               <button
                 type="button"
                 onClick={joinList}
