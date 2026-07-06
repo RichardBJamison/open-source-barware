@@ -7,12 +7,13 @@
 //                         (e.g. richard@opensourcebarware.com)
 //   FORWARD_EMAIL_PASS  — that alias's Forward Email mailbox password
 // Optional:
-//   NOTIFY_EMAIL        — where signups are delivered
-//                         (default: richard@opensourcebarware.com)
-//   FORWARD_EMAIL_FROM  — From address/label (default: FORWARD_EMAIL_USER)
+//   NOTIFY_EMAIL        — where signup alerts are delivered (use Gmail, not Yahoo)
+//   FORWARD_EMAIL_FROM  — From address (default: branded noreply@opensourcebarware.com)
 
 const FORWARD_EMAIL_API = "https://api.forwardemail.net/v1/emails";
-const DEFAULT_NOTIFY = "richard@opensourcebarware.com";
+const SITE_URL = "https://opensourcebarware.com";
+// Gmail inbox avoids Yahoo spam-folder issues for owner alerts.
+const DEFAULT_NOTIFY = "rbjpholdings@gmail.com";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -29,17 +30,43 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-async function sendForwardEmail(env, { to, subject, text, replyTo }) {
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function brandedFrom(env) {
+  const address =
+    env.FORWARD_EMAIL_FROM ||
+    env.FORWARD_EMAIL_USER ||
+    "noreply@opensourcebarware.com";
+  return `Open Source Barware <${address}>`;
+}
+
+async function sendForwardEmail(env, { to, subject, text, html, replyTo }) {
   const user = env.FORWARD_EMAIL_USER;
   const pass = env.FORWARD_EMAIL_PASS;
+  if (!user || !pass) {
+    return { ok: false, status: 0, detail: "mail-not-configured" };
+  }
+
   const auth = btoa(`${user}:${pass}`);
+  const fromAddress = env.FORWARD_EMAIL_FROM || user;
   const payload = {
-    from: env.FORWARD_EMAIL_FROM || user,
+    from: brandedFrom(env),
     to,
     subject,
     text,
+    replyTo: replyTo || fromAddress,
+    headers: {
+      "X-Auto-Response-Suppress": "All",
+      "List-Id": "Open Source Barware <opensourcebarware.com>",
+    },
   };
-  if (replyTo) payload.replyTo = replyTo;
+  if (html) payload.html = html;
 
   try {
     const res = await fetch(FORWARD_EMAIL_API, {
@@ -64,55 +91,87 @@ async function sendForwardEmail(env, { to, subject, text, replyTo }) {
   }
 }
 
-function ownerNotifyText(details) {
-  return [
-    "New Open Source Barware release-list signup",
+function ownerNotifyContent(details) {
+  const cityLine = details.city
+    ? `${details.city}, ${details.state || ""}`
+    : "(not provided)";
+  const text = [
+    "New release-list signup — Open Source Barware",
     "",
-    `Email: ${details.email}`,
-    details.city
-      ? `City: ${details.city}, ${details.state || ""}`
-      : "City: (not provided)",
+    `Subscriber: ${details.email}`,
+    `City: ${cityLine}`,
     `Source: ${details.source}`,
     `Program updates: ${details.programUpdates ? "yes" : "no"}`,
     `Hidden Bar Tour: ${details.hiddenBarTour ? "yes" : "no"}`,
     `Received: ${new Date().toISOString()}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
+    "",
+    SITE_URL,
+  ].join("\n");
+
+  const html = `
+    <div style="font-family:Georgia,serif;color:#1c1815;max-width:560px;line-height:1.5">
+      <p style="margin:0 0 12px;font-size:18px;color:#a8784f">New release-list signup</p>
+      <p style="margin:0 0 8px"><strong>Subscriber:</strong> ${escapeHtml(details.email)}</p>
+      <p style="margin:0 0 8px"><strong>City:</strong> ${escapeHtml(cityLine)}</p>
+      <p style="margin:0 0 8px"><strong>Source:</strong> ${escapeHtml(details.source)}</p>
+      <p style="margin:0 0 8px"><strong>Program updates:</strong> ${details.programUpdates ? "yes" : "no"}</p>
+      <p style="margin:0 0 8px"><strong>Hidden Bar Tour:</strong> ${details.hiddenBarTour ? "yes" : "no"}</p>
+      <p style="margin:16px 0 0;font-size:12px;color:#7a6e62">${escapeHtml(new Date().toISOString())}</p>
+    </div>
+  `.trim();
+
+  return { text, html };
 }
 
-function subscriberWelcomeText(details) {
-  const lines = [
-    "Thanks for signing up for Open Source Barware.",
-    "",
-  ];
+function subscriberWelcomeContent(details) {
+  const lines = ["Thanks for signing up for Open Source Barware.", ""];
   if (details.programUpdates) {
     lines.push(
-      "You're on the release list — we'll only email you when new additions ship."
+      "You are on the release list. We only email when a new build ships."
     );
   }
   if (details.hiddenBarTour) {
     lines.push(
-      "You're also on the World Hidden Bar Tour invite list for your city."
+      "You are also on the Hidden Bar Tour invite list for your city."
     );
   }
   lines.push(
     "",
-    "OpenSourceBarware.com is a free, open-source bar inventory tool. No cost, no strings.",
+    "Open Source Barware is free, open-source bar inventory software.",
+    "No subscription. No cloud lock-in.",
     "",
-    "— Open Source Barware",
-    "https://opensourcebarware.com"
+    SITE_URL,
+    "",
+    "— Open Source Barware"
   );
-  return lines.join("\n");
+
+  const text = lines.join("\n");
+  const html = `
+    <div style="font-family:Georgia,serif;color:#1c1815;max-width:560px;line-height:1.6">
+      <p style="margin:0 0 16px;font-size:20px;color:#a8784f">You are on the list.</p>
+      ${
+        details.programUpdates
+          ? "<p>We will email you when a new Open Source Barware build ships.</p>"
+          : ""
+      }
+      ${
+        details.hiddenBarTour
+          ? "<p>We will also invite you to Hidden Bar Tour discovery runs in your city.</p>"
+          : ""
+      }
+      <p>Open Source Barware is free, open-source bar inventory software. No subscription. No cloud lock-in.</p>
+      <p><a href="${SITE_URL}" style="color:#a8784f">${SITE_URL}</a></p>
+      <p style="margin-top:24px;font-size:13px;color:#7a6e62">— Open Source Barware</p>
+    </div>
+  `.trim();
+
+  return { text, html };
 }
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
 
-// Durable safety net: record every valid signup to KV before we try to email.
-// Even if Forward Email is down, the address survives here and can be read back
-// with `wrangler kv key list --binding OSB_SIGNUPS`. Never throws.
 async function persistSignup(env, details) {
   if (!env.OSB_SIGNUPS) return { stored: false, reason: "no-kv-binding" };
   try {
@@ -182,27 +241,24 @@ export async function onRequestPost(context) {
     hiddenBarTour,
   };
 
-  // 1) Durable capture FIRST — this is the record of truth. As long as this
-  //    succeeds, the address is safe even if every email call below fails.
   const persisted = await persistSignup(env, details);
-
   const notifyTo = env.NOTIFY_EMAIL || DEFAULT_NOTIFY;
+  const ownerContent = ownerNotifyContent(details);
+  const welcomeContent = subscriberWelcomeContent(details);
 
-  // 2) Notify the owner by email (best-effort when we already have durable KV).
   const mailConfigured = Boolean(
     env.FORWARD_EMAIL_USER && env.FORWARD_EMAIL_PASS
   );
   const ownerResult = mailConfigured
     ? await sendForwardEmail(env, {
         to: notifyTo,
-        subject: `New OSB signup: ${email}`,
-        text: ownerNotifyText(details),
+        subject: "[Open Source Barware] New release-list signup",
+        text: ownerContent.text,
+        html: ownerContent.html,
         replyTo: email,
       })
     : { ok: false, status: 0, detail: "mail-not-configured" };
 
-  // Only a real failure if we captured the address NOWHERE — not KV, not email.
-  // Then the client keeps it locally and retries, so nothing is ever lost.
   if (!persisted.stored && !ownerResult.ok) {
     return jsonResponse(
       {
@@ -216,12 +272,12 @@ export async function onRequestPost(context) {
     );
   }
 
-  // Confirmation to the subscriber is best-effort — the signup already counts.
   if (mailConfigured) {
     await sendForwardEmail(env, {
       to: email,
-      subject: "You're on the Open Source Barware list",
-      text: subscriberWelcomeText(details),
+      subject: "You're on the Open Source Barware release list",
+      text: welcomeContent.text,
+      html: welcomeContent.html,
     }).catch(() => {});
   }
 
