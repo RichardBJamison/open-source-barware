@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny-ps" width="512" height="512" viewBox="0 0 512 512">
+  <title>Open Source Barware</title>
+  <rect width="512" height="512" fill="#0c0a09"/>
+  <g fill="none" stroke="#d97706" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M156 132 L256 92 L356 132 L296 292 L216 292 Z"/>
+    <line x1="256" y1="292" x2="256" y2="372"/>
+    <line x1="206" y1="372" x2="306" y2="372"/>
+    <line x1="276" y1="112" x2="316" y2="92"/>
+    <circle cx="322" cy="88" r="14" fill="#d97706" stroke="none"/>
+    <circle cx="176" cy="372" r="16" fill="#d97706" stroke="none"/>
+    <circle cx="212" cy="388" r="14" fill="#d97706" stroke="none"/>
+  </g>
+</svg>
