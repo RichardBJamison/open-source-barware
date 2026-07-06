@@ -10,6 +10,7 @@ import {
 } from "@/lib/updates-signup";
 import { areDownloadsUnlocked, getDownloadLockMessage } from "@/lib/launch-gate";
 import { useLaunchNow } from "@/lib/use-launch-now";
+import TotalDownloadsGauge from "@/components/TotalDownloadsGauge";
 
 const MAC_ZIP = "/downloads/open-source-barware-program-mac.zip";
 const WIN_ZIP = "/downloads/open-source-barware-program-win.zip";
@@ -78,9 +79,17 @@ export default function ProgramDownloadPanel() {
       setStatus(`${getDownloadLockMessage()} Leave your email above to get notified.`);
       return;
     }
+    if (typeof window !== "undefined" && "osbTrackDownload" in window) {
+      (
+        window as Window & {
+          osbTrackDownload?: (file: string, label?: string) => void;
+        }
+      ).osbTrackDownload?.(href, label);
+    }
     const a = document.createElement("a");
     a.href = href;
     a.download = "";
+    a.setAttribute("data-osb-no-track", "1");
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -337,6 +346,8 @@ export default function ProgramDownloadPanel() {
           <p className="text-sm text-text-muted text-center mt-6">{status}</p>
         )}
       </div>
+
+      <TotalDownloadsGauge />
 
       {/* Community */}
       <div className="panel rounded-sm p-8 md:p-10">

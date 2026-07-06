@@ -1,7 +1,27 @@
 # Open Source Barware — Handoff
 
-*Last updated: 2026-07-05 ~17:35 EDT | agent: GROK | project ID: `open-source-barware`*
-*Ship version: **`f0e4520`** on `main`*
+*Last updated: 2026-07-06 | agent: GROK | project ID: `opensourcebarware`*
+*Status: **IN-PROGRESS** — download gauge live · per-download counter wired*
+*Detail: `HANDOFF-DOWNLOAD-GAUGE-2026-07-06.md`*
+
+## Session 2026-07-06 (GROK) — download page total counter
+
+### Shipped
+- **Total Downloads gauge** on `/download` (below install buttons): steampunk art + 6-digit live overlay (`000027` style)
+- **`GET /api/download-count`** — public read of `total_downloads` KV
+- **Per-download increment** — `POST /api/download` + `osb-analytics.js`; gauge updates instantly via `osb-download-count` event; deduped to +1 per click
+- **Assets:** `public/images/total-downloads-gauge.jpg`, `components/TotalDownloadsGauge.tsx`
+
+### Pickup
+```bash
+cd ~/Documents/New\ project/open-source-barware && git pull
+npm run build && npx wrangler pages deploy out --project-name=open-source-barware --branch=main
+curl -s https://opensourcebarware.com/api/download-count
+```
+
+---
+
+*Prior handoff below (2026-07-05 ~17:35 EDT | ship `f0e4520`)*
 *Status: **IN-PROGRESS** — July 4 launch live · analytics fixed · Sparring Court reskinned*
 
 ## Session 2026-07-05 (GROK) — launch polish + analytics + sandbox

@@ -4,6 +4,7 @@
   var VID_KEY = "osb_vid";
   var SEEN_KEY = "osb_seen";
   var SESSION_KEY = "osb_session_pv";
+  var lastDownloadTrack = { file: "", ts: 0 };
 
   function getVid() {
     try {
@@ -33,6 +34,44 @@
       body: body,
       keepalive: true,
     }).catch(function () {});
+  }
+
+  function publishDownloadCount(total) {
+    if (typeof total !== "number" || total < 0) return;
+    window.dispatchEvent(
+      new CustomEvent("osb-download-count", {
+        detail: { total: total },
+      })
+    );
+  }
+
+  function trackDownload(file, label) {
+    var now = Date.now();
+    if (lastDownloadTrack.file === file && now - lastDownloadTrack.ts < 1500) {
+      return;
+    }
+    lastDownloadTrack = { file: file, ts: now };
+
+    fetch("/api/download", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        vid: getVid(),
+        file: file,
+        label: label || file,
+        path: window.location.pathname || "/",
+      }),
+      keepalive: true,
+    })
+      .then(function (res) {
+        return res.ok ? res.json() : null;
+      })
+      .then(function (data) {
+        if (data && typeof data.count === "number") {
+          publishDownloadCount(data.count);
+        }
+      })
+      .catch(function () {});
   }
 
   function utmParam(name) {
@@ -88,15 +127,6 @@
     });
   }
 
-  function trackDownload(file, label) {
-    sendJson("/api/download", {
-      vid: getVid(),
-      file: file,
-      label: label || file,
-      path: window.location.pathname || "/",
-    });
-  }
-
   window.osbTrackDownload = trackDownload;
 
   if (document.readyState === "loading") {
@@ -112,6 +142,7 @@
       if (!target || !target.closest) return;
       var link = target.closest("a[href]");
       if (!link) return;
+      if (link.hasAttribute("data-osb-no-track")) return;
 
       var href = link.getAttribute("href") || "";
       if (!href) return;

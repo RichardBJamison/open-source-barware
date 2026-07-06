@@ -45,6 +45,7 @@ export default function DownloadButton({ tool }: { tool: ToolPreview }) {
     const a = document.createElement("a");
     a.href = tool.href;
     a.download = "";
+    a.setAttribute("data-osb-no-track", "1");
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

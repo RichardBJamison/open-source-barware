@@ -1866,3 +1866,159 @@ body { background: var(--bg); color: var(--text); }
     padding: 16px;
   }
 }
+
+/* ── Download page — total downloads gauge ── */
+@font-face {
+  font-family: "DSEG7 Classic";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Regular.woff2") format("woff2");
+}
+.download-gauge-section {
+  position: relative;
+  margin: 0 auto;
+  max-width: 52rem;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.download-gauge-ambient {
+  position: absolute;
+  inset: -12px -8px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.download-gauge-steam {
+  position: absolute;
+  top: 38%;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 230, 200, 0.14) 0%, transparent 72%);
+  filter: blur(10px);
+}
+
+.download-gauge-steam-left { left: -4px; }
+.download-gauge-steam-right { right: -4px; }
+
+.download-gauge-gear {
+  position: absolute;
+  color: var(--copper);
+  opacity: 0.22;
+}
+
+.download-gauge-gear-left {
+  left: -10px;
+  bottom: 8px;
+}
+
+.download-gauge-gear-right {
+  right: -6px;
+  top: 6px;
+}
+
+.download-gauge-frame {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(10px) scale(0.985);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.download-gauge-frame--ready {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.download-gauge-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.download-gauge-display-mask {
+  position: absolute;
+  left: 39.5%;
+  top: 34.8%;
+  width: 42%;
+  height: 31.7%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.5%;
+  pointer-events: none;
+}
+
+.download-gauge-display {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: center;
+  justify-items: center;
+  gap: 0;
+}
+
+.download-gauge-digit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-family: "DSEG7 Classic", "Share Tech Mono", "SF Mono", monospace;
+  font-size: clamp(1.35rem, 4.6vw, 2.65rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #2ef0f8;
+  text-shadow:
+    0 0 4px rgba(46, 240, 248, 1),
+    0 0 10px rgba(46, 240, 248, 0.9),
+    0 0 22px rgba(46, 240, 248, 0.55),
+    0 0 36px rgba(20, 180, 200, 0.35);
+  animation: gauge-digit-glow 3.2s ease-in-out infinite;
+}
+
+@keyframes gauge-digit-glow {
+  0%, 100% {
+    opacity: 0.92;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.12);
+  }
+}
+
+.download-gauge-caption {
+  margin: 0.85rem auto 0;
+  max-width: 28rem;
+  text-align: center;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+@media (max-width: 640px) {
+  .download-gauge-display-mask {
+    left: 39.2%;
+    top: 35%;
+    width: 42.5%;
+    height: 30%;
+    padding: 0 1%;
+  }
+
+  .download-gauge-digit {
+    font-size: clamp(1rem, 5.2vw, 1.55rem);
+  }
+
+  .download-gauge-gear {
+    display: none;
+  }
+}
