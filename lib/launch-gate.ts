@@ -1,4 +1,5 @@
 export const LAUNCH_MS = new Date("2026-07-04T22:00:00-04:00").getTime();
+export const LAUNCH_OVERLAY_END_MS = new Date("2026-07-13T23:59:59-04:00").getTime();
 export const LAUNCH_LABEL = "July 4 at 10pm";
 
 /** Richard flips this off in env when installers are ready to ship. */
@@ -24,6 +25,21 @@ export function isLaunched(now = Date.now(), opts: LaunchOptions = {}) {
     return true;
   }
   return now >= LAUNCH_MS;
+}
+
+/** Post-launch thank-you overlay — through first week (+7 days after ship). */
+export function shouldShowPostLaunchOverlay(
+  now = Date.now(),
+  opts: LaunchOptions = {},
+) {
+  if (
+    opts.preview ||
+    opts.forceOverlay ||
+    process.env.NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY === "true"
+  ) {
+    return isLaunched(now, opts);
+  }
+  return isLaunched(now, opts) && now <= LAUNCH_OVERLAY_END_MS;
 }
 
 /** Pre-launch welcome overlay — show before go-live, hide after July 4 at 10pm. */

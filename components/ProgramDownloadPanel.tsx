@@ -107,7 +107,7 @@ export default function ProgramDownloadPanel() {
           <p>
             This program was built with over a hundred hours of focused work —
             and honestly, too much coffee to fully explain. We are proud of what
-            ships tonight, and we are not pretending it is finished.
+            shipped July 4th, and we are not pretending it is finished.
           </p>
           <p>
             Expect bugs and glitches in the first week or two of production. We

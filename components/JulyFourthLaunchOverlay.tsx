@@ -8,13 +8,12 @@ import FireworksCanvas from "@/components/FireworksCanvas";
 import {
   LAUNCH_LABEL,
   getLaunchCountdown,
-  isLaunched,
+  shouldShowPostLaunchOverlay,
   shouldShowPreLaunchOverlay,
 } from "@/lib/launch-gate";
 
-// Bumped to v5 for the 10pm launch so the thank-you greets everyone once,
-// even folks who dismissed the pre-launch countdown earlier tonight.
-const STORAGE_KEY = "osb-july4-launch-v5";
+// Bumped to v6 for week-one copy (first week, not "tonight").
+const STORAGE_KEY = "osb-july4-launch-v6-first-week";
 
 const PARTY_SHOTS = [
   { src: "/images/hero.png", alt: "Bartender behind the bar" },
@@ -73,7 +72,7 @@ export default function JulyFourthLaunchOverlay() {
       forceOverlay ||
       forceThankYou ||
       shouldShowPreLaunchOverlay(now, { preview: previewParam, forceOverlay }) ||
-      isLaunched(now, { preview: previewParam });
+      shouldShowPostLaunchOverlay(now, { preview: previewParam, forceOverlay });
     if (!eligible) return;
     if (
       !previewParam &&
@@ -286,7 +285,7 @@ function LaunchThankYou({
 }) {
   return (
     <>
-      <p className="july4-badge mb-6">🎆 It&rsquo;s live &middot; released tonight at 10 &#39;o clock 🎆</p>
+      <p className="july4-badge mb-6">🎆 Week one &middot; we shipped July 4th 🎆</p>
 
       <PartyStrip />
 
@@ -298,20 +297,20 @@ function LaunchThankYou({
       </h1>
 
       <p className="mt-4 text-sm uppercase tracking-[0.3em] text-white/70">
-        Free bar inventory for the whole world &mdash; happy Fourth
+        Free bar inventory for the whole world &mdash; our first week
       </p>
 
       <div className="july4-party-card panel rivets mx-auto mt-8 w-full max-w-xl px-6 py-8 sm:px-10 sm:py-9">
         <p className="font-serif text-2xl italic leading-snug text-cream sm:text-3xl">
-          Thank you for being here on night one.
+          Thank you for being here in our first week.
         </p>
 
         <div className="mt-5 space-y-4 text-base leading-relaxed text-text-muted sm:text-lg">
           <p>
             If you&rsquo;re a first-timer reading this: hey, and welcome. We
-            released Open Source Barware tonight at 10 o&rsquo;clock &mdash; a
-            free, self-contained bar inventory program that runs on your laptop.
-            No subscription, no cloud, no AI required.
+            released Open Source Barware on July 4th &mdash; a free,
+            self-contained bar inventory program that runs on your laptop. No
+            subscription, no cloud, no AI required. We&rsquo;re in week one now.
           </p>
           <p>
             It took roughly <strong className="text-cream">a hundred hours</strong>{" "}
