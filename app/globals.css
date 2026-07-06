@@ -1877,6 +1877,9 @@ body { background: var(--bg); color: var(--text); }
 }
 .download-gauge-section {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin: 0 auto;
   max-width: 52rem;
   padding: 0.5rem 0 0.25rem;
@@ -2003,6 +2006,39 @@ body { background: var(--bg); color: var(--text); }
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-light);
+}
+
+.download-gauge-kofi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin: 1.15rem auto 0;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--gear-border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.download-gauge-kofi:hover {
+  color: var(--cream);
+  border-color: rgba(168, 120, 79, 0.45);
+  box-shadow: 0 0 20px rgba(168, 120, 79, 0.12);
+}
+
+.download-gauge-kofi-icon {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
 }
 
 @media (max-width: 640px) {

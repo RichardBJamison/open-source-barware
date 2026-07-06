@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 const FALLBACK_COUNT = 27;
+const KOFI_URL = "https://ko-fi.com/W2J022HCH2";
 
 function formatCount(value: number) {
   return String(Math.max(0, value)).padStart(6, "0");
@@ -81,8 +82,27 @@ export default function TotalDownloadsGauge() {
       </div>
 
       <p className="download-gauge-caption">
-        Live count — every Mac and Windows installer pulled from this page.
+        Live count — every installer pulled from this page since its release July
+        4th 2026.
       </p>
+
+      <a
+        href={KOFI_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="download-gauge-kofi"
+      >
+        <img
+          src="/images/ko-fi-icon.png"
+          alt=""
+          width={28}
+          height={28}
+          className="download-gauge-kofi-icon"
+          loading="lazy"
+          decoding="async"
+        />
+        <span>Buy Me a Coffee</span>
+      </a>
     </div>
   );
 }
