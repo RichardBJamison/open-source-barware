@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import FireworksCanvas from "@/components/FireworksCanvas";
@@ -12,8 +11,8 @@ import {
   shouldShowPreLaunchOverlay,
 } from "@/lib/launch-gate";
 
-// Bumped to v6 for week-one copy (first week, not "tonight").
-const STORAGE_KEY = "osb-july4-launch-v6-first-week";
+// Bumped to v7 for week-one copy with Friday features teaser.
+const STORAGE_KEY = "osb-july4-launch-v7-features";
 
 const PARTY_SHOTS = [
   { src: "/images/hero.png", alt: "Bartender behind the bar" },
@@ -21,8 +20,6 @@ const PARTY_SHOTS = [
   { src: "/images/bartop.png", alt: "The bar top" },
   { src: "/images/workshop.jpg", alt: "The workshop" },
 ];
-
-const GITHUB = "https://github.com/RichardBJamison/open-source-barware";
 
 export default function JulyFourthLaunchOverlay() {
   const pathname = usePathname();
@@ -41,21 +38,14 @@ export default function JulyFourthLaunchOverlay() {
   // Manual preview of the post-launch thank-you before 10pm: ?thankyou=1
   const forceThankYou = searchParams.get("thankyou") === "1";
 
-  const dismiss = useCallback(
-    (options?: { goHome?: boolean }) => {
-      setDismissed(true);
-      setTimeout(() => setVisible(false), 500);
-      if (!previewParam && !forceOverlay && !forceThankYou) {
-        localStorage.setItem(STORAGE_KEY, "1");
-      }
-      if (options?.goHome && pathname && pathname !== "/") {
-        router.push("/");
-      }
-    },
-    [pathname, previewParam, forceOverlay, forceThankYou, router],
-  );
-
-  const dismissToHome = useCallback(() => dismiss({ goHome: true }), [dismiss]);
+  const dismissToHome = useCallback(() => {
+    setDismissed(true);
+    setTimeout(() => setVisible(false), 500);
+    if (!previewParam && !forceOverlay && !forceThankYou) {
+      localStorage.setItem(STORAGE_KEY, "1");
+    }
+    router.push("/");
+  }, [previewParam, forceOverlay, forceThankYou, router]);
 
   // Tick every second so the countdown updates and flips to the thank-you at 10pm.
   useEffect(() => {
@@ -144,7 +134,7 @@ export default function JulyFourthLaunchOverlay() {
         onClick={(e) => e.stopPropagation()}
       >
         {launched ? (
-          <LaunchThankYou onDismiss={dismiss} onDismissToHome={dismissToHome} />
+          <LaunchThankYou onDismissToHome={dismissToHome} />
         ) : (
           <PreLaunchCountdown countdown={countdown} onDismissToHome={dismissToHome} />
         )}
@@ -277,10 +267,8 @@ function PreLaunchCountdown({
 }
 
 function LaunchThankYou({
-  onDismiss,
   onDismissToHome,
 }: {
-  onDismiss: () => void;
   onDismissToHome: () => void;
 }) {
   return (
@@ -297,7 +285,7 @@ function LaunchThankYou({
       </h1>
 
       <p className="mt-4 text-sm uppercase tracking-[0.3em] text-white/70">
-        Free bar inventory for the whole world &mdash; our first week
+        Free bar inventory for the whole world &mdash; and we&rsquo;re just getting started
       </p>
 
       <div className="july4-party-card panel rivets mx-auto mt-8 w-full max-w-xl px-6 py-8 sm:px-10 sm:py-9">
@@ -320,6 +308,38 @@ function LaunchThankYou({
             honest. Nothing major &mdash; everything works fine. So go kick it
             around and have fun. I&rsquo;m on the fast fixes.
           </p>
+        </div>
+
+        <div className="mt-6 rounded-sm border border-white/10 bg-black/25 px-4 py-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-copper-bright">
+            Coming this Friday &mdash; new build dropping
+          </p>
+          <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-left text-[0.8rem] text-cream">
+            {[
+              "Mobile counting experience",
+              "Barcode scanning via camera",
+              "Visual par alerts (green/yellow/red)",
+              "Recipe & cocktail costing",
+              "POS import (Toast, Square, CSV)",
+              "Smart order suggestions",
+              "Multi-venue switching & transfers",
+              "Receiving workflow (PO \u2192 scan \u2192 verify)",
+            ].map((feature) => (
+              <li key={feature} className="flex items-start gap-1.5 leading-snug">
+                <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-copper/40 bg-copper/20 text-[10px] text-copper-bright">
+                  &#x2713;
+                </span>
+                {feature}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-center text-[0.8rem] text-text-muted">
+            <strong className="text-copper-bright">Check back Friday</strong> for the
+            next build &mdash; same download page, fresh features, zero cost.
+          </p>
+        </div>
+
+        <div className="mt-5 space-y-4 text-base leading-relaxed text-text-muted sm:text-lg">
           <p className="text-cream/90">
             Keep in touch for updates &mdash; we push new builds every few days.
             Come build it with us: star the repo and open issues on{" "}
@@ -330,32 +350,28 @@ function LaunchThankYou({
         </div>
 
         <div className="mt-7 flex flex-col gap-3">
-          <Link
-            href="/download"
-            onClick={onDismiss}
-            prefetch={false}
+          <button
+            type="button"
+            onClick={onDismissToHome}
             className="july4-cta-primary w-full py-4 text-sm font-black uppercase tracking-[0.18em]"
           >
             Download Program &mdash; grab the program 🍹
-          </Link>
+          </button>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <a
-              href={GITHUB}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={onDismiss}
+            <button
+              type="button"
+              onClick={onDismissToHome}
               className="flex-1 border border-white/20 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-cream/90 transition-colors hover:border-copper hover:text-copper"
             >
               Join us on GitHub
-            </a>
-            <Link
-              href="/the-process"
-              onClick={onDismiss}
-              prefetch={false}
+            </button>
+            <button
+              type="button"
+              onClick={onDismissToHome}
               className="flex-1 border border-white/20 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-cream/90 transition-colors hover:border-copper hover:text-copper"
             >
               See how it works
-            </Link>
+            </button>
           </div>
         </div>
 
