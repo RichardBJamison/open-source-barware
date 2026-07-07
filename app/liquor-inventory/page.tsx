@@ -203,7 +203,8 @@ export default function LiquorInventoryPage() {
 
       {/* ── CROSS-LINK ── */}
       <section className="max-w-6xl mx-auto px-6 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <ManifestoLink href="/free-bar-inventory-software" title="Free Bar Inventory Software" body="Full program overview — how OSB compares to spreadsheets and paid SaaS." />
           <ManifestoLink href="/wine-inventory" title="Free Wine Inventory" body="Vintages, bins, and bottle-level tracking for your wine program." />
           <ManifestoLink href="/manifesto" title="The Manifesto" body="Why the whole program is free, and why it stays that way." />
           <ManifestoLink href="/the-process" title="The Process" body="The kitchen-table walkthrough of setup and weekly counts." />

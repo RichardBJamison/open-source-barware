@@ -59,6 +59,7 @@ export default function Footer() {
               Free Inventory
             </span>
             <div className="flex flex-col gap-3 mb-8">
+              <Link href="/free-bar-inventory-software" className="text-sm text-text-muted hover:text-copper transition-colors">Bar Inventory Software</Link>
               <Link href="/liquor-inventory" className="text-sm text-text-muted hover:text-copper transition-colors">Liquor Inventory</Link>
               <Link href="/wine-inventory" className="text-sm text-text-muted hover:text-copper transition-colors">Wine Inventory</Link>
             </div>

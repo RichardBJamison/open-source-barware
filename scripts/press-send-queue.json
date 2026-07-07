@@ -1,0 +1,99 @@
+{
+  "campaign": "OSB Launch Press Activation",
+  "created": "2026-07-07",
+  "from_account": "rbjpholdings@gmail.com",
+  "drafts_location": "Gmail → Drafts (62 total, July 2026 session)",
+  "link_with_utm": "https://opensourcebarware.com/download?utm_source=press&utm_medium=email&utm_campaign=launch2026",
+  "authority_page": "https://opensourcebarware.com/free-bar-inventory-software",
+  "daily_send_target": 12,
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "National trade — send first",
+      "priority": "Day 1-3",
+      "targets": [
+        "Imbibe Magazine",
+        "PUNCH",
+        "VinePair",
+        "Nation's Restaurant News (NRN)",
+        "Eater",
+        "Bar Business Magazine",
+        "Restaurant Business Online",
+        "Food & Wine",
+        "The Spirits Business",
+        "Cocktail Kingdom / trade editors",
+        "Chilled Magazine",
+        "Bar & Restaurant"
+      ],
+      "template": "Industry Disruptor",
+      "notes": "Highest citation value. Personalize first line with their recent coverage angle."
+    },
+    {
+      "tier": 2,
+      "name": "Cleveland local + Ohio hospitality",
+      "priority": "Day 2-4",
+      "targets": [
+        "Cleveland.com",
+        "Cleveland Magazine",
+        "Scene Cleveland",
+        "Crain's Cleveland Business",
+        "FreshWater Cleveland",
+        "Cleveland USBG chapter press"
+      ],
+      "template": "Local Cleveland angle",
+      "notes": "Lead with Agave & Rye field test + Cleveland bartender origin story."
+    },
+    {
+      "tier": 3,
+      "name": "Warm contacts + consultants",
+      "priority": "Day 3-5",
+      "targets": [
+        "Jonathan Maze (trade press contact)",
+        "Existing alcohol industry contacts (6 drafts)",
+        "Hospitality consultancy editors",
+        "A.V. Club / culture crossover"
+      ],
+      "template": "Warm / existing relationship",
+      "notes": "Reference prior conversation if applicable. Shorter, direct ask."
+    },
+    {
+      "tier": 4,
+      "name": "Creators + influencers",
+      "priority": "Day 4-7",
+      "targets": [
+        "Bar TikTok / YouTube creators",
+        "Cocktail Instagram educators",
+        "Bartender podcast hosts",
+        "Round 2 influencer batch (Creator template)"
+      ],
+      "template": "Creator",
+      "notes": "Offer download link + screen recording assets. Ask for honest review, not paid placement."
+    },
+    {
+      "tier": 5,
+      "name": "Round 2 trade follow-up",
+      "priority": "Day 7-10",
+      "targets": [
+        "Remaining Round 2 trade media drafts",
+        "Consultancy verticals",
+        "Secondary national outlets"
+      ],
+      "template": "Industry Disruptor follow-up",
+      "notes": "Only send to Tier 1 non-responders after 5 business days."
+    }
+  ],
+  "send_checklist": [
+    "Open draft in Gmail — confirm link points to opensourcebarware.com/download",
+    "Add UTM if link is bare: ?utm_source=press&utm_medium=email&utm_campaign=launch2026",
+    "Mention free + GPLv3 + tested in real restaurant (one line)",
+    "Include authority page for editors who want context: /free-bar-inventory-software",
+    "Send 10-15 per day max — spread across tiers",
+    "Log sent: recipient, date, subject in a reply to yourself or spreadsheet",
+    "Track pickups: Google Alerts for 'Open Source Barware' + Search Console links report"
+  ],
+  "follow_up": {
+    "no_response_days": 5,
+    "follow_up_subject_prefix": "Re: ",
+    "second_touch_angle": "Download count milestone or press pickup from another outlet"
+  }
+}
