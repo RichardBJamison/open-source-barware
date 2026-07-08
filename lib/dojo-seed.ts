@@ -19,7 +19,7 @@ function bottle(
   return { id, name, category, currentLevel, parLevel, size, costPerBottle };
 }
 
-export const DOJO_BAR_NAME = "Agave & Rye";
+export const DOJO_BAR_NAME = "Your Bar 1";
 
 export function createDojoBar(): Bar {
   const now = new Date().toISOString();
@@ -27,7 +27,7 @@ export function createDojoBar(): Bar {
   lastCount.setDate(lastCount.getDate() - 4);
 
   return {
-    id: "dojo-bar-agave-rye",
+    id: "dojo-bar-1",
     name: DOJO_BAR_NAME,
     lastCountDate: lastCount.toISOString(),
     createdAt: now,

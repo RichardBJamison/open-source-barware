@@ -24,7 +24,7 @@ const NAV_ITEMS = [
   },
   {
     href: "/inventory/spreadsheets",
-    label: "Inventory / Spreadsheets",
+    label: "Spreadsheets",
     desc: "PARs, variance, orders — live",
     icon: "spreadsheets" as const,
   },
@@ -36,20 +36,20 @@ const NAV_ITEMS = [
   },
   {
     href: "/inventory/inhouse",
-    label: "In-house",
+    label: "In-house inventory",
     desc: "What's on the shelf",
     icon: "inhouse" as const,
   },
   {
     href: "/inventory/inputs",
-    label: "All inputs",
+    label: "Weekly inputs",
     desc: "POS · invoices · next count",
     icon: "inputs" as const,
   },
   {
     href: "/inventory/settings",
     label: "Settings",
-    desc: "Your business, bars, optional AI",
+    desc: "Your business, bars, tools",
     icon: "settings" as const,
   },
 ];
@@ -104,7 +104,7 @@ export default function InventoryShell({
       <DojoWelcomeModal open={hydrated && needsWelcome} onClose={finishWelcome} />
 
       <div className="dojo-demo-ribbon">
-        The Open Source Bar Program · Sparring Court sandbox — same home base as the download
+        THE OPEN SOURCE BAR PROGRAM • SALLE D&apos;ARMES SANDBOX — same home base as the download
       </div>
 
       <div className="flex flex-1 min-h-0">
@@ -131,8 +131,8 @@ export default function InventoryShell({
               <CocktailIcon size={32} />
               <span className="sidebar-mark-label">OSB</span>
             </div>
-            <p className="sidebar-welcome">Your Sparring Court</p>
-            <p className="sidebar-business-name">{bar?.name ?? "Demo bar"}</p>
+            <p className="sidebar-welcome">Home base</p>
+            <p className="sidebar-business-name">Your Bar 1 <span className="text-[10px] opacity-60">| SANDBOX</span></p>
 
             <label htmlFor="dojoBarSwitcher" className="sidebar-bar-label">
               Active bar
@@ -144,7 +144,7 @@ export default function InventoryShell({
               onChange={() => undefined}
             >
               {bar ? (
-                <option value={bar.id}>{bar.name}</option>
+                <option value={bar.id}>Your Bar 1</option>
               ) : (
                 <option value="">No bar loaded</option>
               )}
@@ -202,7 +202,7 @@ export default function InventoryShell({
                 <path d="M3 6h16M3 11h16M3 16h16" />
               </svg>
             </button>
-            <span className="admin-mobile-title">Your Sparring Court</span>
+            <span className="admin-mobile-title">Home base • Salle d&apos;Armes</span>
             <span className="salle-sandbox-pill">Sandbox</span>
           </div>
 

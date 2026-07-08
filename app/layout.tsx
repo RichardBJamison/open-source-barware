@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import { Caveat, Inter, Playfair_Display } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import { Suspense } from "react";
 import ConditionalSiteChrome from "@/components/ConditionalSiteChrome";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import JulyFourthLaunchOverlay from "@/components/JulyFourthLaunchOverlay";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 const GA_MEASUREMENT_ID = "G-ZM3BBYW5PY";
@@ -130,11 +128,6 @@ export default function RootLayout({
         <ConditionalSiteChrome>
           <Footer />
         </ConditionalSiteChrome>
-        <Suspense fallback={null}>
-          <ConditionalSiteChrome>
-            <JulyFourthLaunchOverlay />
-          </ConditionalSiteChrome>
-        </Suspense>
       </body>
     </html>
   );

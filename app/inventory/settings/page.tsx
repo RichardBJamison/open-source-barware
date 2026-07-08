@@ -344,7 +344,7 @@ export default function InventorySettingsPage() {
         <section className="panel panel--glass lg:col-span-2">
           <h2 className="font-serif text-lg text-cream mb-2">Salle sandbox tools</h2>
           <p className="dojo-field-hint mt-0 mb-4">
-            Export experiments or reset to the Agave &amp; Rye demo bar. The downloaded program stores data on your machine the same way.
+            Export experiments or reset to the demo bar. The downloaded program stores data on your machine the same way.
           </p>
           <div className="flex flex-wrap gap-3">
             <button

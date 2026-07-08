@@ -26,6 +26,9 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
     onClose();
   }, [onClose]);
 
+  // No armory grid here — the Salle opens straight to the working admin panel (home base).
+  // Advanced tools and V1.5 features live in the sidebar Settings + playful interactions on the dashboard.
+
   if (!open) return null;
 
   return (
@@ -42,7 +45,7 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
       />
 
       <div
-        className="salle-sign-popup relative z-10 w-full max-w-[340px]"
+        className="salle-sign-popup relative z-10 w-full max-w-[380px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="salle-sign-glow" aria-hidden="true" />
@@ -51,7 +54,7 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
           <div className="salle-sign-popup-scroll">
             <Image
               src="/images/salle-darmes-sign.jpg"
-              alt="Salle d'Armes — Clockwork Gymnasium fencing academy sign"
+              alt="Salle d'Armes sign — the sandbox where you practice the full Open Source Barware system"
               width={832}
               height={1248}
               priority
@@ -59,29 +62,33 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
             />
           </div>
 
+          {/* Clean entry — no feature button grid. The Salle opens directly to the working admin panel (Home base with your metrics, variance, and quick paths). All the power tools live in the sidebar Settings. */}
+
           <div className="sr-only" id="salle-welcome-desc">
-            Welcome to the Fencing Academy, a refined Salle d&apos;Armes where
-            gentlemanly combat meets the clockwork arts. House Rules:{" "}
-            {HOUSE_RULES.join("; ")}. Sandbox playground with demo data only.
+            The Salle d&apos;Armes sandbox opens to the real working admin panel (Home base). Your demo bar is pre-mapped so you can click around the metrics, in-house view, and quick links immediately. This is exactly what the program looks like week after week after you finish your first setup. All advanced tools are in Settings. House Rules: {HOUSE_RULES.join("; ")}. Demo data only.
           </div>
 
           <div className="salle-sign-popup-actions">
             <p className="salle-sign-popup-quip" id="salle-welcome-title">
-              Sandbox only — demo bottles, demo counts, zero consequences.
+              Welcome to the Salle d&apos;Armes. This is the live admin panel you&apos;ll use after your bar is mapped — totals, variance, quick paths, everything in one calm home base.
+              <br />
+              <span style={{ fontSize: '11px', opacity: 0.8 }}>
+                First time? In the real program a quick voice walk sets up your stations in minutes. Here the demo bar is ready — just click around and play.
+              </span>
             </p>
             <AppButton
               onClick={enterSalle}
               disabled={entering}
               className="salle-sign-popup-btn w-full"
             >
-              {entering ? "Opening the doors..." : "Salute & Enter the Salle"}
+              {entering ? "Opening the home base..." : "Enter the Home Base"}
             </AppButton>
             <button
               type="button"
               onClick={onClose}
               className="salle-sign-popup-dismiss"
             >
-              Observe from the gallery
+              Maybe later
             </button>
           </div>
         </div>

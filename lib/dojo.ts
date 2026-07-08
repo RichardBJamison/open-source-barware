@@ -15,9 +15,9 @@ import {
   createDojoWeeklyInputs,
 } from "@/lib/dojo-seed";
 
-/** Bumped when guild sign art became the welcome popup. */
-export const DOJO_WELCOME_KEY = "osb_salle_sign_welcome_seen";
-export const DOJO_SEEDED_KEY = "osb_dojo_seeded";
+/** Bumped when home-base welcome copy + Your Bar 1 sandbox rebrand shipped. */
+export const DOJO_WELCOME_KEY = "osb_salle_homebase_welcome_v2";
+export const DOJO_SEEDED_KEY = "osb_dojo_seeded_v2";
 
 const WELCOME_CHANGE_EVENT = "osb-salle-welcome-change";
 

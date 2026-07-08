@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import Link from "next/link";
 import DashboardHero from "@/components/dojo/DashboardHero";
 import MetricGrid from "@/components/dojo/MetricGrid";
 import QuickLinks from "@/components/dojo/QuickLinks";
@@ -28,6 +29,22 @@ export default function DashboardPage() {
   const [metricsWindow, setMetricsWindow] = useState<MetricsWindow>("current_cycle");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
+
+  // First-time instructional (playful, one-time)
+  const [showInstruction, setShowInstruction] = useState(false);
+  useEffect(() => {
+    if (!hydrated) return;
+    const seen = typeof window !== 'undefined' && localStorage.getItem('salle_instruction_seen') === '1';
+    if (!seen) {
+      const t = setTimeout(() => setShowInstruction(true), 650);
+      return () => clearTimeout(t);
+    }
+  }, [hydrated]);
+
+  const dismissInstruction = () => {
+    setShowInstruction(false);
+    try { localStorage.setItem('salle_instruction_seen', '1'); } catch {}
+  };
 
   const metrics = useMemo(() => {
     if (!settings) return null;
@@ -86,6 +103,23 @@ export default function DashboardPage() {
           <p>Your cycle metrics, baseline, and quick paths — all live after Process.</p>
         </div>
       </header>
+
+      {showInstruction && (
+        <div className="mb-4 rounded border border-[#a8784f]/40 bg-[#16202e]/60 p-4 text-sm flex gap-3 items-start">
+          <div className="mt-0.5 text-[#b88958]">
+            <span className="text-lg leading-none">👋</span>
+          </div>
+          <div className="flex-1">
+            <div className="font-medium text-cream">Hey — set up your first bar and have it set up easy.</div>
+            <div className="text-text-muted mt-1">
+              In the real program this home base appears after a quick voice walk (you name the wells and rows out loud, it builds the map). 
+              Here the demo bar (Your Bar 1) is already loaded so you can play immediately. Click the quick links, tweak a few numbers, watch the totals and below-par move. 
+              All the whistles (barcode, mobile count, smart orders, receiving, recipes...) are in <Link href="/inventory/settings" className="underline hover:text-copper">Settings</Link> or just click around.
+            </div>
+          </div>
+          <button onClick={dismissInstruction} className="text-xs px-3 py-1 border border-white/20 rounded hover:bg-white/5 self-start mt-0.5">Got it</button>
+        </div>
+      )}
 
       {metrics && (
         <DashboardHero
@@ -181,6 +215,36 @@ export default function DashboardPage() {
               ]}
             />
             <p className="dojo-field-hint metrics-notes">{metrics.summary.notes}</p>
+
+            {/* Fun, low-pressure play actions right on the main panel — no overwhelming options */}
+            <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  // Playful demo action: simulate a fast count adjustment (in real app this would come from the count screen)
+                  const msg = "Demo: you just tapped a few bottles down on the back bar. Below-par updated + variance would recalc on Process. (Try the In-house or Weekly inputs links to play for real.)";
+                  alert(msg);
+                }}
+                className="text-xs px-3 py-1.5 rounded border border-[#a8784f]/40 hover:bg-[#a8784f]/10 text-[#b88958]"
+              >
+                Quick count tap (demo)
+              </button>
+              <button
+                onClick={() => {
+                  alert("Demo: pasted a sample POS night. Smart orders and variance now reflect real movement. In the real program this is one paste from Toast/Square/CSV.");
+                }}
+                className="text-xs px-3 py-1.5 rounded border border-[#a8784f]/40 hover:bg-[#a8784f]/10 text-[#b88958]"
+              >
+                Paste sample POS (demo)
+              </button>
+              <button
+                onClick={() => {
+                  window.location.href = "/inventory/inputs";
+                }}
+                className="text-xs px-3 py-1.5 rounded bg-[#a8784f] text-[#080c12] hover:bg-[#b88958]"
+              >
+                Go play in Weekly inputs →
+              </button>
+            </div>
           </>
         )}
       </section>
