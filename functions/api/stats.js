@@ -45,13 +45,72 @@ function readJson(map, key, fallback) {
   return parseJsonValue(map.get(key), fallback);
 }
 
+function isKvLimitError(message) {
+  return /kv get\(\) limit exceeded/i.test(message || "");
+}
+
+function buildDegradedStats(days, dates, warning) {
+  const emptyVisits = emptyVisitRollup();
+  return {
+    generated: new Date().toISOString(),
+    degraded: true,
+    warning,
+    period: { days, dates },
+    overview: {
+      totalAllTime: 0,
+      totalPageviews: 0,
+      humanVisits: 0,
+      botVisits: 0,
+      uniqueVisitors: 0,
+      newVisitors: 0,
+      returningVisitors: 0,
+      avgLoadTime: 0,
+      liveNow: 0,
+      uniqueVisitorsEver: 0,
+      todayUniqueVisitors: 0,
+      todayVisitTotal: 0,
+      weekUniqueVisitors: 0,
+      weekVisitTotal: 0,
+      totalDownloadsAllTime: 0,
+      periodDownloads: 0,
+      periodUniqueDownloaders: 0,
+      uniqueDownloadersEver: 0,
+      todayDownloads: 0,
+      todayUniqueDownloaders: 0,
+      weekDownloads: 0,
+      weekUniqueDownloaders: 0,
+    },
+    dailyTrend: [],
+    hourlyDistribution: emptyVisits.hours,
+    topPages: [],
+    topReferrers: [],
+    topRefUrls: [],
+    topCountries: [],
+    topCities: [],
+    browsers: [],
+    operatingSystems: [],
+    devices: [],
+    topScreens: [],
+    languages: [],
+    topDownloads: [],
+    utm: {
+      sources: [],
+      mediums: [],
+      campaigns: [],
+    },
+  };
+}
+
 // GET /api/stats — aggregated analytics dashboard data (get-only; no KV list())
 export async function onRequestGet(context) {
   const { request, env } = context;
+  const url = new URL(request.url);
+  const days = Math.min(parseInt(url.searchParams.get("days") || "7", 10), 30);
+  const drillDate = url.searchParams.get("date") || null;
+  const dates = drillDate ? [drillDate] : dateRange(days);
 
   try {
     const kv = getVisitorKv(env);
-    const url = new URL(request.url);
 
     const requiredKey = env.ANALYTICS_KEY;
     if (requiredKey) {
@@ -63,10 +122,6 @@ export async function onRequestGet(context) {
         });
       }
     }
-
-    const days = Math.min(parseInt(url.searchParams.get("days") || "7", 10), 30);
-    const drillDate = url.searchParams.get("date") || null;
-    const dates = drillDate ? [drillDate] : dateRange(days);
     const today = todayUtc();
     const weekDates = dateRange(7);
     const allDates = [...new Set([...dates, ...weekDates, today])];
@@ -243,7 +298,24 @@ export async function onRequestGet(context) {
     context.waitUntil(cache.put(cacheKey, response.clone()));
     return response;
   } catch (err) {
-    return jsonError(err.message || "stats aggregation failed");
+    const message = err.message || "stats aggregation failed";
+    if (isKvLimitError(message)) {
+      const headers = {
+        ...cors(),
+        "Cache-Control": "public, max-age=60, s-maxage=60",
+      };
+      return new Response(
+        JSON.stringify(
+          buildDegradedStats(
+            days,
+            dates,
+            "First-party counters paused for today — Cloudflare KV daily read limit reached. Resets at midnight UTC."
+          )
+        ),
+        { headers }
+      );
+    }
+    return jsonError(message);
   }
 }
 

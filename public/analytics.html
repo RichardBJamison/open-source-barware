@@ -434,25 +434,71 @@
   });
   $('refresh-btn').addEventListener('click', load);
 
+  function fetchDashboardPart(url) {
+    return fetch(url).then(function(r) {
+      return r.json().then(function(body) {
+        return { ok: r.ok, status: r.status, body: body };
+      });
+    });
+  }
+
+  function emptyOsbStats() {
+    return {
+      generated: new Date().toISOString(),
+      degraded: true,
+      warning: 'First-party OSB stats are temporarily unavailable.',
+      overview: {
+        liveNow: 0,
+        totalAllTime: 0,
+        uniqueVisitorsEver: 0,
+        todayUniqueVisitors: 0,
+        todayVisitTotal: 0,
+        weekUniqueVisitors: 0,
+        weekVisitTotal: 0,
+        totalDownloadsAllTime: 0,
+        todayDownloads: 0,
+        todayUniqueDownloaders: 0,
+        weekDownloads: 0,
+        weekUniqueDownloaders: 0,
+        totalPageviews: 0,
+        uniqueVisitors: 0,
+        periodDownloads: 0,
+        periodUniqueDownloaders: 0,
+        humanVisits: 0,
+        botVisits: 0,
+        newVisitors: 0,
+        returningVisitors: 0,
+        avgLoadTime: 0
+      },
+      dailyTrend: [],
+      hourlyDistribution: new Array(24).fill(0),
+      topPages: [],
+      topReferrers: [],
+      topRefUrls: [],
+      topCountries: [],
+      topCities: [],
+      browsers: [],
+      operatingSystems: [],
+      devices: [],
+      topScreens: [],
+      languages: [],
+      topDownloads: [],
+      utm: { sources: [], campaigns: [] }
+    };
+  }
+
   function load() {
     $('last-refresh').textContent = 'Loading...';
     var keyParam = analyticsKey ? '&key=' + encodeURIComponent(analyticsKey) : '';
     Promise.all([
-      fetch('/api/marketing-stats?days=' + currentDays + keyParam).then(function(r) {
-        if (!r.ok) throw new Error('marketing HTTP ' + r.status);
-        return r.json();
-      }),
-      fetch('/api/stats?days=' + currentDays + keyParam).then(function(r) {
-        if (!r.ok) throw new Error('OSB stats HTTP ' + r.status);
-        return r.json();
-      })
+      fetchDashboardPart('/api/marketing-stats?days=' + currentDays + keyParam),
+      fetchDashboardPart('/api/stats?days=' + currentDays + keyParam)
     ])
       .then(function(results) {
-        render(results[0], results[1]);
-      })
-      .catch(function(err) {
-        var msg = err.message || 'unknown error';
-        if (msg.indexOf('401') !== -1) {
+        var marketingResult = results[0];
+        var statsResult = results[1];
+
+        if (marketingResult.status === 401 || statsResult.status === 401) {
           localStorage.removeItem(STORAGE_KEY);
           analyticsKey = '';
           if (refreshInterval) {
@@ -463,6 +509,26 @@
           authError('Session expired — enter password again');
           return;
         }
+
+        if (!marketingResult.ok) {
+          throw new Error('marketing HTTP ' + marketingResult.status);
+        }
+
+        var marketing = marketingResult.body;
+        var stats = statsResult.ok
+          ? statsResult.body
+          : emptyOsbStats();
+
+        if (!statsResult.ok) {
+          stats.warning = (statsResult.body && statsResult.body.error)
+            ? statsResult.body.error
+            : ('OSB stats HTTP ' + statsResult.status);
+        }
+
+        render(marketing, stats);
+      })
+      .catch(function(err) {
+        var msg = err.message || 'unknown error';
         $('content').innerHTML = '<div class="error">Failed to load analytics: ' + esc(msg) + '</div>';
         $('last-refresh').textContent = 'Error — click refresh to retry';
       });
@@ -512,6 +578,14 @@
     $('last-refresh').textContent = 'Updated ' + new Date(marketing.generated).toLocaleTimeString();
 
     var html = renderMarketing(marketing);
+
+    if (data.degraded) {
+      html += '<div class="section" style="border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.08)">';
+      html += '<h2 style="color:#f87171">First-Party OSB Stats Paused</h2>';
+      html += '<p style="color:var(--muted);font-size:14px;line-height:1.6">' + esc(data.warning || 'Counters temporarily unavailable.') + '</p>';
+      html += '<p style="color:var(--muted);font-size:13px;margin-top:8px">Portfolio GA4 cards above should still update. First-party visit/download counters resume after the daily KV reset.</p>';
+      html += '</div>';
+    }
 
     html += '<div class="section"><h2>Open Source Barware — First-Party Detail</h2>';
 
