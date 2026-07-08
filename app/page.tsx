@@ -10,10 +10,19 @@ import OptimizedPicture from "@/components/OptimizedPicture";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Open Source Barware — Free Bar Inventory Program",
+  title: "Open Source Barware — Free Inventory System for Bars | Best Free Bar Inventory",
   description:
-    "A self-contained bar inventory program — runs on your laptop, no subscription, no cloud. AI optional for invoice photos only.",
+    "The best free inventory system for bars. Self-contained bar inventory program that runs on your laptop — no subscription, no cloud, no lock-in. Built by operators who count bottles for a living.",
   path: "/",
+  keywords: [
+    "free inventory system",
+    "free bar inventory system",
+    "best bar inventory system",
+    "best free bar inventory system",
+    "free bar inventory software",
+    "bar inventory system free",
+    "open source bar inventory",
+  ],
 });
 
 const primaryCtaClass =
@@ -75,13 +84,10 @@ export default function Home() {
         {/* Content */}
         <div className="relative z-10 max-w-6xl mx-auto px-6 py-12">
           <div className="max-w-2xl">
-            {/* Pipe accent */}
+            {/* Pipe accent — no badge text */}
             <div className="flex items-center gap-3 mb-8">
               <div className="glow-dot" />
               <div className="h-[1px] w-16 bg-gradient-to-r from-patina to-transparent" />
-              <span className="text-[11px] tracking-[0.3em] uppercase text-patina-light font-medium">
-                Free &amp; Open Source
-              </span>
             </div>
 
             <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[1.05] mb-8">
@@ -202,7 +208,7 @@ export default function Home() {
             <OptimizedPicture
               webpSrc="/images/workshop-1280.webp"
               fallbackSrc="/images/workshop.jpg"
-              alt="Craftsman workbench with bar tools, jiggers, and vintage measuring instruments"
+              alt="Craftsman workbench with bar tools, jiggers, and vintage measuring instruments for the free bar inventory system"
               className="absolute inset-0 h-full w-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-bg/20 to-transparent" />
@@ -280,7 +286,7 @@ export default function Home() {
         <OptimizedPicture
           webpSrc="/images/hands.webp"
           fallbackSrc="/images/hands.png"
-          alt="Bartender writing inventory counts in a notebook at the bar"
+          alt="Bartender writing inventory counts in a notebook at the bar using free inventory system"
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-bg/95 via-bg/75 to-bg/50" />
@@ -339,6 +345,45 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Video and Image structured data for SEO - backend only */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "VideoObject",
+                "name": "Free Bar Inventory System Demo - Open Source Barware",
+                "description": "See the free bar inventory system in action: voice walk mapping, tenths counting, variance tracking, and smart orders. The best free inventory system for bars, built by bartenders.",
+                "thumbnailUrl": "https://opensourcebarware.com/images/hero-poster.jpg",
+                "uploadDate": "2026-07-04T00:00:00Z",
+                "contentUrl": "https://opensourcebarware.com/videos/hero-bartender-compressed.mp4",
+                "duration": "PT0M30S",
+                "transcript": "The video shows a bartender in a professional bar setting demonstrating the free bar inventory program. It highlights voice notes for mapping stations, counting bottles in tenths, reconciling with POS and purchases, and viewing variance and orders on the home base dashboard. The program runs entirely on the laptop with no cloud or subscription required.",
+                "interactionStatistic": {
+                  "@type": "InteractionCounter",
+                  "interactionType": { "@type": "WatchAction" },
+                  "userInteractionCount": 1000
+                }
+              },
+              {
+                "@type": "ImageObject",
+                "contentUrl": "https://opensourcebarware.com/images/workshop-1280.webp",
+                "name": "Craftsman workbench with bar tools for free bar inventory system",
+                "description": "Precision tools for the free bar inventory system - jiggers, measures for accurate counts."
+              },
+              {
+                "@type": "ImageObject",
+                "contentUrl": "https://opensourcebarware.com/images/hands.webp",
+                "name": "Bartender using free inventory system to count bottles",
+                "description": "Field-tested free bar inventory system in action - writing counts the old school way."
+              }
+            ]
+          })
+        }}
+      />
     </>
   );
 }

@@ -11,8 +11,8 @@ import {
   shouldShowPreLaunchOverlay,
 } from "@/lib/launch-gate";
 
-// Bumped to v7 for week-one copy with Friday features teaser.
-const STORAGE_KEY = "osb-july4-launch-v7-features";
+// Bumped to v8 so the week-one popup shows again after the Salle deploy removed it.
+const STORAGE_KEY = "osb-july4-launch-v8-weekone";
 
 const PARTY_SHOTS = [
   { src: "/images/hero.png", alt: "Bartender behind the bar" },

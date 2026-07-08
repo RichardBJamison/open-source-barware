@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Caveat, Inter, Playfair_Display } from "next/font/google";
 import Script from "next/script";
+import { Suspense } from "react";
 import "./globals.css";
 import ConditionalSiteChrome from "@/components/ConditionalSiteChrome";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import JulyFourthLaunchOverlay from "@/components/JulyFourthLaunchOverlay";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 const GA_MEASUREMENT_ID = "G-ZM3BBYW5PY";
@@ -89,6 +91,18 @@ const jsonLd = {
       name: "Open Source Barware",
       url: siteUrl,
     },
+    {
+      "@type": "SoftwareApplication",
+      name: "Open Source Barware",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "macOS, Windows, Chrome",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      description: "Free, open-source bar inventory program with voice walk mapping, tenths counting, variance tracking, POS integration, and smart ordering. No subscription. No lock-in.",
+    },
   ],
 };
 
@@ -128,6 +142,11 @@ export default function RootLayout({
         <ConditionalSiteChrome>
           <Footer />
         </ConditionalSiteChrome>
+        <Suspense fallback={null}>
+          <ConditionalSiteChrome>
+            <JulyFourthLaunchOverlay />
+          </ConditionalSiteChrome>
+        </Suspense>
       </body>
     </html>
   );
