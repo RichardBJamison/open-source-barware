@@ -84,12 +84,6 @@ export default function Home() {
         {/* Content */}
         <div className="relative z-10 max-w-6xl mx-auto px-6 py-12">
           <div className="max-w-2xl">
-            {/* Pipe accent — no badge text */}
-            <div className="flex items-center gap-3 mb-8">
-              <div className="glow-dot" />
-              <div className="h-[1px] w-16 bg-gradient-to-r from-patina to-transparent" />
-            </div>
-
             <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[1.05] mb-8">
               <span className="copper-text">Bar inventory</span>
               <br />

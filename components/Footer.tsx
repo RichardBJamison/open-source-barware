@@ -1,5 +1,5 @@
 import Link from "next/link";
-import OptimizedPicture from "@/components/OptimizedPicture";
+import BrandLogo from "@/components/BrandLogo";
 import { Gear } from "./SteampunkElements";
 
 export default function Footer() {
@@ -15,23 +15,18 @@ export default function Footer() {
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
-          {/* Brand */}
+          {/* Brand — same martini wordmark as header */}
           <div className="md:col-span-5">
-            <div className="mb-4">
-              <OptimizedPicture
-                webpSrc="/images/logo.webp"
-                fallbackSrc="/images/logo.png"
-                alt="Open Source Barware"
-                width={200}
-                height={113}
-                className="w-[200px] h-auto"
-                style={{ mixBlendMode: "lighten" }}
-              />
-            </div>
+            <Link
+              href="/"
+              className="inline-block mb-4 opacity-100 hover:opacity-90 transition-opacity"
+              aria-label="Open Source Barware — home"
+            >
+              <BrandLogo />
+            </Link>
             <p className="text-sm text-text-muted leading-relaxed max-w-sm">
-              Crafted by bartenders. Tested at Agave &amp; Rye, downtown
-              Cleveland. Given to the trade, no strings attached. Because a good
-              program shouldn&rsquo;t cost you a shift&rsquo;s worth of tips.
+              Crafted by bartenders. Given to the trade, no strings attached.
+              Because a good program shouldn&rsquo;t cost you a shift&rsquo;s worth of tips.
             </p>
           </div>
 
@@ -46,6 +41,7 @@ export default function Footer() {
               <Link href="/about" className="text-sm text-text-muted hover:text-copper transition-colors">About</Link>
               <Link href="/manifesto" className="text-sm text-text-muted hover:text-copper transition-colors">Manifesto</Link>
               <Link href="/resources" className="text-sm text-text-muted hover:text-copper transition-colors">Resources</Link>
+              <Link href="/blog" className="text-sm text-text-muted hover:text-copper transition-colors">Blog</Link>
               <Link href="/download" className="text-sm text-text-muted hover:text-copper transition-colors">Download Program</Link>
               <Link href="/downloads" className="text-sm text-text-muted hover:text-copper transition-colors">Program Guide</Link>
               <Link href="/open-source-compliance" className="text-sm text-text-muted hover:text-copper transition-colors">Compliance</Link>

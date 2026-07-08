@@ -3,74 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import BrandLogo from "@/components/BrandLogo";
 import SignMarqueeLights from "@/components/SignMarqueeLights";
-
-const LOGO_COPPER = "#b88958";
-
-function MartiniGlass() {
-  return (
-    <svg width="58" height="68" viewBox="0 0 52 62" fill="none">
-      {/* Bowl */}
-      <path
-        d="M4 6 L48 6 L26 38 Z"
-        stroke={LOGO_COPPER}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Stem */}
-      <line x1="26" y1="38" x2="26" y2="54" stroke={LOGO_COPPER} strokeWidth="1.5" strokeLinecap="round" />
-      {/* Base */}
-      <line x1="12" y1="54" x2="40" y2="54" stroke={LOGO_COPPER} strokeWidth="1.5" strokeLinecap="round" />
-      {/* Olive pick */}
-      <line x1="7" y1="15" x2="20" y2="26" stroke={LOGO_COPPER} strokeWidth="1" strokeLinecap="round" />
-      {/* Olive */}
-      <circle cx="6" cy="14" r="4" stroke={LOGO_COPPER} strokeWidth="1.2" fill="none" />
-      <circle cx="6" cy="14" r="1.5" fill={LOGO_COPPER} />
-    </svg>
-  );
-}
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const isDojo = pathname?.startsWith("/inventory");
 
-  const logo = (
-    <div className="flex items-center gap-3.5 py-1.5 px-2">
-      <MartiniGlass />
-      <div className="flex flex-col gap-1">
-        {/* Wordmark */}
-        <div
-          className="flex items-center gap-1.5"
-          style={{
-            fontFamily: "var(--font-inter)",
-            fontWeight: 700,
-            fontSize: "1.15rem",
-            letterSpacing: "0.1em",
-            color: LOGO_COPPER,
-          }}
-        >
-          <span>OPEN S</span>
-          <span style={{ fontSize: "0.9rem", opacity: 0.85, fontWeight: 400 }}>{"<>"}</span>
-          <span>BARWARE</span>
-        </div>
-        {/* Tagline — white, sized up 25% vs original small PNG text */}
-        <span
-          style={{
-            fontFamily: "var(--font-inter)",
-            fontSize: "0.7rem",
-            letterSpacing: "0.18em",
-            color: "#f5e6c8",
-            fontWeight: 400,
-            textTransform: "lowercase",
-          }}
-        >
-          free, open-source program for the trade
-        </span>
-      </div>
-    </div>
-  );
+  const logo = <BrandLogo />;
 
   return (
     <header className="bg-bg border-b border-gear-border">
