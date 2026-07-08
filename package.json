@@ -10,7 +10,10 @@
     "start": "next start",
     "lint": "eslint",
     "package:compliance": "node scripts/build-compliance-packages.mjs",
-    "package:program": "node scripts/package-program.mjs"
+    "package:program": "node scripts/package-program.mjs",
+    "indexnow": "node scripts/ping-indexnow.mjs",
+    "deploy:pages": "npx wrangler pages deploy out --project-name=open-source-barware --branch=main",
+    "deploy:ping": "npm run indexnow"
   },
   "dependencies": {
     "next": "16.2.6",
