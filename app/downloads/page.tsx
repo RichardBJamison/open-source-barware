@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandLogo from "@/components/BrandLogo";
 import OptimizedPicture from "@/components/OptimizedPicture";
 import { Gear, GearDivider, BottleIcon } from "@/components/SteampunkElements";
 import { pageMetadata } from "@/lib/seo";
@@ -159,6 +160,7 @@ export default function DownloadsPage() {
           <Gear size={160} className="gear-spin opacity-12" />
         </div>
         <div className="relative z-10 max-w-6xl mx-auto px-6 pt-12 pb-8 md:pt-16 md:pb-10">
+          <BrandLogo priority />
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-[1px] bg-copper/40" />
             <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import BrandLogo from "@/components/BrandLogo";
 import OptimizedPicture from "@/components/OptimizedPicture";
 import ProgramDownloadPanel from "@/components/ProgramDownloadPanel";
 import { Gear, GearDivider } from "@/components/SteampunkElements";
@@ -28,6 +29,7 @@ export default function DownloadPage() {
           <Gear size={160} className="gear-spin opacity-12" />
         </div>
         <div className="relative z-10 max-w-6xl mx-auto px-6 pt-14 pb-10 md:pt-20 md:pb-14">
+          <BrandLogo priority />
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <div className="w-8 h-[1px] bg-copper/40" />
             <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
