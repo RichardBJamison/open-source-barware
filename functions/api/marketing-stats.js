@@ -1,5 +1,9 @@
 import { cors, jsonError } from "../_shared/kv.js";
-import { getGa4AccessToken, collectSiteMetrics } from "../_shared/ga4.js";
+import {
+  getGa4AccessToken,
+  collectSiteMetrics,
+  collectOsbGa4Detail,
+} from "../_shared/ga4.js";
 import { MARKETING_SITES } from "../_shared/marketing-sites.js";
 import { parsePeriodParam, periodLabel } from "../_shared/periods.js";
 
@@ -66,6 +70,16 @@ export async function onRequestGet(context) {
       }
     }
 
+    const osbSite = MARKETING_SITES.find((site) => site.id === "osb");
+    let osbGa4Detail = null;
+    if (osbSite) {
+      try {
+        osbGa4Detail = await collectOsbGa4Detail(accessToken, osbSite, period);
+      } catch (err) {
+        osbGa4Detail = { error: err.message || "OSB GA4 detail failed" };
+      }
+    }
+
     const totals = results.reduce(
       (acc, site) => {
         if (site.error) {
@@ -102,6 +116,7 @@ export async function onRequestGet(context) {
         period: { id: period, label: periodLabel(period) },
         totals,
         sites: results,
+        osbGa4Detail,
       }),
       { headers }
     );

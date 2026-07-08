@@ -452,6 +452,105 @@
     });
   }
 
+  function mergeOsbView(ga4, fp) {
+    var fpOverview = (fp && fp.overview) ? fp.overview : {};
+    var fpDegraded = !!(fp && fp.degraded);
+    var ga4Ok = ga4 && !ga4.error;
+
+    if (!ga4Ok && !fp) {
+      return {
+        source: 'none',
+        degraded: true,
+        warning: (ga4 && ga4.error) ? ga4.error : 'No OSB analytics available.',
+        overview: {},
+        dailyTrend: [],
+        hourlyDistribution: new Array(24).fill(0),
+        topPages: [],
+        topReferrers: [],
+        topRefUrls: [],
+        topCountries: [],
+        topCities: [],
+        browsers: [],
+        operatingSystems: [],
+        devices: [],
+        topScreens: [],
+        languages: [],
+        topDownloads: [],
+        utm: { sources: [], mediums: [], campaigns: [] }
+      };
+    }
+
+    var dailyTrend = [];
+    if (ga4Ok && ga4.dailyTrend && ga4.dailyTrend.length) {
+      var dlByDate = {};
+      (fp.dailyTrend || []).forEach(function(d) { dlByDate[d.date] = d.downloads || 0; });
+      dailyTrend = ga4.dailyTrend.map(function(d) {
+        return {
+          date: d.date,
+          views: d.views || 0,
+          unique: d.unique || 0,
+          downloads: dlByDate[d.date] || 0
+        };
+      });
+    } else {
+      dailyTrend = fp.dailyTrend || [];
+    }
+
+    var overview = {
+      liveNow: ga4Ok ? (ga4.activeNow || 0) : (fpOverview.liveNow || 0),
+      totalAllTime: ga4Ok ? (ga4.pageViews || 0) : (fpOverview.totalAllTime || 0),
+      uniqueVisitorsEver: ga4Ok ? (ga4.activeUsers || 0) : (fpOverview.uniqueVisitorsEver || 0),
+      todayUniqueVisitors: fpOverview.todayUniqueVisitors || 0,
+      todayVisitTotal: fpOverview.todayVisitTotal || 0,
+      weekUniqueVisitors: fpOverview.weekUniqueVisitors || 0,
+      weekVisitTotal: fpOverview.weekVisitTotal || 0,
+      totalDownloadsAllTime: fpOverview.totalDownloadsAllTime || 0,
+      todayDownloads: fpOverview.todayDownloads || 0,
+      todayUniqueDownloaders: fpOverview.todayUniqueDownloaders || 0,
+      weekDownloads: fpOverview.weekDownloads || 0,
+      weekUniqueDownloaders: fpOverview.weekUniqueDownloaders || 0,
+      totalPageviews: ga4Ok ? (ga4.pageViews || 0) : (fpOverview.totalPageviews || 0),
+      uniqueVisitors: ga4Ok ? (ga4.activeUsers || 0) : (fpOverview.uniqueVisitors || 0),
+      periodDownloads: fpOverview.periodDownloads || 0,
+      periodUniqueDownloaders: fpOverview.periodUniqueDownloaders || 0,
+      humanVisits: fpOverview.humanVisits || 0,
+      botVisits: fpOverview.botVisits || 0,
+      newVisitors: ga4Ok ? (ga4.newUsers || 0) : (fpOverview.newVisitors || 0),
+      returningVisitors: ga4Ok
+        ? Math.max(0, (ga4.activeUsers || 0) - (ga4.newUsers || 0))
+        : (fpOverview.returningVisitors || 0),
+      avgLoadTime: fpOverview.avgLoadTime || 0,
+      sessions: ga4Ok ? (ga4.sessions || 0) : 0,
+      engagementRate: ga4Ok ? (ga4.engagementRate || 0) : 0,
+      avgSessionSeconds: ga4Ok ? (ga4.avgSessionSeconds || 0) : 0
+    };
+
+    return {
+      source: ga4Ok ? 'ga4+downloads' : 'first-party',
+      degraded: fpDegraded && !ga4Ok,
+      fpDegraded: fpDegraded,
+      warning: fp.warning || '',
+      ga4Error: ga4 && ga4.error ? ga4.error : '',
+      overview: overview,
+      dailyTrend: dailyTrend,
+      hourlyDistribution: ga4Ok
+        ? (ga4.hourlyDistribution || new Array(24).fill(0))
+        : (fp.hourlyDistribution || new Array(24).fill(0)),
+      topPages: ga4Ok ? (ga4.topPages || []) : (fp.topPages || []),
+      topReferrers: ga4Ok ? (ga4.topReferrers || []) : (fp.topReferrers || []),
+      topRefUrls: fp.topRefUrls || [],
+      topCountries: ga4Ok ? (ga4.topCountries || []) : (fp.topCountries || []),
+      topCities: ga4Ok ? (ga4.topCities || []) : (fp.topCities || []),
+      browsers: ga4Ok ? (ga4.browsers || []) : (fp.browsers || []),
+      operatingSystems: ga4Ok ? (ga4.operatingSystems || []) : (fp.operatingSystems || []),
+      devices: ga4Ok ? (ga4.devices || []) : (fp.devices || []),
+      topScreens: fp.topScreens || [],
+      languages: fp.languages || [],
+      topDownloads: fp.topDownloads || [],
+      utm: fp.utm || { sources: [], mediums: [], campaigns: [] }
+    };
+  }
+
   function emptyOsbStats() {
     return {
       generated: new Date().toISOString(),
@@ -535,7 +634,8 @@
             : ('OSB stats HTTP ' + statsResult.status);
         }
 
-        render(marketing, stats);
+        var osb = mergeOsbView(marketing.osbGa4Detail, stats);
+        render(marketing, osb);
       })
       .catch(function(err) {
         var msg = err.message || 'unknown error';
@@ -588,42 +688,57 @@
     var o = data.overview;
     var periodLabel = (marketing.period && marketing.period.label)
       ? marketing.period.label
-      : ((data.period && data.period.label) || PERIOD_LABELS[currentPeriod] || currentPeriod);
-    $('live-count').textContent = (marketing.totals.activeNow || 0) + ' portfolio / ' + (o.liveNow || 0) + ' OSB';
+      : (PERIOD_LABELS[currentPeriod] || currentPeriod);
+    var ga4Live = (marketing.osbGa4Detail && !marketing.osbGa4Detail.error)
+      ? (marketing.osbGa4Detail.activeNow || 0)
+      : (o.liveNow || 0);
+    $('live-count').textContent = (marketing.totals.activeNow || 0) + ' portfolio / ' + ga4Live + ' OSB';
     $('last-refresh').textContent = 'Updated ' + new Date(marketing.generated).toLocaleTimeString();
 
     var html = renderMarketing(marketing);
 
-    if (data.degraded) {
+    if (data.ga4Error) {
       html += '<div class="section" style="border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.08)">';
-      html += '<h2 style="color:#f87171">First-Party OSB Stats Paused</h2>';
-      html += '<p style="color:var(--muted);font-size:14px;line-height:1.6">' + esc(data.warning || 'Counters temporarily unavailable.') + '</p>';
-      html += '<p style="color:var(--muted);font-size:13px;margin-top:8px">Portfolio GA4 cards above should still update. First-party visit/download counters resume after the daily KV reset.</p>';
+      html += '<h2 style="color:#f87171">GA4 Unavailable for OSB Detail</h2>';
+      html += '<p style="color:var(--muted);font-size:14px;line-height:1.6">' + esc(data.ga4Error) + '</p>';
       html += '</div>';
     }
 
-    html += '<div class="section"><h2>Open Source Barware — First-Party Detail</h2>';
+    if (data.fpDegraded) {
+      html += '<div class="section" style="border-color:rgba(234,179,8,0.35);background:rgba(234,179,8,0.08)">';
+      html += '<h2 style="color:#fbbf24">Download Counters Paused</h2>';
+      html += '<p style="color:var(--muted);font-size:14px;line-height:1.6">' + esc(data.warning || 'First-party download tracking temporarily unavailable.') + '</p>';
+      html += '<p style="color:var(--muted);font-size:13px;margin-top:8px">Traffic metrics below come from Google Analytics. Download counts resume after the daily KV reset (midnight UTC).</p>';
+      html += '</div>';
+    }
 
-    // Headline counters — visits & downloads
+    var sourceTag = data.source === 'ga4+downloads'
+      ? '<span class="tag tag-blue">GA4 traffic</span> <span class="tag tag-green">First-party downloads</span>'
+      : '<span class="tag tag-green">First-party</span>';
+
+    html += '<div class="section"><h2>Open Source Barware — GA4 + Downloads</h2>';
+    html += '<p style="color:var(--muted);font-size:13px;margin-bottom:14px">' + sourceTag + ' · ' + periodLabel + '</p>';
+
+    // Headline counters — GA4 traffic + first-party downloads
     html += '<div class="section">';
-    html += '<h2>Visits &amp; Downloads</h2>';
+    html += '<h2>Traffic &amp; Downloads</h2>';
     html += '<div class="grid">';
-    html += metricCard('All-Time Visits', fmt(o.totalAllTime), fmt(o.uniqueVisitorsEver || 0) + ' unique ever');
-    html += metricCard('Today Unique Visits', fmt(o.todayUniqueVisitors || 0), fmt(o.todayVisitTotal || 0) + ' total today');
-    html += metricCard('Week Unique Visits', fmt(o.weekUniqueVisitors || 0), fmt(o.weekVisitTotal || 0) + ' total this week');
-    html += metricCard('All-Time Downloads', fmt(o.totalDownloadsAllTime || 0), fmt(o.uniqueDownloadersEver || 0) + ' unique ever');
+    html += metricCard('Period Pageviews', fmt(o.totalPageviews), 'GA4 · ' + periodLabel);
+    html += metricCard('Period Users', fmt(o.uniqueVisitors), fmt(o.newVisitors || 0) + ' new · GA4');
+    html += metricCard('Period Sessions', fmt(o.sessions || 0), o.avgSessionSeconds ? Math.round(o.avgSessionSeconds) + 's avg' : 'GA4');
+    html += metricCard('Active Now', fmt(ga4Live), 'GA4 realtime');
+    html += metricCard('All-Time Downloads', fmt(o.totalDownloadsAllTime || 0), 'First-party counter');
     html += metricCard('Today Downloads', fmt(o.todayDownloads || 0), fmt(o.todayUniqueDownloaders || 0) + ' unique today');
     html += metricCard('Week Downloads', fmt(o.weekDownloads || 0), fmt(o.weekUniqueDownloaders || 0) + ' unique this week');
+    html += metricCard('Period Downloads', fmt(o.periodDownloads || 0), fmt(o.periodUniqueDownloaders || 0) + ' unique in period');
     html += '</div></div>';
 
     // Period detail
     html += '<div class="grid">';
-    html += metricCard('Period Pageviews', fmt(o.totalPageviews), periodLabel + ' window');
-    html += metricCard('Period Unique Visitors', fmt(o.uniqueVisitors), pct(o.uniqueVisitors, o.totalPageviews) + ' of period');
-    html += metricCard('Period Downloads', fmt(o.periodDownloads || 0), fmt(o.periodUniqueDownloaders || 0) + ' unique in period');
-    html += metricCard('Human Visits', fmt(o.humanVisits), fmt(o.botVisits) + ' bots filtered');
-    html += metricCard('New Visitors', fmt(o.newVisitors), fmt(o.returningVisitors) + ' returning');
-    html += metricCard('Avg Load Time', o.avgLoadTime ? (o.avgLoadTime + 'ms') : '—', 'Page load');
+    html += metricCard('Returning Users', fmt(o.returningVisitors), 'GA4 estimate');
+    html += metricCard('Engagement Rate', o.engagementRate ? (Math.round(o.engagementRate * 100) + '%') : '—', 'GA4');
+    html += metricCard('Human Visits (FP)', fmt(o.humanVisits), fmt(o.botVisits) + ' bots · first-party');
+    html += metricCard('Avg Load Time (FP)', o.avgLoadTime ? (o.avgLoadTime + 'ms') : '—', 'First-party only');
     html += '</div>';
 
     // Hourly distribution

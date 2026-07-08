@@ -1,7 +1,11 @@
 import { cors, getVisitorKv, jsonError } from "../_shared/kv.js";
-import { updateVisitRollup } from "../_shared/rollup.js";
+import {
+  applyVisitToSnapshot,
+  loadSnapshot,
+  saveSnapshot,
+} from "../_shared/snapshot.js";
 
-// POST /api/track — records a detailed pageview
+// POST /api/track — records a detailed pageview (snapshot model — low KV usage)
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -28,7 +32,6 @@ export async function onRequestPost(context) {
 
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10);
-    const hourStr = String(now.getUTCHours()).padStart(2, "0");
     const vid = String(body.vid || "").slice(0, 64);
 
     const visit = {
@@ -63,51 +66,30 @@ export async function onRequestPost(context) {
       utm_content: body.utm_content || "",
     };
 
-    const rand = crypto.randomUUID().slice(0, 8);
-    const pvKey = `pv:${dateStr}:${hourStr}:${rand}`;
-
-    const totalRaw = await kv.get("total_visits");
-    const total = parseInt(totalRaw || "0", 10) + 1;
-
-    const dayVisitsRaw = (await kv.get(`visits_day:${dateStr}`)) || "0";
-    const dayVisits = parseInt(dayVisitsRaw, 10) + 1;
-
-    const writes = [
-      kv.put(pvKey, JSON.stringify(visit), { expirationTtl: 2592000 }),
-      kv.put("total_visits", String(total)),
-      kv.put(`visits_day:${dateStr}`, String(dayVisits), {
-        expirationTtl: 2592000,
-      }),
-    ];
+    let newToday = false;
+    let newEver = false;
 
     if (vid) {
       const dayUvKey = `uv:${dateStr}:${vid}`;
       const seenToday = await kv.get(dayUvKey);
-      writes.push(kv.put(dayUvKey, "1", { expirationTtl: 2592000 }));
       if (!seenToday) {
-        const dayUvCount =
-          parseInt((await kv.get(`uv_day_count:${dateStr}`)) || "0", 10) + 1;
-        writes.push(
-          kv.put(`uv_day_count:${dateStr}`, String(dayUvCount), {
-            expirationTtl: 2592000,
-          })
-        );
+        newToday = true;
+        await kv.put(dayUvKey, "1", { expirationTtl: 2592000 });
       }
 
       const everKey = `uv:ever:${vid}`;
       const seenBefore = await kv.get(everKey);
       if (!seenBefore) {
-        writes.push(kv.put(everKey, "1"));
-        const uniqueEver =
-          parseInt((await kv.get("unique_visitors_ever")) || "0", 10) + 1;
-        writes.push(kv.put("unique_visitors_ever", String(uniqueEver)));
+        newEver = true;
+        await kv.put(everKey, "1");
       }
     }
 
-    await Promise.all(writes);
-    await updateVisitRollup(kv, dateStr, visit);
+    const snap = await loadSnapshot(kv);
+    applyVisitToSnapshot(snap, visit, { dateStr, newToday, newEver });
+    await saveSnapshot(kv, snap);
 
-    return new Response(JSON.stringify({ ok: true, count: total }), {
+    return new Response(JSON.stringify({ ok: true, count: snap.totals.visits }), {
       headers: cors("GET, POST, OPTIONS"),
     });
   } catch (err) {
@@ -119,8 +101,11 @@ export async function onRequestPost(context) {
 export async function onRequestGet({ env }) {
   try {
     const kv = getVisitorKv(env);
-    const count = parseInt((await kv.get("total_visits")) || "0", 10);
-    return new Response(JSON.stringify({ count }), { headers: cors("GET, POST, OPTIONS") });
+    const snap = await loadSnapshot(kv);
+    const count = snap.totals.visits || 0;
+    return new Response(JSON.stringify({ count }), {
+      headers: cors("GET, POST, OPTIONS"),
+    });
   } catch (err) {
     return jsonError(err.message || "pageview count failed");
   }

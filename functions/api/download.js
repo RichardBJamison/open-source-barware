@@ -1,7 +1,11 @@
 import { cors, getVisitorKv, jsonError } from "../_shared/kv.js";
-import { updateDownloadRollup } from "../_shared/rollup.js";
+import {
+  applyDownloadToSnapshot,
+  loadSnapshot,
+  saveSnapshot,
+} from "../_shared/snapshot.js";
 
-// POST /api/download — records a program/file download
+// POST /api/download — records a program/file download (snapshot model)
 export async function onRequestPost(context) {
   const { request, env } = context;
 
@@ -21,7 +25,6 @@ export async function onRequestPost(context) {
     const kv = getVisitorKv(env);
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10);
-    const hourStr = String(now.getUTCHours()).padStart(2, "0");
     const vid = String(body.vid || "").slice(0, 64);
 
     const download = {
@@ -32,51 +35,30 @@ export async function onRequestPost(context) {
       vid,
     };
 
-    const rand = crypto.randomUUID().slice(0, 8);
-    const dlKey = `dl:${dateStr}:${hourStr}:${rand}`;
-
-    const totalRaw = (await kv.get("total_downloads")) || "0";
-    const total = parseInt(totalRaw, 10) + 1;
-
-    const dayDownloadsRaw = (await kv.get(`downloads_day:${dateStr}`)) || "0";
-    const dayDownloads = parseInt(dayDownloadsRaw, 10) + 1;
-
-    const writes = [
-      kv.put(dlKey, JSON.stringify(download), { expirationTtl: 2592000 }),
-      kv.put("total_downloads", String(total)),
-      kv.put(`downloads_day:${dateStr}`, String(dayDownloads), {
-        expirationTtl: 2592000,
-      }),
-    ];
+    let newToday = false;
+    let newEver = false;
 
     if (vid) {
       const dayUvKey = `dl_uv:${dateStr}:${vid}`;
       const seenToday = await kv.get(dayUvKey);
-      writes.push(kv.put(dayUvKey, "1", { expirationTtl: 2592000 }));
       if (!seenToday) {
-        const dayUvCount =
-          parseInt((await kv.get(`dl_uv_day_count:${dateStr}`)) || "0", 10) + 1;
-        writes.push(
-          kv.put(`dl_uv_day_count:${dateStr}`, String(dayUvCount), {
-            expirationTtl: 2592000,
-          })
-        );
+        newToday = true;
+        await kv.put(dayUvKey, "1", { expirationTtl: 2592000 });
       }
 
       const everKey = `dl_uv:ever:${vid}`;
       const seenBefore = await kv.get(everKey);
       if (!seenBefore) {
-        writes.push(kv.put(everKey, "1"));
-        const uniqueEver =
-          parseInt((await kv.get("unique_downloaders_ever")) || "0", 10) + 1;
-        writes.push(kv.put("unique_downloaders_ever", String(uniqueEver)));
+        newEver = true;
+        await kv.put(everKey, "1");
       }
     }
 
-    await Promise.all(writes);
-    await updateDownloadRollup(kv, dateStr, download);
+    const snap = await loadSnapshot(kv);
+    applyDownloadToSnapshot(snap, download, { dateStr, newToday, newEver });
+    await saveSnapshot(kv, snap);
 
-    return new Response(JSON.stringify({ ok: true, count: total }), {
+    return new Response(JSON.stringify({ ok: true, count: snap.totals.downloads }), {
       headers: cors("GET, POST, OPTIONS"),
     });
   } catch (err) {
