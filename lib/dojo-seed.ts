@@ -1,10 +1,11 @@
-import type {
-  Bar,
-  Bottle,
-  InventoryCount,
-  InventorySettings,
-  PosReportEntry,
-  WeeklyInputDraft,
+import {
+  DEFAULT_INVENTORY_SETTINGS,
+  type Bar,
+  type Bottle,
+  type InventoryCount,
+  type InventorySettings,
+  type PosReportEntry,
+  type WeeklyInputDraft,
 } from "@/lib/inventory-store";
 
 function bottle(
@@ -138,6 +139,7 @@ export function createDojoCounts(bar: Bar): InventoryCount[] {
 
 export function createDojoSettings(): InventorySettings {
   return {
+    ...DEFAULT_INVENTORY_SETTINGS,
     aiProvider: "claude",
     apiConnectionStatus: "needs-key",
     cycleLabel: "Weekly beverage inventory",

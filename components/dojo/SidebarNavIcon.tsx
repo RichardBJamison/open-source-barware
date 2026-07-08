@@ -4,6 +4,7 @@ type IconName =
   | "analytics"
   | "inhouse"
   | "inputs"
+  | "staff"
   | "settings";
 
 export default function SidebarNavIcon({
@@ -60,6 +61,22 @@ export default function SidebarNavIcon({
             strokeLinecap="round"
           />
           <path d="M3 15h14v3H3v-3z" fill="currentColor" opacity="0.6" />
+        </svg>
+      );
+    case "staff":
+      return (
+        <svg {...props}>
+          <path
+            d="M4 4h12v10H7l-3 3V4z"
+            stroke="currentColor"
+            strokeWidth="1.4"
+          />
+          <path
+            d="M7 8h6M7 11h4"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
         </svg>
       );
     case "settings":

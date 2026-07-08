@@ -95,6 +95,21 @@ export interface InventorySettings {
   showOpenBottleTenths: boolean;
   notes: string;
   updatedAt: string | null;
+  // V1.5 feature prefs (sandbox can toggle for preview; full behavior in download)
+  weighEnabled: boolean;
+  mobileCountEnabled: boolean;
+  barcodeScanEnabled: boolean;
+  visualParAlerts: boolean;
+  blueprintWalkOrder: boolean;
+  recipesCosting: boolean;
+  smartOrders: boolean;
+  posStructuredImport: boolean;
+  receivingWorkflow: boolean;
+  multiVenue: boolean;
+  stockTransfers: boolean;
+  advancedReports: boolean;
+  peopleAccessPin: boolean;
+  staffBoard: boolean;
 }
 
 /** Web Dojo sandbox — isolated from the downloaded Chrome program (`osb_`). */
@@ -130,6 +145,20 @@ export const DEFAULT_INVENTORY_SETTINGS: InventorySettings = {
   showOpenBottleTenths: true,
   notes: "",
   updatedAt: null,
+  weighEnabled: false,
+  mobileCountEnabled: true,
+  barcodeScanEnabled: true,
+  visualParAlerts: true,
+  blueprintWalkOrder: true,
+  recipesCosting: true,
+  smartOrders: true,
+  posStructuredImport: true,
+  receivingWorkflow: true,
+  multiVenue: true,
+  stockTransfers: true,
+  advancedReports: true,
+  peopleAccessPin: true,
+  staffBoard: true,
 };
 
 function readJson<T>(key: string): T | null {

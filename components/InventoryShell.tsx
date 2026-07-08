@@ -47,9 +47,15 @@ const NAV_ITEMS = [
     icon: "inputs" as const,
   },
   {
+    href: "/inventory/staff",
+    label: "Employee communications",
+    desc: "Handoffs · staff board",
+    icon: "staff" as const,
+  },
+  {
     href: "/inventory/settings",
     label: "Settings",
-    desc: "Your business, bars, tools",
+    desc: "Venues, people, V1.5 tools",
     icon: "settings" as const,
   },
 ];
