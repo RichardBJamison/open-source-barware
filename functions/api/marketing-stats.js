@@ -1,8 +1,10 @@
 import { cors, jsonError } from "../_shared/kv.js";
 import { getGa4AccessToken, collectSiteMetrics } from "../_shared/ga4.js";
 import { MARKETING_SITES } from "../_shared/marketing-sites.js";
+import { parsePeriodParam, periodLabel } from "../_shared/periods.js";
 
-const CACHE_TTL_SECONDS = 120;
+const CACHE_TTL_SECONDS = 300;
+const SITE_GAP_MS = 250;
 
 // GET /api/marketing-stats — GA4 pull for all marketing sites
 export async function onRequestGet(context) {
@@ -21,11 +23,11 @@ export async function onRequestGet(context) {
       }
     }
 
-    const days = Math.min(parseInt(url.searchParams.get("days") || "1", 10), 30);
+    const period = parsePeriodParam(url);
 
     const cache = caches.default;
     const cacheKey = new Request(
-      `${url.origin}${url.pathname}?days=${days}`,
+      `${url.origin}${url.pathname}?period=${period}`,
       { method: "GET" }
     );
     const cached = await cache.match(cacheKey);
@@ -35,31 +37,34 @@ export async function onRequestGet(context) {
 
     const accessToken = await getGa4AccessToken(env);
 
-    const results = await Promise.all(
-      MARKETING_SITES.map(async (site) => {
-        try {
-          return await collectSiteMetrics(accessToken, site, days);
-        } catch (err) {
-          return {
-            id: site.id,
-            name: site.name,
-            domain: site.domain,
-            url: site.url,
-            measurementId: site.measurementId,
-            propertyId: site.propertyId,
-            error: err.message || "GA4 fetch failed",
-            activeNow: 0,
-            activeUsers: 0,
-            newUsers: 0,
-            sessions: 0,
-            pageViews: 0,
-            events: 0,
-            topChannels: [],
-            topPages: [],
-          };
-        }
-      })
-    );
+    const results = [];
+    for (let i = 0; i < MARKETING_SITES.length; i++) {
+      const site = MARKETING_SITES[i];
+      try {
+        results.push(await collectSiteMetrics(accessToken, site, period));
+      } catch (err) {
+        results.push({
+          id: site.id,
+          name: site.name,
+          domain: site.domain,
+          url: site.url,
+          measurementId: site.measurementId,
+          propertyId: site.propertyId,
+          error: err.message || "GA4 fetch failed",
+          activeNow: 0,
+          activeUsers: 0,
+          newUsers: 0,
+          sessions: 0,
+          pageViews: 0,
+          events: 0,
+          topChannels: [],
+          topPages: [],
+        });
+      }
+      if (i < MARKETING_SITES.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, SITE_GAP_MS));
+      }
+    }
 
     const totals = results.reduce(
       (acc, site) => {
@@ -94,7 +99,7 @@ export async function onRequestGet(context) {
     const response = new Response(
       JSON.stringify({
         generated: new Date().toISOString(),
-        period: { days },
+        period: { id: period, label: periodLabel(period) },
         totals,
         sites: results,
       }),

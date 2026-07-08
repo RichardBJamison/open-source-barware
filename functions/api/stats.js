@@ -6,6 +6,12 @@ import {
   todayUtc,
 } from "../_shared/kv.js";
 import {
+  isTotalPeriod,
+  kvDatesForPeriod,
+  parsePeriodParam,
+  periodLabel,
+} from "../_shared/periods.js";
+import {
   emptyDownloadRollup,
   emptyVisitRollup,
   mergeDownloadRollups,
@@ -13,7 +19,7 @@ import {
   topN,
 } from "../_shared/rollup.js";
 
-const CACHE_TTL_SECONDS = 120;
+const CACHE_TTL_SECONDS = 300;
 
 function parseIntValue(raw) {
   return parseInt(raw || "0", 10);
@@ -49,13 +55,13 @@ function isKvLimitError(message) {
   return /kv get\(\) limit exceeded/i.test(message || "");
 }
 
-function buildDegradedStats(days, dates, warning) {
+function buildDegradedStats(period, dates, warning) {
   const emptyVisits = emptyVisitRollup();
   return {
     generated: new Date().toISOString(),
     degraded: true,
     warning,
-    period: { days, dates },
+    period: { id: period, label: periodLabel(period), dates },
     overview: {
       totalAllTime: 0,
       totalPageviews: 0,
@@ -105,9 +111,13 @@ function buildDegradedStats(days, dates, warning) {
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
-  const days = Math.min(parseInt(url.searchParams.get("days") || "7", 10), 30);
+  const period = parsePeriodParam(url);
   const drillDate = url.searchParams.get("date") || null;
-  const dates = drillDate ? [drillDate] : dateRange(days);
+  const periodDates = kvDatesForPeriod(period);
+  const dates = drillDate
+    ? [drillDate]
+    : periodDates || dateRange(30);
+  const useAllTimeTotals = isTotalPeriod(period) && !drillDate;
 
   try {
     const kv = getVisitorKv(env);
@@ -128,7 +138,7 @@ export async function onRequestGet(context) {
 
     const cache = caches.default;
     const cacheKey = new Request(
-      `${url.origin}${url.pathname}?days=${days}${drillDate ? `&date=${drillDate}` : ""}`,
+      `${url.origin}${url.pathname}?period=${period}${drillDate ? `&date=${drillDate}` : ""}`,
       { method: "GET" }
     );
     const cached = await cache.match(cacheKey);
@@ -221,6 +231,13 @@ export async function onRequestGet(context) {
       weekUniqueDownloaders += readInt(kvMap, `dl_uv_day_count:${date}`);
     }
 
+    if (useAllTimeTotals) {
+      periodPageviews = totalAllTime;
+      periodDownloads = totalDownloadsAllTime;
+      periodUniqueVisitors = uniqueVisitorsEver;
+      periodUniqueDownloaders = uniqueDownloadersEver;
+    }
+
     const totalPageviews = periodPageviews || mergedVisits.humanVisits + mergedVisits.botVisits;
     const avgLoadTime =
       mergedVisits.loadTimeCount > 0
@@ -246,7 +263,7 @@ export async function onRequestGet(context) {
     const response = new Response(
       JSON.stringify({
         generated: new Date().toISOString(),
-        period: { days, dates },
+        period: { id: period, label: periodLabel(period), dates },
         overview: {
           totalAllTime,
           totalPageviews,
@@ -307,7 +324,7 @@ export async function onRequestGet(context) {
       return new Response(
         JSON.stringify(
           buildDegradedStats(
-            days,
+            period,
             dates,
             "First-party counters paused for today — Cloudflare KV daily read limit reached. Resets at midnight UTC."
           )

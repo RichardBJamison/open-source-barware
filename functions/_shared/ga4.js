@@ -1,5 +1,11 @@
+import { ga4DateRange } from "./periods.js";
+
 const GA4_DATA_BASE = "https://analyticsdata.googleapis.com/v1beta/properties";
 const GA4_TOKEN_URL = "https://oauth2.googleapis.com/token";
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 let cachedToken = null;
 let cachedTokenExpiresAt = 0;
@@ -44,22 +50,31 @@ export async function getGa4AccessToken(env) {
   return cachedToken;
 }
 
-export async function ga4Report(accessToken, propertyId, body) {
-  const response = await fetch(`${GA4_DATA_BASE}/${propertyId}:runReport`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+export async function ga4Report(accessToken, propertyId, body, retries = 3) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const response = await fetch(`${GA4_DATA_BASE}/${propertyId}:runReport`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`GA4 report failed (${response.status}): ${text.slice(0, 200)}`);
+    if (response.status === 429 && attempt < retries) {
+      await sleep(Math.min(1000 * 2 ** attempt, 8000));
+      continue;
+    }
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`GA4 report failed (${response.status}): ${text.slice(0, 200)}`);
+    }
+
+    return response.json();
   }
 
-  return response.json();
+  throw new Error("GA4 report failed (429): rate limit exceeded after retries");
 }
 
 export async function ga4Realtime(accessToken, propertyId) {
@@ -90,40 +105,33 @@ function firstMetric(result, index = 0) {
   }
 }
 
-function periodDates(days) {
-  if (days <= 1) {
-    return { startDate: "today", endDate: "today" };
-  }
-  return { startDate: `${days}daysAgo`, endDate: "today" };
-}
+export async function collectSiteMetrics(accessToken, site, periodId) {
+  const range = ga4DateRange(periodId);
 
-export async function collectSiteMetrics(accessToken, site, days) {
-  const range = periodDates(days);
+  const core = await ga4Report(accessToken, site.propertyId, {
+    dateRanges: [range],
+    metrics: [
+      { name: "activeUsers" },
+      { name: "newUsers" },
+      { name: "sessions" },
+      { name: "screenPageViews" },
+      { name: "eventCount" },
+    ],
+  });
 
-  const [core, channels, pages] = await Promise.all([
-    ga4Report(accessToken, site.propertyId, {
-      dateRanges: [range],
-      metrics: [
-        { name: "activeUsers" },
-        { name: "newUsers" },
-        { name: "sessions" },
-        { name: "screenPageViews" },
-        { name: "eventCount" },
-      ],
-    }),
-    ga4Report(accessToken, site.propertyId, {
-      dateRanges: [range],
-      metrics: [{ name: "sessions" }],
-      dimensions: [{ name: "sessionDefaultChannelGrouping" }],
-      limit: 6,
-    }),
-    ga4Report(accessToken, site.propertyId, {
-      dateRanges: [range],
-      metrics: [{ name: "screenPageViews" }],
-      dimensions: [{ name: "pageTitle" }],
-      limit: 5,
-    }),
-  ]);
+  const channels = await ga4Report(accessToken, site.propertyId, {
+    dateRanges: [range],
+    metrics: [{ name: "sessions" }],
+    dimensions: [{ name: "sessionDefaultChannelGrouping" }],
+    limit: 6,
+  });
+
+  const pages = await ga4Report(accessToken, site.propertyId, {
+    dateRanges: [range],
+    metrics: [{ name: "screenPageViews" }],
+    dimensions: [{ name: "pageTitle" }],
+    limit: 5,
+  });
 
   const activeNow = await ga4Realtime(accessToken, site.propertyId);
 

@@ -317,13 +317,14 @@
 </div>
 
 <div class="controls" id="controls">
-  <button data-days="1" class="active">Today</button>
-  <button data-days="3">3 days</button>
-  <button data-days="7">7 days</button>
-  <button data-days="14">14 days</button>
-  <button data-days="30">30 days</button>
+  <button data-period="today" class="active">Today</button>
+  <button data-period="yesterday">Yesterday</button>
+  <button data-period="3d">3 days</button>
+  <button data-period="7d">7 days</button>
+  <button data-period="30d">30 days</button>
+  <button data-period="total">Total</button>
   <button id="refresh-btn" title="Refresh now">&#x21bb; Refresh</button>
-  <span class="refresh-info" id="last-refresh">Auto-refreshes every 60s</span>
+  <span class="refresh-info" id="last-refresh">Auto-refreshes every 5 min</span>
 </div>
 
 <div id="auth-gate" style="display:none;text-align:center;padding:80px 20px;">
@@ -341,11 +342,20 @@
 
 <script>
 (function() {
-  var currentDays = 1;
+  var currentPeriod = 'today';
   var refreshInterval;
   var STORAGE_KEY = 'osb-analytics-key';
   var analyticsKey = localStorage.getItem(STORAGE_KEY) || '';
-  var REFRESH_MS = 120000;
+  var REFRESH_MS = 300000;
+
+  var PERIOD_LABELS = {
+    today: 'Today',
+    yesterday: 'Yesterday',
+    '3d': '3 days',
+    '7d': '7 days',
+    '30d': '30 days',
+    total: 'Total'
+  };
 
   function $(id) { return document.getElementById(id); }
 
@@ -356,7 +366,7 @@
 
   // Auth via marketing-stats — no KV reads, so a valid key is not blocked by KV limits.
   function verifyKey(key, onSuccess, onFail) {
-    fetch('/api/marketing-stats?days=1&key=' + encodeURIComponent(key)).then(function(r) {
+    fetch('/api/marketing-stats?period=today&key=' + encodeURIComponent(key)).then(function(r) {
       if (r.status === 401) {
         onFail('Wrong password');
       } else if (r.ok) {
@@ -424,11 +434,11 @@
   }
 
   // Controls
-  document.querySelectorAll('[data-days]').forEach(function(btn) {
+  document.querySelectorAll('[data-period]').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      document.querySelectorAll('[data-days]').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('[data-period]').forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
-      currentDays = parseInt(btn.dataset.days, 10);
+      currentPeriod = btn.dataset.period;
       load();
     });
   });
@@ -491,8 +501,8 @@
     $('last-refresh').textContent = 'Loading...';
     var keyParam = analyticsKey ? '&key=' + encodeURIComponent(analyticsKey) : '';
     Promise.all([
-      fetchDashboardPart('/api/marketing-stats?days=' + currentDays + keyParam),
-      fetchDashboardPart('/api/stats?days=' + currentDays + keyParam)
+      fetchDashboardPart('/api/marketing-stats?period=' + currentPeriod + keyParam),
+      fetchDashboardPart('/api/stats?period=' + currentPeriod + keyParam)
     ])
       .then(function(results) {
         var marketingResult = results[0];
@@ -536,7 +546,9 @@
 
   function renderMarketing(marketing) {
     var t = marketing.totals;
-    var periodLabel = currentDays === 1 ? 'Today' : (currentDays + ' days');
+    var periodLabel = (marketing.period && marketing.period.label)
+      ? marketing.period.label
+      : (PERIOD_LABELS[currentPeriod] || currentPeriod);
     var html = '';
 
     html += '<div class="section">';
@@ -574,6 +586,9 @@
 
   function render(marketing, data) {
     var o = data.overview;
+    var periodLabel = (marketing.period && marketing.period.label)
+      ? marketing.period.label
+      : ((data.period && data.period.label) || PERIOD_LABELS[currentPeriod] || currentPeriod);
     $('live-count').textContent = (marketing.totals.activeNow || 0) + ' portfolio / ' + (o.liveNow || 0) + ' OSB';
     $('last-refresh').textContent = 'Updated ' + new Date(marketing.generated).toLocaleTimeString();
 
@@ -603,7 +618,7 @@
 
     // Period detail
     html += '<div class="grid">';
-    html += metricCard('Period Pageviews', fmt(o.totalPageviews), currentDays + '-day window');
+    html += metricCard('Period Pageviews', fmt(o.totalPageviews), periodLabel + ' window');
     html += metricCard('Period Unique Visitors', fmt(o.uniqueVisitors), pct(o.uniqueVisitors, o.totalPageviews) + ' of period');
     html += metricCard('Period Downloads', fmt(o.periodDownloads || 0), fmt(o.periodUniqueDownloaders || 0) + ' unique in period');
     html += metricCard('Human Visits', fmt(o.humanVisits), fmt(o.botVisits) + ' bots filtered');
