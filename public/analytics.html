@@ -326,7 +326,16 @@
   <span class="refresh-info" id="last-refresh">Auto-refreshes every 60s</span>
 </div>
 
-<div id="content">
+<div id="auth-gate" style="display:none;text-align:center;padding:80px 20px;">
+  <h2 style="color:var(--accent2);margin-bottom:16px;">Analytics Dashboard</h2>
+  <p style="color:var(--muted);margin-bottom:24px;font-size:14px;">Enter password to continue</p>
+  <input type="password" id="auth-input" placeholder="Password" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:6px;font-size:15px;width:240px;text-align:center;" autofocus>
+  <br>
+  <button id="auth-submit" style="margin-top:12px;background:var(--accent);color:#000;border:none;padding:8px 28px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">Unlock</button>
+  <p id="auth-error" style="color:var(--red);font-size:13px;margin-top:12px;display:none;">Wrong password</p>
+</div>
+
+<div id="content" style="display:none;">
   <div class="loading">Loading analytics...</div>
 </div>
 
@@ -334,8 +343,85 @@
 (function() {
   var currentDays = 1;
   var refreshInterval;
+  var STORAGE_KEY = 'osb-analytics-key';
+  var analyticsKey = localStorage.getItem(STORAGE_KEY) || '';
+  var REFRESH_MS = 120000;
 
   function $(id) { return document.getElementById(id); }
+
+  function authError(message) {
+    $('auth-error').textContent = message || 'Wrong password';
+    $('auth-error').style.display = 'block';
+  }
+
+  // Auth via marketing-stats — no KV reads, so a valid key is not blocked by KV limits.
+  function verifyKey(key, onSuccess, onFail) {
+    fetch('/api/marketing-stats?days=1&key=' + encodeURIComponent(key)).then(function(r) {
+      if (r.status === 401) {
+        onFail('Wrong password');
+      } else if (r.ok) {
+        onSuccess();
+      } else {
+        return r.json().catch(function() { return {}; }).then(function(body) {
+          onFail(body.error || ('Server error (HTTP ' + r.status + ')'));
+        });
+      }
+    }).catch(function() {
+      onFail('Network error — try again');
+    });
+  }
+
+  // Auth gate
+  function showGate() {
+    $('auth-gate').style.display = 'block';
+    $('content').style.display = 'none';
+    document.querySelector('.controls').style.display = 'none';
+    $('auth-input').focus();
+  }
+
+  function unlock(key) {
+    analyticsKey = key;
+    localStorage.setItem(STORAGE_KEY, key);
+    $('auth-gate').style.display = 'none';
+    $('content').style.display = 'block';
+    document.querySelector('.controls').style.display = 'flex';
+    load();
+    if (!refreshInterval) {
+      refreshInterval = setInterval(load, REFRESH_MS);
+    }
+  }
+
+  $('auth-submit').addEventListener('click', function() {
+    var val = $('auth-input').value.trim();
+    if (!val) return;
+    $('auth-error').style.display = 'none';
+    verifyKey(val, function() {
+      unlock(val);
+    }, function(msg) {
+      authError(msg);
+      if (msg === 'Wrong password') {
+        $('auth-input').value = '';
+        $('auth-input').focus();
+      }
+    });
+  });
+
+  $('auth-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') $('auth-submit').click();
+  });
+
+  // If we have a stored key, try it silently
+  if (analyticsKey) {
+    verifyKey(analyticsKey, function() {
+      unlock(analyticsKey);
+    }, function() {
+      localStorage.removeItem(STORAGE_KEY);
+      analyticsKey = '';
+      showGate();
+    });
+  } else {
+    showGate();
+  }
 
   // Controls
   document.querySelectorAll('[data-days]').forEach(function(btn) {
@@ -350,12 +436,13 @@
 
   function load() {
     $('last-refresh').textContent = 'Loading...';
+    var keyParam = analyticsKey ? '&key=' + encodeURIComponent(analyticsKey) : '';
     Promise.all([
-      fetch('/api/marketing-stats?days=' + currentDays).then(function(r) {
+      fetch('/api/marketing-stats?days=' + currentDays + keyParam).then(function(r) {
         if (!r.ok) throw new Error('marketing HTTP ' + r.status);
         return r.json();
       }),
-      fetch('/api/stats?days=' + currentDays).then(function(r) {
+      fetch('/api/stats?days=' + currentDays + keyParam).then(function(r) {
         if (!r.ok) throw new Error('OSB stats HTTP ' + r.status);
         return r.json();
       })
@@ -364,7 +451,19 @@
         render(results[0], results[1]);
       })
       .catch(function(err) {
-        $('content').innerHTML = '<div class="error">Failed to load analytics: ' + err.message + '</div>';
+        var msg = err.message || 'unknown error';
+        if (msg.indexOf('401') !== -1) {
+          localStorage.removeItem(STORAGE_KEY);
+          analyticsKey = '';
+          if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+          }
+          showGate();
+          authError('Session expired — enter password again');
+          return;
+        }
+        $('content').innerHTML = '<div class="error">Failed to load analytics: ' + esc(msg) + '</div>';
         $('last-refresh').textContent = 'Error — click refresh to retry';
       });
   }
@@ -614,9 +713,6 @@
     return t || 1;
   }
 
-  // Initial load + auto-refresh every 60s
-  load();
-  refreshInterval = setInterval(load, 60000);
 })();
 </script>
 </body>

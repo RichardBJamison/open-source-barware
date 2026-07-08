@@ -13,8 +13,13 @@ import {
   topN,
 } from "../_shared/rollup.js";
 
-async function getJson(kv, key, fallback) {
-  const raw = await kv.get(key);
+const CACHE_TTL_SECONDS = 120;
+
+function parseIntValue(raw) {
+  return parseInt(raw || "0", 10);
+}
+
+function parseJsonValue(raw, fallback) {
   if (!raw) return fallback;
   try {
     return JSON.parse(raw);
@@ -23,8 +28,21 @@ async function getJson(kv, key, fallback) {
   }
 }
 
-async function getInt(kv, key) {
-  return parseInt((await kv.get(key)) || "0", 10);
+async function fetchKvMap(kv, keys) {
+  const values = await Promise.all(keys.map((key) => kv.get(key)));
+  const map = new Map();
+  keys.forEach((key, index) => {
+    map.set(key, values[index]);
+  });
+  return map;
+}
+
+function readInt(map, key) {
+  return parseIntValue(map.get(key));
+}
+
+function readJson(map, key, fallback) {
+  return parseJsonValue(map.get(key), fallback);
 }
 
 // GET /api/stats — aggregated analytics dashboard data (get-only; no KV list())
@@ -51,6 +69,39 @@ export async function onRequestGet(context) {
     const dates = drillDate ? [drillDate] : dateRange(days);
     const today = todayUtc();
     const weekDates = dateRange(7);
+    const allDates = [...new Set([...dates, ...weekDates, today])];
+
+    const cache = caches.default;
+    const cacheKey = new Request(
+      `${url.origin}${url.pathname}?days=${days}${drillDate ? `&date=${drillDate}` : ""}`,
+      { method: "GET" }
+    );
+    const cached = await cache.match(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const keys = [
+      "total_visits",
+      "unique_visitors_ever",
+      "total_downloads",
+      "unique_downloaders_ever",
+    ];
+
+    for (const date of allDates) {
+      keys.push(
+        `visits_day:${date}`,
+        `downloads_day:${date}`,
+        `uv_day_count:${date}`,
+        `dl_uv_day_count:${date}`
+      );
+    }
+
+    for (const date of dates) {
+      keys.push(`rollup:pv:${date}`, `rollup:dl:${date}`);
+    }
+
+    const kvMap = await fetchKvMap(kv, keys);
 
     const visitRollups = [];
     const downloadRollups = [];
@@ -62,15 +113,12 @@ export async function onRequestGet(context) {
     let periodUniqueDownloaders = 0;
 
     for (const date of dates) {
-      const [dayViews, dayDownloads, dayUnique, dayDlUnique, visitRollup, downloadRollup] =
-        await Promise.all([
-          getInt(kv, `visits_day:${date}`),
-          getInt(kv, `downloads_day:${date}`),
-          getInt(kv, `uv_day_count:${date}`),
-          getInt(kv, `dl_uv_day_count:${date}`),
-          getJson(kv, `rollup:pv:${date}`, null),
-          getJson(kv, `rollup:dl:${date}`, null),
-        ]);
+      const dayViews = readInt(kvMap, `visits_day:${date}`);
+      const dayDownloads = readInt(kvMap, `downloads_day:${date}`);
+      const dayUnique = readInt(kvMap, `uv_day_count:${date}`);
+      const dayDlUnique = readInt(kvMap, `dl_uv_day_count:${date}`);
+      const visitRollup = readJson(kvMap, `rollup:pv:${date}`, null);
+      const downloadRollup = readJson(kvMap, `rollup:dl:${date}`, null);
 
       periodPageviews += dayViews;
       periodDownloads += dayDownloads;
@@ -97,25 +145,14 @@ export async function onRequestGet(context) {
       downloadRollups.length ? downloadRollups : [emptyDownloadRollup()]
     );
 
-    const [
-      totalAllTime,
-      uniqueVisitorsEver,
-      totalDownloadsAllTime,
-      uniqueDownloadersEver,
-      todayUniqueVisitors,
-      todayVisitTotal,
-      todayDownloads,
-      todayUniqueDownloaders,
-    ] = await Promise.all([
-      getInt(kv, "total_visits"),
-      getInt(kv, "unique_visitors_ever"),
-      getInt(kv, "total_downloads"),
-      getInt(kv, "unique_downloaders_ever"),
-      getInt(kv, `uv_day_count:${today}`),
-      getInt(kv, `visits_day:${today}`),
-      getInt(kv, `downloads_day:${today}`),
-      getInt(kv, `dl_uv_day_count:${today}`),
-    ]);
+    const totalAllTime = readInt(kvMap, "total_visits");
+    const uniqueVisitorsEver = readInt(kvMap, "unique_visitors_ever");
+    const totalDownloadsAllTime = readInt(kvMap, "total_downloads");
+    const uniqueDownloadersEver = readInt(kvMap, "unique_downloaders_ever");
+    const todayUniqueVisitors = readInt(kvMap, `uv_day_count:${today}`);
+    const todayVisitTotal = readInt(kvMap, `visits_day:${today}`);
+    const todayDownloads = readInt(kvMap, `downloads_day:${today}`);
+    const todayUniqueDownloaders = readInt(kvMap, `dl_uv_day_count:${today}`);
 
     let weekVisitTotal = 0;
     let weekDownloadTotal = 0;
@@ -123,10 +160,10 @@ export async function onRequestGet(context) {
     let weekUniqueDownloaders = 0;
 
     for (const date of weekDates) {
-      weekVisitTotal += await getInt(kv, `visits_day:${date}`);
-      weekDownloadTotal += await getInt(kv, `downloads_day:${date}`);
-      weekUniqueVisitors += await getInt(kv, `uv_day_count:${date}`);
-      weekUniqueDownloaders += await getInt(kv, `dl_uv_day_count:${date}`);
+      weekVisitTotal += readInt(kvMap, `visits_day:${date}`);
+      weekDownloadTotal += readInt(kvMap, `downloads_day:${date}`);
+      weekUniqueVisitors += readInt(kvMap, `uv_day_count:${date}`);
+      weekUniqueDownloaders += readInt(kvMap, `dl_uv_day_count:${date}`);
     }
 
     const totalPageviews = periodPageviews || mergedVisits.humanVisits + mergedVisits.botVisits;
@@ -146,7 +183,12 @@ export async function onRequestGet(context) {
       )
     );
 
-    return new Response(
+    const headers = {
+      ...cors(),
+      "Cache-Control": `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,
+    };
+
+    const response = new Response(
       JSON.stringify({
         generated: new Date().toISOString(),
         period: { days, dates },
@@ -166,7 +208,9 @@ export async function onRequestGet(context) {
           weekUniqueVisitors,
           weekVisitTotal,
           totalDownloadsAllTime,
-          periodDownloads: periodDownloads || Object.values(mergedDownloads.files || {}).reduce((a, b) => a + b, 0),
+          periodDownloads:
+            periodDownloads ||
+            Object.values(mergedDownloads.files || {}).reduce((a, b) => a + b, 0),
           periodUniqueDownloaders,
           uniqueDownloadersEver,
           todayDownloads,
@@ -193,8 +237,11 @@ export async function onRequestGet(context) {
           campaigns: topN(mergedVisits.utm_campaign, 10),
         },
       }),
-      { headers: cors() }
+      { headers }
     );
+
+    context.waitUntil(cache.put(cacheKey, response.clone()));
+    return response;
   } catch (err) {
     return jsonError(err.message || "stats aggregation failed");
   }

@@ -2,6 +2,8 @@ import { cors, jsonError } from "../_shared/kv.js";
 import { getGa4AccessToken, collectSiteMetrics } from "../_shared/ga4.js";
 import { MARKETING_SITES } from "../_shared/marketing-sites.js";
 
+const CACHE_TTL_SECONDS = 120;
+
 // GET /api/marketing-stats — GA4 pull for all marketing sites
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -20,6 +22,17 @@ export async function onRequestGet(context) {
     }
 
     const days = Math.min(parseInt(url.searchParams.get("days") || "1", 10), 30);
+
+    const cache = caches.default;
+    const cacheKey = new Request(
+      `${url.origin}${url.pathname}?days=${days}`,
+      { method: "GET" }
+    );
+    const cached = await cache.match(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const accessToken = await getGa4AccessToken(env);
 
     const results = await Promise.all(
@@ -73,15 +86,23 @@ export async function onRequestGet(context) {
       }
     );
 
-    return new Response(
+    const headers = {
+      ...cors(),
+      "Cache-Control": `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,
+    };
+
+    const response = new Response(
       JSON.stringify({
         generated: new Date().toISOString(),
         period: { days },
         totals,
         sites: results,
       }),
-      { headers: cors() }
+      { headers }
     );
+
+    context.waitUntil(cache.put(cacheKey, response.clone()));
+    return response;
   } catch (err) {
     return jsonError(err.message || "marketing stats failed");
   }
