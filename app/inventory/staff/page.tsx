@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useHydrated } from "@/components/dojo/useHydrated";
 
 const STORAGE_KEY = "osb_dojo_inventory_notes";
@@ -14,6 +14,25 @@ type InventoryNote = {
   source: "paste" | "file";
   fileName?: string;
 };
+
+const SEED_NOTES: InventoryNote[] = [
+  {
+    id: "seed-1",
+    text: "Welcome — managers upload inventory notes here (walk counts, station levels, mid-week catches). Paste a transcription or drop a .txt / .md export from phone Notes. EN + ES structure words work the same in the downloadable program.",
+    author: "System",
+    createdAt: "2026-01-01T12:00:00.000Z",
+    venue: "Company-wide",
+    source: "paste",
+  },
+  {
+    id: "seed-2",
+    text: "Well one, row one: Tito's 0.6, Ketel One 0.4, Tanqueray full. Patio well light on vodka — transfer before Friday count.",
+    author: "Bar Manager",
+    createdAt: "2026-01-01T11:00:00.000Z",
+    venue: "Your Bar 1",
+    source: "paste",
+  },
+];
 
 function loadNotes(): InventoryNote[] {
   if (typeof window === "undefined") return [];
@@ -29,6 +48,14 @@ function saveNotes(notes: InventoryNote[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notes.slice(0, 50)));
 }
 
+/** Read stored notes, seeding once if empty. Safe to call during client render. */
+function loadOrSeedNotes(): InventoryNote[] {
+  const existing = loadNotes();
+  if (existing.length > 0) return existing;
+  saveNotes(SEED_NOTES);
+  return SEED_NOTES;
+}
+
 function formatBytes(size: number) {
   if (size < 1024) return `${size} B`;
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
@@ -38,40 +65,18 @@ function formatBytes(size: number) {
 export default function InventoryStaffPage() {
   const hydrated = useHydrated();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [notes, setNotes] = useState<InventoryNote[]>([]);
+  const [notesOverride, setNotesOverride] = useState<InventoryNote[] | null>(null);
   const [text, setText] = useState("");
   const [author, setAuthor] = useState("Manager");
   const [status, setStatus] = useState("");
   const [pendingFileName, setPendingFileName] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    const existing = loadNotes();
-    if (existing.length === 0) {
-      const seed: InventoryNote[] = [
-        {
-          id: "seed-1",
-          text: "Welcome — managers upload inventory notes here (walk counts, station levels, mid-week catches). Paste a transcription or drop a .txt / .md export from phone Notes. EN + ES structure words work the same in the downloadable program.",
-          author: "System",
-          createdAt: new Date().toISOString(),
-          venue: "Company-wide",
-          source: "paste",
-        },
-        {
-          id: "seed-2",
-          text: "Well one, row one: Tito's 0.6, Ketel One 0.4, Tanqueray full. Patio well light on vodka — transfer before Friday count.",
-          author: "Bar Manager",
-          createdAt: new Date(Date.now() - 3600_000).toISOString(),
-          venue: "Your Bar 1",
-          source: "paste",
-        },
-      ];
-      saveNotes(seed);
-      setNotes(seed);
-    } else {
-      setNotes(existing);
-    }
-  }, [hydrated]);
+  const notes = notesOverride ?? (hydrated ? loadOrSeedNotes() : []);
+
+  const persist = (list: InventoryNote[]) => {
+    saveNotes(list);
+    setNotesOverride(list);
+  };
 
   const addNote = (body: string, source: "paste" | "file", fileName?: string) => {
     const trimmed = body.trim();
@@ -88,9 +93,7 @@ export default function InventoryStaffPage() {
       source,
       fileName,
     };
-    const list = [next, ...notes];
-    setNotes(list);
-    saveNotes(list);
+    persist([next, ...notes]);
     setText("");
     setPendingFileName(null);
     setStatus(
@@ -100,7 +103,8 @@ export default function InventoryStaffPage() {
     );
   };
 
-  const savePaste = () => addNote(text, pendingFileName ? "file" : "paste", pendingFileName || undefined);
+  const savePaste = () =>
+    addNote(text, pendingFileName ? "file" : "paste", pendingFileName || undefined);
 
   const onFile = async (files: FileList | null) => {
     if (!files?.length) return;
@@ -126,9 +130,7 @@ export default function InventoryStaffPage() {
   };
 
   const remove = (id: string) => {
-    const list = notes.filter((n) => n.id !== id);
-    setNotes(list);
-    saveNotes(list);
+    persist(notes.filter((n) => n.id !== id));
   };
 
   if (!hydrated) {
