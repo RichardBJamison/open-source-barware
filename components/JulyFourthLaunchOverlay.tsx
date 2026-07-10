@@ -43,17 +43,23 @@ export default function JulyFourthLaunchOverlay() {
     searchParams.get("preview") === "v15" ||
     searchParams.get("announce") === "1";
 
+  // Emergency: auto-popup was trapping the home page (body lock + full-screen
+  // dim). Only show when explicitly forced or ?announce=1 until re-enabled.
+  const autoPopupEnabled = false;
+
   const enterSite = useCallback(() => {
     setDismissed(true);
-    setTimeout(() => setVisible(false), 280);
+    setVisible(false);
+    document.body.style.overflow = "";
     if (!previewParam && !forceOverlay) {
-      localStorage.setItem(STORAGE_KEY, "1");
+      try {
+        localStorage.setItem(STORAGE_KEY, "1");
+      } catch {
+        /* private mode */
+      }
     }
-    // Stay on current path if already browsing; default home when forced.
-    if (pathname === "/" || !pathname) {
-      router.push("/");
-    }
-  }, [previewParam, forceOverlay, pathname, router]);
+    // Do not router.push("/") — that re-mounted the tree and felt "broken".
+  }, [previewParam, forceOverlay]);
 
   useEffect(() => {
     if (!visible || dismissed) return;
@@ -67,15 +73,19 @@ export default function JulyFourthLaunchOverlay() {
     const eligible =
       previewParam ||
       forceOverlay ||
-      shouldShowPreLaunchOverlay(t, { preview: previewParam, forceOverlay }) ||
-      shouldShowPostLaunchOverlay(t, { preview: previewParam, forceOverlay });
+      (autoPopupEnabled &&
+        (shouldShowPreLaunchOverlay(t, { preview: previewParam, forceOverlay }) ||
+          shouldShowPostLaunchOverlay(t, {
+            preview: previewParam,
+            forceOverlay,
+          })));
     if (!eligible) return;
     if (!previewParam && !forceOverlay && localStorage.getItem(STORAGE_KEY)) {
       return;
     }
     const timer = setTimeout(() => setVisible(true), 500);
     return () => clearTimeout(timer);
-  }, [pathname, forceOverlay, previewParam]);
+  }, [pathname, forceOverlay, previewParam, autoPopupEnabled]);
 
   useEffect(() => {
     if (!visible || dismissed) return;
