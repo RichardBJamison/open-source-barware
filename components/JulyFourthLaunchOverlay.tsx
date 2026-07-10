@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
   NEXT_DROP_LABEL,
@@ -28,7 +28,6 @@ const GITHUB_URL = "https://github.com/RichardBJamison/open-source-barware";
 
 export default function JulyFourthLaunchOverlay() {
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -36,30 +35,27 @@ export default function JulyFourthLaunchOverlay() {
     typeof window !== "undefined" ? Date.now() : 0,
   );
 
-  const forceOverlay = process.env.NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY === "true";
+  // Manual preview only. Auto-popup disabled — it locked body scroll and
+  // blocked the site. Re-enable later by flipping AUTO_ANNOUNCE_POPUP.
+  const AUTO_ANNOUNCE_POPUP = false;
   const previewParam =
     searchParams.get("preview") === "july4" ||
     searchParams.get("july4") === "1" ||
     searchParams.get("preview") === "v15" ||
     searchParams.get("announce") === "1";
 
-  // Emergency: auto-popup was trapping the home page (body lock + full-screen
-  // dim). Only show when explicitly forced or ?announce=1 until re-enabled.
-  const autoPopupEnabled = false;
-
   const enterSite = useCallback(() => {
     setDismissed(true);
     setVisible(false);
-    document.body.style.overflow = "";
-    if (!previewParam && !forceOverlay) {
-      try {
-        localStorage.setItem(STORAGE_KEY, "1");
-      } catch {
-        /* private mode */
-      }
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "";
     }
-    // Do not router.push("/") — that re-mounted the tree and felt "broken".
-  }, [previewParam, forceOverlay]);
+    try {
+      localStorage.setItem(STORAGE_KEY, "1");
+    } catch {
+      /* private mode */
+    }
+  }, []);
 
   useEffect(() => {
     if (!visible || dismissed) return;
@@ -69,26 +65,35 @@ export default function JulyFourthLaunchOverlay() {
 
   useEffect(() => {
     if (pathname?.startsWith("/inventory")) return;
-    const t = Date.now();
+    // Hard gate: nothing shows unless preview query (or AUTO re-enabled).
+    const forceEnv = process.env.NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY === "true";
     const eligible =
       previewParam ||
-      forceOverlay ||
-      (autoPopupEnabled &&
-        (shouldShowPreLaunchOverlay(t, { preview: previewParam, forceOverlay }) ||
-          shouldShowPostLaunchOverlay(t, {
+      (AUTO_ANNOUNCE_POPUP &&
+        (forceEnv ||
+          shouldShowPreLaunchOverlay(Date.now(), {
             preview: previewParam,
-            forceOverlay,
+            forceOverlay: forceEnv,
+          }) ||
+          shouldShowPostLaunchOverlay(Date.now(), {
+            preview: previewParam,
+            forceOverlay: forceEnv,
           })));
-    if (!eligible) return;
-    if (!previewParam && !forceOverlay && localStorage.getItem(STORAGE_KEY)) {
+    if (!eligible) {
+      setVisible(false);
+      if (typeof document !== "undefined") document.body.style.overflow = "";
       return;
     }
-    const timer = setTimeout(() => setVisible(true), 500);
+    if (!previewParam && localStorage.getItem(STORAGE_KEY)) return;
+    const timer = setTimeout(() => setVisible(true), 400);
     return () => clearTimeout(timer);
-  }, [pathname, forceOverlay, previewParam, autoPopupEnabled]);
+  }, [pathname, previewParam]);
 
   useEffect(() => {
-    if (!visible || dismissed) return;
+    if (!visible || dismissed) {
+      if (typeof document !== "undefined") document.body.style.overflow = "";
+      return;
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") enterSite();
     };
@@ -100,7 +105,7 @@ export default function JulyFourthLaunchOverlay() {
     };
   }, [visible, dismissed, enterSite]);
 
-  if (!visible) return null;
+  if (!visible || dismissed) return null;
 
   const countdown = getNextDropCountdown(now);
   const dropLive = countdown.finished;
@@ -244,11 +249,16 @@ export default function JulyFourthLaunchOverlay() {
             <Link
               href="/download"
               onClick={() => {
-                if (!previewParam && !forceOverlay) {
+                try {
                   localStorage.setItem(STORAGE_KEY, "1");
+                } catch {
+                  /* private mode */
                 }
                 setDismissed(true);
-                setTimeout(() => setVisible(false), 280);
+                setVisible(false);
+                if (typeof document !== "undefined") {
+                  document.body.style.overflow = "";
+                }
               }}
               className="announce-cta-primary block w-full py-3.5 text-center text-sm font-black uppercase tracking-[0.16em]"
             >
