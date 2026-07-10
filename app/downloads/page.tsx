@@ -186,14 +186,15 @@ export default function DownloadsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
               <p className="text-[11px] tracking-[0.3em] uppercase text-patina-light mb-3">
-                Version 1.5 · Spanish-ready notes
+                Free program now · v1.5 Friday July 17 · 7pm ET
               </p>
               <h2 className="font-serif text-2xl md:text-3xl text-cream mb-2">
                 Ready to install the Chrome program?
               </h2>
               <p className="text-text-muted text-sm leading-relaxed max-w-xl">
-                Mac and Windows installers for v1.5 — mobile counting, POS, multi-venue,
-                Spanish walk/count notes, and more. Join the release list on the download page.
+                Mac and Windows installers for the free launch build. Version 1.5 is not
+                out yet — it drops Friday, July 17 at 7pm Eastern. Join the release list
+                on the download page.
               </p>
             </div>
             <Link
@@ -425,33 +426,33 @@ export default function DownloadsPage() {
             </span>
           </h2>
           <p className="text-text-muted mb-16 max-w-lg">
-            v1.5 ships the Chrome program feature set. Next: full Spanish UI and
-            the Intelligent Hospitality Systems restaurant package.
+            Free launch build is live. Version 1.5 is not out yet — it drops
+            Friday, July 17 at 7pm Eastern with the expanded feature set.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <PhaseCard
               number="I"
-              title="Shipped · v1.0–v1.5"
-              timing="July 2026"
+              title="Shipped · free launch"
+              timing="July 4, 2026"
               status="active"
               items={[
                 "Walk · count · process core",
-                "Mobile count + camera barcode",
-                "POS import, smart orders, receiving",
-                "Spanish-ready inventory notes (MX)",
+                "Chrome program Mac + Windows",
+                "Local-first, no subscription",
+                "Community open source (GPLv3)",
               ]}
             />
             <PhaseCard
               number="II"
-              title="Next Friday"
-              timing="July 17 · 6pm ET"
+              title="v1.5 drop"
+              timing="July 17 · 7pm ET"
               status="next"
               items={[
-                "Full Spanish program UI",
-                "Intelligent Hospitality Systems teaser",
-                "Restaurant inventory package",
-                "Community feedback loop",
+                "Spanish-ready inventory notes",
+                "Mobile count + barcode + POS",
+                "Multi-venue + receiving",
+                "IHS restaurant package teaser",
               ]}
             />
             <PhaseCard
@@ -460,8 +461,8 @@ export default function DownloadsPage() {
               timing="Post–July 17"
               status="planned"
               items={[
+                "Full Spanish program UI",
                 "PWA / installable mobile shell",
-                "Expanded bottle-weights seed",
                 "Food / retail / supplies (paid tier)",
                 "Keg tools & larger product DB",
               ]}

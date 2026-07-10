@@ -10,8 +10,8 @@ import {
   shouldShowPreLaunchOverlay,
 } from "@/lib/launch-gate";
 
-// Bumped so returning visitors see the clean v1.5 modal (not the fireworks shell).
-const STORAGE_KEY = "osb-announce-v10-v15-clean";
+// Bumped when timer/copy changes so returning visitors see the update.
+const STORAGE_KEY = "osb-announce-v11-v15-friday-7pm";
 
 const V15_FEATURES = [
   "Spanish + English inventory notes",
@@ -133,7 +133,9 @@ export default function JulyFourthLaunchOverlay() {
             </svg>
           </button>
 
-          <p className="announce-badge mb-4">v1.5 &middot; now shipping</p>
+          <p className="announce-badge mb-4">
+            {dropLive ? "v1.5 · live" : "v1.5 · not yet — timer below"}
+          </p>
 
           <h1
             id="announce-headline"
@@ -161,18 +163,39 @@ export default function JulyFourthLaunchOverlay() {
               the repo, and putting the program on real bars.
             </p>
             <p>
-              <strong className="text-cream">v1.5 is here</strong>
-              {" "}&mdash; more than we planned for this cycle. Spanish-ready
-              walk and count notes for bilingual floors, plus the full feature
-              set we promised after launch.
+              <strong className="text-cream">v1.5 is not out yet.</strong>{" "}
+              The free program you can download today is the open launch build.
+              Version 1.5 drops on the timer below &mdash; Spanish-ready notes,
+              mobile counting, POS, multi-venue, and the rest of the feature set
+              we promised after the Fourth.
             </p>
           </div>
 
-          <div className="mt-5 rounded-sm border border-white/10 bg-black/30 px-4 py-4 text-left">
+          <div className="mt-4 rounded-sm border border-copper/35 bg-copper/10 px-4 py-4 text-left">
             <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-copper-bright">
-              In this package &mdash; v1.5
+              v1.5 drop &mdash; {NEXT_DROP_LABEL}
             </p>
-            <ul className="mt-3 grid grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
+            {!dropLive ? (
+              <>
+                <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+                  <TimeBlock value={countdown.days} label="Days" />
+                  <TimeBlock value={countdown.hours} label="Hours" />
+                  <TimeBlock value={countdown.minutes} label="Mins" />
+                  <TimeBlock value={countdown.seconds} label="Secs" />
+                </div>
+                <p className="mt-3 text-center text-[11px] uppercase tracking-[0.18em] text-text-light">
+                  Drops at 7pm Eastern
+                </p>
+              </>
+            ) : (
+              <p className="mt-3 text-sm text-cream">
+                v1.5 is live &mdash; grab it on the Download page.
+              </p>
+            )}
+            <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-copper-bright">
+              What lands in v1.5
+            </p>
+            <ul className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
               {V15_FEATURES.map((feature) => (
                 <li
                   key={feature}
@@ -185,39 +208,11 @@ export default function JulyFourthLaunchOverlay() {
                 </li>
               ))}
             </ul>
-          </div>
-
-          <div className="mt-4 rounded-sm border border-copper/35 bg-copper/10 px-4 py-4 text-left">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-copper-bright">
-              Next drop &mdash; {NEXT_DROP_LABEL}
-            </p>
-            {!dropLive ? (
-              <>
-                <div className="mt-3 grid grid-cols-4 gap-2 text-center">
-                  <TimeBlock value={countdown.days} label="Days" />
-                  <TimeBlock value={countdown.hours} label="Hours" />
-                  <TimeBlock value={countdown.minutes} label="Mins" />
-                  <TimeBlock value={countdown.seconds} label="Secs" />
-                </div>
-                <p className="mt-3 text-center text-[11px] uppercase tracking-[0.18em] text-text-light">
-                  Drops at 6pm Eastern
-                </p>
-              </>
-            ) : (
-              <p className="mt-3 text-sm text-cream">
-                The Friday drop window is open &mdash; check Download for the
-                latest package.
-              </p>
-            )}
             <p className="mt-3 text-[0.85rem] leading-relaxed text-cream">
-              <strong>Full Spanish program UI</strong> (Mexican Spanish)
-              {" "}&mdash; not just notes, the whole experience.
-            </p>
-            <p className="mt-2 text-[0.85rem] leading-relaxed text-cream">
-              Plus a first look at{" "}
+              Same Friday window: first look at{" "}
               <strong>Intelligent Hospitality Systems</strong>
-              {" "}&mdash; full restaurant inventory (food, retail, supplies,
-              and the bells and whistles).
+              {" "}&mdash; full restaurant inventory for houses that outgrow
+              bar-only.
             </p>
           </div>
 
@@ -247,7 +242,7 @@ export default function JulyFourthLaunchOverlay() {
               }}
               className="announce-cta-primary block w-full py-3.5 text-center text-sm font-black uppercase tracking-[0.16em]"
             >
-              Download v1.5
+              {dropLive ? "Download v1.5" : "Download free program"}
             </Link>
             <button
               type="button"

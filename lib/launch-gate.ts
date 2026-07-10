@@ -3,9 +3,9 @@ export const LAUNCH_MS = new Date("2026-07-04T22:00:00-04:00").getTime();
 export const LAUNCH_OVERLAY_END_MS = new Date("2026-07-18T23:59:59-04:00").getTime();
 export const LAUNCH_LABEL = "July 4 at 10pm";
 
-/** Next drop: full Spanish UI + Intelligent Hospitality Systems teaser */
-export const NEXT_DROP_MS = new Date("2026-07-17T18:00:00-04:00").getTime();
-export const NEXT_DROP_LABEL = "Friday, July 17 at 6pm Eastern";
+/** Next drop: v1.5 + Spanish UI teaser + Intelligent Hospitality Systems */
+export const NEXT_DROP_MS = new Date("2026-07-17T19:00:00-04:00").getTime();
+export const NEXT_DROP_LABEL = "Friday, July 17 at 7pm Eastern";
 
 /** Richard flips this off in env when installers are ready to ship. */
 export function isManualDownloadLockOn() {
@@ -97,7 +97,7 @@ export function getLaunchCountdown(now = Date.now()) {
   return countdownParts(LAUNCH_MS, now);
 }
 
-/** Countdown to Friday July 17 · 6pm Eastern drop. */
+/** Countdown to Friday July 17 · 7pm Eastern drop. */
 export function getNextDropCountdown(now = Date.now()) {
   return countdownParts(NEXT_DROP_MS, now);
 }
