@@ -43,6 +43,7 @@ const PROGRAM_FILES = [
   "Stop.bat",
   "start-server.ps1",
   "scripts/windows-vc.ps1",
+  "data/bottle-weights.json",
   "static/downloads/Bar-Inventory-Master.xlsx",
   "static/setup.html",
   "static/home.html",

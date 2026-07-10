@@ -9,33 +9,40 @@ Butterfly:   home base admin panel (metrics, spreadsheets, in-house inventory)
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import json
 import math
 import os
 import re
+import secrets
 import urllib.error
 
 import uuid
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from functools import wraps
 from typing import Any
 
-from flask import Flask, Response, jsonify, redirect, request, send_from_directory
+from flask import Flask, Response, jsonify, redirect, request, send_from_directory, session
 
-VERSION = "0.3.0-butterfly-2026-07-04"
+VERSION = "1.5.0-v1.5-phase4-es-notes-2026-07-10"  # V1.5 Phase 4.4 Spanish walk/count structure
 PORT = int(os.environ.get("PORT", "5052"))
 DEMO_MODE = os.environ.get("OSB_DEMO_MODE", "1") != "0"
 
 _DIR = os.path.dirname(os.path.abspath(__file__))
 _STATIC = os.path.join(_DIR, "static")
 _IS_VERCEL = bool(os.environ.get("VERCEL"))
-_DATA = os.environ.get("OSB_DATA_DIR") or (
+_DATA_DIR_OVERRIDE = os.environ.get("OSB_DATA_DIR")
+_DATA = _DATA_DIR_OVERRIDE or (
     "/tmp/osb-data" if _IS_VERCEL else os.path.join(_DIR, "data")
 )
+# Config lives next to server for normal installs; when OSB_DATA_DIR is set
+# (sandbox / stress / multi-instance), keep config inside that dir so instances
+# never share active_bar_id or phase with each other or with production.
 _CONFIG_FILE = (
     os.path.join(_DATA, "osb_config.json")
-    if _IS_VERCEL
+    if (_IS_VERCEL or _DATA_DIR_OVERRIDE)
     else os.path.join(_DIR, "osb_config.json")
 )
 _STATE_FILE = os.path.join(_DATA, "program_state.json")
@@ -43,8 +50,21 @@ _BAR_FILE = os.path.join(_DATA, "bar_data.json")
 _BARS_FILE = os.path.join(_DATA, "bars.json")
 _POS_DIR = os.path.join(_DATA, "pos")
 _SECRETS_FILE = os.path.join(_DATA, "ai_secrets.json")
+_PEOPLE_FILE = os.path.join(_DATA, "people.json")
+_STAFF_BOARD_FILE = os.path.join(_DATA, "staff_board.json")
+_SESSION_SECRET_FILE = os.path.join(_DATA, "session_secret.txt")
 
 from invoice_parse import parse_invoice  # noqa: E402
+
+# V1.5 weight support
+WEIGHTS_FILE = os.path.join(_DIR, "data", "bottle-weights.json")
+def load_bottle_weights():
+    try:
+        with open(WEIGHTS_FILE) as f:
+            data = json.load(f)
+            return data.get("weights", {})
+    except Exception:
+        return {}
 
 PHASES = (
     "welcome",
@@ -118,9 +138,51 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "panel_title": "",
         "logo_data_url": "",
     },
+    # V1.5 optional weighing mode (for digital scale accuracy). Default off so existing venues are unaffected.
+    "weigh_enabled": False,
+    "weigh_note": "Optional: enable for weight-based counting. Prepare for future Bluetooth scale add-on.",
 }
 
 app = Flask(__name__, static_folder=_STATIC, static_url_path="/static")
+
+
+def _ensure_session_secret() -> str:
+    os.makedirs(_DATA, exist_ok=True)
+    if os.path.isfile(_SESSION_SECRET_FILE):
+        with open(_SESSION_SECRET_FILE, encoding="utf-8") as fh:
+            key = fh.read().strip()
+            if key:
+                return key
+    key = secrets.token_hex(32)
+    with open(_SESSION_SECRET_FILE, "w", encoding="utf-8") as fh:
+        fh.write(key)
+    return key
+
+
+app.secret_key = _ensure_session_secret()
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=14)
+
+# V1.5 team access — default manager permissions (admin overrides per person)
+DEFAULT_MANAGER_PERMISSIONS: dict[str, bool] = {
+    "dashboard": True,
+    "count": True,
+    "mobile_count": True,
+    "inputs": True,
+    "inhouse": True,
+    "reports": True,  # own venue only
+    "spreadsheets": False,
+    "recipes": False,
+    "smart_orders": False,
+    "transfers": False,
+    "settings": False,
+    "people": False,
+    "staff_board": True,
+    "other_venues": False,
+}
+
+ADMIN_PERMISSIONS: dict[str, bool] = {k: True for k in DEFAULT_MANAGER_PERMISSIONS}
 
 
 def _now() -> str:
@@ -201,6 +263,134 @@ def _ai_credentials(cfg: dict[str, Any]) -> tuple[str, str]:
     return secrets.get("api_key", ""), secrets.get("provider") or cfg.get("ai_provider") or "claude"
 
 
+# ── People / PIN auth / staff board (V1.5 Phase 4.3) ─────────────────────────
+
+def _load_people() -> dict[str, Any]:
+    data = _read_json(_PEOPLE_FILE, {"users": [], "auth_enabled": False})
+    if not isinstance(data, dict):
+        data = {"users": [], "auth_enabled": False}
+    data.setdefault("users", [])
+    data.setdefault("auth_enabled", bool(data.get("users")))
+    return data
+
+
+def _save_people(data: dict[str, Any]) -> dict[str, Any]:
+    data.setdefault("users", [])
+    data["auth_enabled"] = bool(any(u.get("active", True) for u in data["users"]))
+    _write_json(_PEOPLE_FILE, data)
+    try:
+        os.chmod(_PEOPLE_FILE, 0o600)
+    except OSError:
+        pass
+    return data
+
+
+def _valid_pin(pin: str) -> bool:
+    return bool(re.fullmatch(r"\d{6}", (pin or "").strip()))
+
+
+def _hash_pin(pin: str, salt: str | None = None) -> tuple[str, str]:
+    salt = salt or secrets.token_hex(16)
+    digest = hashlib.sha256(f"{salt}:{pin.strip()}".encode("utf-8")).hexdigest()
+    return digest, salt
+
+
+def _check_pin(pin: str, pin_hash: str, salt: str) -> bool:
+    if not pin_hash or not salt:
+        return False
+    digest, _ = _hash_pin(pin, salt)
+    return secrets.compare_digest(digest, pin_hash)
+
+
+def _user_public(u: dict[str, Any]) -> dict[str, Any]:
+    role = u.get("role") or "manager"
+    perms = dict(ADMIN_PERMISSIONS if role == "admin" else DEFAULT_MANAGER_PERMISSIONS)
+    perms.update(u.get("permissions") or {})
+    if role == "admin":
+        perms = dict(ADMIN_PERMISSIONS)
+    return {
+        "id": u.get("id"),
+        "name": u.get("name") or "",
+        "login": u.get("login") or "",
+        "role": role,
+        "venue_id": u.get("venue_id") or None,
+        "active": bool(u.get("active", True)),
+        "permissions": perms,
+        "created_at": u.get("created_at"),
+        "updated_at": u.get("updated_at"),
+        "has_pin": bool(u.get("pin_hash")),
+    }
+
+
+def _find_user(people: dict[str, Any], user_id: str | None = None, login: str | None = None):
+    for u in people.get("users") or []:
+        if user_id and u.get("id") == user_id:
+            return u
+        if login and (u.get("login") or "").lower() == login.strip().lower():
+            return u
+    return None
+
+
+def _session_user() -> dict[str, Any] | None:
+    uid = session.get("user_id")
+    if not uid:
+        return None
+    people = _load_people()
+    u = _find_user(people, user_id=uid)
+    if not u or not u.get("active", True):
+        session.clear()
+        return None
+    return _user_public(u)
+
+
+def _auth_status() -> dict[str, Any]:
+    people = _load_people()
+    users = [u for u in people.get("users") or [] if u.get("active", True)]
+    enabled = bool(users)
+    current = _session_user() if enabled else {
+        "id": "open-admin",
+        "name": "Admin",
+        "login": "admin",
+        "role": "admin",
+        "venue_id": None,
+        "active": True,
+        "permissions": dict(ADMIN_PERMISSIONS),
+        "open_mode": True,
+    }
+    return {
+        "auth_enabled": enabled,
+        "logged_in": bool(current) if enabled else True,
+        "user": current,
+        "users_public": [
+            {"id": u.get("id"), "name": u.get("name"), "login": u.get("login"), "role": u.get("role")}
+            for u in users
+        ],
+    }
+
+
+def _require_admin():
+    st = _auth_status()
+    if not st["auth_enabled"]:
+        return None  # open mode = admin
+    user = st.get("user")
+    if not user or user.get("role") != "admin":
+        return jsonify({"error": "Admin only"}), 403
+    return None
+
+
+def _load_staff_board() -> dict[str, Any]:
+    data = _read_json(_STAFF_BOARD_FILE, {"posts": []})
+    if not isinstance(data, dict):
+        data = {"posts": []}
+    data.setdefault("posts", [])
+    return data
+
+
+def _save_staff_board(data: dict[str, Any]) -> dict[str, Any]:
+    _write_json(_STAFF_BOARD_FILE, data)
+    return data
+
+
 def _save_config(patch: dict[str, Any]) -> dict[str, Any]:
     cfg = _load_config()
     if "cycle" in patch and isinstance(patch["cycle"], dict):
@@ -212,7 +402,7 @@ def _save_config(patch: dict[str, Any]) -> dict[str, Any]:
 
 
 def _load_state() -> dict[str, Any]:
-    return _read_json(
+    state = _read_json(
         _STATE_FILE,
         {
             "updated_at": None,
@@ -221,8 +411,11 @@ def _load_state() -> dict[str, Any]:
             "approved_map": None,
             "cycles": [],
             "metrics_cache": {},
+            "transfers": [],
         },
     )
+    state.setdefault("transfers", [])
+    return state
 
 
 def _save_state(patch: dict[str, Any]) -> dict[str, Any]:
@@ -356,7 +549,16 @@ def _setup_bar_id(cfg: dict[str, Any] | None = None) -> str:
 def _load_bar(bar_id: str | None = None) -> dict[str, Any]:
     registry = _load_bars_registry()
     cfg = _load_config()
-    bid = bar_id or _setup_bar_id(cfg)
+    if bar_id:
+        bid = bar_id
+    else:
+        # Day-to-day (butterfly): always follow the venue switcher (active_bar_id).
+        # Setup flows still prefer setup_bar_id via _setup_bar_id.
+        phase = cfg.get("phase", "welcome")
+        if phase == "butterfly" and cfg.get("active_bar_id"):
+            bid = cfg["active_bar_id"]
+        else:
+            bid = _setup_bar_id(cfg)
     if not bid:
         return _empty_bar_record(cfg.get("bar_name", ""))
     _, bar = _find_bar(registry, bid)
@@ -405,15 +607,74 @@ def _save_bar_setup(bar_id: str, patch: dict[str, Any]) -> dict[str, Any]:
 
 def _bar_public_summary(bar: dict[str, Any]) -> dict[str, Any]:
     setup = bar.get("setup", {})
+    stats = _bar_inventory_stats(bar)
+    total_value = 0.0
+    for _st, bottle in _iter_bar_bottles(bar):
+        total_value += float(bottle.get("cost") or 0) * float(bottle.get("current_level") or 0)
     return {
         "id": bar.get("id"),
         "name": bar.get("name", ""),
         "station_count": len(bar.get("stations", [])),
         "bottle_count": _bar_bottle_count(bar),
+        "below_par": stats.get("below_par", 0),
+        "total_value": round(total_value, 2),
         "map_approved": bool(setup.get("map_approved")),
         "first_count_complete": bool(setup.get("first_count_complete")),
         "updated_at": bar.get("updated_at"),
     }
+
+
+def _norm_product_key(name: str, size: str = "") -> tuple[str, str]:
+    n = re.sub(r"\s+", " ", (name or "").strip().lower())
+    s = re.sub(r"\s+", "", (size or "").strip().lower())
+    return n, s
+
+
+def _find_bottle_by_id(bar: dict[str, Any], bottle_id: str):
+    for station, bottle in _iter_bar_bottles(bar):
+        if bottle.get("id") == bottle_id:
+            return station, bottle
+    return None, None
+
+
+def _find_matching_bottle(bar: dict[str, Any], name: str, size: str = ""):
+    """Match by name+size first, then name only."""
+    nn, ns = _norm_product_key(name, size)
+    if not nn:
+        return None, None
+    # exact name+size
+    for station, bottle in _iter_bar_bottles(bar):
+        bn, bs = _norm_product_key(str(bottle.get("name") or ""), str(bottle.get("size") or ""))
+        if bn == nn and (not ns or bs == ns):
+            return station, bottle
+    # name only
+    for station, bottle in _iter_bar_bottles(bar):
+        bn, _ = _norm_product_key(str(bottle.get("name") or ""), "")
+        if bn == nn:
+            return station, bottle
+    return None, None
+
+
+def _ensure_station(bar: dict[str, Any], station_name: str = "Transfers in") -> dict[str, Any]:
+    for st in bar.get("stations") or []:
+        if (st.get("name") or "").strip().lower() == station_name.lower():
+            return st
+    # fall back to first station if any
+    if bar.get("stations"):
+        return bar["stations"][0]
+    st = {"id": _uid("st-"), "name": station_name, "bottles": []}
+    bar.setdefault("stations", []).append(st)
+    return st
+
+
+def _append_transfer_log(entry: dict[str, Any]) -> list[dict[str, Any]]:
+    state = _load_state()
+    transfers = list(state.get("transfers") or [])
+    transfers.insert(0, entry)
+    # keep last 200
+    transfers = transfers[:200]
+    _save_state({"transfers": transfers})
+    return transfers
 
 
 def _infer_bar_setup_phase(bar: dict[str, Any]) -> str:
@@ -860,6 +1121,21 @@ def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, An
     cost_weighted = 0.0
     cost_items = 0
 
+    # V1.5: aggregate recent POS sales for variance
+    pos_log = _load_pos_log(bar_id)
+    sales_by_name: dict[str, float] = {}
+    purchases_by_name: dict[str, float] = {}
+    for entry in pos_log.get("entries", [])[:5]:  # recent
+        itype = entry.get("input_type", "pos")
+        parsed = entry.get("parsed_pos") or {}
+        for line in parsed.get("lines", []):
+            name = (line.get("product") or "").lower().strip()
+            if name:
+                if itype == "purchase":
+                    purchases_by_name[name] = purchases_by_name.get(name, 0) + (line.get("qty") or 0)
+                else:
+                    sales_by_name[name] = sales_by_name.get(name, 0) + (line.get("qty") or 0)
+
     for station, bottle in _iter_bar_bottles(bar):
         cost = float(bottle.get("cost", 0.0))
         level = float(bottle.get("current_level", 1.0))
@@ -890,6 +1166,34 @@ def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, An
             cost_weighted += cost_pct_item
             cost_items += 1
 
+        # V1.5 sales and purchases from parsed POS
+        pos_sales = 0.0
+        purchases = 0.0
+        bname = (bottle.get("name") or "").lower().strip()
+        for key, qty in sales_by_name.items():
+            if key in bname or bname in key:
+                pos_sales += qty
+                break
+        for key, qty in purchases_by_name.items():
+            if key in bname or bname in key:
+                purchases += qty
+                break
+
+        # Par status for easy scanning (green / watch / order)
+        if par <= 0:
+            par_status = "ok"
+        elif level >= par:
+            par_status = "ok"
+        elif level >= par * 0.5:
+            par_status = "watch"
+        else:
+            par_status = "order"
+
+        net_movement = round(purchases - pos_sales, 2)
+        # Adjusted variance: on-hand vs par after accounting for sold/received
+        adj_variance = round((level + purchases - pos_sales) - par, 2)
+        line_need = max(0.0, par - level)
+
         product_rows.append(
             {
                 "id": bottle.get("id"),
@@ -903,6 +1207,14 @@ def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, An
                 "cost_pct": round(cost_pct_item, 1),
                 "current_level": level,
                 "par_level": par,
+                "pos_sales": round(pos_sales, 2),
+                "purchases": round(purchases, 2),
+                "net_movement": net_movement,
+                "adjusted_variance": adj_variance,
+                "par_status": par_status,
+                "line_value": round(line_value, 2),
+                "need": round(line_need, 2),
+                "need_value": round(line_need * cost, 2) if cost else 0.0,
             }
         )
 
@@ -915,20 +1227,84 @@ def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, An
     else:
         beverage_cost_pct = 0.0
 
+    # Recipe-based "ideal" menu cost % (theoretical) when recipes exist on the bar
+    recipe_rows: list[dict[str, Any]] = []
+    ideal_cost_pcts: list[float] = []
+    for recipe in bar.get("recipes") or []:
+        ings = recipe.get("ingredients") or []
+        yield_n = float(recipe.get("yield") or recipe.get("servings") or 1) or 1.0
+        menu_price = float(recipe.get("menu_price") or 0)
+        batch_cost = 0.0
+        for ing in ings:
+            iname = (ing.get("name") or "").lower()
+            pour_oz = float(ing.get("pour_oz") or 0)
+            # Match ingredient to a bottle cost/size
+            matched_cost = 0.0
+            matched_size_oz = 25.4  # ~750ml
+            for station, bottle in _iter_bar_bottles(bar):
+                bname = (bottle.get("name") or "").lower()
+                if iname and (iname in bname or bname in iname):
+                    matched_cost = float(bottle.get("cost") or 0)
+                    matched_size_oz = float(_pours_per_bottle(str(bottle.get("size", "750ml")))) * 1.5 or 25.4
+                    # _pours_per_bottle returns pour count; prefer size parse
+                    size_s = str(bottle.get("size", "750ml")).lower()
+                    m = re.search(r"([\d.]+)\s*ml", size_s)
+                    if m:
+                        matched_size_oz = float(m.group(1)) / 29.5735
+                    break
+            if matched_cost and matched_size_oz:
+                batch_cost += (matched_cost / matched_size_oz) * pour_oz
+        cost_per = batch_cost / yield_n if yield_n else batch_cost
+        cost_pct = (cost_per / menu_price * 100) if menu_price > 0 else 0.0
+        if menu_price > 0 and cost_per > 0:
+            ideal_cost_pcts.append(cost_pct)
+        recipe_rows.append(
+            {
+                "id": recipe.get("id"),
+                "name": recipe.get("name"),
+                "yield": yield_n,
+                "menu_price": round(menu_price, 2),
+                "cost_per_serving": round(cost_per, 2),
+                "cost_pct": round(cost_pct, 1),
+                "profit_per_serving": round(menu_price - cost_per, 2) if menu_price else 0.0,
+            }
+        )
+    ideal_pour_cost_pct = round(sum(ideal_cost_pcts) / len(ideal_cost_pcts), 1) if ideal_cost_pcts else None
+
     trend_data = []
-    for cycle in list(reversed(cycles[-12:])):
+    cycle_history: list[dict[str, Any]] = []
+    for idx, cycle in enumerate(cycles[-12:]):
         completed = cycle.get("completed_at") or ""
         try:
             label = datetime.fromisoformat(completed.replace("Z", "+00:00")).strftime("%b %d")
+            full_date = datetime.fromisoformat(completed.replace("Z", "+00:00")).strftime("%Y-%m-%d")
         except ValueError:
             label = completed[:10]
+            full_date = completed[:10]
+        summary = cycle.get("summary") or {}
+        avg_lvl = _cycle_avg_level(cycle)
+        entry = {
+            "cycle_number": cycle.get("cycle_number") or (idx + 1),
+            "date": label,
+            "full_date": full_date,
+            "items": summary.get("bottles", 0),
+            "stations": summary.get("stations", 0),
+            "below_par": summary.get("below_par", 0),
+            "avg_level": avg_lvl,
+            "period_start": cycle.get("period_start") or "",
+            "period_end": cycle.get("period_end") or "",
+        }
+        cycle_history.append(entry)
         trend_data.append(
             {
                 "date": label,
-                "items": cycle.get("summary", {}).get("bottles", 0),
-                "avg_level": _cycle_avg_level(cycle),
+                "items": entry["items"],
+                "avg_level": avg_lvl,
+                "below_par": entry["below_par"],
             }
         )
+    trend_data = list(reversed(trend_data))
+    cycle_history = list(reversed(cycle_history))
 
     velocity: list[dict[str, Any]] = []
     if len(cycles) >= 2:
@@ -993,12 +1369,33 @@ def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, An
         week_over_week.sort(key=lambda x: abs(x["change"]), reverse=True)
 
     stats = _bar_inventory_stats(bar)
+
+    ok_count = sum(1 for r in product_rows if r.get("par_status") == "ok")
+    watch_count = sum(1 for r in product_rows if r.get("par_status") == "watch")
+    order_count = sum(1 for r in product_rows if r.get("par_status") == "order")
+    need_value = round(sum(r.get("need_value") or 0 for r in product_rows), 2)
+    pos_sales_total = round(sum(r.get("pos_sales") or 0 for r in product_rows), 2)
+    purchases_total = round(sum(r.get("purchases") or 0 for r in product_rows), 2)
+
+    # Plain-language health grade for the "common lackey" layer
+    if order_count == 0 and watch_count <= max(1, stats["bottles"] // 10):
+        health = "solid"
+        health_label = "Solid shift"
+    elif order_count <= max(2, stats["bottles"] // 8):
+        health = "watch"
+        health_label = "A few holes"
+    else:
+        health = "action"
+        health_label = "Needs a restock pass"
+
     return {
         "bar_name": bar.get("name", ""),
         "bottle_count": stats["bottles"],
         "station_count": stats["stations"],
         "total_value": round(total_value, 2),
         "beverage_cost_pct": beverage_cost_pct,
+        "ideal_pour_cost_pct": ideal_pour_cost_pct,
+        "recipe_rows": recipe_rows,
         "category_values": [
             {"name": k, "value": v}
             for k, v in sorted(category_values.items(), key=lambda x: x[1], reverse=True)
@@ -1009,6 +1406,7 @@ def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, An
         ],
         "variance_alerts": variance_alerts,
         "trend_data": trend_data,
+        "cycle_history": cycle_history,
         "velocity": velocity,
         "week_over_week": week_over_week,
         "product_rows": sorted(product_rows, key=lambda r: (r["category"], r["name"])),
@@ -1016,6 +1414,14 @@ def _analytics_payload(cfg: dict[str, Any], bar: dict[str, Any]) -> dict[str, An
         "cycle_label": cfg.get("cycle", {}).get("label", "Inventory cycle"),
         "last_count_at": cycles[-1].get("completed_at") if cycles else None,
         "below_par": stats["below_par"],
+        # V1.5 report depth
+        "par_status_counts": {"ok": ok_count, "watch": watch_count, "order": order_count},
+        "need_value": need_value,
+        "pos_sales_total": pos_sales_total,
+        "purchases_total": purchases_total,
+        "health": health,
+        "health_label": health_label,
+        "report_generated_at": _now(),
     }
 
 
@@ -1083,12 +1489,28 @@ def api_state():
     # Butterfly: never substitute active_bar_id — initHome treats any setup_bar_id as "still in setup"
     setup_id = raw_setup_id if phase == "butterfly" else (raw_setup_id or active_id)
 
+    auth = _auth_status()
+    # Managers only see their venue in the bars list
+    bars_out = [_bar_public_summary(b) for b in registry.get("bars", [])]
+    user = auth.get("user") or {}
+    if auth.get("auth_enabled") and user.get("role") == "manager" and user.get("venue_id"):
+        bars_out = [b for b in bars_out if b.get("id") == user.get("venue_id")]
+        # Force active bar to their venue when mismatched
+        if active_id != user.get("venue_id"):
+            _, vbar = _find_bar(registry, user["venue_id"])
+            if vbar:
+                _save_config({"active_bar_id": user["venue_id"], "bar_name": vbar.get("name", "")})
+                active_id = user["venue_id"]
+                bar = vbar
+                setup = _bar_setup_state(bar)
+
     return jsonify(
         {
             "version": VERSION,
             "phase": phase,
             "phase_label": PHASE_LABELS.get(phase, phase),
             "phases": [{"id": p, "label": PHASE_LABELS[p]} for p in PHASES],
+            "auth": auth,
             "config": {
                 "bar_name": bar.get("name") or cfg.get("bar_name"),
                 "active_bar_id": active_id,
@@ -1102,8 +1524,9 @@ def api_state():
                 "metrics_default_window": cfg.get("metrics_default_window"),
                 "metrics_windows": cfg.get("metrics_windows"),
                 "branding": cfg.get("branding", DEFAULT_CONFIG["branding"]),
+                "weigh_enabled": cfg.get("weigh_enabled", False),
             },
-            "bars": [_bar_public_summary(b) for b in registry.get("bars", [])],
+            "bars": bars_out,
             "bar": {
                 "id": bar.get("id"),
                 "name": bar.get("name", ""),
@@ -1297,28 +1720,47 @@ def api_phase_reset():
 
 @app.route("/api/hard-reset", methods=["POST"])
 def api_hard_reset():
-    """Full wipe back to updates signup (first setup step). Archives current data first."""
+    """Full wipe back to welcome. Archives current data first (incl. PIN users)."""
     import shutil
 
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     backup_dir = os.path.join(_DATA, "_backups", f"reset-{stamp}")
+    archive_files = (
+        _CONFIG_FILE,
+        _BARS_FILE,
+        _BAR_FILE,
+        _STATE_FILE,
+        _PEOPLE_FILE,
+        _STAFF_BOARD_FILE,
+        _SECRETS_FILE,
+    )
     try:
         os.makedirs(backup_dir, exist_ok=True)
-        for src in (_CONFIG_FILE, _BARS_FILE, _BAR_FILE, _STATE_FILE):
+        for src in archive_files:
             if os.path.exists(src):
                 shutil.copy2(src, os.path.join(backup_dir, os.path.basename(src)))
+        if os.path.isdir(_POS_DIR):
+            shutil.copytree(_POS_DIR, os.path.join(backup_dir, "pos"), dirs_exist_ok=True)
     except OSError:
         backup_dir = ""
 
-    for f in (_BARS_FILE, _BAR_FILE, _STATE_FILE):
+    for f in archive_files:
         try:
             if os.path.exists(f):
                 os.remove(f)
         except OSError:
             pass
+    if os.path.isdir(_POS_DIR):
+        try:
+            shutil.rmtree(_POS_DIR)
+            os.makedirs(_POS_DIR, exist_ok=True)
+        except OSError:
+            pass
 
+    session.clear()
     reset_cfg = {**DEFAULT_CONFIG, "phase": "welcome"}
     _write_json(_CONFIG_FILE, reset_cfg)
+    _save_people({"users": [], "auth_enabled": False})
     return jsonify({"status": "reset", "phase": "welcome", "backup": backup_dir})
 
 
@@ -1853,7 +2295,8 @@ def api_get_bar():
 def api_save_bar():
     """Save full bar map — stations with nested bottles."""
     body = request.get_json(force=True) or {}
-    bar = _load_bar(body.get("bar_id") or None)
+    # Accept bar_id or id (clients often POST the bar record shape)
+    bar = _load_bar(body.get("bar_id") or body.get("id") or None)
     name = (body.get("bar_name") or body.get("name") or "").strip()
     if name:
         bar["name"] = name
@@ -1957,6 +2400,13 @@ def api_create_bar():
 def api_switch_bar():
     body = request.get_json(force=True) or {}
     bar_id = (body.get("bar_id") or "").strip()
+    # Managers cannot leave their assigned venue
+    auth = _auth_status()
+    user = auth.get("user") or {}
+    if auth.get("auth_enabled") and user.get("role") == "manager":
+        if user.get("venue_id") and bar_id != user.get("venue_id"):
+            return jsonify({"error": "Your login is locked to one venue"}), 403
+        bar_id = user.get("venue_id") or bar_id
     registry = _load_bars_registry()
     _, bar = _find_bar(registry, bar_id)
     if bar is None:
@@ -2067,6 +2517,522 @@ def api_select_setup_bar():
     return jsonify({"status": "ok", "bar": bar})
 
 
+@app.route("/api/bars/transfer", methods=["POST"])
+def api_transfer_stock():
+    """Move stock between venues. Atomic: both bars saved after success."""
+    body = request.get_json(force=True) or {}
+    from_id = (body.get("from_bar_id") or "").strip()
+    to_id = (body.get("to_bar_id") or "").strip()
+    bottle_id = (body.get("bottle_id") or "").strip()
+    product_name = (body.get("product") or body.get("name") or "").strip()
+    size = (body.get("size") or "").strip()
+    note = (body.get("note") or "").strip()[:400]
+    create_if_missing = body.get("create_if_missing", True)
+    try:
+        qty = float(body.get("qty") or body.get("quantity") or 0)
+    except (TypeError, ValueError):
+        return jsonify({"error": "qty must be a number"}), 400
+
+    if not from_id or not to_id:
+        return jsonify({"error": "from_bar_id and to_bar_id are required"}), 400
+    if from_id == to_id:
+        return jsonify({"error": "Cannot transfer a bar to itself"}), 400
+    if qty <= 0:
+        return jsonify({"error": "qty must be greater than zero"}), 400
+
+    registry = _load_bars_registry()
+    _, from_bar = _find_bar(registry, from_id)
+    _, to_bar = _find_bar(registry, to_id)
+    if from_bar is None or to_bar is None:
+        return jsonify({"error": "One or both bars not found"}), 404
+
+    src_station, src_bottle = (None, None)
+    if bottle_id:
+        src_station, src_bottle = _find_bottle_by_id(from_bar, bottle_id)
+    if src_bottle is None and product_name:
+        src_station, src_bottle = _find_matching_bottle(from_bar, product_name, size)
+    if src_bottle is None:
+        return jsonify({"error": "Source bottle not found on from-bar"}), 404
+
+    product_name = src_bottle.get("name") or product_name
+    size = src_bottle.get("size") or size or "750ml"
+    current = float(src_bottle.get("current_level") or 0)
+    if qty > current + 1e-9:
+        return jsonify({
+            "error": f"Not enough on hand at source ({current:.2f} available, tried {qty:.2f})",
+            "available": current,
+        }), 400
+
+    dest_station, dest_bottle = _find_matching_bottle(to_bar, product_name, size)
+    created_dest = False
+    if dest_bottle is None:
+        if not create_if_missing:
+            return jsonify({
+                "error": f"No matching product on destination bar for '{product_name}'. Enable create_if_missing or map it first.",
+            }), 400
+        dest_station = _ensure_station(to_bar, "Transfers in")
+        dest_bottle = {
+            "id": _uid("b-"),
+            "name": product_name,
+            "size": size,
+            "category": src_bottle.get("category") or "spirits",
+            "current_level": 0.0,
+            "par_level": float(src_bottle.get("par_level") or 1),
+            "cost": float(src_bottle.get("cost") or 0),
+        }
+        dest_station.setdefault("bottles", []).append(dest_bottle)
+        created_dest = True
+
+    # Apply transfer
+    src_bottle["current_level"] = round(current - qty, 3)
+    dest_level = float(dest_bottle.get("current_level") or 0)
+    dest_bottle["current_level"] = round(dest_level + qty, 3)
+    # carry cost if dest missing cost
+    if not dest_bottle.get("cost") and src_bottle.get("cost"):
+        dest_bottle["cost"] = src_bottle.get("cost")
+
+    # Persist both bars in one registry write
+    from_bar["updated_at"] = _now()
+    to_bar["updated_at"] = _now()
+    for i, b in enumerate(registry.get("bars", [])):
+        if b.get("id") == from_id:
+            registry["bars"][i] = from_bar
+        elif b.get("id") == to_id:
+            registry["bars"][i] = to_bar
+    _save_bars_registry(registry)
+
+    # Re-load from disk so callers can trust levels match persistence
+    verify_reg = _load_bars_registry()
+    _, from_verify = _find_bar(verify_reg, from_id)
+    _, to_verify = _find_bar(verify_reg, to_id)
+    _, src_verify = (
+        _find_bottle_by_id(from_verify, src_bottle.get("id", ""))
+        if from_verify
+        else (None, None)
+    )
+    dest_verify = None
+    if to_verify and dest_bottle.get("id"):
+        _, dest_verify = _find_bottle_by_id(to_verify, dest_bottle.get("id", ""))
+    from_level_persisted = float(
+        (src_verify or src_bottle).get("current_level") or src_bottle["current_level"]
+    )
+    to_level_persisted = float(
+        (dest_verify or dest_bottle).get("current_level") or dest_bottle["current_level"]
+    )
+
+    entry = {
+        "id": _uid("xfer-"),
+        "from_bar_id": from_id,
+        "from_bar_name": from_bar.get("name") or from_id,
+        "to_bar_id": to_id,
+        "to_bar_name": to_bar.get("name") or to_id,
+        "product": product_name,
+        "size": size,
+        "qty": round(qty, 3),
+        "note": note,
+        "created_dest": created_dest,
+        "from_level_after": from_level_persisted,
+        "to_level_after": to_level_persisted,
+        "bottle_id": src_bottle.get("id"),
+        "created_at": _now(),
+    }
+    _append_transfer_log(entry)
+
+    return jsonify({
+        "status": "ok",
+        "transfer": entry,
+        "from_bar": _bar_public_summary(from_bar),
+        "to_bar": _bar_public_summary(to_bar),
+    })
+
+
+@app.route("/api/bars/transfers", methods=["GET"])
+def api_list_transfers():
+    """Recent stock transfers across venues."""
+    state = _load_state()
+    transfers = list(state.get("transfers") or [])
+    limit = request.args.get("limit")
+    try:
+        n = min(int(limit), 200) if limit else 50
+    except ValueError:
+        n = 50
+    bar_id = (request.args.get("bar_id") or "").strip()
+    if bar_id:
+        transfers = [
+            t for t in transfers
+            if t.get("from_bar_id") == bar_id or t.get("to_bar_id") == bar_id
+        ]
+    return jsonify({"transfers": transfers[:n], "total": len(transfers)})
+
+
+@app.route("/api/venues", methods=["GET"])
+def api_venues_consolidated():
+    """Per-venue snapshot + company totals for multi-venue reporting."""
+    registry = _load_bars_registry()
+    cfg = _load_config()
+    auth = _auth_status()
+    user = auth.get("user") or {}
+    venues = []
+    total_bottles = 0
+    total_value = 0.0
+    total_below = 0
+    for bar in registry.get("bars", []):
+        if (
+            auth.get("auth_enabled")
+            and user.get("role") == "manager"
+            and user.get("venue_id")
+            and bar.get("id") != user.get("venue_id")
+        ):
+            continue
+        summary = _bar_public_summary(bar)
+        venues.append(summary)
+        total_bottles += summary.get("bottle_count") or 0
+        total_value += summary.get("total_value") or 0
+        total_below += summary.get("below_par") or 0
+    return jsonify({
+        "active_bar_id": cfg.get("active_bar_id", ""),
+        "venues": venues,
+        "consolidated": {
+            "venue_count": len(venues),
+            "bottle_count": total_bottles,
+            "total_value": round(total_value, 2),
+            "below_par": total_below,
+        },
+        "transfers_recent": ( _load_state().get("transfers") or [] )[:10],
+        "auth": auth,
+    })
+
+
+# ── Auth + People + Staff board ───────────────────────────────────────────────
+
+@app.route("/api/auth/status", methods=["GET"])
+def api_auth_status():
+    return jsonify(_auth_status())
+
+
+@app.route("/api/auth/login", methods=["POST"])
+def api_auth_login():
+    body = request.get_json(force=True) or {}
+    pin = str(body.get("pin") or "").strip()
+    login = (body.get("login") or body.get("user_id") or "").strip()
+    user_id = (body.get("user_id") or "").strip()
+    if not _valid_pin(pin):
+        return jsonify({"error": "PIN must be exactly 6 digits"}), 400
+
+    people = _load_people()
+    users = [u for u in people.get("users") or [] if u.get("active", True)]
+    if not users:
+        return jsonify({"error": "No logins set up yet — open Settings as admin to create them"}), 400
+
+    target = None
+    if user_id:
+        target = _find_user(people, user_id=user_id)
+    elif login:
+        target = _find_user(people, login=login)
+    elif len(users) == 1:
+        target = users[0]
+    else:
+        # Try match pin against all (small staff only)
+        for u in users:
+            if _check_pin(pin, u.get("pin_hash") or "", u.get("pin_salt") or ""):
+                target = u
+                break
+        if target is None:
+            return jsonify({"error": "Pick a person, then enter their 6-digit PIN"}), 400
+
+    if not target or not target.get("active", True):
+        return jsonify({"error": "Unknown or inactive login"}), 404
+    if not _check_pin(pin, target.get("pin_hash") or "", target.get("pin_salt") or ""):
+        return jsonify({"error": "Wrong PIN"}), 401
+
+    session.clear()
+    session.permanent = True
+    session["user_id"] = target["id"]
+    session["role"] = target.get("role") or "manager"
+
+    # Lock manager onto their venue
+    if target.get("role") == "manager" and target.get("venue_id"):
+        registry = _load_bars_registry()
+        _, vbar = _find_bar(registry, target["venue_id"])
+        if vbar:
+            _save_config({"active_bar_id": target["venue_id"], "bar_name": vbar.get("name", "")})
+
+    return jsonify({"status": "ok", "auth": _auth_status()})
+
+
+@app.route("/api/auth/logout", methods=["POST"])
+def api_auth_logout():
+    session.clear()
+    return jsonify({"status": "ok", "auth": _auth_status()})
+
+
+@app.route("/api/people", methods=["GET"])
+def api_people_list():
+    denied = _require_admin()
+    if denied:
+        return denied
+    people = _load_people()
+    return jsonify({
+        "auth_enabled": bool(people.get("users")),
+        "users": [_user_public(u) for u in people.get("users") or []],
+        "default_manager_permissions": DEFAULT_MANAGER_PERMISSIONS,
+        "permission_labels": {
+            "dashboard": "Home base dashboard",
+            "count": "Count / Process",
+            "mobile_count": "Mobile count",
+            "inputs": "Weekly inputs (POS / receive)",
+            "inhouse": "In-house inventory",
+            "reports": "Reports (their venue)",
+            "spreadsheets": "Spreadsheets / edit PARs",
+            "recipes": "Recipes & costing",
+            "smart_orders": "Smart orders / PO",
+            "transfers": "Multi-venue transfers",
+            "settings": "Settings",
+            "people": "People & access",
+            "staff_board": "Staff board",
+            "other_venues": "See other venues",
+        },
+    })
+
+
+@app.route("/api/people", methods=["POST"])
+def api_people_create():
+    """Create admin (first PIN) or a bar manager."""
+    denied = _require_admin()
+    if denied:
+        return denied
+    body = request.get_json(force=True) or {}
+    name = (body.get("name") or "").strip()[:80]
+    login = re.sub(r"[^a-zA-Z0-9._-]", "", (body.get("login") or "").strip())[:32].lower()
+    pin = str(body.get("pin") or "").strip()
+    role = (body.get("role") or "manager").strip().lower()
+    if role not in ("admin", "manager"):
+        role = "manager"
+    venue_id = (body.get("venue_id") or "").strip() or None
+    perms_in = body.get("permissions") if isinstance(body.get("permissions"), dict) else {}
+
+    if not name:
+        return jsonify({"error": "Name is required"}), 400
+    if not login:
+        login = re.sub(r"[^a-z0-9]", "", name.lower())[:16] or "user"
+    if not _valid_pin(pin):
+        return jsonify({"error": "PIN must be exactly 6 digits"}), 400
+
+    people = _load_people()
+    if _find_user(people, login=login):
+        return jsonify({"error": f"Login '{login}' already exists"}), 400
+
+    # First user becomes admin if none exist
+    if not people.get("users"):
+        role = "admin"
+        venue_id = None
+
+    if role == "manager":
+        if not venue_id:
+            return jsonify({"error": "Bar managers need a venue assigned"}), 400
+        registry = _load_bars_registry()
+        _, vbar = _find_bar(registry, venue_id)
+        if vbar is None:
+            return jsonify({"error": "Venue not found"}), 404
+        perms = dict(DEFAULT_MANAGER_PERMISSIONS)
+        for k, v in perms_in.items():
+            if k in DEFAULT_MANAGER_PERMISSIONS:
+                perms[k] = bool(v)
+    else:
+        perms = dict(ADMIN_PERMISSIONS)
+        venue_id = None
+
+    pin_hash, salt = _hash_pin(pin)
+    user = {
+        "id": _uid("user-"),
+        "name": name,
+        "login": login,
+        "role": role,
+        "venue_id": venue_id,
+        "pin_hash": pin_hash,
+        "pin_salt": salt,
+        "permissions": perms,
+        "active": True,
+        "created_at": _now(),
+        "updated_at": _now(),
+    }
+    people.setdefault("users", []).append(user)
+    _save_people(people)
+
+    # If this is first admin and no session, log them in
+    if role == "admin" and not session.get("user_id"):
+        session.permanent = True
+        session["user_id"] = user["id"]
+        session["role"] = "admin"
+
+    return jsonify({"status": "created", "user": _user_public(user), "auth": _auth_status()}), 201
+
+
+@app.route("/api/people/<user_id>", methods=["PATCH", "POST"])
+def api_people_update(user_id: str):
+    denied = _require_admin()
+    if denied:
+        return denied
+    body = request.get_json(force=True) or {}
+    people = _load_people()
+    user = _find_user(people, user_id=user_id)
+    if not user:
+        return jsonify({"error": "Person not found"}), 404
+
+    if "name" in body:
+        user["name"] = str(body.get("name") or "").strip()[:80] or user["name"]
+    if "login" in body:
+        new_login = re.sub(r"[^a-zA-Z0-9._-]", "", str(body.get("login") or "").strip())[:32].lower()
+        if new_login:
+            other = _find_user(people, login=new_login)
+            if other and other.get("id") != user_id:
+                return jsonify({"error": "Login already taken"}), 400
+            user["login"] = new_login
+    if "venue_id" in body and user.get("role") == "manager":
+        vid = (body.get("venue_id") or "").strip()
+        if vid:
+            registry = _load_bars_registry()
+            _, vbar = _find_bar(registry, vid)
+            if vbar is None:
+                return jsonify({"error": "Venue not found"}), 404
+            user["venue_id"] = vid
+    if "permissions" in body and isinstance(body["permissions"], dict) and user.get("role") == "manager":
+        perms = dict(user.get("permissions") or DEFAULT_MANAGER_PERMISSIONS)
+        for k, v in body["permissions"].items():
+            if k in DEFAULT_MANAGER_PERMISSIONS:
+                perms[k] = bool(v)
+        user["permissions"] = perms
+    if "active" in body:
+        # Don't deactivate the last admin
+        if user.get("role") == "admin" and not body.get("active"):
+            admins = [u for u in people["users"] if u.get("role") == "admin" and u.get("active", True) and u.get("id") != user_id]
+            if not admins:
+                return jsonify({"error": "Keep at least one active admin"}), 400
+        user["active"] = bool(body.get("active"))
+
+    user["updated_at"] = _now()
+    _save_people(people)
+    return jsonify({"status": "ok", "user": _user_public(user)})
+
+
+@app.route("/api/people/<user_id>/reset-pin", methods=["POST"])
+def api_people_reset_pin(user_id: str):
+    """Admin sets a new 6-digit PIN — no old PIN required."""
+    denied = _require_admin()
+    if denied:
+        return denied
+    body = request.get_json(force=True) or {}
+    pin = str(body.get("pin") or body.get("new_pin") or "").strip()
+    if not _valid_pin(pin):
+        return jsonify({"error": "New PIN must be exactly 6 digits"}), 400
+    people = _load_people()
+    user = _find_user(people, user_id=user_id)
+    if not user:
+        return jsonify({"error": "Person not found"}), 404
+    pin_hash, salt = _hash_pin(pin)
+    user["pin_hash"] = pin_hash
+    user["pin_salt"] = salt
+    user["updated_at"] = _now()
+    _save_people(people)
+    return jsonify({"status": "ok", "user": _user_public(user), "message": "PIN reset — give them the new 6 digits."})
+
+
+@app.route("/api/people/<user_id>", methods=["DELETE"])
+def api_people_delete(user_id: str):
+    denied = _require_admin()
+    if denied:
+        return denied
+    people = _load_people()
+    user = _find_user(people, user_id=user_id)
+    if not user:
+        return jsonify({"error": "Person not found"}), 404
+    if user.get("role") == "admin":
+        admins = [u for u in people["users"] if u.get("role") == "admin" and u.get("active", True) and u.get("id") != user_id]
+        if not admins:
+            return jsonify({"error": "Cannot remove the last admin"}), 400
+    people["users"] = [u for u in people["users"] if u.get("id") != user_id]
+    _save_people(people)
+    if session.get("user_id") == user_id:
+        session.clear()
+    return jsonify({"status": "deleted", "auth": _auth_status()})
+
+
+@app.route("/api/staff-board", methods=["GET"])
+def api_staff_board_list():
+    auth = _auth_status()
+    if auth.get("auth_enabled") and not auth.get("logged_in"):
+        return jsonify({"error": "Login required"}), 401
+    user = auth.get("user") or {}
+    board = _load_staff_board()
+    posts = list(board.get("posts") or [])
+    # Managers only see company-wide + their venue
+    if user.get("role") == "manager" and user.get("venue_id"):
+        vid = user["venue_id"]
+        posts = [p for p in posts if not p.get("venue_id") or p.get("venue_id") == vid]
+    limit = 50
+    try:
+        limit = min(int(request.args.get("limit") or 50), 100)
+    except ValueError:
+        pass
+    return jsonify({"posts": posts[:limit], "auth": auth})
+
+
+@app.route("/api/staff-board", methods=["POST"])
+def api_staff_board_post():
+    auth = _auth_status()
+    if auth.get("auth_enabled") and not auth.get("logged_in"):
+        return jsonify({"error": "Login required"}), 401
+    user = auth.get("user") or {}
+    perms = user.get("permissions") or {}
+    if auth.get("auth_enabled") and not perms.get("staff_board", True) and user.get("role") != "admin":
+        return jsonify({"error": "No staff board access"}), 403
+    body = request.get_json(force=True) or {}
+    text = (body.get("text") or body.get("body") or "").strip()
+    if not text:
+        return jsonify({"error": "Write a short note first"}), 400
+    if len(text) > 2000:
+        text = text[:2000]
+    venue_id = (body.get("venue_id") or "").strip() or None
+    if user.get("role") == "manager":
+        venue_id = user.get("venue_id")  # locked to their house
+    pin = bool(body.get("pinned")) and user.get("role") == "admin"
+
+    post = {
+        "id": _uid("post-"),
+        "text": text,
+        "author_id": user.get("id"),
+        "author_name": user.get("name") or "Staff",
+        "author_role": user.get("role") or "admin",
+        "venue_id": venue_id,
+        "pinned": pin,
+        "created_at": _now(),
+    }
+    board = _load_staff_board()
+    posts = list(board.get("posts") or [])
+    posts.insert(0, post)
+    board["posts"] = posts[:200]
+    _save_staff_board(board)
+    return jsonify({"status": "ok", "post": post}), 201
+
+
+@app.route("/api/staff-board/<post_id>", methods=["DELETE"])
+def api_staff_board_delete(post_id: str):
+    auth = _auth_status()
+    if auth.get("auth_enabled") and not auth.get("logged_in"):
+        return jsonify({"error": "Login required"}), 401
+    user = auth.get("user") or {}
+    board = _load_staff_board()
+    posts = list(board.get("posts") or [])
+    target = next((p for p in posts if p.get("id") == post_id), None)
+    if not target:
+        return jsonify({"error": "Post not found"}), 404
+    if user.get("role") != "admin" and target.get("author_id") != user.get("id"):
+        return jsonify({"error": "You can only delete your own notes (or ask admin)"}), 403
+    board["posts"] = [p for p in posts if p.get("id") != post_id]
+    _save_staff_board(board)
+    return jsonify({"status": "deleted"})
+
+
 # ── Butterfly (home base) ─────────────────────────────────────────────────────
 
 @app.route("/api/metrics", methods=["GET"])
@@ -2160,26 +3126,45 @@ def api_pos_log_add():
     label = (request.form.get("label") or body.get("label") or "").strip()
     note = (request.form.get("note") or body.get("note") or "").strip()
     raw_type = (request.form.get("input_type") or body.get("input_type") or "pos").strip().lower()
-    input_type = "invoice" if raw_type in ("invoice", "invoices", "vendor") else "pos"
+    if raw_type in ("invoice", "invoices", "vendor"):
+        input_type = "invoice"
+    elif raw_type in ("purchase", "receive", "purchases"):
+        input_type = "purchase"
+    elif raw_type in ("po", "order", "orders", "purchase_order"):
+        input_type = "po"
+    else:
+        input_type = "pos"
     if request.is_json:
         text_body = (body.get("text") or "").strip()
-        if text_body and not request.files:
+        parsed_pos = body.get("parsed_pos")
+        if (text_body or parsed_pos) and not request.files:
             os.makedirs(os.path.join(_POS_DIR, "files"), exist_ok=True)
             fname = f"{_uid('pos-')}.txt"
             fpath = os.path.join(_POS_DIR, "files", fname)
+            content = text_body or json.dumps(parsed_pos, indent=2)
             with open(fpath, "w", encoding="utf-8") as fh:
-                fh.write(text_body)
-            default_label = "Invoice drop" if input_type == "invoice" else "POS drop"
+                fh.write(content)
+            default_label = (
+                "Invoice drop" if input_type == "invoice"
+                else "Purchase order" if input_type == "po"
+                else "Purchase/Receive" if input_type == "purchase"
+                else "POS drop"
+            )
             entry = {
                 "id": _uid("pos-"),
                 "input_type": input_type,
                 "label": label or default_label,
                 "note": note,
                 "filename": fname,
-                "original_name": "paste.txt",
+                "original_name": "paste.txt" if text_body else "reviewed-pos.json",
                 "uploaded_at": _now(),
-                "size_bytes": len(text_body.encode("utf-8")),
+                "size_bytes": len(content.encode("utf-8")),
             }
+            # V1.5 structured POS
+            if parsed_pos:
+                entry["parsed_pos"] = parsed_pos
+            elif text_body:
+                parsed = None  # server could parse but client does
             log = _load_pos_log(bar_id)
             log.setdefault("entries", []).insert(0, entry)
             _save_pos_log(bar_id, log)
@@ -2337,6 +3322,13 @@ def api_pos_log_delete(entry_id: str):
     return jsonify({"status": "deleted", "id": entry_id})
 
 
+# V1.5 Weight support API
+@app.route("/api/weights", methods=["GET"])
+def api_weights():
+    weights = load_bottle_weights()
+    return jsonify({"weights": weights, "note": "Use current_weight_oz on bottles + these full/empty for calc. V1.5"})
+
+
 if __name__ == "__main__":
     os.makedirs(_DATA, exist_ok=True)
     if not os.path.exists(_CONFIG_FILE):
@@ -2345,10 +3337,11 @@ if __name__ == "__main__":
 
     print("\n  Open Source Barware — Chrome Program")
     print("  " + "-" * 54)
-    print(f"  Version:    {VERSION}")
+    print(f"  Version:    {VERSION}  (V1.5 Phase 1 — Accuracy & Mobile)")
     print(f"  Setup:      http://localhost:{PORT}/")
     print(f"  Home base:  http://localhost:{PORT}/home  (after butterfly)")
     print(f"  API state:  http://localhost:{PORT}/api/state")
+    print(f"  API weights: http://localhost:{PORT}/api/weights  (V1.5)")
     print(f"  Data dir:   {_DATA}")
     print("  " + "-" * 54 + "\n")
 

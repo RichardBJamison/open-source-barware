@@ -6,9 +6,9 @@ import { Gear, GearDivider } from "@/components/SteampunkElements";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Download v1.0 — Open Source Barware",
+  title: "Download v1.5 — Open Source Barware",
   description:
-    "Download the Open Source Barware Chrome program v1.0. Join the release list, get Mac or Windows installers, and help us improve during early production.",
+    "Download Open Source Barware v1.5 — free Chrome-side bar inventory with Spanish-ready notes, mobile counting, POS import, multi-venue, and more. Mac and Windows.",
   path: "/download",
 });
 
@@ -19,7 +19,7 @@ export default function DownloadPage() {
         <OptimizedPicture
           webpSrc="/images/bartop.webp"
           fallbackSrc="/images/bartop.png"
-          alt="Dark wood bar top with copper jigger"
+          alt="Dark wood bar top with copper jigger for free bar inventory program"
           className="absolute inset-0 h-full w-full object-cover object-center"
           priority
         />
@@ -31,20 +31,21 @@ export default function DownloadPage() {
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <div className="w-8 h-[1px] bg-copper/40" />
             <span className="text-[10px] tracking-[0.3em] uppercase text-text-light">
-              Version 1.0
+              Version 1.5
             </span>
             <span className="text-[10px] tracking-[0.2em] uppercase text-patina-light border border-patina/30 px-2 py-0.5">
-              July 4 · 7:30 PM ET
+              Spanish-ready notes · July 2026
             </span>
           </div>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-2xl mb-6">
             <span className="copper-text">Download</span>
             <br />
-            the program.
+            v1.5.
           </h1>
           <p className="text-text-muted text-lg max-w-xl leading-relaxed">
-            One Chrome-side inventory system for your bar. Early production —
-            honest about bugs, fast on fixes, built with the community.
+            Free, local bar inventory on your laptop. Mobile counting, camera
+            barcode, recipes, POS import, multi-venue, receiving — and walk/count
+            notes in English or Spanish. No subscription. No cloud tax.
           </p>
         </div>
       </section>
@@ -70,6 +71,22 @@ export default function DownloadPage() {
           </Link>
         </div>
       </section>
+
+      {/* Image structured data for SEO - backend only */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ImageObject",
+            "contentUrl": "https://opensourcebarware.com/images/bartop.webp",
+            "name": "Dark wood bar top with copper jigger for free bar inventory program",
+            "description": "Hero image for downloading the best free bar inventory system. Dark wood bar top with copper jigger.",
+            "width": "1200",
+            "height": "630"
+          })
+        }}
+      />
     </>
   );
 }

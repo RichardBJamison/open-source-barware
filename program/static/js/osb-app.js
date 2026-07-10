@@ -32,6 +32,7 @@ const CATEGORY_KEYWORDS = {
   beer: ["beer", "ipa", "lager", "ale", "stout", "porter", "lite", "light", "heineken", "corona", "modelo", "miller", "coors", "budweiser", "bud light", "dos equis", "pacifico", "tecate", "anchor", "stella", "white claw"],
   wine: ["wine", "cabernet", "merlot", "pinot", "chardonnay", "prosecco", "champagne"],
   mixer: ["soda", "juice", "tonic", "syrup", "grenadine", "bitters", "vermouth"],
+  food: ["food", "appetizer", "entree", "dessert", "snack", "fry", "wing", "burger", "salad", "soup", "steak", "chicken", "seafood", "pasta", "pizza", "taco", "nachos"],
 };
 
 let setupListenersBound = false;
@@ -157,7 +158,7 @@ function uid() {
 
 function guessCategory(name) {
   const lower = name.toLowerCase();
-  const priority = ["beer", "wine", "mixer"];
+  const priority = ["beer", "wine", "mixer", "food"];
   for (const category of priority) {
     for (const kw of CATEGORY_KEYWORDS[category]) {
       if (lower.includes(kw)) return category;
@@ -173,15 +174,39 @@ function guessCategory(name) {
 }
 
 function guessStationType(name) {
-  const lower = name.toLowerCase().trim();
-  if (lower.includes("back")) return "back-bar";
-  if (lower === "point" || lower.endsWith(" point")) return "well";
-  if (lower.includes("main bar") || lower.includes("service bar")) return "well";
-  if (lower.includes("well")) return "well";
-  if (lower.includes("wine") || lower.includes("beer") || lower.includes("walk") || lower.includes("cooler")) {
+  const lower = stripAccents(name.toLowerCase().trim());
+  if (lower.includes("back") || lower.includes("trasera") || lower.includes("atras")) return "back-bar";
+  if (lower === "point" || lower.endsWith(" point") || lower === "punto") return "well";
+  if (lower.includes("main bar") || lower.includes("service bar") || lower.includes("barra principal") || lower.includes("barra de servicio")) {
+    return "well";
+  }
+  if (lower.includes("well") || lower.includes("pozo") || lower.includes("estacion")) return "well";
+  if (
+    lower.includes("wine") ||
+    lower.includes("vino") ||
+    lower.includes("champagne") ||
+    lower.includes("champan") ||
+    lower.includes("cava") ||
+    lower.includes("beer") ||
+    lower.includes("cerveza") ||
+    lower.includes("walk") ||
+    lower.includes("cooler") ||
+    lower.includes("cellar") ||
+    lower.includes("nevera") ||
+    lower.includes("refrigerador")
+  ) {
     return "walk-in";
   }
-  if (lower.includes("storage") || lower.includes("dry")) return "storage";
+  if (
+    lower.includes("storage") ||
+    lower.includes("dry") ||
+    lower.includes("almacen") ||
+    lower.includes("bodega") ||
+    lower.includes("liquor room") ||
+    lower.includes("cuarto de licor")
+  ) {
+    return "storage";
+  }
   return "back-bar";
 }
 
@@ -213,7 +238,9 @@ const OSB = {
     if (barId) qs.set("bar_id", barId);
     const q = qs.toString();
     const r = await fetch(`/api/bar${q ? `?${q}` : ""}`);
-    return r.json();
+    const bar = await r.json();
+    await loadBottleWeights(); // V1.5 Phase 1 preload
+    return bar;
   },
 
   async saveBar(bar) {
@@ -267,6 +294,130 @@ const OSB = {
     });
     if (!r.ok) throw new Error("Could not switch bar");
     return r.json();
+  },
+
+  /** V1.5 Phase 4.1 — move stock between venues */
+  async transferStock({ fromBarId, toBarId, bottleId, product, size, qty, note, createIfMissing = true }) {
+    const r = await fetch("/api/bars/transfer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from_bar_id: fromBarId,
+        to_bar_id: toBarId,
+        bottle_id: bottleId || "",
+        product: product || "",
+        size: size || "",
+        qty,
+        note: note || "",
+        create_if_missing: createIfMissing,
+      }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Transfer failed");
+    return data;
+  },
+
+  async listTransfers(limit = 40, barId = null) {
+    const q = new URLSearchParams({ limit: String(limit) });
+    if (barId) q.set("bar_id", barId);
+    const r = await fetch(`/api/bars/transfers?${q}`);
+    return r.json();
+  },
+
+  async listVenues() {
+    const r = await fetch("/api/venues");
+    return r.json();
+  },
+
+  async authStatus() {
+    const r = await fetch("/api/auth/status");
+    return r.json();
+  },
+
+  async login({ userId, login, pin }) {
+    const r = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId || "", login: login || "", pin }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Login failed");
+    return data;
+  },
+
+  async logout() {
+    const r = await fetch("/api/auth/logout", { method: "POST" });
+    return r.json();
+  },
+
+  async listPeople() {
+    const r = await fetch("/api/people");
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Could not load people");
+    return data;
+  },
+
+  async createPerson(payload) {
+    const r = await fetch("/api/people", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Could not create person");
+    return data;
+  },
+
+  async updatePerson(userId, payload) {
+    const r = await fetch(`/api/people/${encodeURIComponent(userId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Update failed");
+    return data;
+  },
+
+  async resetPersonPin(userId, pin) {
+    const r = await fetch(`/api/people/${encodeURIComponent(userId)}/reset-pin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pin }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "PIN reset failed");
+    return data;
+  },
+
+  async deletePerson(userId) {
+    const r = await fetch(`/api/people/${encodeURIComponent(userId)}`, { method: "DELETE" });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Delete failed");
+    return data;
+  },
+
+  async listStaffBoard(limit = 40) {
+    const r = await fetch(`/api/staff-board?limit=${limit}`);
+    return r.json();
+  },
+
+  async postStaffBoard({ text, venueId, pinned }) {
+    const r = await fetch("/api/staff-board", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, venue_id: venueId || "", pinned: !!pinned }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Could not post");
+    return data;
+  },
+
+  async deleteStaffPost(postId) {
+    const r = await fetch(`/api/staff-board/${encodeURIComponent(postId)}`, { method: "DELETE" });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Could not delete");
+    return data;
   },
 
   async startBarSetup(barId) {
@@ -412,14 +563,28 @@ const OSB = {
     return r.json();
   },
 
-  async uploadPosLog({ label, note, file, text, inputType = "pos" }) {
-    const type = inputType === "invoice" ? "invoice" : "pos";
-    const defaultLabel = type === "invoice" ? "Invoice drop" : "POS drop";
-    if (text?.trim() && !file) {
+  async uploadPosLog({ label, note, file, text, inputType = "pos", parsed_pos = null }) {
+    let type = "pos";
+    if (inputType === "invoice") type = "invoice";
+    else if (inputType === "purchase") type = "purchase";
+    else if (inputType === "po" || inputType === "order") type = "po";
+    const defaultLabel =
+      type === "invoice" ? "Invoice drop"
+      : type === "purchase" ? "Purchase/Receive"
+      : type === "po" ? "Purchase order"
+      : "POS drop";
+    if (parsed_pos || (text?.trim() && !file)) {
+      const payload = { label: label || defaultLabel, note, text: text || "", input_type: type };
+      if (parsed_pos) {
+        payload.parsed_pos = parsed_pos;
+      } else if (text) {
+        const parsed = parsePosText(text);
+        if (parsed) payload.parsed_pos = { lines: parsed, source: "client-csv" };
+      }
       const r = await fetch("/api/pos/log", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: label || defaultLabel, note, text, input_type: type }),
+        body: JSON.stringify(payload),
       });
       if (!r.ok) {
         const err = await r.json();
@@ -615,7 +780,12 @@ function sortedStationsFor(bar = barState) {
 
 function allBottles() {
   return sortedStations().flatMap((s) =>
-    (s.bottles || []).map((b) => ({ ...b, stationId: s.id, stationName: s.name }))
+    (s.bottles || []).map((b) => ({
+      ...b,
+      stationId: s.id,
+      stationName: s.name,
+      effective_level: effectiveLevel(b), // V1.5 weight-aware
+    }))
   );
 }
 
@@ -672,6 +842,8 @@ function extractSizeFromRaw(raw) {
   let name = trimmed;
   let size = "750ml";
   let size_verified = false;
+  // Spanish size words (litro, mango) map to English before size regexes run
+  const normalized = applySpanishStructureSynonyms(stripAccents(trimmed.toLowerCase()));
   const patterns = [
     [/\b1\.?75\s*l?\b|\bhalf\s*gallon\b|\bhandle\b/i, "1.75L"],
     [/\b1\s*l(?:iter|itre)?\b|\bleader\b|\blitre\b/i, "1L"],
@@ -685,10 +857,15 @@ function extractSizeFromRaw(raw) {
     [/\b(?:\.75|0\.75)\b/i, "750ml"],
   ];
   for (const [re, sz] of patterns) {
-    if (re.test(name)) {
+    if (re.test(normalized) || re.test(name)) {
       size = sz;
       size_verified = true;
-      name = name.replace(re, " ").replace(/\s+/g, " ").trim();
+      name = name
+        .replace(re, " ")
+        .replace(/\blitro(?:\s+y\s+(?:medio|tres\s+cuartos))?\b/gi, " ")
+        .replace(/\bmango\b/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
       break;
     }
   }
@@ -774,6 +951,11 @@ function parseWalkStationIntent(label) {
   }
   if (/beer\s+cooler/.test(lower)) return { kind: "beer-cooler" };
   if (/patio\s+cooler/.test(lower)) return { kind: "patio-cooler" };
+  const champM = lower.match(/^champagne\s+cooler(?:\s+(one|two|too|three|four|five|six|seven|eight|nine|ten|\d{1,2}))?/);
+  if (champM) {
+    const idx = champM[1] ? (WALK_STATION_WORD_NUMS[champM[1]] ?? parseInt(champM[1], 10)) : null;
+    return { kind: "champagne-cooler", index: idx || null };
+  }
   if (/wine\s+(wall|cooler|rack|cellar)/.test(lower)) return { kind: "wine" };
   if (/liquor\s+room/.test(lower)) return { kind: "liquor-room" };
   if (/speed\s*rail|\brail\b/.test(lower)) return { kind: "speed-rail" };
@@ -844,7 +1026,13 @@ function resolveWalkStation(label, stations = barState.stations) {
   }
 
   if (intent.kind === "wine") {
-    return ordered.find((s) => (s.type === "walk-in" || s.type === "walkin") && /wine/i.test(s.name));
+    return ordered.find((s) => (s.type === "walk-in" || s.type === "walkin") && /wine|cellar|cava/i.test(s.name));
+  }
+
+  if (intent.kind === "champagne-cooler") {
+    const chillers = ordered.filter((s) => /champagne|champan/i.test(s.name));
+    if (intent.index && chillers[intent.index - 1]) return chillers[intent.index - 1];
+    return chillers[0] || ordered.find((s) => /cooler/i.test(s.name) && /champ/i.test(s.name));
   }
 
   if (intent.kind === "liquor-room") {
@@ -969,8 +1157,17 @@ function renderWalkReview() {
   const multi = walkReviewBars.length > 1;
   barHead?.classList.toggle("hidden", !multi);
 
+  const weighToggle = document.getElementById("setupWeighToggle");
+  const weighOn = weighToggle ? weighToggle.checked : false;  // V1.5 optional weigh - only show fields when enabled
+  window.__osbWeighOn = weighOn; // for other renders
+
+  // Hide weight column header if disabled (setup only)
+  const wTh = document.querySelector('#walkReviewTable th:nth-child(6)');
+  if (wTh) wTh.style.display = weighOn ? '' : 'none';
+
   const bottles = multi ? allBottlesForReview() : allBottles();
-  const colSpan = multi ? 7 : 6;
+  const weighOnConfig = !!(window.__osbConfig && window.__osbConfig.weigh_enabled);
+  const colSpan = multi ? (weighOnConfig ? 8 : 7) : (weighOnConfig ? 7 : 6);  // V1.5 conditional weight column
   if (!bottles.length) {
     body.innerHTML = `<tr><td colspan="${colSpan}" class="bottle-empty">Upload notes to populate this table.</td></tr>`;
     updateWalkReviewProgress();
@@ -1007,6 +1204,7 @@ function renderWalkReview() {
           <td><input type="text" class="review-name" value="${escapeHtml(b.name)}" data-bottle="${b.id}" data-station="${b.stationId}"${barAttr} /></td>
           <td><select class="review-station" data-bottle="${b.id}" data-station="${b.stationId}"${barAttr}>${stationOpts}</select></td>
           <td><select class="review-size" data-bottle="${b.id}" data-station="${b.stationId}"${barAttr}>${sizeOptions(b.size || "750ml")}</select></td>
+          ${weighOnConfig ? `<td><input type="number" step="0.1" class="review-weight" placeholder="oz" value="${b.current_weight_oz ?? ""}" data-bottle="${b.id}" data-station="${b.stationId}"${barAttr} title="V1.5 weight (current oz)" /></td>` : ''}
           <td class="size-verified-cell"><input type="checkbox" class="review-verified" data-bottle="${b.id}" data-station="${b.stationId}"${barAttr} ${b.size_verified ? "checked" : ""} title="Size confirmed" /></td>
           <td><button type="button" class="row-delete" data-del-review="${b.id}" data-station="${b.stationId}"${barAttr} title="Remove row">×</button></td>
         </tr>
@@ -1163,6 +1361,11 @@ function bindWalkReviewListeners() {
     setStatus("Sizes marked reviewed — you can continue when ready.");
   });
 
+  // V1.5 setup weigh toggle - makes weigh optional, re-renders table
+  document.getElementById("setupWeighToggle")?.addEventListener("change", () => {
+    renderWalkReview();
+  });
+
   document.getElementById("btnWalkReviewSkip")?.addEventListener("click", async () => {
     const ok = window.confirm(
       "Continue with our best guess?\n\nNames and sizes may be wrong — you'll need to fix them in Step 5 Review or your first count. Only do this if you're stuck."
@@ -1195,6 +1398,10 @@ function bindWalkReviewListeners() {
       if (t.classList.contains("review-size")) {
         bottle.size = t.value;
         bottle.size_verified = true;
+      }
+      if (t.classList.contains("review-weight")) {
+        bottle.current_weight_oz = t.value ? parseFloat(t.value) : null;
+        bottle.weight_mode = bottle.current_weight_oz != null ? "weight" : "level";
       }
       if (t.classList.contains("review-verified")) bottle.size_verified = t.checked;
       if (bottle.parse_flags?.length) {
@@ -1237,11 +1444,12 @@ function bindWalkReviewListeners() {
 }
 
 function normalizeBar(bar) {
-  if (!bar) return { id: "", name: "", stations: [] };
+  if (!bar) return { id: "", name: "", stations: [], recipes: [] };
   return {
     id: bar.id || "",
     name: bar.name || bar.bar_name || "",
     stations: bar.stations || [],
+    recipes: bar.recipes || [],
     setup: bar.setup,
   };
 }
@@ -1251,6 +1459,7 @@ async function persistBar(extra = {}) {
     bar_id: barState.id,
     name: barState.name,
     stations: sortedStations(),
+    recipes: barState.recipes || [],
     ...extra,
   };
   if (barState.setup?.walk_review_status && !extra.walk_review_status) {
@@ -1348,15 +1557,39 @@ const COUNT_LEVEL_WORDS = {
   eight: 8,
   nine: 9,
   ten: 10,
+  // Spanish number words (belt-and-suspenders if normalize skipped)
+  uno: 1,
+  una: 1,
+  dos: 2,
+  tres: 3,
+  cuatro: 4,
+  cinco: 5,
+  seis: 6,
+  siete: 7,
+  ocho: 8,
+  nueve: 9,
+  diez: 10,
   full: 1,
+  lleno: 1,
+  llena: 1,
   zero: 0,
+  cero: 0,
   none: 0,
   out: 0,
+  vacio: 0,
+  vacia: 0,
   half: 0.5,
+  medio: 0.5,
+  media: 0.5,
 };
 
 function parseCountLevel(fragment) {
-  const t = fragment.toLowerCase().replace(/[.,;:]+/g, " ").trim();
+  // Accept EN + ES free-text levels (normalize accents + Spanish synonyms first)
+  const t = applySpanishStructureSynonyms(
+    stripAccents(String(fragment || "").toLowerCase()).replace(/[.,;:]+/g, " ").trim(),
+  )
+    .replace(/\s+/g, " ")
+    .trim();
   if (!t) return null;
   if (/\b(point\s*five|point\s*5|0\.5|\.5|half)\b/.test(t)) return 0.5;
   const pointTenth = t.match(/\bpoint\s*(\d)\b/);
@@ -1378,7 +1611,8 @@ function parseCountLevel(fragment) {
 }
 
 function countLevelOf(token) {
-  const t = (token || "").replace(/[.,;:!?]+$/, "").toLowerCase();
+  const raw = (token || "").replace(/[.,;:!?]+$/, "").toLowerCase();
+  const t = applySpanishStructureSynonyms(stripAccents(raw)).replace(/\s+/g, " ").trim() || raw;
   if (!t) return null;
   if (t === "half" || t === "0.5" || t === ".5") return 0.5;
   const dotTenth = t.match(/^\.(\d{1,2})$/);
@@ -1441,6 +1675,61 @@ function bottleNameInLine(line, bottleName) {
 
 function normalizeCountName(s) {
   return (s || "").toLowerCase().replace(/[''`´]/g, "'").trim();
+}
+
+// V1.5 Phase 1 — Weight support helpers (accuracy boost, software equivalent to Bluetooth scale)
+let BOTTLE_WEIGHTS = null; // loaded map name -> {full_oz, empty_oz, size}
+
+async function loadBottleWeights() {
+  if (BOTTLE_WEIGHTS) return BOTTLE_WEIGHTS;
+  try {
+    const r = await fetch("/api/weights");
+    const data = await r.json();
+    BOTTLE_WEIGHTS = data.weights || {};
+    return BOTTLE_WEIGHTS;
+  } catch (e) {
+    BOTTLE_WEIGHTS = {};
+    return BOTTLE_WEIGHTS;
+  }
+}
+
+function getBottleWeights(bottleName) {
+  if (!BOTTLE_WEIGHTS) return null;
+  const key = (bottleName || "").trim();
+  if (BOTTLE_WEIGHTS[key]) return BOTTLE_WEIGHTS[key];
+  // fuzzy match
+  const lower = key.toLowerCase();
+  for (const k of Object.keys(BOTTLE_WEIGHTS)) {
+    if (k.toLowerCase().includes(lower) || lower.includes(k.toLowerCase())) {
+      return BOTTLE_WEIGHTS[k];
+    }
+  }
+  return BOTTLE_WEIGHTS["default-750ml"] || null;
+}
+
+function effectiveLevel(bottle) {
+  if (!bottle) return 0;
+  const cfg = window.__osbConfig || {};
+  if (!cfg.weigh_enabled) return bottle.current_level ?? 0; // V1.5: weigh optional, default levels
+  if (bottle.weight_mode === "weight" && bottle.current_weight_oz != null) {
+    const w = getBottleWeights(bottle.name);
+    if (w && w.full_oz && w.empty_oz && w.full_oz > w.empty_oz) {
+      const frac = (w.full_oz - bottle.current_weight_oz) / (w.full_oz - w.empty_oz);
+      return Math.max(0, Math.min(2, frac * (parseSizeOz(bottle.size) / 25.36))); // normalize rough
+    }
+  }
+  return bottle.current_level ?? 0;
+}
+
+function parseSizeOz(size) {
+  if (!size) return 25.36;
+  const m = size.match(/(\d+(?:\.\d+)?)\s*(ml|l|oz)/i);
+  if (!m) return 25.36;
+  let v = parseFloat(m[1]);
+  const u = (m[2] || "").toLowerCase();
+  if (u === "l") v *= 33.81;
+  if (u === "ml") v /= 29.57;
+  return v || 25.36;
 }
 
 function scoreCountBottleMatch(spokenName, bottle) {
@@ -2369,9 +2658,19 @@ function addBottleFromCountSurprise(surprise) {
     size_verified: true,
     par_level: 1.0,
     current_level: entry.level ?? 1.0,
+    // V1.5 weight support (Phase 1)
+    weight_mode: "level",
+    current_weight_oz: null,
+    full_weight_oz: null,
+    empty_weight_oz: null,
     count_matched: true,
     count_variance: "matched",
     count_manual_resolved: true,
+    // V1.5 weight support (Phase 1)
+    weight_mode: "level",   // "level" | "weight"
+    current_weight_oz: null,
+    full_weight_oz: null,
+    empty_weight_oz: null,
   };
   station.bottles.push(bottle);
   countDismissedSurpriseKeys.add(countEntryKey(entry));
@@ -2462,9 +2761,13 @@ function updateCountSummary() {
 
 function countGapFixButtonsForMissing(b) {
   const level = b.current_level ?? 1;
+  const wVal = b.current_weight_oz != null ? b.current_weight_oz : "";
+  const weighOn = !!(window.__osbConfig && window.__osbConfig.weigh_enabled);
+  const weightField = weighOn ? `<input type="number" step="0.1" class="count-weight-input count-gap-weight" placeholder="wt oz" value="${wVal}" data-bottle="${b.id}" data-station="${b.stationId}" aria-label="Weight oz V1.5" title="V1.5: enter current weight for accuracy" />` : '';
   return `
     <div class="count-gap-fix-actions">
       <input type="number" class="count-level-input count-gap-level" step="0.1" min="0" max="99" value="${level}" data-bottle="${b.id}" data-station="${b.stationId}" aria-label="Level for ${escapeHtml(b.name)}" />
+      ${weightField}
       <button type="button" class="btn btn-secondary btn-sm btn-count-fix" data-count-fix="mark-counted" data-bottle="${b.id}" data-station="${b.stationId}">Counted</button>
       <button type="button" class="btn btn-ghost btn-sm btn-count-fix" data-count-fix="remove-map" data-bottle="${b.id}" data-station="${b.stationId}">Not on shelf</button>
     </div>`;
@@ -3205,16 +3508,135 @@ function addStation() {
  * "Ketel One liter"). Sizes are the delimiters — not commas or periods, which
  * dictation rarely produces. Station phrases ("well two", "row three",
  * "back bar shelf") mark where the walker moved and group what follows.
+ *
+ * V1.5 bilingual structure: Mexican Spanish station/level/size words are
+ * normalized to English before the EN parser runs. Free-text notes always
+ * accept UTF-8; this layer makes auto-map + count matching work in ES.
  */
+
+function stripAccents(s) {
+  return String(s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+/**
+ * Map common Mexican-Spanish bar-walk / count structure words → English
+ * equivalents the existing regex parser already understands.
+ * Multi-word phrases first; then singles. Input should already be lowercased.
+ */
+function applySpanishStructureSynonyms(t) {
+  let s = ` ${t} `;
+
+  // Multi-word stations / bars (order matters)
+  s = s.replace(/\bbarra\s+trasera\b/g, " back bar ");
+  s = s.replace(/\bbarra\s+de\s+atras\b/g, " back bar ");
+  s = s.replace(/\bestanteria\s+trasera\b/g, " back bar ");
+  s = s.replace(/\bbarra\s+principal\b/g, " main bar ");
+  s = s.replace(/\bbarra\s+de\s+servicio\b/g, " service bar ");
+  s = s.replace(/\bnevera\s+de\s+cerveza\b/g, " beer cooler ");
+  s = s.replace(/\bcooler\s+de\s+cerveza\b/g, " beer cooler ");
+  s = s.replace(/\brefrigerador\s+de\s+cerveza\b/g, " beer cooler ");
+  s = s.replace(/\bnevera\s+de\s+vino\b/g, " wine cooler ");
+  s = s.replace(/\bcooler\s+de\s+vino\b/g, " wine cooler ");
+  // Fine-dining champagne coolers (often 2–3 physical units)
+  s = s.replace(/\bnevera\s+de\s+champan\b/g, " champagne cooler ");
+  s = s.replace(/\bnevera\s+de\s+champagne\b/g, " champagne cooler ");
+  s = s.replace(/\bcooler\s+de\s+champan\b/g, " champagne cooler ");
+  s = s.replace(/\bcooler\s+de\s+champagne\b/g, " champagne cooler ");
+  s = s.replace(/\brefrigerador\s+de\s+champan\b/g, " champagne cooler ");
+  s = s.replace(/\brefrigerador\s+de\s+champagne\b/g, " champagne cooler ");
+  s = s.replace(/\bcava\s+de\s+champan\b/g, " champagne cooler ");
+  s = s.replace(/\bcava\s+de\s+champagne\b/g, " champagne cooler ");
+  s = s.replace(/\bcuarto\s+de\s+licores?\b/g, " liquor room ");
+  s = s.replace(/\bcuarto\s+de\s+licor\b/g, " liquor room ");
+  s = s.replace(/\bcuarto\s+de\s+vinos?\b/g, " wine cellar ");
+  s = s.replace(/\bcava\s+principal\b/g, " wine cellar ");
+  s = s.replace(/\briel\s+rapido\b/g, " speed rail ");
+  s = s.replace(/\brail\s+rapido\b/g, " speed rail ");
+  s = s.replace(/\briel\s+de\s+velocidad\b/g, " speed rail ");
+  s = s.replace(/\bpared\s+de\s+vino\b/g, " wine wall ");
+  s = s.replace(/\bcava\s+de\s+vinos?\b/g, " wine cellar ");
+  s = s.replace(/\bbodega\s+de\s+vinos?\b/g, " wine cellar ");
+  s = s.replace(/\bsiguiente\s+fila\b/g, " next row ");
+  s = s.replace(/\bsiguiente\s+estante\b/g, " next shelf ");
+  s = s.replace(/\bestante\s+de\s+arriba\b/g, " top shelf ");
+  s = s.replace(/\bestante\s+superior\b/g, " top shelf ");
+  s = s.replace(/\bestante\s+de\s+abajo\b/g, " bottom shelf ");
+  s = s.replace(/\bestante\s+inferior\b/g, " bottom shelf ");
+  s = s.replace(/\bestante\s+de\s+vidrio\b/g, " glass shelf ");
+  s = s.replace(/\bpozo\s+principal\b/g, " well primary ");
+  s = s.replace(/\bpozo\s+de\s+servicio\b/g, " well service ");
+  s = s.replace(/\blitro\s+y\s+tres\s+cuartos\b/g, " handle ");
+  s = s.replace(/\blitro\s+y\s+medio\b/g, " handle ");
+  s = s.replace(/\bmedia\s+galon\b/g, " handle ");
+  s = s.replace(/\bmedio\s+galon\b/g, " handle ");
+  s = s.replace(/\bpunto\s+cinco\b/g, " half ");
+  s = s.replace(/\bpunto\s+(\d)\b/g, " point $1 ");
+
+  // Single-token structure
+  s = s.replace(/\bbarra\b/g, " bar ");
+  s = s.replace(/\bpozo\b/g, " well ");
+  s = s.replace(/\bestacion\b/g, " well ");
+  s = s.replace(/\bfila\b/g, " row ");
+  s = s.replace(/\bestante\b/g, " shelf ");
+  s = s.replace(/\bnevera\b/g, " cooler ");
+  s = s.replace(/\brefrigerador\b/g, " cooler ");
+  s = s.replace(/\balmacen\b/g, " storage ");
+  s = s.replace(/\bbodega\b/g, " storage ");
+  s = s.replace(/\bprincipal\b/g, " primary ");
+  s = s.replace(/\bsecundari[oa]\b/g, " secondary ");
+  s = s.replace(/\bservicio\b/g, " service ");
+  s = s.replace(/\btrasero\b/g, " rear ");
+  s = s.replace(/\btrasera\b/g, " rear ");
+  s = s.replace(/\bfrente\b/g, " front ");
+  s = s.replace(/\bgrande\b/g, " large ");
+  s = s.replace(/\bchico\b|\bchica\b|\bpequeno\b|\bpequena\b/g, " small ");
+  s = s.replace(/\bizquierdo\b|\bizquierda\b/g, " left ");
+  s = s.replace(/\bderecho\b|\bderecha\b/g, " right ");
+  s = s.replace(/\bcentro\b/g, " center ");
+  s = s.replace(/\barriva\b/g, " top ");
+  s = s.replace(/\babajo\b/g, " bottom ");
+
+  // Spanish number words → English
+  s = s.replace(/\buno\b|\buna\b/g, " one ");
+  s = s.replace(/\bdos\b/g, " two ");
+  s = s.replace(/\btres\b/g, " three ");
+  s = s.replace(/\bcuatro\b/g, " four ");
+  s = s.replace(/\bcinco\b/g, " five ");
+  s = s.replace(/\bseis\b/g, " six ");
+  s = s.replace(/\bsiete\b/g, " seven ");
+  s = s.replace(/\bocho\b/g, " eight ");
+  s = s.replace(/\bnueve\b/g, " nine ");
+  s = s.replace(/\bdiez\b/g, " ten ");
+
+  // Sizes / quantities / levels
+  s = s.replace(/\blitro\b/g, " liter ");
+  s = s.replace(/\bbotellas\b/g, " bottles ");
+  s = s.replace(/\bbotella\b/g, " bottle ");
+  s = s.replace(/\bcajas\b/g, " cases ");
+  s = s.replace(/\bcaja\b/g, " case ");
+  s = s.replace(/\bvacio\b|\bvacia\b/g, " out ");
+  s = s.replace(/\blleno\b|\bllena\b/g, " full ");
+  s = s.replace(/\bmedio\b|\bmedia\b/g, " half ");
+  s = s.replace(/\bcero\b/g, " zero ");
+  s = s.replace(/\bmango\b/g, " handle "); // MX slang for 1.75L handle
+
+  return s.replace(/\s+/g, " ");
+}
 
 const WALK_WORD_NUMS = {
   one: "1", two: "2", too: "2", to: "2", three: "3", four: "4", for: "4",
   five: "5", six: "6", seven: "7", eight: "8", nine: "9", ten: "10",
+  uno: "1", una: "1", dos: "2", tres: "3", cuatro: "4",
+  cinco: "5", seis: "6", siete: "7", ocho: "8", nueve: "9", diez: "10",
 };
 
 function walkNormalizeText(text) {
   let t = " " + String(text).replace(/\r/g, "\n") + " ";
   t = t.toLowerCase();
+  t = stripAccents(t);
+  t = applySpanishStructureSynonyms(t);
   t = t.replace(/\bleader\b/g, "liter"); // most common dictation mishear
   t = t.replace(/\blitre\b/g, "liter");
   t = t.replace(/\bseven\s+fifty\b/g, "750");
@@ -3273,7 +3695,8 @@ const WALK_STATION_RES = [
   /^(well)\s+(one|two|too|to|three|four|for|five|six|seven|eight|nine|ten|\d{1,2})(\s+(primary|secondary|service|point|patio|rear|front|large|small))?(\s+(row|bro)\s+(one|two|too|three|four|five|\d{1,2}))?(\s+(top|bottom|back|front)\s+(left|right|center)(\s+corner)?)?/,
   /^(row|bro)\s+(one|two|too|three|four|five|six|seven|\d{1,2})/,
   /^(next)\s+(row|shelf)/,
-  /^(wine)\s+(wall|cooler|rack|cellar)/,
+  /^(wine)\s+(wall|cooler|rack|cellar)(\s+(one|two|too|three|four|five|six|seven|eight|nine|ten|\d{1,2}))?/,
+  /^(champagne)\s+cooler(\s+(one|two|too|three|four|five|six|seven|eight|nine|ten|\d{1,2}))?/,
   /^(back\s+bar)(\s+(main|top\s+shelf|shelf|wall|point|service))?/,
   /^(patio)\s+cooler/,
   /^(front|back)\s+wall(\s+(left|right|center)\s+side)?/,
@@ -3311,10 +3734,13 @@ function walkMatchQuantity(words, i) {
   const w = words[i];
   const next = (words[i + 1] || "").replace(/[.,]/g, "");
   const num = WALK_WORD_NUMS[w] ?? (/^\d{1,2}$/.test(w) ? w : null);
-  if (num && (next === "bottles" || next === "bottle")) {
+  // "bottles"/"bottle" already include Spanish via walkNormalizeText (botella→bottle)
+  if (num && (next === "bottles" || next === "bottle" || next === "botellas" || next === "botella")) {
     return { qty: parseInt(num, 10), consumed: 2 };
   }
-  if ((w === "a" || w === "one") && next === "case") return { qty: 12, consumed: 2 };
+  if ((w === "a" || w === "one" || w === "una" || w === "uno") && (next === "case" || next === "caja")) {
+    return { qty: 12, consumed: 2 };
+  }
   return null;
 }
 
@@ -3337,6 +3763,7 @@ function countCleanName(s) {
 
 const CASE_QTY_WORDS = {
   one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10,
 };
 
 function normalizeCaseCountEntry(rawName, level) {
@@ -3773,6 +4200,11 @@ async function addReviewBottle() {
     size_verified: true,
     par_level: 1.0,
     current_level: 1.0,
+    // V1.5 weight support (Phase 1)
+    weight_mode: "level",
+    current_weight_oz: null,
+    full_weight_oz: null,
+    empty_weight_oz: null,
     cost: 0,
   });
   document.getElementById("reviewAddName").value = "";
@@ -4270,6 +4702,11 @@ function addManualBottle() {
     size_verified: true,
     par_level: 1.0,
     current_level: 1.0,
+    // V1.5 weight support (Phase 1)
+    weight_mode: "level",
+    current_weight_oz: null,
+    full_weight_oz: null,
+    empty_weight_oz: null,
     cost: 0,
   });
   document.getElementById("manualBottleName").value = "";
@@ -4295,6 +4732,7 @@ async function initSetup() {
   showOnly(data.phase);
 
   const cfg = data.config;
+  window.__osbConfig = cfg; // V1.5 expose for optional weigh etc.
   const cycleEl = document.getElementById("cycleMode");
   if (cycleEl) {
     cycleEl.value =
@@ -4757,12 +5195,23 @@ async function initSetup() {
 
 
   document.getElementById("countReviewTable")?.addEventListener("change", async (e) => {
-    const input = e.target.closest(".count-level-input");
-    if (!input) return;
-    const bottle = findBottleRecord(input.dataset.bottle, input.dataset.station);
-    if (!bottle) return;
-    bottle.current_level = parseFloat(input.value) || 0;
-    updateFirstCountDoneButton();
+    const levelInput = e.target.closest(".count-level-input");
+    if (levelInput) {
+      const bottle = findBottleRecord(levelInput.dataset.bottle, levelInput.dataset.station);
+      if (!bottle) return;
+      bottle.current_level = parseFloat(levelInput.value) || 0;
+      updateFirstCountDoneButton();
+      return;
+    }
+    // V1.5 weight input
+    const weightInput = e.target.closest(".count-weight-input, .count-gap-weight");
+    if (weightInput) {
+      const bottle = findBottleRecord(weightInput.dataset.bottle, weightInput.dataset.station);
+      if (!bottle) return;
+      bottle.current_weight_oz = weightInput.value ? parseFloat(weightInput.value) : null;
+      bottle.weight_mode = bottle.current_weight_oz != null ? "weight" : "level";
+      updateFirstCountDoneButton();
+    }
   });
 
   document.getElementById("countReviewTable")?.addEventListener("click", async (e) => {
@@ -4775,7 +5224,12 @@ async function initSetup() {
       if (!bottle) return;
       const row = btn.closest("tr");
       const levelInput = row?.querySelector(".count-gap-level, .count-level-input");
+      const weightInput = row?.querySelector(".count-weight-input, .count-gap-weight");
       bottle.current_level = parseFloat(levelInput?.value) || bottle.current_level || 1;
+      if (weightInput && weightInput.value) {
+        bottle.current_weight_oz = parseFloat(weightInput.value);
+        bottle.weight_mode = "weight";
+      }
       bottle.count_matched = true;
       bottle.count_variance = "matched";
       bottle.count_manual_resolved = true;
@@ -4997,6 +5451,24 @@ function renderDashboardHero(metrics, analytics) {
       <div class="dashboard-hero-stat"><span class="dashboard-hero-stat-num">${wow || "—"}</span><span class="dashboard-hero-stat-lbl">WoW changes</span></div>
     `;
   }
+
+  // V1.5 polish: recipes teaser for first-time users after setup
+  const recipes = barState.recipes || [];
+  if (recipes.length > 0) {
+    const recipesNote = document.createElement("div");
+    recipesNote.style.cssText = "margin-top:12px; font-size:0.85rem;";
+    recipesNote.innerHTML = `<a href="#" data-goto-recipes style="color:var(--copper-bright);">🍸 ${recipes.length} recipes • view costing →</a>`;
+    statsEl.parentNode.appendChild(recipesNote);
+    recipesNote.querySelector("[data-goto-recipes]").onclick = (e) => {
+      e.preventDefault();
+      openRecipesPanel();
+    };
+  } else if (bottles > 0) {
+    const note = document.createElement("p");
+    note.style.cssText = "margin-top:8px; font-size:0.8rem; color:var(--text-muted);";
+    note.textContent = "Tip: After setting costs in Spreadsheets, try Recipes & Costing for menu pricing.";
+    statsEl.parentNode.appendChild(note);
+  }
 }
 
 function renderFirstWeekPanel(firstWeek) {
@@ -5124,74 +5596,205 @@ function donutLegend(items) {
     </div>`;
 }
 
+/* ─── V1.5 Reports: story for the floor + depth for the nerd ─── */
+
+function reportMoney(n, digits = 0) {
+  const v = Number(n) || 0;
+  return `$${v.toFixed(digits)}`;
+}
+
+function reportBuildStory(a) {
+  const health = a.health || "watch";
+  const below = a.below_par || 0;
+  const bottles = a.bottle_count || 0;
+  const value = a.total_value || 0;
+  const cost = a.beverage_cost_pct || 0;
+  const ideal = a.ideal_pour_cost_pct;
+  const orders = a.par_status_counts?.order || 0;
+  const watch = a.par_status_counts?.watch || 0;
+  const need$ = a.need_value || 0;
+  const moversDown = (a.velocity || []).filter((v) => v.direction === "down").slice(0, 3);
+  const moversUp = (a.velocity || []).filter((v) => v.direction === "up").slice(0, 2);
+  const cycles = a.cycles_total || 0;
+
+  const greet =
+    health === "solid"
+      ? "Looks like a clean house."
+      : health === "watch"
+        ? "Mostly fine — a few bottles are calling."
+        : "Time to restock before the next rush.";
+
+  const bullets = [];
+  bullets.push(
+    `You've got <strong>${reportMoney(value)}</strong> sitting on the shelves across <strong>${bottles}</strong> bottles and <strong>${a.station_count || 0}</strong> stations.`
+  );
+
+  if (below === 0) {
+    bullets.push(`Nothing is under par. Nice work — the map and the shelves agree.`);
+  } else if (below === 1) {
+    bullets.push(`<strong>1 bottle</strong> is under par. Easy fix before service.`);
+  } else {
+    bullets.push(
+      `<strong>${below} bottles</strong> are under par` +
+        (orders ? ` — <strong>${orders}</strong> need a real order, <strong>${watch}</strong> are just on watch.` : ".")
+    );
+  }
+
+  if (cost > 0) {
+    let costLine = `Pour cost sits around <strong>${cost.toFixed(1)}%</strong>`;
+    if (cost <= 24) costLine += ` — that's in the healthy zone for most bars.`;
+    else if (cost <= 32) costLine += ` — a bit high; check free-pours and waste.`;
+    else costLine += ` — spicy. Look at over-pours, comps, and missing bottles.`;
+    if (ideal != null) {
+      costLine += ` Your recipes say ideal is about <strong>${ideal.toFixed(1)}%</strong>.`;
+    }
+    bullets.push(costLine);
+  }
+
+  if (moversDown.length) {
+    bullets.push(
+      `Moving fastest (down): ${moversDown.map((m) => `<strong>${escapeHtml(m.name)}</strong>`).join(", ")}.`
+    );
+  } else if (cycles < 2) {
+    bullets.push(`Do one more full count and we'll show you what's flying off the shelf week to week.`);
+  }
+
+  if (moversUp.length) {
+    bullets.push(
+      `Weird upside (might be a receive or a miscount): ${moversUp.map((m) => escapeHtml(m.name)).join(", ")}.`
+    );
+  }
+
+  if (need$ > 0) {
+    bullets.push(
+      `Rough restock bill to get back to PAR: about <strong>${reportMoney(need$)}</strong> (uses the costs you set on each bottle).`
+    );
+  }
+
+  if ((a.pos_sales_total || 0) > 0 || (a.purchases_total || 0) > 0) {
+    bullets.push(
+      `This cycle's inputs so far: <strong>${(a.pos_sales_total || 0).toFixed(1)}</strong> sold (from POS) · <strong>${(a.purchases_total || 0).toFixed(1)}</strong> received.`
+    );
+  }
+
+  const actions = [];
+  if (orders > 0) {
+    actions.push({ label: "Build a PO for low stock", go: "smart-orders", primary: true });
+  }
+  if (below > 0) {
+    actions.push({ label: "See what to order", tab: "stock" });
+  }
+  actions.push({ label: "Walk the floor (mobile count)", go: "mobile-count" });
+  if ((a.recipe_rows || []).length === 0) {
+    actions.push({ label: "Add a recipe for menu cost", go: "recipes" });
+  } else {
+    actions.push({ label: "Recipe costing", tab: "money" });
+  }
+  actions.push({ label: "Download full sheet", tab: "export" });
+
+  return {
+    health,
+    healthLabel: a.health_label || "Report",
+    greet,
+    bullets,
+    actions,
+  };
+}
+
+function reportParBadge(status) {
+  if (status === "order") return `<span class="rpt-badge rpt-badge--order">Order</span>`;
+  if (status === "watch") return `<span class="rpt-badge rpt-badge--watch">Watch</span>`;
+  return `<span class="rpt-badge rpt-badge--ok">OK</span>`;
+}
+
+function reportExportCsv(a) {
+  const rows = a.product_rows || [];
+  const header = [
+    "Station", "Product", "Category", "Size", "On hand", "PAR", "Status",
+    "POS sales", "Purchases", "Net", "Adj variance", "Cost", "Line value", "Need", "Need $",
+  ];
+  const lines = [header.join(",")];
+  for (const r of rows) {
+    lines.push(
+      [
+        r.station, r.name, r.category, r.size,
+        r.current_level, r.par_level, r.par_status || "",
+        r.pos_sales || 0, r.purchases || 0, r.net_movement || 0, r.adjusted_variance || 0,
+        r.cost || 0, r.line_value || 0, r.need || 0, r.need_value || 0,
+      ]
+        .map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`)
+        .join(",")
+    );
+  }
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const el = document.createElement("a");
+  el.href = url;
+  el.download = `osb-report-${(a.bar_name || "bar").replace(/\s+/g, "-").toLowerCase()}-${new Date().toISOString().slice(0, 10)}.csv`;
+  el.click();
+  URL.revokeObjectURL(url);
+}
+
+function reportExportStoryText(a, story) {
+  const lines = [
+    `OPEN SOURCE BARWARE — SHIFT REPORT`,
+    `${a.bar_name || "Bar"} · ${story.healthLabel}`,
+    `Generated ${new Date().toLocaleString()}`,
+    ``,
+    story.greet,
+    ``,
+    ...story.bullets.map((b) => `• ${b.replace(/<[^>]+>/g, "")}`),
+    ``,
+    `On hand value: ${reportMoney(a.total_value)}`,
+    `Pour cost %: ${(a.beverage_cost_pct || 0).toFixed(1)}%` +
+      (a.ideal_pour_cost_pct != null ? ` (recipe ideal ${a.ideal_pour_cost_pct.toFixed(1)}%)` : ""),
+    `Below par: ${a.below_par || 0} · Order now: ${a.par_status_counts?.order || 0} · Watch: ${a.par_status_counts?.watch || 0}`,
+    `Restock estimate: ${reportMoney(a.need_value || 0)}`,
+    ``,
+    `— Free & local. Your data never left this machine.`,
+  ];
+  return lines.join("\n");
+}
+
 async function loadAnalytics() {
   const root = document.getElementById("analyticsRoot");
   if (!root) return;
   try {
     const a = await OSB.getAnalytics();
     if (!a.bottle_count) {
-      root.innerHTML = `<p class="field-hint">No inventory data yet — finish your first count to see analytics.</p>`;
+      root.innerHTML = `
+        <div class="panel panel--glass rpt-empty">
+          <p class="rpt-empty-title">No story yet</p>
+          <p class="field-hint">Finish your first count (or load the demo map) and this page turns into a readable shift report — plain English first, full numbers when you want them.</p>
+        </div>`;
       return;
     }
 
+    window.__osbLastReport = a;
+    const story = reportBuildStory(a);
+    const lastCount = a.last_count_at
+      ? new Date(a.last_count_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+      : "—";
+
     const alerts = (a.variance_alerts || [])
+      .slice(0, 12)
       .map(
         (item) => `
       <div class="analytics-alert-row">
         <div>
           <strong>${escapeHtml(item.name)}</strong>
-          <span class="field-hint">${escapeHtml(item.category)}</span>
+          <span class="field-hint">${escapeHtml(item.category || "")}</span>
         </div>
         <div class="analytics-alert-meta">
-          <span class="text-wine">${item.current.toFixed(1)} / ${item.par.toFixed(1)}</span>
-          <span class="field-hint">-${item.deficit.toFixed(1)} deficit</span>
+          <span class="text-wine">${Number(item.current).toFixed(1)} / ${Number(item.par).toFixed(1)}</span>
+          <span class="field-hint">−${Number(item.deficit).toFixed(1)}</span>
         </div>
       </div>`
       )
       .join("");
 
-    const velocity = (a.velocity || [])
-      .map(
-        (item) => `
-      <div class="analytics-velocity-row">
-        <span>${escapeHtml(item.name)}</span>
-        <span class="${item.direction === "down" ? "text-wine" : "text-patina"}">
-          ${item.direction === "down" ? "↓" : "↑"} ${Math.abs(item.change).toFixed(2)}
-        </span>
-      </div>`
-      )
-      .join("");
-
-    const trends = (a.trend_data || [])
-      .map(
-        (t) => `
-      <div class="analytics-trend-row">
-        <span>${escapeHtml(t.date)}</span>
-        <span>${t.items} items</span>
-        <span>avg ${t.avg_level}</span>
-      </div>`
-      )
-      .join("");
-
-    const wowRows = (a.week_over_week || []).slice(0, 14);
-    const wowTable =
-      wowRows.length > 0
-        ? `<table class="analytics-wow-table"><thead><tr><th>Product</th><th>Station</th><th>Was</th><th>Now</th><th>Δ</th></tr></thead><tbody>${wowRows
-            .map(
-              (item) => `
-          <tr>
-            <td><strong>${escapeHtml(item.name)}</strong></td>
-            <td class="field-hint">${escapeHtml(item.station)}</td>
-            <td>${item.previous_level.toFixed(2)}</td>
-            <td>${item.current_level.toFixed(2)}</td>
-            <td class="${item.change < 0 ? "analytics-wow-change--down" : item.change > 0 ? "analytics-wow-change--up" : ""}">${item.change >= 0 ? "+" : ""}${item.change.toFixed(2)}</td>
-          </tr>`
-            )
-            .join("")}</tbody></table>`
-        : `<p class="field-hint">Process a second count to see week-over-week reconciliation.</p>`;
-
     const velocityPills = (a.velocity || [])
-      .slice(0, 10)
+      .slice(0, 12)
       .map(
         (item) => `
       <span class="velocity-pill velocity-pill--${item.direction === "down" ? "down" : "up"}">
@@ -5201,42 +5804,344 @@ async function loadAnalytics() {
       )
       .join("");
 
+    const wowRows = (a.week_over_week || []).slice(0, 20);
+    const wowTable =
+      wowRows.length > 0
+        ? `<div class="workbook-table-wrap scroll-panel"><table class="analytics-wow-table workbook-table"><thead><tr>
+            <th>Product</th><th>Station</th><th>Was</th><th>Now</th><th>Δ</th>
+          </tr></thead><tbody>${wowRows
+            .map(
+              (item) => `
+          <tr>
+            <td><strong>${escapeHtml(item.name)}</strong></td>
+            <td class="field-hint">${escapeHtml(item.station)}</td>
+            <td class="workbook-num">${Number(item.previous_level).toFixed(2)}</td>
+            <td class="workbook-num">${Number(item.current_level).toFixed(2)}</td>
+            <td class="workbook-num ${item.change < 0 ? "analytics-wow-change--down" : item.change > 0 ? "analytics-wow-change--up" : ""}">${item.change >= 0 ? "+" : ""}${Number(item.change).toFixed(2)}</td>
+          </tr>`
+            )
+            .join("")}</tbody></table></div>`
+        : `<p class="field-hint">Process a second count and this becomes a week-over-week story.</p>`;
+
+    // Stock table sorted: order first, then watch, then ok
+    const statusRank = { order: 0, watch: 1, ok: 2 };
+    const stockRows = [...(a.product_rows || [])].sort((x, y) => {
+      const sr = (statusRank[x.par_status] ?? 9) - (statusRank[y.par_status] ?? 9);
+      if (sr !== 0) return sr;
+      return (y.need || 0) - (x.need || 0);
+    });
+
+    const stockTable = stockRows.length
+      ? `<div class="workbook-table-wrap scroll-panel"><table class="workbook-table">
+        <thead><tr>
+          <th>Status</th><th>Product</th><th>Station</th><th>On hand</th><th>PAR</th>
+          <th>Sales</th><th>Recv</th><th>Need</th><th>Need $</th>
+        </tr></thead>
+        <tbody>${stockRows
+          .map(
+            (r) => `<tr class="${r.par_status === "order" ? "row-flag" : ""}">
+            <td>${reportParBadge(r.par_status)}</td>
+            <td><strong>${escapeHtml(r.name)}</strong> <span class="field-hint">${escapeHtml(r.size || "")}</span></td>
+            <td class="field-hint">${escapeHtml(r.station || "")}</td>
+            <td class="workbook-num">${Number(r.current_level).toFixed(2)}</td>
+            <td class="workbook-num">${Number(r.par_level).toFixed(1)}</td>
+            <td class="workbook-num">${Number(r.pos_sales || 0).toFixed(1)}</td>
+            <td class="workbook-num">${Number(r.purchases || 0).toFixed(1)}</td>
+            <td class="workbook-num">${Number(r.need || 0).toFixed(1)}</td>
+            <td class="workbook-num">${r.need_value ? reportMoney(r.need_value) : "—"}</td>
+          </tr>`
+          )
+          .join("")}</tbody></table>
+        <p class="workbook-row-count">${stockRows.length} bottles · sorted by who needs love first</p>
+      </div>`
+      : `<p class="field-hint">No stock rows.</p>`;
+
+    const recipeTable = (a.recipe_rows || []).length
+      ? `<div class="workbook-table-wrap scroll-panel"><table class="workbook-table">
+        <thead><tr><th>Recipe</th><th>Menu $</th><th>Cost / serve</th><th>Cost %</th><th>Profit</th></tr></thead>
+        <tbody>${(a.recipe_rows || [])
+          .map(
+            (r) => `<tr>
+            <td><strong>${escapeHtml(r.name)}</strong></td>
+            <td class="workbook-num">${reportMoney(r.menu_price, 2)}</td>
+            <td class="workbook-num">${reportMoney(r.cost_per_serving, 2)}</td>
+            <td class="workbook-num">${Number(r.cost_pct || 0).toFixed(1)}%</td>
+            <td class="workbook-num">${reportMoney(r.profit_per_serving, 2)}</td>
+          </tr>`
+          )
+          .join("")}</tbody></table></div>`
+      : `<p class="field-hint">No recipes yet. Open <strong>Recipes &amp; Costing</strong> from Home base — even three classics make the “ideal vs actual” story useful.</p>`;
+
+    const history = a.cycle_history || a.trend_data || [];
+    const historyBlock = history.length
+      ? `<div class="rpt-history">
+          ${history
+            .map((c, i) => {
+              const avg = c.avg_level != null ? Number(c.avg_level).toFixed(2) : "—";
+              const bp = c.below_par != null ? c.below_par : "—";
+              const items = c.items != null ? c.items : "—";
+              return `<div class="rpt-history-card">
+                <div class="rpt-history-num">#${c.cycle_number || history.length - i}</div>
+                <div class="rpt-history-date">${escapeHtml(c.date || c.full_date || "")}</div>
+                <div class="rpt-history-meta">${items} bottles · avg ${avg} · ${bp} below par</div>
+              </div>`;
+            })
+            .join("")}
+        </div>`
+      : `<p class="field-hint">History shows up after you Process a count.</p>`;
+
+    const actionHtml = story.actions
+      .map((act) => {
+        const cls = act.primary ? "btn btn-primary btn-sm" : "btn btn-ghost btn-sm";
+        if (act.go) return `<button type="button" class="${cls}" data-rpt-go="${act.go}">${escapeHtml(act.label)}</button>`;
+        return `<button type="button" class="${cls}" data-rpt-tab="${act.tab}">${escapeHtml(act.label)}</button>`;
+      })
+      .join("");
+
+    // Multi-venue roll-up (optional layer when 2+ bars exist)
+    let venueStrip = "";
+    try {
+      const v = await OSB.listVenues();
+      if ((v.venues || []).length > 1) {
+        const c = v.consolidated || {};
+        venueStrip = `
+          <section class="panel panel--glass venues-roll-up" style="margin:0;">
+            <strong>All venues</strong>
+            <span>${c.venue_count || 0} spots · ${c.bottle_count || 0} SKUs · ${reportMoney(c.total_value || 0)} total · ${c.below_par || 0} below par company-wide · showing report for <em>${escapeHtml(a.bar_name || "active venue")}</em></span>
+            <div class="rpt-actions" style="margin-top:10px;">
+              <button type="button" class="btn btn-ghost btn-sm" data-rpt-go="transfer">⇄ Transfer stock</button>
+            </div>
+          </section>`;
+      }
+    } catch (_) { /* single-venue fine */ }
+
     root.innerHTML = `
-      <div class="analytics-grid">
-        <div class="panel analytics-panel analytics-panel--hero">
-          <div class="analytics-panel-head">
-            <h2>${escapeHtml(a.bar_name || "Your bar")}</h2>
-            <span class="analytics-total">$${(a.total_value || 0).toFixed(0)} on hand</span>
+      <div class="rpt">
+        ${venueStrip}
+        <!-- LAYER 1: The story anyone can read -->
+        <section class="panel panel--glass rpt-story rpt-story--${escapeHtml(story.health)}">
+          <div class="rpt-story-top">
+            <div>
+              <p class="rpt-kicker">Tonight's read · ${escapeHtml(a.cycle_label || "Inventory cycle")}</p>
+              <h2 class="rpt-story-title">${escapeHtml(a.bar_name || "Your bar")}</h2>
+              <p class="rpt-greet">${escapeHtml(story.greet)}</p>
+            </div>
+            <div class="rpt-health-pill rpt-health-pill--${escapeHtml(story.health)}" title="Overall bar health from PARs">
+              ${escapeHtml(story.healthLabel)}
+            </div>
           </div>
-          <p class="field-hint" style="margin-bottom:14px;">${a.bottle_count || 0} SKUs · ${a.station_count || 0} stations · Cycle ${a.cycles_total || 1}${a.below_par ? ` · <span class="text-wine">${a.below_par} below par</span>` : ""}</p>
-          ${horizontalBars(a.category_values)}
+          <ul class="rpt-bullets">
+            ${story.bullets.map((b) => `<li>${b}</li>`).join("")}
+          </ul>
+          <div class="rpt-actions">${actionHtml}</div>
+          <p class="rpt-footnote">Last count: <strong>${escapeHtml(lastCount)}</strong> · Cycles logged: <strong>${a.cycles_total || 0}</strong> · Numbers stay on this machine</p>
+        </section>
+
+        <!-- LAYER 2: Scoreboard (glanceable) -->
+        <section class="rpt-scoreboard">
+          <div class="rpt-score"><span class="rpt-score-num">${reportMoney(a.total_value)}</span><span class="rpt-score-lbl">On the shelf</span></div>
+          <div class="rpt-score"><span class="rpt-score-num">${(a.beverage_cost_pct || 0).toFixed(1)}%</span><span class="rpt-score-lbl">Pour cost${a.ideal_pour_cost_pct != null ? ` · ideal ${a.ideal_pour_cost_pct.toFixed(1)}%` : ""}</span></div>
+          <div class="rpt-score ${a.below_par ? "rpt-score--warn" : ""}"><span class="rpt-score-num">${a.below_par || 0}</span><span class="rpt-score-lbl">Below par</span></div>
+          <div class="rpt-score"><span class="rpt-score-num">${reportMoney(a.need_value || 0)}</span><span class="rpt-score-lbl">Restock estimate</span></div>
+          <div class="rpt-score"><span class="rpt-score-num">${a.par_status_counts?.ok || 0}<span class="rpt-score-sub">/${a.bottle_count || 0}</span></span><span class="rpt-score-lbl">Healthy bottles</span></div>
+          <div class="rpt-score"><span class="rpt-score-num">${a.station_count || 0}</span><span class="rpt-score-lbl">Stations</span></div>
+        </section>
+
+        <!-- LAYER 3: Tabs — depth without dumping it all at once -->
+        <div class="rpt-tabs" role="tablist" aria-label="Report sections">
+          <button type="button" class="rpt-tab active" data-rpt-panel="glance">At a glance</button>
+          <button type="button" class="rpt-tab" data-rpt-panel="stock">Stock &amp; orders</button>
+          <button type="button" class="rpt-tab" data-rpt-panel="money">Money &amp; recipes</button>
+          <button type="button" class="rpt-tab" data-rpt-panel="history">History</button>
+          <button type="button" class="rpt-tab" data-rpt-panel="export">Export / full sheet</button>
         </div>
-        <div class="panel analytics-panel">
-          <h2>Beverage cost %</h2>
-          ${costGaugeSvg(a.beverage_cost_pct || 0)}
-          <p class="field-hint">Target: 18–24% for spirits programs</p>
-        </div>
-        <div class="panel analytics-panel">
-          <h2>Category mix</h2>
-          ${donutLegend(a.category_distribution)}
-        </div>
-        <div class="panel analytics-panel">
-          <h2>Variance alerts</h2>
-          ${alerts || `<p class="field-hint analytics-ok">All items at or above par</p>`}
-        </div>
-        <div class="panel analytics-panel">
-          <h2>Velocity</h2>
-          <div class="velocity-pills-wrap">${velocityPills || `<p class="field-hint">Need 2+ cycles for movers.</p>`}</div>
-        </div>
-        <div class="panel analytics-panel">
-          <h2>Count trends</h2>
-          ${trends || `<p class="field-hint">Complete a count to see trends.</p>`}
-        </div>
-        <div class="panel analytics-panel analytics-panel-wide">
-          <h2>Week over week — reconciliation</h2>
-          ${wowTable}
+
+        <div class="rpt-panels">
+          <div class="rpt-panel active" data-rpt-panel-body="glance">
+            <div class="analytics-grid">
+              <div class="panel analytics-panel analytics-panel--hero">
+                <div class="analytics-panel-head">
+                  <h2>Where the money sits</h2>
+                  <span class="analytics-total">${reportMoney(a.total_value)} on hand</span>
+                </div>
+                <p class="field-hint" style="margin-bottom:12px;">Bigger bar = more cash tied up. Tap Stock if something looks off.</p>
+                ${horizontalBars(a.category_values)}
+              </div>
+              <div class="panel analytics-panel">
+                <h2>Pour cost gauge</h2>
+                ${costGaugeSvg(a.beverage_cost_pct || 0)}
+                <p class="field-hint">Green band ≈ 18–24%. This is a program average from bottle costs — not a tax form.</p>
+                ${
+                  a.ideal_pour_cost_pct != null
+                    ? `<p class="field-hint">Recipe ideal (menu math): <strong>${a.ideal_pour_cost_pct.toFixed(1)}%</strong> — compare to the needle.</p>`
+                    : ""
+                }
+              </div>
+              <div class="panel analytics-panel">
+                <h2>Category mix</h2>
+                ${donutLegend(a.category_distribution)}
+              </div>
+              <div class="panel analytics-panel">
+                <h2>Needs attention</h2>
+                ${alerts || `<p class="field-hint analytics-ok">All clear — everything at or above par.</p>`}
+              </div>
+              <div class="panel analytics-panel">
+                <h2>Movers</h2>
+                <div class="velocity-pills-wrap">${velocityPills || `<p class="field-hint">Need 2+ processed counts to rank movers.</p>`}</div>
+              </div>
+              <div class="panel analytics-panel analytics-panel-wide">
+                <h2>Week over week</h2>
+                <p class="field-hint" style="margin-top:0;">What changed since the last Process — not sales, shelf levels.</p>
+                ${wowTable}
+              </div>
+            </div>
+          </div>
+
+          <div class="rpt-panel" data-rpt-panel-body="stock">
+            <div class="panel panel--glass">
+              <div class="rpt-panel-head-row">
+                <div>
+                  <h2 style="margin:0;">Stock &amp; what to order</h2>
+                  <p class="field-hint" style="margin:4px 0 0;">Sorted so “Order” hits the top. Watch = half-empty vs PAR. OK = leave it alone.</p>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" data-rpt-go="smart-orders">Open Smart Orders → PO</button>
+              </div>
+              <div class="rpt-legend">
+                <span>${reportParBadge("order")} under half of PAR</span>
+                <span>${reportParBadge("watch")} under PAR</span>
+                <span>${reportParBadge("ok")} at/above PAR</span>
+              </div>
+              ${stockTable}
+            </div>
+          </div>
+
+          <div class="rpt-panel" data-rpt-panel-body="money">
+            <div class="analytics-grid">
+              <div class="panel analytics-panel">
+                <h2>Cost snapshot</h2>
+                ${costGaugeSvg(a.beverage_cost_pct || 0)}
+                <ul class="rpt-bullets rpt-bullets--tight">
+                  <li>Program pour cost: <strong>${(a.beverage_cost_pct || 0).toFixed(1)}%</strong></li>
+                  <li>Recipe ideal: <strong>${a.ideal_pour_cost_pct != null ? a.ideal_pour_cost_pct.toFixed(1) + "%" : "add recipes + menu prices"}</strong></li>
+                  <li>Shelf value: <strong>${reportMoney(a.total_value)}</strong></li>
+                  <li>Restock to PAR: <strong>${reportMoney(a.need_value || 0)}</strong></li>
+                </ul>
+              </div>
+              <div class="panel analytics-panel">
+                <h2>Category $ mix</h2>
+                ${horizontalBars(a.category_values)}
+              </div>
+              <div class="panel analytics-panel analytics-panel-wide">
+                <h2>Recipes &amp; menu math</h2>
+                <p class="field-hint" style="margin-top:0;">Cost per serve uses your bottle costs and pour sizes. Menu % = cost ÷ menu price. No cloud — just your numbers.</p>
+                ${recipeTable}
+              </div>
+            </div>
+          </div>
+
+          <div class="rpt-panel" data-rpt-panel-body="history">
+            <div class="panel panel--glass">
+              <h2 style="margin-top:0;">Cycle history</h2>
+              <p class="field-hint">Each Process locks a snapshot. More cycles = smarter velocity and WoW.</p>
+              ${historyBlock}
+              <h3 style="margin-top:20px;font-family:var(--font-serif);color:var(--copper-bright);font-size:1rem;">Week-over-week detail</h3>
+              ${wowTable}
+            </div>
+          </div>
+
+          <div class="rpt-panel" data-rpt-panel-body="export">
+            <div class="panel panel--glass">
+              <h2 style="margin-top:0;">Take it with you</h2>
+              <p class="field-hint">Share with a GM, paste into Slack, or open in Excel. Still 100% local until you hit download.</p>
+              <div class="rpt-export-actions">
+                <button type="button" class="btn btn-primary" id="rptExportCsv">Download full CSV</button>
+                <button type="button" class="btn btn-secondary" id="rptCopyStory">Copy plain-English summary</button>
+                <button type="button" class="btn btn-ghost" id="rptDownloadStory">Save summary .txt</button>
+              </div>
+              <p id="rptExportStatus" class="status" style="margin-top:10px;"></p>
+              <details class="rpt-deep" style="margin-top:16px;">
+                <summary>Full bottle sheet (every column)</summary>
+                <div class="workbook-table-wrap scroll-panel" style="margin-top:10px;">
+                  <table class="workbook-table">
+                    <thead><tr>
+                      <th>Station</th><th>Product</th><th>Cat</th><th>On hand</th><th>PAR</th><th>Status</th>
+                      <th>Sales</th><th>Purch</th><th>Net</th><th>Adj var</th><th>Cost</th><th>$ on hand</th>
+                    </tr></thead>
+                    <tbody>
+                      ${(a.product_rows || [])
+                        .map(
+                          (r) => `<tr>
+                          <td>${escapeHtml(r.station || "")}</td>
+                          <td><strong>${escapeHtml(r.name)}</strong></td>
+                          <td class="field-hint">${escapeHtml(r.category || "")}</td>
+                          <td class="workbook-num">${Number(r.current_level).toFixed(2)}</td>
+                          <td class="workbook-num">${Number(r.par_level).toFixed(1)}</td>
+                          <td>${reportParBadge(r.par_status)}</td>
+                          <td class="workbook-num">${Number(r.pos_sales || 0).toFixed(1)}</td>
+                          <td class="workbook-num">${Number(r.purchases || 0).toFixed(1)}</td>
+                          <td class="workbook-num">${Number(r.net_movement || 0).toFixed(1)}</td>
+                          <td class="workbook-num">${Number(r.adjusted_variance || 0).toFixed(2)}</td>
+                          <td class="workbook-num">${r.cost ? reportMoney(r.cost, 2) : "—"}</td>
+                          <td class="workbook-num">${reportMoney(r.line_value || 0)}</td>
+                        </tr>`
+                        )
+                        .join("")}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            </div>
+          </div>
         </div>
       </div>`;
+
+    // Tab wiring
+    const activateTab = (name) => {
+      root.querySelectorAll(".rpt-tab").forEach((t) => {
+        t.classList.toggle("active", t.dataset.rptPanel === name);
+      });
+      root.querySelectorAll(".rpt-panel").forEach((p) => {
+        p.classList.toggle("active", p.dataset.rptPanelBody === name);
+      });
+    };
+
+    root.querySelectorAll(".rpt-tab").forEach((tab) => {
+      tab.addEventListener("click", () => activateTab(tab.dataset.rptPanel));
+    });
+
+    root.querySelectorAll("[data-rpt-tab]").forEach((btn) => {
+      btn.addEventListener("click", () => activateTab(btn.dataset.rptTab));
+    });
+
+    root.querySelectorAll("[data-rpt-go]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const go = btn.dataset.rptGo;
+        if (go === "smart-orders") openSmartOrdersPanel();
+        else if (go === "mobile-count") document.getElementById("btnMobileCount")?.click();
+        else if (go === "recipes") openRecipesPanel();
+        else if (go === "transfer") openTransferPanel();
+      });
+    });
+
+    root.querySelector("#rptExportCsv")?.addEventListener("click", () => {
+      reportExportCsv(a);
+      const st = root.querySelector("#rptExportStatus");
+      if (st) st.textContent = "CSV downloaded — open it in Excel or Sheets.";
+    });
+
+    root.querySelector("#rptCopyStory")?.addEventListener("click", async () => {
+      const text = reportExportStoryText(a, story);
+      const ok = await copyToClipboard(text);
+      const st = root.querySelector("#rptExportStatus");
+      if (st) st.textContent = ok ? "Summary copied — paste anywhere." : "Copy failed — use Save .txt instead.";
+    });
+
+    root.querySelector("#rptDownloadStory")?.addEventListener("click", () => {
+      const text = reportExportStoryText(a, story);
+      downloadTextFile(`osb-shift-report-${new Date().toISOString().slice(0, 10)}.txt`, text);
+      const st = root.querySelector("#rptExportStatus");
+      if (st) st.textContent = "Plain-English summary saved.";
+    });
   } catch (e) {
     root.innerHTML = `<p class="status">${escapeHtml(e.message)}</p>`;
   }
@@ -5391,7 +6296,12 @@ function renderWorkbookSheet(sheet, data) {
         const v = r.current_level - r.par_level;
         const pct = r.par_level ? (v / r.par_level) * 100 : 0;
         const status = v > 0.05 ? "over" : v < -0.05 ? "under" : "at";
-        return { ...r, variance: v, variancePct: pct, status };
+        const pos = r.pos_sales || 0;
+        const purch = r.purchases || 0;
+        // V1.5: adjusted variance incorporating recent POS sales and purchases (real usage: purchases - sales)
+        const net = purch - pos;
+        const adjusted = v - net;
+        return { ...r, variance: v, variancePct: pct, status, pos_sales: pos, purchases: purch, adjusted_variance: adjusted, net_movement: net };
       })
       .sort((a, b) => a.variance - b.variance);
 
@@ -5406,26 +6316,32 @@ function renderWorkbookSheet(sheet, data) {
 
     if (sheet === "order-generator") {
       return renderWorkbookTable(
-        ["Product", "Station", "Current", "Par", "Need"],
+        ["Product", "Station", "Current", "Par", "POS Sales", "Purchases", "Need"],
         filtered.map((r) => [
           escapeHtml(r.name),
           escapeHtml(r.station),
           r.current_level.toFixed(2),
           r.par_level.toFixed(2),
+          (r.pos_sales || 0).toFixed(1),
+          (r.purchases || 0).toFixed(1),
           `+${(r.par_level - r.current_level).toFixed(2)}`,
         ])
       );
     }
 
     return renderWorkbookTable(
-      ["Product", "Station", "Current", "Par", "Variance", "Var %", "Status"],
+      ["Product", "Station", "Current", "Par", "POS Sales", "Purchases", "Net", "Variance", "Var %", "Adj Var", "Status"],
       filtered.map((r) => [
         escapeHtml(r.name),
         escapeHtml(r.station),
         r.current_level.toFixed(2),
         r.par_level.toFixed(2),
+        (r.pos_sales || 0).toFixed(1),
+        (r.purchases || 0).toFixed(1),
+        (r.net_movement || 0).toFixed(1),
         `${r.variance >= 0 ? "+" : ""}${r.variance.toFixed(2)}`,
         `${r.variancePct >= 0 ? "+" : ""}${r.variancePct.toFixed(0)}%`,
+        `${r.adjusted_variance >= 0 ? "+" : ""}${r.adjusted_variance.toFixed(2)}`,
         r.status === "over" ? "Over" : r.status === "under" ? "Under" : "At par",
       ])
     );
@@ -5704,12 +6620,272 @@ async function savePendingInvoiceParse() {
   }
 }
 
+// V1.5 POS structured review (smoother than competitors: parse + auto-match + review matches before save)
+let pendingPosParse = null;
+
+function renderPosParsePreview(lines) {
+  const box = document.getElementById("posParsePreview");
+  if (!box || !lines || !lines.length) {
+    if (box) {
+      box.classList.add("hidden");
+      box.innerHTML = "";
+    }
+    return;
+  }
+  const bottles = allBottles();
+  const rows = lines
+    .map((ln, i) => {
+      const match = autoMatchProduct(ln.product, bottles);
+      const matchName = match ? escapeHtml(match.name) : "unmatched";
+      const matchId = match ? match.id : "";
+      return `<tr class="${i % 2 ? "workbook-row-alt" : ""}">
+        <td><input type="text" class="pos-match-product" value="${escapeHtml(ln.product)}" data-idx="${i}" /></td>
+        <td class="workbook-num">${ln.qty ?? ""}</td>
+        <td class="workbook-num">${ln.price != null ? `$${Number(ln.price).toFixed(2)}` : "—"}</td>
+        <td>
+          <select class="pos-match-select" data-idx="${i}">
+            <option value="">-- ${matchName} --</option>
+            ${bottles.map(b => `<option value="${b.id}" ${b.id === matchId ? "selected" : ""}>${escapeHtml(b.name)} (${b.size})</option>`).join("")}
+          </select>
+        </td>
+      </tr>`;
+    })
+    .join("");
+  box.classList.remove("hidden");
+  box.innerHTML = `
+    <div class="invoice-parse-head">
+      <strong>Parsed POS lines</strong>
+      <span class="field-hint">${lines.length} lines • review matches (auto-filled where possible)</span>
+    </div>
+    <div class="workbook-table-wrap scroll-panel">
+      <table class="workbook-table review-table">
+        <thead><tr><th>Product (edit)</th><th>Qty</th><th>Price</th><th>Match to bottle</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="btnSaveParsedPos">Save reviewed POS →</button>
+      <button type="button" class="btn btn-ghost" id="btnDiscardPosParse">Discard</button>
+    </div>`;
+  document.getElementById("btnSaveParsedPos")?.addEventListener("click", savePendingPosParse);
+  document.getElementById("btnDiscardPosParse")?.addEventListener("click", () => {
+    pendingPosParse = null;
+    box.classList.add("hidden");
+    box.innerHTML = "";
+  });
+}
+
+async function savePendingPosParse() {
+  if (!pendingPosParse) return;
+  const box = document.getElementById("posParsePreview");
+  const label = document.getElementById("posLabel")?.value?.trim();
+  const note = document.getElementById("posNote")?.value?.trim();
+  // Collect reviewed lines with matches
+  const reviewedLines = [];
+  const productInputs = box.querySelectorAll(".pos-match-product");
+  const selectInputs = box.querySelectorAll(".pos-match-select");
+  const bottles = allBottles();
+  for (let i = 0; i < productInputs.length; i++) {
+    const prod = productInputs[i].value.trim();
+    const sel = selectInputs[i];
+    const matchId = sel ? sel.value : "";
+    const match = matchId ? bottles.find(b => b.id === matchId) : null;
+    reviewedLines.push({
+      product: prod,
+      qty: pendingPosParse[i].qty,
+      price: pendingPosParse[i].price,
+      matched_bottle_id: matchId || null,
+      matched_name: match ? match.name : null
+    });
+  }
+  try {
+    await OSB.uploadPosLog({
+      label: label || "POS drop",
+      note,
+      text: "", // no raw text needed
+      inputType: "pos",
+      parsed_pos: { lines: reviewedLines, source: "reviewed" }
+    });
+    pendingPosParse = null;
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    document.getElementById("posFile").value = "";
+    document.getElementById("posPaste").value = "";
+    document.getElementById("posLabel").value = "";
+    document.getElementById("posNote").value = "";
+    setStatus("Reviewed POS saved to input log with matches.", "posParseStatus");
+    await loadInputsHub();
+    await loadMetrics();
+  } catch (e) {
+    setStatus(e.message, "posParseStatus");
+  }
+}
+
+// V1.5 Receiving workflow (tie to smart orders / PO suggestions, log actuals, flag discrepancies for variance)
+let receiveItems = [];
+
+async function loadSmartForReceive() {
+  const listEl = document.getElementById("receiveList");
+  if (!listEl) return;
+  const salesMap = {}; // reuse logic from smart orders
+  const posData = await OSB.getPosLog();
+  for (const entry of (posData.entries || []).slice(0, 5)) {
+    const lines = entry.parsed_pos?.lines || [];
+    for (const line of lines) {
+      const key = (line.product || "").toLowerCase().trim();
+      if (key) salesMap[key] = (salesMap[key] || 0) + (line.qty || 0);
+    }
+  }
+  const orders = generateSmartOrders(salesMap);
+  receiveItems = orders.map(o => ({...o, received: o.suggested})); // default to suggested
+  renderReceiveList();
+  setStatus("Loaded suggestions for receive. Edit received qty as needed.", "receiveStatus");
+}
+
+function renderReceiveList() {
+  const listEl = document.getElementById("receiveList");
+  if (!listEl) return;
+  if (!receiveItems.length) {
+    listEl.innerHTML = `<p class="field-hint">No suggestions loaded. Click "Load from smart orders" or add manually.</p>`;
+    return;
+  }
+  listEl.innerHTML = receiveItems.map((item, idx) => `
+    <div class="bar-list-item" style="display:flex; align-items:center; gap:8px;">
+      <span style="flex:1;"><strong>${escapeHtml(item.name)}</strong> ${escapeHtml(item.size)} @ ${item.station}</span>
+      <label style="font-size:0.8rem;">Suggested: ${item.suggested}</label>
+      <input type="number" step="0.1" min="0" value="${item.received}" style="width:70px;" data-receive-idx="${idx}" class="receive-qty" />
+      <button class="btn btn-ghost btn-sm" data-remove-receive="${idx}">×</button>
+    </div>
+  `).join('');
+  // wire qty changes
+  listEl.querySelectorAll('.receive-qty').forEach(inp => {
+    inp.onchange = () => {
+      const idx = parseInt(inp.dataset.receiveIdx);
+      receiveItems[idx].received = parseFloat(inp.value) || 0;
+    };
+  });
+  listEl.querySelectorAll('[data-remove-receive]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.removeReceive);
+      receiveItems.splice(idx, 1);
+      renderReceiveList();
+    };
+  });
+}
+
+async function logReceipt() {
+  const statusEl = document.getElementById("receiveStatus");
+  if (!receiveItems.length) {
+    setStatus("No items to receive.", statusEl ? "receiveStatus" : null);
+    return;
+  }
+  try {
+    for (const item of receiveItems) {
+      const discrepancy = item.received - item.suggested;
+      const note = discrepancy !== 0 ? `Discrepancy: ${discrepancy > 0 ? '+' : ''}${discrepancy}` : '';
+      await OSB.uploadPosLog({
+        label: `Receive: ${item.name}`,
+        note: `From suggestions @ ${item.station}. Suggested ${item.suggested}, received ${item.received}. ${note}`,
+        text: `Received ${item.received} of ${item.name}`,
+        inputType: "purchase"
+      });
+    }
+    setStatus("Receipt logged. Discrepancies noted for variance.", "receiveStatus");
+    receiveItems = [];
+    document.getElementById("receiveList").innerHTML = "";
+    await loadInputsHub();
+  } catch (e) {
+    setStatus("Log failed: " + e.message, "receiveStatus");
+  }
+}
+
+// wire
+document.getElementById("btnLoadSmartForReceive")?.addEventListener("click", loadSmartForReceive);
+document.getElementById("btnLogReceipt")?.addEventListener("click", logReceipt);
+
 function inputTypeLabel(type) {
-  return type === "invoice" ? "Invoice" : "POS";
+  if (type === "invoice") return "Invoice";
+  if (type === "purchase") return "Purchase/Receive";
+  if (type === "po") return "PO / Order";
+  return "POS";
+}
+
+// V1.5 Full structured POS import: parse CSV/Toast/Square text better + auto-match to bottles
+function parsePosText(text) {
+  if (!text || !text.trim()) return null;
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return null;
+
+  const headerLine = lines[0].toLowerCase().replace(/"/g, '').split(/,|\t/).map(h => h.trim());
+  const dataLines = lines.slice(1);
+
+  // Flexible header mapping for Toast, Square, generic, Aloha etc.
+  const colMap = {};
+  headerLine.forEach((h, i) => {
+    if (h.includes('item') || h.includes('name') || h.includes('product') || h.includes('description') || h.includes('item name')) colMap.product = i;
+    if (h.includes('qty') || h.includes('quantity') || h.includes('sold') || h.includes('count') || h.includes('quantity sold')) colMap.qty = i;
+    if (h.includes('price') || h.includes('sales') || h.includes('amount') || h.includes('net') || h.includes('total') || h.includes('net sales') || h.includes('price sold')) colMap.price = i;
+  });
+
+  const rows = [];
+  for (const line of dataLines) {
+    const cols = line.replace(/"/g, '').split(/,|\t/).map(c => c.trim());
+    let product = '';
+    let qty = 0;
+    let price = 0;
+
+    if (colMap.product != null) product = cols[colMap.product] || '';
+    if (colMap.qty != null) qty = parseFloat(cols[colMap.qty]) || 0;
+    if (colMap.price != null) price = parseFloat(cols[colMap.price]) || 0;
+
+    // Fallback guess if no good headers (common for simple exports)
+    if (!product && cols.length > 0) product = cols[0];
+    if (qty === 0 && cols.length > 1) qty = parseFloat(cols[1]) || 0;
+    if (price === 0 && cols.length > 2) price = parseFloat(cols[2]) || 0;
+
+    // Toast specific cleanup
+    if (product.includes(' - ') && product.split(' - ').length > 1) {
+      product = product.split(' - ')[0].trim(); // e.g. "Tequila - Well" -> "Tequila"
+    }
+
+    if (product) {
+      rows.push({ product, qty: Math.max(0, qty), price: Math.max(0, price) });
+    }
+  }
+  return rows.length ? rows : null;
+}
+
+function autoMatchProduct(productName, bottles) {
+  if (!productName || !bottles || !bottles.length) return null;
+  const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+  const pnorm = norm(productName);
+  let best = null;
+  let bestScore = 0;
+  for (const b of bottles) {
+    const bnorm = norm(b.name);
+    if (!bnorm) continue;
+    let score = 0;
+    if (bnorm === pnorm) score = 100;
+    else if (bnorm.includes(pnorm) || pnorm.includes(bnorm)) score = 80;
+    else {
+      const words = pnorm.split(' ').filter(w => w.length > 2);
+      const bwords = bnorm.split(' ');
+      const matchWords = words.filter(w => bwords.some(bw => bw.includes(w) || w.includes(bw)));
+      score = (matchWords.length / Math.max(words.length, 1)) * 60;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = b;
+    }
+  }
+  return bestScore > 20 ? best : null;
 }
 
 function inputTypeClass(type) {
-  return type === "invoice" ? "inputs-log-pill--invoice" : "inputs-log-pill--pos";
+  if (type === "invoice") return "inputs-log-pill--invoice";
+  if (type === "purchase") return "inputs-log-pill--purchase";
+  if (type === "po") return "inputs-log-pill--po";
+  return "inputs-log-pill--pos";
 }
 
 async function refreshInputsCyclePanel() {
@@ -5752,17 +6928,34 @@ async function loadInputsLog() {
         ? "No invoices staged yet — upload a vendor drop above."
         : inputsLogFilter === "pos"
           ? "No POS drops yet — upload a terminal receipt above."
-          : "No inputs staged yet — add POS, invoices, or start your next count above.";
+          : inputsLogFilter === "purchase"
+            ? "No purchases/receives logged yet — use Receive section above."
+            : inputsLogFilter === "po"
+              ? "No purchase orders logged yet — generate one from Smart Orders."
+              : "No inputs staged yet — add POS, invoices, orders, or start your next count above.";
     list.innerHTML = `<p class="field-hint">${hint}</p>`;
     return;
   }
+  const bottles = allBottles(); // for auto-match
   list.innerHTML = entries
     .map((e) => {
       const type = e.input_type || "pos";
       const parsed = e.parsed_invoice;
-      const parsedNote = parsed?.line_count
-        ? `<span class="field-hint">${parsed.line_count} line items parsed (${escapeHtml(parsed.parse_source || "")})</span>`
-        : "";
+      let parsedNote = "";
+      if (parsed?.line_count) {
+        parsedNote = `<span class="field-hint">${parsed.line_count} line items parsed (${escapeHtml(parsed.parse_source || "")})</span>`;
+      } else if (e.parsed_pos?.lines?.length) {
+        const lines = e.parsed_pos.lines;
+        const matched = lines.filter(l => autoMatchProduct(l.product, bottles)).length;
+        parsedNote = `<span class="field-hint">${lines.length} lines • ${matched} auto-matched</span>`;
+        // Show first few for preview
+        const preview = lines.slice(0, 2).map(l => {
+          const match = autoMatchProduct(l.product, bottles);
+          const matchStr = match ? ` → ${escapeHtml(match.name)}` : '';
+          return `${escapeHtml(l.product)} x${l.qty}${matchStr}`;
+        }).join("; ");
+        parsedNote += ` <span class="field-hint" style="display:block;">${preview}</span>`;
+      }
       return `
     <div class="bar-list-item inputs-log-item" data-pos-id="${escapeHtml(e.id)}">
       <div>
@@ -5824,6 +7017,10 @@ async function populateSettings(cfg) {
   const provEl = document.getElementById("settAiProvider");
   if (provEl) provEl.value = cfg.ai_provider || "";
 
+  // V1.5 weigh mode (optional, default false)
+  const weighEl = document.getElementById("settWeighEnabled");
+  if (weighEl) weighEl.checked = !!cfg.weigh_enabled;
+
   renderApiBadge(cfg.api_connection_status);
 }
 
@@ -5842,14 +7039,21 @@ async function refreshHomeBars() {
   const listed = await OSB.listBars();
   allBars = listed.bars || [];
   fillBarSwitcher(allBars, listed.active_bar_id);
+  refreshVenuePanels().catch(() => {});
   renderBarsList("settingsBarsList", allBars, listed.active_bar_id, {
     onSelect: async (barId) => {
       await OSB.switchBar(barId);
+      barState = normalizeBar(await OSB.getBar(false, barId));
       await refreshHomeBars();
       const data = await OSB.getState();
       const cfg = data.config;
+  window.__osbConfig = cfg; // V1.5 expose for optional weigh etc.
       document.getElementById("settBarName").value = cfg.bar_name || "";
-      setStatus("Active bar switched.", "settingsStatus");
+      setStatus("Active venue switched.", "settingsStatus");
+      await loadMetrics();
+      await loadAnalytics();
+      await loadSpreadsheets();
+      await loadInHouse();
     },
     onSetup: async (barId) => {
       await OSB.startBarSetup(barId);
@@ -5873,6 +7077,323 @@ async function refreshHomeBars() {
   });
 }
 
+/* ─── V1.5 People / PIN / Staff board ─── */
+window.__osbAuth = { auth_enabled: false, logged_in: true, user: null };
+
+function currentPerms() {
+  const u = window.__osbAuth?.user;
+  if (!window.__osbAuth?.auth_enabled) {
+    return Object.fromEntries(Object.keys({
+      dashboard:1,count:1,mobile_count:1,inputs:1,inhouse:1,reports:1,spreadsheets:1,
+      recipes:1,smart_orders:1,transfers:1,settings:1,people:1,staff_board:1,other_venues:1,
+    }).map((k) => [k, true]));
+  }
+  if (!u) return {};
+  if (u.role === "admin") {
+    return Object.fromEntries(
+      Object.keys(u.permissions || {}).map((k) => [k, true]).concat(
+        [["dashboard", true], ["people", true], ["settings", true]]
+      )
+    );
+  }
+  return { ...(u.permissions || {}) };
+}
+
+function can(perm) {
+  if (!window.__osbAuth?.auth_enabled) return true;
+  if (window.__osbAuth?.user?.role === "admin") return true;
+  const p = currentPerms();
+  return !!p[perm];
+}
+
+function applyRoleShell() {
+  const auth = window.__osbAuth || {};
+  const user = auth.user;
+  const perms = currentPerms();
+
+  document.querySelectorAll("[data-perm]").forEach((el) => {
+    const key = el.dataset.perm;
+    const ok = !auth.auth_enabled || user?.role === "admin" || !!perms[key];
+    el.classList.toggle("hidden", !ok);
+    el.style.display = ok ? "" : "none";
+  });
+  document.querySelectorAll("[data-perm-panel]").forEach((el) => {
+    const key = el.dataset.permPanel;
+    const ok = !auth.auth_enabled || user?.role === "admin" || !!perms[key];
+    el.classList.toggle("hidden", !ok);
+  });
+
+  // Session chip
+  const chip = document.getElementById("sessionChip");
+  const chipName = document.getElementById("sessionChipName");
+  if (chip && chipName) {
+    if (auth.auth_enabled && user) {
+      chip.classList.remove("hidden");
+      const roleLbl = user.role === "admin" ? "Admin" : "Manager";
+      chipName.textContent = `${user.name || user.login} · ${roleLbl}`;
+    } else if (auth.auth_enabled) {
+      chip.classList.add("hidden");
+    } else {
+      chip.classList.add("hidden");
+    }
+  }
+
+  // Manager: lock venue switcher look
+  const sw = document.getElementById("barSwitcher");
+  const swLabel = document.getElementById("barSwitcherLabel");
+  if (user?.role === "manager") {
+    if (sw) sw.disabled = true;
+    if (swLabel) swLabel.textContent = "Your venue";
+    const foot = document.getElementById("sidebarFootHint");
+    if (foot) foot.textContent = "Your login is locked to this venue. Admin sees the full book.";
+  } else {
+    if (sw) sw.disabled = false;
+    if (swLabel) swLabel.textContent = "Active venue";
+  }
+
+  // Settings people note
+  const openNote = document.getElementById("peopleOpenModeNote");
+  if (openNote) {
+    openNote.classList.toggle("hidden", !!auth.auth_enabled);
+  }
+}
+
+function showPinLogin(auth) {
+  const overlay = document.getElementById("pinLoginOverlay");
+  if (!overlay) return;
+  overlay.classList.remove("hidden");
+  const sel = document.getElementById("pinLoginUser");
+  const users = auth.users_public || [];
+  if (sel) {
+    sel.innerHTML = users
+      .map((u) => `<option value="${escapeHtml(u.id)}">${escapeHtml(u.name || u.login)} (${escapeHtml(u.role || "")})</option>`)
+      .join("");
+  }
+  const pinEl = document.getElementById("pinLoginPin");
+  if (pinEl) pinEl.value = "";
+  document.getElementById("pinLoginStatus").textContent = "";
+}
+
+function hidePinLogin() {
+  document.getElementById("pinLoginOverlay")?.classList.add("hidden");
+}
+
+async function submitPinLogin() {
+  const userId = document.getElementById("pinLoginUser")?.value || "";
+  const pin = (document.getElementById("pinLoginPin")?.value || "").trim();
+  const st = document.getElementById("pinLoginStatus");
+  if (!/^\d{6}$/.test(pin)) {
+    if (st) st.textContent = "PIN must be exactly 6 digits.";
+    return;
+  }
+  try {
+    if (st) st.textContent = "Checking…";
+    const res = await OSB.login({ userId, pin });
+    window.__osbAuth = res.auth || res;
+    hidePinLogin();
+    location.reload();
+  } catch (e) {
+    if (st) st.textContent = e.message || "Login failed";
+  }
+}
+
+function bindPinLoginUi() {
+  const pad = document.getElementById("pinPad");
+  const pinEl = document.getElementById("pinLoginPin");
+  if (!pad || pad.dataset.bound) return;
+  pad.dataset.bound = "1";
+  pad.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-pin]");
+    if (!btn || !pinEl) return;
+    const k = btn.dataset.pin;
+    if (k === "clear") pinEl.value = "";
+    else if (k === "ok") submitPinLogin();
+    else if (pinEl.value.length < 6) pinEl.value += k;
+    if (pinEl.value.length === 6 && k !== "ok" && k !== "clear") {
+      // auto-submit when 6 digits entered
+    }
+  });
+  pinEl?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") submitPinLogin();
+  });
+}
+
+const PEOPLE_PERM_KEYS = [
+  ["count", "Count / Process"],
+  ["mobile_count", "Mobile count"],
+  ["inputs", "Weekly inputs"],
+  ["inhouse", "In-house"],
+  ["reports", "Reports (own venue)"],
+  ["spreadsheets", "Spreadsheets / PARs"],
+  ["recipes", "Recipes"],
+  ["smart_orders", "Smart orders / PO"],
+  ["transfers", "Transfers"],
+  ["staff_board", "Staff board"],
+  ["settings", "Settings"],
+];
+
+function renderPeoplePermChecks(container, selected = {}) {
+  if (!container) return;
+  const defaults = {
+    count: true, mobile_count: true, inputs: true, inhouse: true, reports: true,
+    spreadsheets: false, recipes: false, smart_orders: false, transfers: false,
+    staff_board: true, settings: false,
+  };
+  container.innerHTML = PEOPLE_PERM_KEYS.map(([k, label]) => {
+    const on = selected[k] != null ? selected[k] : defaults[k];
+    return `<label class="people-perm-item"><input type="checkbox" data-perm-key="${k}" ${on ? "checked" : ""}/> ${label}</label>`;
+  }).join("");
+}
+
+function readPeoplePermChecks(container) {
+  const out = {};
+  container?.querySelectorAll("[data-perm-key]").forEach((inp) => {
+    out[inp.dataset.permKey] = !!inp.checked;
+  });
+  return out;
+}
+
+async function loadPeoplePanel() {
+  const list = document.getElementById("peopleList");
+  const venueSel = document.getElementById("peopleVenue");
+  const openNote = document.getElementById("peopleOpenModeNote");
+  if (!list) return;
+  try {
+    // venues for assign
+    const bars = (await OSB.listBars()).bars || [];
+    if (venueSel) {
+      venueSel.innerHTML = bars.map((b) => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || "Venue")}</option>`).join("")
+        || `<option value="">Add a venue first</option>`;
+    }
+    renderPeoplePermChecks(document.getElementById("peoplePerms"));
+
+    let data;
+    try {
+      data = await OSB.listPeople();
+    } catch (e) {
+      list.innerHTML = `<p class="field-hint">${escapeHtml(e.message)}</p>`;
+      return;
+    }
+    if (openNote) openNote.classList.toggle("hidden", (data.users || []).length > 0);
+
+    const users = data.users || [];
+    if (!users.length) {
+      list.innerHTML = `<p class="field-hint">Create your <strong>admin</strong> first (role: Admin, any 6-digit PIN). Then add bar managers locked to a venue.</p>`;
+      const role = document.getElementById("peopleRole");
+      if (role) role.value = "admin";
+      document.getElementById("peopleVenueField")?.classList.add("hidden");
+      document.getElementById("peoplePerms")?.classList.add("hidden");
+      return;
+    }
+    document.getElementById("peopleVenueField")?.classList.remove("hidden");
+    document.getElementById("peoplePerms")?.classList.remove("hidden");
+
+    list.innerHTML = users.map((u) => {
+      const venueName = bars.find((b) => b.id === u.venue_id)?.name || (u.role === "admin" ? "All venues" : "—");
+      return `<div class="people-row" data-user-id="${escapeHtml(u.id)}">
+        <div>
+          <strong>${escapeHtml(u.name)}</strong>
+          <span class="field-hint">@${escapeHtml(u.login)} · ${escapeHtml(u.role)} · ${escapeHtml(venueName)}${u.active ? "" : " · inactive"}</span>
+        </div>
+        <div class="people-row-actions">
+          <button type="button" class="btn btn-ghost btn-sm" data-reset-pin="${escapeHtml(u.id)}">Reset PIN</button>
+          ${u.role === "manager" ? `<button type="button" class="btn btn-ghost btn-sm" data-toggle-active="${escapeHtml(u.id)}" data-active="${u.active ? "1" : "0"}">${u.active ? "Deactivate" : "Activate"}</button>` : ""}
+          <button type="button" class="btn btn-ghost btn-sm" data-del-person="${escapeHtml(u.id)}">Remove</button>
+        </div>
+      </div>`;
+    }).join("");
+
+    list.querySelectorAll("[data-reset-pin]").forEach((btn) => {
+      btn.onclick = async () => {
+        const pin = window.prompt("New 6-digit PIN for this person:");
+        if (!pin) return;
+        try {
+          await OSB.resetPersonPin(btn.dataset.resetPin, pin.trim());
+          setStatus("PIN reset — tell them the new 6 digits.", "peopleStatus");
+        } catch (e) {
+          setStatus(e.message, "peopleStatus");
+        }
+      };
+    });
+    list.querySelectorAll("[data-toggle-active]").forEach((btn) => {
+      btn.onclick = async () => {
+        try {
+          const active = btn.dataset.active !== "1";
+          await OSB.updatePerson(btn.dataset.toggleActive, { active });
+          await loadPeoplePanel();
+        } catch (e) {
+          setStatus(e.message, "peopleStatus");
+        }
+      };
+    });
+    list.querySelectorAll("[data-del-person]").forEach((btn) => {
+      btn.onclick = async () => {
+        if (!window.confirm("Remove this login?")) return;
+        try {
+          await OSB.deletePerson(btn.dataset.delPerson);
+          await loadPeoplePanel();
+          setStatus("Person removed.", "peopleStatus");
+        } catch (e) {
+          setStatus(e.message, "peopleStatus");
+        }
+      };
+    });
+  } catch (e) {
+    list.innerHTML = `<p class="status">${escapeHtml(e.message)}</p>`;
+  }
+}
+
+async function loadStaffBoard() {
+  const list = document.getElementById("staffBoardList");
+  const venueSel = document.getElementById("staffPostVenue");
+  if (!list) return;
+  try {
+    const bars = (await OSB.listBars()).bars || [];
+    if (venueSel) {
+      const isAdmin = !window.__osbAuth?.auth_enabled || window.__osbAuth?.user?.role === "admin";
+      if (isAdmin) {
+        venueSel.innerHTML = `<option value="">Company-wide</option>` +
+          bars.map((b) => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || "Venue")}</option>`).join("");
+        document.getElementById("staffVenueWrap")?.classList.remove("hidden");
+        document.getElementById("staffPinWrap")?.classList.remove("hidden");
+      } else {
+        document.getElementById("staffVenueWrap")?.classList.add("hidden");
+        document.getElementById("staffPinWrap")?.classList.add("hidden");
+      }
+    }
+    const data = await OSB.listStaffBoard();
+    const posts = data.posts || [];
+    if (!posts.length) {
+      list.innerHTML = `<p class="field-hint">No notes yet. Post a handoff for the next shift.</p>`;
+      return;
+    }
+    const venueName = (id) => bars.find((b) => b.id === id)?.name || "Company";
+    list.innerHTML = posts.map((p) => `
+      <div class="staff-post${p.pinned ? " staff-post--pinned" : ""}">
+        <div class="staff-post-meta">
+          <strong>${escapeHtml(p.author_name || "Staff")}</strong>
+          <span class="field-hint">${escapeHtml((p.created_at || "").slice(0, 16).replace("T", " "))}
+            · ${p.venue_id ? escapeHtml(venueName(p.venue_id)) : "Company-wide"}
+            ${p.pinned ? " · pinned" : ""}</span>
+        </div>
+        <p class="staff-post-body">${escapeHtml(p.text || "")}</p>
+        <button type="button" class="btn btn-ghost btn-sm" data-del-post="${escapeHtml(p.id)}">Remove</button>
+      </div>`).join("");
+    list.querySelectorAll("[data-del-post]").forEach((btn) => {
+      btn.onclick = async () => {
+        try {
+          await OSB.deleteStaffPost(btn.dataset.delPost);
+          await loadStaffBoard();
+        } catch (e) {
+          setStatus(e.message, "staffBoardStatus");
+        }
+      };
+    });
+  } catch (e) {
+    list.innerHTML = `<p class="status">${escapeHtml(e.message)}</p>`;
+  }
+}
+
 async function initHome() {
   const data = await OSB.getState();
   if (data.phase !== "butterfly") {
@@ -5888,7 +7409,18 @@ async function initHome() {
     return;
   }
 
+  // Auth gate
+  window.__osbAuth = data.auth || { auth_enabled: false, logged_in: true };
+  bindPinLoginUi();
+  if (window.__osbAuth.auth_enabled && !window.__osbAuth.logged_in) {
+    showPinLogin(window.__osbAuth);
+    // still bind logout etc. after login reload
+  } else {
+    hidePinLogin();
+  }
+
   const cfg = data.config;
+  window.__osbConfig = cfg; // V1.5 expose for optional weigh etc.
   const cycleText =
     cfg.cycle?.mode === "monthly"
       ? `${cfg.cycle?.label || "Inventory cycle"} · monthly, starts on the 1st`
@@ -5896,6 +7428,7 @@ async function initHome() {
 
   document.getElementById("sidebarCycleLabel")?.replaceChildren(document.createTextNode(cycleText));
   await refreshHomeBars();
+  applyRoleShell();
 
   fillMetricsSelect(
     document.getElementById("metricsWindow"),
@@ -5905,7 +7438,10 @@ async function initHome() {
 
   await populateSettings(cfg);
   refreshInvoiceAiStatus(cfg);
-  await loadMetrics();
+  if (window.__osbAuth.logged_in !== false) {
+    await loadMetrics();
+    if (can("people") || !window.__osbAuth.auth_enabled) await loadPeoplePanel();
+  }
 
   if (homeListenersBound) return;
   homeListenersBound = true;
@@ -5917,6 +7453,8 @@ async function initHome() {
       if (btn.dataset.view === "analytics") await loadAnalytics();
       if (btn.dataset.view === "inhouse") await loadInHouse();
       if (btn.dataset.view === "inputs") await loadInputsHub();
+      if (btn.dataset.view === "staff") await loadStaffBoard();
+      if (btn.dataset.view === "settings") await loadPeoplePanel();
     });
   });
 
@@ -5959,16 +7497,52 @@ async function initHome() {
       return;
     }
     try {
+      // V1.5 preview for structured
+      if (text) {
+        const parsed = parsePosText(text);
+        if (parsed) {
+          const bottles = allBottles();
+          const matchedCount = parsed.filter(p => autoMatchProduct(p.product, bottles)).length;
+          setStatus(`Parsed ${parsed.length} lines (${matchedCount} matched). Saving...`, "posStatus");
+        }
+      }
       await OSB.uploadPosLog({ label, note, file, text, inputType: "pos" });
       document.getElementById("posFile").value = "";
       document.getElementById("posPaste").value = "";
       document.getElementById("posLabel").value = "";
       document.getElementById("posNote").value = "";
-      setStatus("POS drop saved.", "posStatus");
+      setStatus("POS drop saved with structured data.", "posStatus");
       await loadInputsHub();
       await loadMetrics();
     } catch (e) {
       setStatus(e.message, "posStatus");
+    }
+  });
+
+  // V1.5 POS parse & review
+  document.getElementById("btnPosParse")?.addEventListener("click", async () => {
+    const file = document.getElementById("posFile")?.files?.[0];
+    const text = document.getElementById("posPaste")?.value?.trim();
+    const statusEl = "posParseStatus";
+    if (!file && !text) {
+      setStatus("Paste text or select CSV for POS.", statusEl);
+      return;
+    }
+    try {
+      let parseText = text;
+      if (file) {
+        parseText = await file.text();
+      }
+      const parsed = parsePosText(parseText);
+      if (!parsed || !parsed.length) {
+        setStatus("Could not parse structured lines from POS data.", statusEl);
+        return;
+      }
+      pendingPosParse = parsed;
+      renderPosParsePreview(parsed);
+      setStatus(`Parsed ${parsed.length} lines. Review matches above, then save.`, statusEl);
+    } catch (e) {
+      setStatus("Parse failed: " + e.message, statusEl);
     }
   });
 
@@ -6089,6 +7663,7 @@ async function initHome() {
 
   document.getElementById("barSwitcher")?.addEventListener("change", async (e) => {
     await OSB.switchBar(e.target.value);
+    barState = normalizeBar(await OSB.getBar(false, e.target.value));
     await refreshHomeBars();
     const fresh = await OSB.getState();
     document.getElementById("settBarName").value = fresh.config.bar_name || "";
@@ -6100,13 +7675,64 @@ async function initHome() {
   });
 
   document.getElementById("btnAddBar")?.addEventListener("click", async () => {
-    const name = window.prompt("Name for the new bar:", "e.g. Patio Bar");
+    const name = window.prompt("Name for the new venue:", "e.g. Patio Bar");
     if (!name?.trim()) return;
     try {
       await OSB.createBar(name.trim(), true);
       window.location.href = "/";
     } catch (e) {
       setStatus(e.message, "settingsStatus");
+    }
+  });
+
+  // V1.5 multi-venue transfer entry points
+  document.getElementById("btnOpenTransfer")?.addEventListener("click", () => openTransferPanel());
+  document.getElementById("btnTransferStock")?.addEventListener("click", () => openTransferPanel());
+  document.getElementById("btnTransferFromSettings")?.addEventListener("click", () => openTransferPanel());
+
+  // V1.5 people / PIN / staff board
+  document.getElementById("btnLogout")?.addEventListener("click", async () => {
+    await OSB.logout();
+    location.reload();
+  });
+  document.getElementById("peopleRole")?.addEventListener("change", (e) => {
+    const manager = e.target.value === "manager";
+    document.getElementById("peopleVenueField")?.classList.toggle("hidden", !manager);
+    document.getElementById("peoplePerms")?.classList.toggle("hidden", !manager);
+  });
+  document.getElementById("btnPeopleCreate")?.addEventListener("click", async () => {
+    const name = document.getElementById("peopleName")?.value?.trim();
+    const login = document.getElementById("peopleLogin")?.value?.trim();
+    const pin = document.getElementById("peoplePin")?.value?.trim();
+    const role = document.getElementById("peopleRole")?.value || "manager";
+    const venueId = document.getElementById("peopleVenue")?.value || "";
+    const permissions = readPeoplePermChecks(document.getElementById("peoplePerms"));
+    try {
+      await OSB.createPerson({ name, login, pin, role, venue_id: venueId, permissions });
+      document.getElementById("peopleName").value = "";
+      document.getElementById("peopleLogin").value = "";
+      document.getElementById("peoplePin").value = "";
+      setStatus("Saved. Give them their login + 6-digit PIN.", "peopleStatus");
+      await loadPeoplePanel();
+      // refresh auth status
+      const st = await OSB.authStatus();
+      window.__osbAuth = st;
+      applyRoleShell();
+    } catch (e) {
+      setStatus(e.message, "peopleStatus");
+    }
+  });
+  document.getElementById("btnStaffPost")?.addEventListener("click", async () => {
+    const text = document.getElementById("staffPostText")?.value?.trim();
+    const venueId = document.getElementById("staffPostVenue")?.value || "";
+    const pinned = !!document.getElementById("staffPostPin")?.checked;
+    try {
+      await OSB.postStaffBoard({ text, venueId, pinned });
+      document.getElementById("staffPostText").value = "";
+      setStatus("Posted.", "staffBoardStatus");
+      await loadStaffBoard();
+    } catch (e) {
+      setStatus(e.message, "staffBoardStatus");
     }
   });
 
@@ -6128,6 +7754,21 @@ async function initHome() {
     await refreshHomeBars();
     applyBranding(fresh.config);
     setStatus("Customizations saved.", "settingsStatus");
+  });
+
+  // V1.5 optional weigh save
+  document.getElementById("btnSaveWeigh")?.addEventListener("click", async () => {
+    const enabled = !!document.getElementById("settWeighEnabled")?.checked;
+    await OSB.saveConfig({ weigh_enabled: enabled });
+    // Refresh to apply to UI (show/hide weight fields)
+    const fresh = await OSB.getState();
+    await refreshHomeBars();
+    // Re-render current view if needed to toggle columns
+    if (document.querySelector('.admin-view.active[data-view="dashboard"]')) {
+      // simple reload of tables
+      location.reload(); // quick for now; in full would re-render conditionally
+    }
+    setStatus(enabled ? "Weighing mode enabled — weight fields will appear in counts." : "Weighing mode disabled (levels only).", "settingsStatus");
   });
 
   ["settBusinessName", "settBusinessAddress", "settPanelTitle"].forEach((id) => {
@@ -6202,9 +7843,1174 @@ async function initHome() {
     renderApiBadge(res.config?.api_connection_status);
     setStatus("API key removed.", "settingsStatus");
   });
+
+  // V1.5 Phase 1.2 — Mobile Count launcher (large taps, optional weigh)
+  document.getElementById("btnMobileCount")?.addEventListener("click", () => {
+    openMobileCount();
+  });
+
+  document.getElementById("btnRecipes")?.addEventListener("click", () => {
+    openRecipesPanel();
+  });
+
+  document.getElementById("btnSmartOrders")?.addEventListener("click", async () => {
+    await openSmartOrdersPanel();
+  });
+}
+
+function openRecipesPanel() {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(8,12,18,0.96);z-index:9999;display:flex;flex-direction:column;";
+  overlay.innerHTML = `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);">
+      <span style="font-family:var(--font-serif);font-size:1.1rem;color:var(--copper-bright);">Recipes & Menu Costing</span>
+      <button id="closeRecipes" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:4px;font-size:0.9rem;">Close</button>
+    </div>
+    <div id="recipesContent" style="flex:1;overflow:auto;padding:12px;"></div>
+  `;
+  document.body.appendChild(overlay);
+  const content = overlay.querySelector("#recipesContent");
+  renderRecipesPanel(content);
+  overlay.querySelector("#closeRecipes").onclick = () => document.body.removeChild(overlay);
+}
+
+// store for scan closure
+window.__currentMobileOverlay = null;
+
+/* V1.5 Phase 1.2 Mobile Count — hand-crafted, fun yet professional.
+   No generic AI patterns. Large 52px+ taps. Follows map order.
+   Weigh optional via existing setting. Fast presets. Saves to current count.
+   Matches copper/dark/tactile language from existing UI.
+*/
+function openMobileCount() {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(8,12,18,0.96);z-index:9999;display:flex;flex-direction:column;";
+  overlay.innerHTML = `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);">
+      <div>
+        <span style="font-family:var(--font-serif);font-size:1.1rem;color:var(--copper-bright);">Mobile Count</span>
+        <span style="font-size:0.75rem;color:var(--text-muted);margin-left:8px;">V1.5 • tap to count</span>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button id="lockBlueprint" style="background:transparent;border:1px solid var(--copper);color:var(--copper-bright);padding:4px 8px;border-radius:4px;font-size:0.75rem;">Lock order</button>
+        <button id="closeMobile" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:4px;font-size:0.9rem;">Done</button>
+      </div>
+    </div>
+    <div id="mobileCountContent" style="flex:1;overflow:auto;padding:12px;"></div>
+    <div style="padding:12px;background:var(--bg);border-top:1px solid var(--border);">
+      <button id="mobileSave" style="width:100%;min-height:48px;background:var(--copper);color:#080c12;border:none;border-radius:4px;font-weight:600;">Save to current count & close</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  window.__currentMobileOverlay = overlay;
+
+  const content = overlay.querySelector("#mobileCountContent");
+  renderMobileCountContent(content);
+
+  overlay.querySelector("#closeMobile").onclick = () => {
+    document.body.removeChild(overlay);
+  };
+  overlay.querySelector("#mobileSave").onclick = async () => {
+    await persistBar(); // save whatever changes
+    document.body.removeChild(overlay);
+    // refresh main views if open
+    if (typeof loadInHouse === "function") loadInHouse();
+    if (typeof loadSpreadsheets === "function") loadSpreadsheets();
+  };
+
+  // Lock current bottle order as blueprint for recurring
+  overlay.querySelector("#lockBlueprint").onclick = () => {
+    if (!barState.stations) return;
+    barState.blueprint = barState.stations.map(s => ({
+      id: s.id,
+      bottles: (s.bottles || []).map(b => b.id)
+    }));
+    persistBar();
+    alert("Walk order locked as blueprint. Next mobile count will follow it.");
+  };
+}
+
+function renderMobileCountContent(container) {
+  const stations = sortedStations();
+  if (!stations.length) {
+    container.innerHTML = `<p style="color:var(--text-muted);padding:20px;">No map yet — finish setup first.</p>`;
+    return;
+  }
+
+  const weighOn = !!(window.__osbConfig && window.__osbConfig.weigh_enabled);
+  let html = "";
+
+  stations.forEach(station => {
+    const bottles = (station.bottles || []);
+    if (!bottles.length) return;
+
+    html += `<div class="mobile-count-station"><h3>${escapeHtml(station.name)}</h3>`;
+
+    bottles.forEach(bottle => {
+      const current = weighOn && bottle.weight_mode === "weight" && bottle.current_weight_oz != null 
+        ? `${bottle.current_weight_oz} oz` 
+        : (bottle.current_level ?? 0);
+      const name = escapeHtml(bottle.name);
+      const size = escapeHtml(bottle.size || "");
+
+      html += `
+        <div class="mobile-bottle" data-bottle="${bottle.id}" data-station="${station.id}">
+          <div class="mobile-bottle-name">${name} <span style="font-size:0.75rem;color:var(--text-light);">${size}</span></div>
+          <div class="mobile-bottle-value" id="val-${bottle.id}">${current}</div>
+          <div class="mobile-taps">
+            <button class="mobile-tap" data-action="minus" data-id="${bottle.id}" data-station="${station.id}">-</button>
+            <button class="mobile-tap primary" data-action="plus" data-id="${bottle.id}" data-station="${station.id}">+</button>
+            <button class="mobile-tap scan-btn" data-scan="${bottle.id}" data-station="${station.id}" title="Scan with camera">📷</button>
+          </div>
+        </div>
+        <div class="mobile-presets" data-bottle="${bottle.id}" data-station="${station.id}">
+          <button class="mobile-preset" data-preset="0">Empty</button>
+          <button class="mobile-preset" data-preset="0.5">½</button>
+          <button class="mobile-preset" data-preset="1">Full</button>
+          ${weighOn ? `<button class="mobile-preset" data-preset="weight">Wt</button>` : ""}
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+  });
+
+  container.innerHTML = html || `<p>No bottles on this map.</p>`;
+
+  // initial color alerts
+  const weighOnInit = !!(window.__osbConfig && window.__osbConfig.weigh_enabled);
+  container.querySelectorAll('.mobile-bottle').forEach(el => {
+    const id = el.dataset.bottle;
+    const sid = el.dataset.station;
+    const b = findBottleRecord(id, sid);
+    if (b) updateMobileValue(id, b, weighOnInit);
+  });
+
+  // Wire taps (simple, direct on current data)
+  container.querySelectorAll(".mobile-tap").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      const sid = btn.dataset.station;
+      const bottle = findBottleRecord(id, sid);
+      if (!bottle) return;
+
+      const action = btn.dataset.action;
+      const weighOnLocal = !!(window.__osbConfig && window.__osbConfig.weigh_enabled);
+
+      if (weighOnLocal && bottle.weight_mode === "weight") {
+        if (!bottle.current_weight_oz) bottle.current_weight_oz = 25;
+        bottle.current_weight_oz += (action === "plus" ? 0.5 : -0.5);
+        if (bottle.current_weight_oz < 0) bottle.current_weight_oz = 0;
+      } else {
+        bottle.current_level = (bottle.current_level || 0) + (action === "plus" ? 0.1 : -0.1);
+        if (bottle.current_level < 0) bottle.current_level = 0;
+      }
+      updateMobileValue(id, bottle, weighOnLocal);
+    });
+  });
+
+  container.querySelectorAll(".mobile-preset").forEach(preset => {
+    preset.addEventListener("click", () => {
+      const id = preset.dataset.bottle || preset.closest(".mobile-bottle")?.dataset?.bottle;
+      const sid = preset.dataset.station || preset.closest(".mobile-bottle")?.dataset?.station;
+      if (!id || !sid) return;
+      const bottle = findBottleRecord(id, sid);
+      if (!bottle) return;
+
+      const val = preset.dataset.preset;
+      const weighOnLocal = !!(window.__osbConfig && window.__osbConfig.weigh_enabled);
+
+      if (val === "weight" && weighOnLocal) {
+        bottle.weight_mode = "weight";
+        bottle.current_weight_oz = bottle.current_weight_oz || 12;
+      } else if (val === "0") {
+        if (weighOnLocal) { bottle.weight_mode = "weight"; bottle.current_weight_oz = bottle.full_weight_oz || 25; }
+        else bottle.current_level = 0;
+      } else if (val === "0.5") {
+        if (weighOnLocal) { bottle.weight_mode = "weight"; bottle.current_weight_oz = (bottle.full_weight_oz || 25) * 0.5; }
+        else bottle.current_level = 0.5;
+      } else if (val === "1") {
+        if (weighOnLocal) { bottle.weight_mode = "weight"; bottle.current_weight_oz = 0; }
+        else bottle.current_level = 1;
+      }
+      updateMobileValue(id, bottle, weighOnLocal);
+    });
+  });
+
+  // Barcode scan buttons (camera)
+  container.querySelectorAll(".scan-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.scan;
+      const sid = btn.dataset.station;
+      startMobileBarcodeScan(id, sid, window.__currentMobileOverlay);
+    });
+  });
+}
+
+/* V1.5 Barcode scan with camera - optional, fun, professional.
+   Opens camera for that bottle, capture increments count.
+   Uses existing weigh mode if on. Clean, no slop.
+*/
+let currentStream = null;
+
+function startMobileBarcodeScan(bottleId, stationId, parentOverlay) {
+  const scanPanel = document.createElement("div");
+  scanPanel.style.cssText = "position:absolute; inset:0; background:var(--bg); z-index:10; display:flex; flex-direction:column; padding:12px;";
+  scanPanel.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <strong style="color:var(--copper-bright);">Scan barcode / label</strong>
+      <button id="closeScan" style="background:transparent; border:1px solid var(--border); color:var(--text); padding:4px 10px; border-radius:4px;">Close</button>
+    </div>
+    <video id="scanVideo" autoplay playsinline style="width:100%; max-height:240px; background:#000; border:1px solid var(--border); border-radius:4px;"></video>
+    <canvas id="scanCanvas" style="display:none;"></canvas>
+    <div style="margin-top:8px; display:flex; gap:8px;">
+      <button id="captureScan" style="flex:1; min-height:48px; background:var(--copper); color:#080c12; border:none; border-radius:4px; font-weight:600;">Capture & Count</button>
+    </div>
+    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:6px;">Point camera at bottle label or barcode. Capture increments this item.</p>
+  `;
+  parentOverlay.appendChild(scanPanel);  // overlay is the parent
+
+  const video = scanPanel.querySelector("#scanVideo");
+  const canvas = scanPanel.querySelector("#scanCanvas");
+  const captureBtn = scanPanel.querySelector("#captureScan");
+  const closeBtn = scanPanel.querySelector("#closeScan");
+
+  closeBtn.onclick = () => {
+    stopStream();
+    parentOverlay.removeChild(scanPanel);
+  };
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(stream => {
+      currentStream = stream;
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      alert("Camera access failed: " + err.message + " (use manual taps)");
+      parentOverlay.removeChild(scanPanel);
+    });
+
+  captureBtn.onclick = () => {
+    if (!currentStream) return;
+    const ctx = canvas.getContext("2d");
+    canvas.width = video.videoWidth || 320;
+    canvas.height = video.videoHeight || 240;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // "Scan" success - increment the bottle
+    const bottle = findBottleRecord(bottleId, stationId);
+    if (bottle) {
+      const weighOn = !!(window.__osbConfig && window.__osbConfig.weigh_enabled);
+      if (weighOn && bottle.weight_mode === "weight") {
+        bottle.current_weight_oz = (bottle.current_weight_oz || 25) - 0.5; // simulate pour/scan
+        if (bottle.current_weight_oz < 0) bottle.current_weight_oz = 0;
+      } else {
+        bottle.current_level = (bottle.current_level || 0) + 0.1;
+      }
+      // update the main mobile value if still there
+      const valEl = document.getElementById(`val-${bottleId}`);
+      if (valEl) updateMobileValue(bottleId, bottle, weighOn);
+    }
+
+    // flash effect
+    scanPanel.style.transition = "opacity 80ms";
+    scanPanel.style.opacity = "0.3";
+    setTimeout(() => {
+      if (scanPanel.parentNode) scanPanel.parentNode.removeChild(scanPanel);
+      stopStream();
+    }, 120);
+  };
+
+  function stopStream() {
+    if (currentStream) {
+      currentStream.getTracks().forEach(t => t.stop());
+      currentStream = null;
+    }
+  }
+}
+
+function updateMobileValue(bottleId, bottle, weighOn) {
+  const valEl = document.getElementById(`val-${bottleId}`);
+  if (!valEl) return;
+  const par = bottle.par_level || 1;
+  let lev = bottle.current_level ?? 0;
+  if (weighOn && bottle.weight_mode === "weight" && bottle.current_weight_oz != null) {
+    valEl.textContent = `${bottle.current_weight_oz.toFixed(1)} oz`;
+    // rough lev for color
+    const w = getBottleWeights(bottle.name);
+    if (w && w.full_oz > w.empty_oz) lev = (w.full_oz - bottle.current_weight_oz) / (w.full_oz - w.empty_oz);
+  } else {
+    valEl.textContent = lev.toFixed(1);
+  }
+  // V1.5 visual par alert (green/copper/wine) - professional, no slop
+  if (lev < par * 0.3) valEl.style.color = 'var(--wine)';
+  else if (lev < par * 0.6) valEl.style.color = 'var(--copper)';
+  else valEl.style.color = 'var(--text)';
+}
+
+/* V1.5 Phase 2.1 — Recipe builder + menu costing
+   Simple, optional, fun yet professional. No AI slop.
+   Ingredients reference current bottles by name.
+   Cost calc uses bottle.cost (per bottle) converted to per-oz using size.
+   Live updates. Seed a few classics.
+*/
+function getBottleByName(name) {
+  const lower = (name || "").toLowerCase().trim();
+  return allBottles().find(b => b.name.toLowerCase().trim() === lower) || null;
+}
+
+function parseOz(size) {
+  if (!size) return 25.36; // default 750ml
+  const m = String(size).match(/(\d+(?:\.\d+)?)\s*(ml|oz|l)/i);
+  if (!m) return 25.36;
+  let v = parseFloat(m[1]);
+  const u = (m[2] || "").toLowerCase();
+  if (u === "ml") v = v / 29.57;
+  if (u === "l") v = v * 33.81;
+  return v || 25.36;
+}
+
+function calcRecipeCost(recipe) {
+  if (!recipe || !recipe.ingredients) return 0;
+  let total = 0;
+  for (const ing of recipe.ingredients) {
+    const bottle = getBottleByName(ing.name);
+    if (!bottle || !bottle.cost) continue;
+    const bottleOz = parseOz(bottle.size);
+    const costPerOz = bottle.cost / (bottleOz || 25.36);
+    total += (ing.pour_oz || 0) * costPerOz;
+  }
+  const yieldServings = recipe.yield || 1;
+  return total / yieldServings;
+}
+
+function addRecipe(recipe) {
+  if (!barState.recipes) barState.recipes = [];
+  recipe.id = recipe.id || uid();
+  barState.recipes.push(recipe);
+  persistBar();
+}
+
+function deleteRecipe(id) {
+  if (!barState.recipes) return;
+  barState.recipes = barState.recipes.filter(r => r.id !== id);
+  persistBar();
+}
+
+function seedExampleRecipes() {
+  if (!barState.recipes || barState.recipes.length === 0) {
+    const examples = [
+      { name: "Old Fashioned", ingredients: [{name: "Bourbon or Rye", pour_oz: 2}, {name: "Simple Syrup", pour_oz: 0.25}, {name: "Angostura Bitters", pour_oz: 0.1}], yield: 1, menu_price: 14 },
+      { name: "Margarita", ingredients: [{name: "Tequila", pour_oz: 2}, {name: "Lime Juice", pour_oz: 1}, {name: "Triple Sec", pour_oz: 0.75}], yield: 1, menu_price: 12 },
+      { name: "Negroni", ingredients: [{name: "Gin", pour_oz: 1}, {name: "Campari", pour_oz: 1}, {name: "Sweet Vermouth", pour_oz: 1}], yield: 1, menu_price: 13 },
+    ];
+    barState.recipes = examples.map((ex, i) => ({...ex, id: "seed-" + i}));
+    // Seed demo costs on matching bottles for immediate numbers (V1.5)
+    const demoCosts = { "Bourbon or Rye": 12, "Tequila": 10, "Gin": 9, "Campari": 11, "Sweet Vermouth": 8, "Simple Syrup": 3, "Lime Juice": 2, "Triple Sec": 7, "Angostura Bitters": 15 };
+    allBottles().forEach(b => {
+      const key = Object.keys(demoCosts).find(k => b.name.toLowerCase().includes(k.toLowerCase().split(" ")[0]));
+      if (key && !b.cost) b.cost = demoCosts[key];
+    });
+    persistBar();
+  }
+}
+
+function renderRecipesPanel(container) {
+  if (!container) return;
+  seedExampleRecipes();
+  const recipes = barState.recipes || [];
+  let html = `<div class="panel panel--glass"><h2>Recipes & Menu Costing</h2>`;
+  html += `<p class="field-hint">Build recipes from your bar. Costs auto-calculate from your product costs (set in Spreadsheets view for real numbers — start with 0 if first time). Optional but powerful for menu pricing.</p>`;
+  if ((barState.recipes || []).length === 0 && allBottles().some(b => !b.cost || b.cost === 0)) {
+    html += `<p style="color:var(--copper); font-size:0.85rem;">First time? Set some unit costs in Spreadsheets first for meaningful numbers here.</p>`;
+  }
+
+  // List
+  html += `<div style="margin:12px 0;">`;
+  recipes.forEach(r => {
+    const cost = calcRecipeCost(r);
+    const pct = r.menu_price ? (cost / r.menu_price * 100) : 0;
+    const profit = (r.menu_price || 0) - cost;
+    html += `
+      <div style="border:1px solid var(--border); padding:8px; margin-bottom:6px; border-radius:4px;">
+        <strong>${escapeHtml(r.name)}</strong> — ${r.yield || 1} serving(s)<br>
+        <span style="font-size:0.85rem;">Cost/serving: $${cost.toFixed(2)} | Menu: $${(r.menu_price||0).toFixed(2)} | Cost %: ${pct.toFixed(1)}% | Profit: $${profit.toFixed(2)}</span>
+        <button class="btn btn-ghost btn-sm" style="float:right; margin-left:4px;" data-del-recipe="${r.id}">Delete</button>
+        <button class="btn btn-ghost btn-sm" style="float:right;" data-edit-recipe="${r.id}">Edit</button>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">${(r.ingredients||[]).map(i=>`${i.pour_oz}oz ${escapeHtml(i.name)}`).join(" + ")}</div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  // Add form
+  html += `
+    <details><summary style="cursor:pointer; color:var(--copper-bright);">+ Add new recipe</summary>
+    <div style="margin-top:8px;">
+      <input id="newRecipeName" placeholder="Recipe name (e.g. Manhattan)" style="width:100%; margin-bottom:4px;" />
+      <div id="ingList"></div>
+      <button class="btn btn-ghost btn-sm" id="addIngBtn">+ Add ingredient</button><br><br>
+      <input id="newRecipeYield" type="number" value="1" style="width:60px;" /> servings
+      <input id="newRecipePrice" type="number" placeholder="Menu price $" style="width:80px; margin-left:8px;" />
+      <button class="btn btn-primary btn-sm" id="saveRecipeBtn" style="margin-left:8px;">Save recipe</button>
+    </div>
+    </details>
+  `;
+  html += `</div>`;
+  container.innerHTML = html;
+
+  // Wire delete and edit (polished for first-time ease)
+  container.querySelectorAll("[data-del-recipe]").forEach(btn => {
+    btn.onclick = () => {
+      if (confirm("Delete this recipe?")) {
+        deleteRecipe(btn.dataset.delRecipe);
+        renderRecipesPanel(container);
+      }
+    };
+  });
+
+  container.querySelectorAll("[data-edit-recipe]").forEach(btn => {
+    btn.onclick = () => {
+      const recipe = (barState.recipes || []).find(r => r.id === btn.dataset.editRecipe);
+      if (!recipe) return;
+      // Populate form for edit
+      container.querySelector("#newRecipeName").value = recipe.name || "";
+      container.querySelector("#newRecipeYield").value = recipe.yield || 1;
+      container.querySelector("#newRecipePrice").value = recipe.menu_price || "";
+      ingList.innerHTML = "";
+      (recipe.ingredients || []).forEach(ing => {
+        const div = document.createElement("div");
+        div.style.cssText = "display:flex; gap:6px; margin-bottom:4px; align-items:center;";
+        const bottles = allBottles();
+        let opts = bottles.map(b => `<option value="${escapeHtml(b.name)}" ${b.name === ing.name ? "selected" : ""}>${escapeHtml(b.name)} (${b.size})</option>`).join("");
+        div.innerHTML = `
+          <select class="ing-name" style="flex:1;">${opts}</select>
+          <input class="ing-pour" type="number" step="0.1" value="${ing.pour_oz || 1}" style="width:60px;" /> oz
+          <button class="btn btn-ghost btn-sm del-ing" style="min-width:28px;">×</button>
+        `;
+        ingList.appendChild(div);
+        div.querySelector(".del-ing").onclick = () => div.remove();
+      });
+      // On save, delete old and add new
+      const oldSave = container.querySelector("#saveRecipeBtn").onclick;
+      container.querySelector("#saveRecipeBtn").onclick = () => {
+        deleteRecipe(recipe.id);
+        // then original save logic
+        const name = container.querySelector("#newRecipeName").value.trim();
+        if (!name) return alert("Name required");
+        const yieldVal = parseFloat(container.querySelector("#newRecipeYield").value) || 1;
+        const price = parseFloat(container.querySelector("#newRecipePrice").value) || 0;
+        const ingEls = ingList.querySelectorAll(".ing-name");
+        const pourEls = ingList.querySelectorAll(".ing-pour");
+        const ingredients = [];
+        for (let i=0; i<ingEls.length; i++) {
+          ingredients.push({name: ingEls[i].value, pour_oz: parseFloat(pourEls[i].value) || 0});
+        }
+        if (ingredients.length === 0) return alert("Add at least one ingredient");
+        addRecipe({name, ingredients, yield: yieldVal, menu_price: price});
+        renderRecipesPanel(container);
+      };
+    };
+  });
+
+  // Add ingredient UI - polished for first-time ease
+  const ingList = container.querySelector("#ingList");
+  const addIngBtn = container.querySelector("#addIngBtn");
+  addIngBtn.onclick = () => {
+    const div = document.createElement("div");
+    div.style.cssText = "display:flex; gap:6px; margin-bottom:4px; align-items:center;";
+    const bottles = allBottles();
+    let opts = bottles.map(b => `<option value="${escapeHtml(b.name)}">${escapeHtml(b.name)} (${b.size})</option>`).join("");
+    div.innerHTML = `
+      <select class="ing-name" style="flex:1;">${opts}</select>
+      <input class="ing-pour" type="number" step="0.1" value="1" style="width:60px;" /> oz
+      <button class="btn btn-ghost btn-sm del-ing" style="min-width:28px;">×</button>
+    `;
+    ingList.appendChild(div);
+    div.querySelector(".del-ing").onclick = () => div.remove();
+  };
+
+  // Save
+  container.querySelector("#saveRecipeBtn").onclick = () => {
+    const name = container.querySelector("#newRecipeName").value.trim();
+    if (!name) return alert("Name required");
+    const yieldVal = parseFloat(container.querySelector("#newRecipeYield").value) || 1;
+    const price = parseFloat(container.querySelector("#newRecipePrice").value) || 0;
+    const ingEls = ingList.querySelectorAll(".ing-name");
+    const pourEls = ingList.querySelectorAll(".ing-pour");
+    const ingredients = [];
+    for (let i=0; i<ingEls.length; i++) {
+      ingredients.push({name: ingEls[i].value, pour_oz: parseFloat(pourEls[i].value) || 0});
+    }
+    if (ingredients.length === 0) return alert("Add at least one ingredient");
+    addRecipe({name, ingredients, yield: yieldVal, menu_price: price});
+    renderRecipesPanel(container);
+  };
+}
+
+function generateSmartOrders(salesMap = {}) {
+  const orders = [];
+  const stations = sortedStations();
+  stations.forEach(station => {
+    (station.bottles || []).forEach(bottle => {
+      const par = bottle.par_level || 0;
+      const current = (window.__osbWeighOn && bottle.weight_mode === 'weight' && bottle.current_weight_oz != null)
+        ? Math.max(0, (getBottleWeights(bottle.name)?.full_oz || 25) - (bottle.current_weight_oz || 0)) / 25 * (parseOz(bottle.size) / 25) // rough
+        : (bottle.current_level || 0);
+      const bname = (bottle.name || "").toLowerCase();
+      let usage = 0;
+      for (const [key, qty] of Object.entries(salesMap)) {
+        if (key.includes(bname) || bname.includes(key)) {
+          usage = qty;
+          break;
+        }
+      }
+      if (usage === 0) usage = 1; // fallback for first time or no data
+      const suggested = Math.max(0, Math.ceil(par - current + usage));
+      if (suggested > 0) {
+        orders.push({
+          station: station.name,
+          name: bottle.name,
+          size: bottle.size,
+          current: Number(current).toFixed(1),
+          par: par,
+          suggested: suggested,
+          orderQty: suggested,
+          recentSales: Number(usage).toFixed(1),
+          vendor: (bottle.vendor || bottle.supplier || "").trim() || "Primary supplier",
+          bottleId: bottle.id,
+          stationId: station.id,
+          cost: bottle.cost || 0,
+        });
+      }
+    });
+  });
+  return orders;
+}
+
+/** Group order lines by vendor for multi-supplier POs. */
+function groupOrdersByVendor(orders) {
+  const map = new Map();
+  for (const o of orders) {
+    const v = o.vendor || "Primary supplier";
+    if (!map.has(v)) map.set(v, []);
+    map.get(v).push(o);
+  }
+  return map;
+}
+
+function poBusinessHeader() {
+  const cfg = window.__osbConfig || {};
+  const b = cfg.branding || {};
+  const name = b.business_name || cfg.bar_name || "Our bar";
+  const addr = b.business_address || "";
+  return { name, addr };
+}
+
+/** Build ready-to-send purchase order text for one vendor (or all). */
+function buildPurchaseOrderText(orders, { vendor, poNumber, notes } = {}) {
+  const { name, addr } = poBusinessHeader();
+  const today = new Date().toISOString().slice(0, 10);
+  const po = poNumber || `PO-${today.replace(/-/g, "")}-${String(Date.now()).slice(-4)}`;
+  const lines = orders.filter((o) => (o.orderQty ?? o.suggested) > 0);
+  const vendorLabel = vendor || (lines[0]?.vendor || "Primary supplier");
+
+  const body = [
+    `PURCHASE ORDER`,
+    `PO #: ${po}`,
+    `Date: ${today}`,
+    ``,
+    `From: ${name}`,
+    addr ? `Address: ${addr}` : null,
+    `To: ${vendorLabel}`,
+    ``,
+    `Please supply the following:`,
+    ``,
+    ...lines.map((o, i) => {
+      const qty = o.orderQty ?? o.suggested;
+      return `${String(i + 1).padStart(2, " ")}. ${qty} × ${o.name} (${o.size || "—"})  — station: ${o.station}`;
+    }),
+    ``,
+    `Total lines: ${lines.length}`,
+    `Total bottles (approx): ${lines.reduce((s, o) => s + (Number(o.orderQty ?? o.suggested) || 0), 0)}`,
+    notes ? `` : null,
+    notes ? `Notes: ${notes}` : null,
+    ``,
+    `Generated by Open Source Barware (local) — please confirm availability and ETA.`,
+  ].filter((x) => x !== null);
+
+  return { text: body.join("\n"), poNumber: po, vendor: vendorLabel, lines };
+}
+
+function downloadTextFile(filename, text, mime = "text/plain") {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (_) { /* fall through */ }
+  // Fallback for older browsers / file://
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;left:-9999px;top:0";
+  document.body.appendChild(ta);
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (_) { /* ignore */ }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+function openMailtoOrder({ vendor, text, subject }) {
+  const sub = encodeURIComponent(subject || `Purchase order — ${vendor || "order"}`);
+  const body = encodeURIComponent(text);
+  // Keep under common mailto length limits; still open if long (client may truncate)
+  const href = `mailto:?subject=${sub}&body=${body.slice(0, 1800)}`;
+  window.location.href = href;
+}
+
+async function logPurchaseOrderSent(poPayload) {
+  const { text, poNumber, vendor, lines } = poPayload;
+  await OSB.uploadPosLog({
+    label: `PO ${poNumber} → ${vendor}`,
+    note: `${lines.length} lines · logged as sent order`,
+    text,
+    inputType: "po",
+    parsed_pos: {
+      source: "purchase-order",
+      po_number: poNumber,
+      vendor,
+      lines: lines.map((o) => ({
+        product: o.name,
+        qty: o.orderQty ?? o.suggested,
+        size: o.size,
+        station: o.station,
+      })),
+    },
+  });
+}
+
+// Live working set while Smart Orders / PO panel is open
+let smartOrderWorking = [];
+
+async function openSmartOrdersPanel() {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed;inset:0;background:rgba(8,12,18,0.96);z-index:9999;display:flex;flex-direction:column;";
+  overlay.innerHTML = `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);gap:12px;flex-wrap:wrap;">
+      <div>
+        <span style="font-family:var(--font-serif);font-size:1.1rem;color:var(--copper-bright);">Smart Orders → Purchase Order</span>
+        <span style="font-size:0.75rem;color:var(--text-muted);margin-left:8px;">V1.5 · 1-click send</span>
+      </div>
+      <button id="closeOrders" type="button" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:4px;font-size:0.9rem;">Close</button>
+    </div>
+    <div id="ordersContent" style="flex:1;overflow:auto;padding:12px;"></div>
+    <div id="ordersStatus" class="status" style="padding:0 12px 4px;"></div>
+    <div style="padding:12px;background:var(--bg);border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;">
+      <button type="button" id="btnPoCopy" class="btn btn-primary" style="flex:1;min-width:140px;min-height:48px;">Copy PO text</button>
+      <button type="button" id="btnPoEmail" class="btn btn-secondary" style="flex:1;min-width:140px;min-height:48px;">Email draft</button>
+      <button type="button" id="btnPoCsv" class="btn btn-ghost" style="flex:1;min-width:120px;min-height:48px;">CSV</button>
+      <button type="button" id="btnPoLog" class="btn btn-secondary" style="flex:1;min-width:140px;min-height:48px;">Log as sent</button>
+      <button type="button" id="btnPoToReceive" class="btn btn-ghost" style="flex:1;min-width:140px;min-height:48px;">→ Receive</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const content = overlay.querySelector("#ordersContent");
+  const statusEl = overlay.querySelector("#ordersStatus");
+  const setPoStatus = (msg) => { if (statusEl) statusEl.textContent = msg || ""; };
+
+  // Load recent POS for real usage
+  const posData = await OSB.getPosLog();
+  const salesMap = {};
+  for (const entry of (posData.entries || []).slice(0, 5)) {
+    const lines = entry.parsed_pos?.lines || [];
+    for (const line of lines) {
+      const key = (line.product || "").toLowerCase().trim();
+      if (key) salesMap[key] = (salesMap[key] || 0) + (line.qty || 0);
+    }
+  }
+  smartOrderWorking = generateSmartOrders(salesMap).map((o) => ({ ...o }));
+
+  function collectFromDom() {
+    content.querySelectorAll("[data-order-idx]").forEach((row) => {
+      const idx = parseInt(row.dataset.orderIdx, 10);
+      if (!smartOrderWorking[idx]) return;
+      const qtyInp = row.querySelector(".po-qty");
+      const vendInp = row.querySelector(".po-vendor");
+      if (qtyInp) smartOrderWorking[idx].orderQty = Math.max(0, parseFloat(qtyInp.value) || 0);
+      if (vendInp) smartOrderWorking[idx].vendor = vendInp.value.trim() || "Primary supplier";
+    });
+    const notes = content.querySelector("#poNotes")?.value?.trim() || "";
+    const poNum = content.querySelector("#poNumber")?.value?.trim() || "";
+    const vendorOverride = content.querySelector("#poVendorDefault")?.value?.trim() || "";
+    return { notes, poNum, vendorOverride };
+  }
+
+  function activeLines() {
+    return smartOrderWorking.filter((o) => (o.orderQty ?? o.suggested) > 0);
+  }
+
+  function render() {
+    const { name, addr } = poBusinessHeader();
+    let html = `<div class="panel panel--glass">`;
+    html += `<h2 style="margin-top:0;">Suggested reorders → ready-to-send PO</h2>`;
+    html += `<p class="field-hint">PAR − on-hand + recent POS sales. Edit qty / vendor, then copy, email, or log. Receive later against the same list.</p>`;
+
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;">
+      <div>
+        <label class="field-hint" for="poNumber">PO number</label>
+        <input id="poNumber" type="text" value="PO-${new Date().toISOString().slice(0,10).replace(/-/g,"")}" style="width:100%;" />
+      </div>
+      <div>
+        <label class="field-hint" for="poVendorDefault">Default vendor (applies empty rows)</label>
+        <input id="poVendorDefault" type="text" placeholder="e.g. Southern Glazer's" style="width:100%;" />
+      </div>
+      <div style="grid-column:1/-1;">
+        <label class="field-hint" for="poNotes">Notes for supplier</label>
+        <input id="poNotes" type="text" placeholder="Deliver back door, call on arrival…" style="width:100%;" />
+      </div>
+      <div style="grid-column:1/-1;font-size:0.8rem;color:var(--text-muted);">
+        Ship-to: <strong>${escapeHtml(name)}</strong>${addr ? ` · ${escapeHtml(addr)}` : " · set business address in Settings"}
+      </div>
+    </div>`;
+
+    if (smartOrderWorking.length === 0) {
+      html += `<p class="field-hint">All good — nothing below par based on current data. Bump PARs or drop POS sales to generate suggestions.</p>`;
+    } else {
+      const byVendor = groupOrdersByVendor(smartOrderWorking);
+      for (const [vendor, lines] of byVendor) {
+        html += `<h3 style="font-family:var(--font-serif);color:var(--copper-bright);font-size:1rem;margin:16px 0 8px;">${escapeHtml(vendor)}</h3>`;
+        html += `<table class="workbook-table"><thead><tr>
+          <th>Station</th><th>Product</th><th>Current</th><th>PAR</th><th>Sales</th><th>Order qty</th><th>Vendor</th>
+        </tr></thead><tbody>`;
+        lines.forEach((o) => {
+          const idx = smartOrderWorking.indexOf(o);
+          html += `<tr data-order-idx="${idx}">
+            <td>${escapeHtml(o.station)}</td>
+            <td><strong>${escapeHtml(o.name)}</strong> ${escapeHtml(o.size || "")}</td>
+            <td class="workbook-num">${o.current}</td>
+            <td class="workbook-num">${o.par}</td>
+            <td class="workbook-num">${o.recentSales || "—"}</td>
+            <td><input class="po-qty" type="number" min="0" step="1" value="${o.orderQty ?? o.suggested}" style="width:64px;" /></td>
+            <td><input class="po-vendor" type="text" value="${escapeHtml(o.vendor)}" style="width:120px;" /></td>
+          </tr>`;
+        });
+        html += `</tbody></table>`;
+      }
+      html += `<p class="field-hint" style="margin-top:10px;">${smartOrderWorking.length} line(s). Set qty to 0 to drop a line from the PO.</p>`;
+    }
+
+    html += `<details style="margin-top:16px;"><summary style="cursor:pointer;color:var(--copper-bright);">Preview PO text</summary>
+      <pre id="poPreview" style="white-space:pre-wrap;font-size:0.8rem;background:rgba(0,0,0,0.25);padding:12px;border-radius:6px;margin-top:8px;max-height:240px;overflow:auto;"></pre>
+    </details>`;
+    html += `</div>`;
+    content.innerHTML = html;
+
+    const refreshPreview = () => {
+      const meta = collectFromDom();
+      if (meta.vendorOverride) {
+        smartOrderWorking.forEach((o) => {
+          if (!o.vendor || o.vendor === "Primary supplier") o.vendor = meta.vendorOverride;
+        });
+      }
+      const lines = activeLines();
+      if (!lines.length) {
+        const pre = content.querySelector("#poPreview");
+        if (pre) pre.textContent = "(no lines with qty > 0)";
+        return;
+      }
+      // Prefer single-vendor PO; if mixed, still one combined document
+      const vendors = [...new Set(lines.map((o) => o.vendor))];
+      const vendor = vendors.length === 1 ? vendors[0] : meta.vendorOverride || "Multiple suppliers";
+      const { text } = buildPurchaseOrderText(lines, {
+        vendor,
+        poNumber: meta.poNum,
+        notes: meta.notes,
+      });
+      const pre = content.querySelector("#poPreview");
+      if (pre) pre.textContent = text;
+    };
+
+    content.querySelectorAll(".po-qty, .po-vendor, #poNotes, #poNumber, #poVendorDefault").forEach((el) => {
+      el.addEventListener("input", refreshPreview);
+      el.addEventListener("change", refreshPreview);
+    });
+    refreshPreview();
+  }
+
+  function buildCurrentPo() {
+    const meta = collectFromDom();
+    if (meta.vendorOverride) {
+      smartOrderWorking.forEach((o) => {
+        if (!o.vendor || o.vendor === "Primary supplier") o.vendor = meta.vendorOverride;
+      });
+    }
+    const lines = activeLines();
+    if (!lines.length) return null;
+    const vendors = [...new Set(lines.map((o) => o.vendor))];
+    const vendor = vendors.length === 1 ? vendors[0] : meta.vendorOverride || "Multiple suppliers";
+    return buildPurchaseOrderText(lines, {
+      vendor,
+      poNumber: meta.poNum,
+      notes: meta.notes,
+    });
+  }
+
+  render();
+
+  overlay.querySelector("#closeOrders").onclick = () => document.body.removeChild(overlay);
+
+  overlay.querySelector("#btnPoCopy").onclick = async () => {
+    const po = buildCurrentPo();
+    if (!po) return setPoStatus("Nothing to order — all qtys are 0.");
+    const ok = await copyToClipboard(po.text);
+    setPoStatus(ok ? `PO ${po.poNumber} copied — paste into text/email to your rep.` : "Copy failed — open Preview and select manually.");
+  };
+
+  overlay.querySelector("#btnPoEmail").onclick = () => {
+    const po = buildCurrentPo();
+    if (!po) return setPoStatus("Nothing to order — all qtys are 0.");
+    openMailtoOrder({
+      vendor: po.vendor,
+      text: po.text,
+      subject: `Purchase order ${po.poNumber} — ${poBusinessHeader().name}`,
+    });
+    setPoStatus(`Email draft opened for ${po.poNumber}. Add your supplier address in the To field.`);
+  };
+
+  overlay.querySelector("#btnPoCsv").onclick = () => {
+    collectFromDom();
+    const lines = activeLines();
+    if (!lines.length) return setPoStatus("Nothing to export.");
+    const meta = collectFromDom();
+    const header = "PO,Vendor,Station,Product,Size,Current,PAR,RecentSales,OrderQty\n";
+    const poNum = meta.poNum || "PO";
+    const rows = lines.map((o) =>
+      [poNum, o.vendor, o.station, o.name, o.size, o.current, o.par, o.recentSales || "", o.orderQty ?? o.suggested]
+        .map((c) => `"${String(c).replace(/"/g, '""')}"`)
+        .join(",")
+    ).join("\n");
+    downloadTextFile(`${poNum}-order.csv`, header + rows, "text/csv");
+    setPoStatus("CSV downloaded.");
+  };
+
+  overlay.querySelector("#btnPoLog").onclick = async () => {
+    const po = buildCurrentPo();
+    if (!po) return setPoStatus("Nothing to log.");
+    try {
+      await logPurchaseOrderSent(po);
+      setPoStatus(`Logged ${po.poNumber} to input log (POs / Orders filter). Ready to Receive when stock arrives.`);
+      try { await loadInputsHub(); } catch (_) { /* home may not be focused */ }
+    } catch (e) {
+      setPoStatus("Log failed: " + (e.message || e));
+    }
+  };
+
+  overlay.querySelector("#btnPoToReceive").onclick = () => {
+    collectFromDom();
+    const lines = activeLines();
+    if (!lines.length) return setPoStatus("Nothing to receive.");
+    // Seed receive list from this PO, then jump to inputs
+    receiveItems = lines.map((o) => ({
+      station: o.station,
+      name: o.name,
+      size: o.size,
+      suggested: o.orderQty ?? o.suggested,
+      received: o.orderQty ?? o.suggested,
+      current: o.current,
+      par: o.par,
+      recentSales: o.recentSales,
+    }));
+    document.body.removeChild(overlay);
+    switchAdminView("inputs");
+    loadInputsHub().then(() => {
+      renderReceiveList();
+      setStatus("PO lines loaded into Receive — edit actuals, then Log receipt.", "receiveStatus");
+    }).catch(() => {
+      renderReceiveList();
+      setStatus("PO lines loaded into Receive — edit actuals, then Log receipt.", "receiveStatus");
+    });
+  };
+}
+
+/* ─── V1.5 Phase 4.1 Multi-venue transfers ─── */
+
+async function refreshVenuePanels() {
+  const box = document.getElementById("venuesConsolidated");
+  const hist = document.getElementById("transferHistoryBox");
+  try {
+    const venues = await OSB.listVenues();
+    if (box) {
+      const c = venues.consolidated || {};
+      const list = venues.venues || [];
+      if (list.length <= 1) {
+        box.innerHTML = `<p class="field-hint">One venue on the map. Add another bar to unlock transfers and company totals.</p>`;
+      } else {
+        box.innerHTML = `
+          <div class="venues-roll-up">
+            <strong>Company roll-up</strong>
+            <span>${c.venue_count || list.length} venues · ${c.bottle_count || 0} SKUs · ${reportMoney(c.total_value || 0)} on hand · ${c.below_par || 0} below par</span>
+          </div>
+          <div class="venues-cards">
+            ${list
+              .map(
+                (v) => `<div class="venue-card${v.id === venues.active_bar_id ? " venue-card--active" : ""}">
+                <div class="venue-card-name">${escapeHtml(v.name || "Unnamed")}</div>
+                <div class="venue-card-meta">${v.bottle_count || 0} bottles · ${v.station_count || 0} stations</div>
+                <div class="venue-card-meta">${reportMoney(v.total_value || 0)} · ${v.below_par || 0} below par</div>
+              </div>`
+              )
+              .join("")}
+          </div>`;
+      }
+    }
+    if (hist) {
+      const t = await OSB.listTransfers(12);
+      const rows = t.transfers || [];
+      if (!rows.length) {
+        hist.innerHTML = `<p class="field-hint">No transfers yet. Move a bottle between venues and it shows up here.</p>`;
+      } else {
+        hist.innerHTML = `
+          <h3 class="transfer-history-title">Recent transfers</h3>
+          <div class="transfer-history-list">
+            ${rows
+              .map(
+                (x) => `<div class="transfer-history-row">
+                <strong>${Number(x.qty).toFixed(1)} × ${escapeHtml(x.product || "")}</strong>
+                <span class="field-hint">${escapeHtml(x.from_bar_name || "")} → ${escapeHtml(x.to_bar_name || "")}</span>
+                <span class="field-hint">${escapeHtml((x.created_at || "").slice(0, 16).replace("T", " "))}${x.note ? " · " + escapeHtml(x.note) : ""}</span>
+              </div>`
+              )
+              .join("")}
+          </div>`;
+      }
+    }
+  } catch (e) {
+    if (box) box.innerHTML = `<p class="field-hint">${escapeHtml(e.message || "Could not load venues")}</p>`;
+  }
+}
+
+async function openTransferPanel() {
+  const listed = await OSB.listBars();
+  const bars = listed.bars || [];
+  if (bars.length < 2) {
+    window.alert("Add a second venue in Settings → Your venues first. Then you can move stock between them.");
+    switchAdminView("settings");
+    return;
+  }
+
+  // Ensure we have live bottles for the active (from) bar
+  const activeId = listed.active_bar_id || bars[0].id;
+  try {
+    barState = normalizeBar(await OSB.getBar(false, activeId));
+  } catch (_) { /* keep existing barState */ }
+
+  const bottles = typeof allBottles === "function" ? allBottles() : [];
+  const bottleOpts = bottles
+    .map(
+      (b) =>
+        `<option value="${escapeHtml(b.id)}" data-size="${escapeHtml(b.size || "")}" data-level="${b.current_level ?? 0}" data-name="${escapeHtml(b.name || "")}">${escapeHtml(b.name || "Bottle")} (${escapeHtml(b.size || "—")}) · on hand ${Number(b.current_level || 0).toFixed(1)}</option>`
+    )
+    .join("");
+
+  const barOpts = (selectedId, excludeId) =>
+    bars
+      .filter((b) => !excludeId || b.id !== excludeId)
+      .map(
+        (b) =>
+          `<option value="${escapeHtml(b.id)}"${b.id === selectedId ? " selected" : ""}>${escapeHtml(b.name || "Unnamed")}</option>`
+      )
+      .join("");
+
+  const overlay = document.createElement("div");
+  overlay.className = "xfer-overlay";
+  overlay.style.cssText =
+    "position:fixed;inset:0;background:rgba(8,12,18,0.96);z-index:9999;display:flex;flex-direction:column;";
+  overlay.innerHTML = `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg);gap:12px;flex-wrap:wrap;">
+      <div>
+        <span style="font-family:var(--font-serif);font-size:1.15rem;color:var(--copper-bright);">Transfer stock</span>
+        <span style="font-size:0.75rem;color:var(--text-muted);margin-left:8px;">V1.5 · multi-venue</span>
+      </div>
+      <button type="button" id="xferClose" class="btn btn-ghost btn-sm">Close</button>
+    </div>
+    <div style="flex:1;overflow:auto;padding:16px;max-width:560px;width:100%;margin:0 auto;">
+      <div class="panel panel--glass">
+        <p class="field-hint" style="margin-top:0;">Move bottles from one venue to another. Both inventories update together. Destination gets a matching product — or we create it under “Transfers in”.</p>
+        <label for="xferFrom">From venue</label>
+        <select id="xferFrom">${barOpts(activeId)}</select>
+        <label for="xferTo">To venue</label>
+        <select id="xferTo">${barOpts(bars.find((b) => b.id !== activeId)?.id, activeId)}</select>
+        <label for="xferBottle">Product (from source)</label>
+        <select id="xferBottle">
+          <option value="">— pick a bottle —</option>
+          ${bottleOpts || "<option value=\"\" disabled>No bottles on this venue yet</option>"}
+        </select>
+        <div class="row" style="gap:12px;margin-top:8px;">
+          <div style="flex:1;">
+            <label for="xferQty">How many (bottles / units)</label>
+            <input id="xferQty" type="number" min="0.1" step="0.1" value="1" />
+            <p id="xferAvail" class="field-hint" style="margin:4px 0 0;">On hand: —</p>
+          </div>
+        </div>
+        <label for="xferNote">Note (optional)</label>
+        <input id="xferNote" type="text" placeholder="e.g. Patio ran dry · runner from main" />
+        <label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:0.9rem;">
+          <input type="checkbox" id="xferCreate" checked />
+          Create product on destination if missing
+        </label>
+        <p id="xferStatus" class="status" style="margin-top:10px;"></p>
+        <div class="actions" style="margin-top:12px;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary" id="xferSubmit">Move stock →</button>
+          <button type="button" class="btn btn-ghost" id="xferClose2">Cancel</button>
+        </div>
+      </div>
+      <div id="xferRecent" style="margin-top:16px;"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const fromEl = overlay.querySelector("#xferFrom");
+  const toEl = overlay.querySelector("#xferTo");
+  const bottleEl = overlay.querySelector("#xferBottle");
+  const qtyEl = overlay.querySelector("#xferQty");
+  const availEl = overlay.querySelector("#xferAvail");
+  const statusEl = overlay.querySelector("#xferStatus");
+  const recentEl = overlay.querySelector("#xferRecent");
+
+  const close = () => overlay.remove();
+  overlay.querySelector("#xferClose").onclick = close;
+  overlay.querySelector("#xferClose2").onclick = close;
+
+  const updateAvail = () => {
+    const opt = bottleEl.selectedOptions[0];
+    if (!opt || !opt.value) {
+      availEl.textContent = "On hand: —";
+      return;
+    }
+    const lvl = parseFloat(opt.dataset.level || "0") || 0;
+    availEl.textContent = `On hand: ${lvl.toFixed(1)} · don't send more than this`;
+    if (!qtyEl.value || parseFloat(qtyEl.value) > lvl) qtyEl.value = String(Math.min(1, lvl) || 0.1);
+  };
+  bottleEl.addEventListener("change", updateAvail);
+  updateAvail();
+
+  async function reloadSourceBottles() {
+    const fromId = fromEl.value;
+    statusEl.textContent = "Loading source map…";
+    try {
+      const bar = normalizeBar(await OSB.getBar(false, fromId));
+      // Temporarily use this bar for bottle list without clobbering global if switch fails later
+      const bottlesLocal = [];
+      for (const st of bar.stations || []) {
+        for (const b of st.bottles || []) {
+          bottlesLocal.push({ ...b, stationName: st.name });
+        }
+      }
+      bottleEl.innerHTML =
+        `<option value="">— pick a bottle —</option>` +
+        bottlesLocal
+          .map(
+            (b) =>
+              `<option value="${escapeHtml(b.id)}" data-size="${escapeHtml(b.size || "")}" data-level="${b.current_level ?? 0}" data-name="${escapeHtml(b.name || "")}">${escapeHtml(b.name || "Bottle")} (${escapeHtml(b.size || "—")}) · ${Number(b.current_level || 0).toFixed(1)}</option>`
+          )
+          .join("");
+      // Keep "to" from listing the same bar
+      const other = bars.filter((b) => b.id !== fromId);
+      toEl.innerHTML = other
+        .map((b) => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name || "Unnamed")}</option>`)
+        .join("");
+      statusEl.textContent = "";
+      updateAvail();
+    } catch (e) {
+      statusEl.textContent = e.message || "Could not load source bar";
+    }
+  }
+
+  fromEl.addEventListener("change", reloadSourceBottles);
+
+  async function loadRecent() {
+    try {
+      const t = await OSB.listTransfers(8);
+      const rows = t.transfers || [];
+      if (!rows.length) {
+        recentEl.innerHTML = "";
+        return;
+      }
+      recentEl.innerHTML = `
+        <div class="panel panel--glass">
+          <h3 style="margin:0 0 8px;font-family:var(--font-serif);color:var(--copper-bright);font-size:1rem;">Just moved</h3>
+          ${rows
+            .map(
+              (x) => `<div class="transfer-history-row">
+              <strong>${Number(x.qty).toFixed(1)} × ${escapeHtml(x.product || "")}</strong>
+              <span class="field-hint">${escapeHtml(x.from_bar_name)} → ${escapeHtml(x.to_bar_name)}</span>
+            </div>`
+            )
+            .join("")}
+        </div>`;
+    } catch (_) { /* ignore */ }
+  }
+  loadRecent();
+
+  overlay.querySelector("#xferSubmit").onclick = async () => {
+    const fromBarId = fromEl.value;
+    const toBarId = toEl.value;
+    const opt = bottleEl.selectedOptions[0];
+    if (!opt?.value) {
+      statusEl.textContent = "Pick a product to move.";
+      return;
+    }
+    const qty = parseFloat(qtyEl.value);
+    if (!(qty > 0)) {
+      statusEl.textContent = "Enter a quantity greater than zero.";
+      return;
+    }
+    if (fromBarId === toBarId) {
+      statusEl.textContent = "From and To must be different venues.";
+      return;
+    }
+    statusEl.textContent = "Moving…";
+    try {
+      const res = await OSB.transferStock({
+        fromBarId,
+        toBarId,
+        bottleId: opt.value,
+        product: opt.dataset.name,
+        size: opt.dataset.size,
+        qty,
+        note: overlay.querySelector("#xferNote")?.value?.trim() || "",
+        createIfMissing: !!overlay.querySelector("#xferCreate")?.checked,
+      });
+      statusEl.textContent = `Moved ${qty} × ${opt.dataset.name} → ${res.to_bar?.name || "destination"}${res.transfer?.created_dest ? " (created on dest)" : ""}.`;
+      // Refresh local source list levels
+      await reloadSourceBottles();
+      await loadRecent();
+      try {
+        barState = normalizeBar(await OSB.getBar(false, listed.active_bar_id || fromBarId));
+        await refreshHomeBars();
+        await refreshVenuePanels();
+        await loadMetrics();
+        await loadInHouse();
+      } catch (_) { /* non-fatal */ }
+    } catch (e) {
+      statusEl.textContent = e.message || "Transfer failed";
+    }
+  };
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  loadBottleWeights(); // V1.5 Phase 1 preload weights for effective level calc
   if (document.body.dataset.app === "setup") {
     initSetup().catch((err) => setStatus(err.message || "Setup failed to load."));
   }

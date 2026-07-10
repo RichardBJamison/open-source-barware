@@ -67,6 +67,8 @@ fetch_or_copy "server.py"
 fetch_or_copy "invoice_parse.py"
 fetch_or_copy "requirements.txt"
 fetch_or_copy "osb_config.example.json"
+fetch_or_copy "VERSION.txt"
+fetch_or_copy "README-INSTALL.txt"
 fetch_or_copy "static/setup.html"
 fetch_or_copy "static/home.html"
 fetch_or_copy "static/api-guide.html"
@@ -75,6 +77,15 @@ fetch_or_copy "static/css/app.css"
 fetch_or_copy "static/js/osb-app.js"
 mkdir -p "$INSTALL_DIR/static/downloads"
 fetch_or_copy "static/downloads/Bar-Inventory-Master.xlsx"
+# Bottle weight seed for optional weight mode (do not overwrite customer edits)
+if [ ! -f "$INSTALL_DIR/data/bottle-weights.json" ]; then
+  mkdir -p "$INSTALL_DIR/data"
+  if [ -f "$SOURCE_DIR/data/bottle-weights.json" ]; then
+    cp "$SOURCE_DIR/data/bottle-weights.json" "$INSTALL_DIR/data/bottle-weights.json"
+  else
+    curl -fsSL "$GITHUB_RAW/data/bottle-weights.json" -o "$INSTALL_DIR/data/bottle-weights.json" 2>/dev/null || true
+  fi
+fi
 
 if [ ! -f "$INSTALL_DIR/osb_config.json" ]; then
   cp "$INSTALL_DIR/osb_config.example.json" "$INSTALL_DIR/osb_config.json"

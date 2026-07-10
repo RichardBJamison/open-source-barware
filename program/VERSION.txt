@@ -1,3 +1,4 @@
-1.0.0
-Release: July 4, 2026
-Build: 20260705-positioning
+1.5.0
+V1.5 Phase 4.4 — Spanish walk/count structure (MX) + people
+Release: July 10, 2026
+Build: EN/ES inventory notes · Spanish station/level synonyms · PIN logins · staff board

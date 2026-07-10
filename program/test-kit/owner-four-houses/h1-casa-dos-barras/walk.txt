@@ -1,0 +1,10 @@
+Barra uno.
+Pozo uno fila uno. Tito's 750. Ketel One litro. Grey Goose 750. Absolut 750.
+Pozo uno fila dos. Tanqueray 750. Bombay Sapphire 750. Hendricks 750.
+Pozo dos. Bacardi 750. Captain Morgan 750. Patron Silver 750. Espolon Blanco litro.
+Barra trasera. Jack Daniels 750. Jameson 750. Don Julio 1942 750. Casamigos 750.
+Nevera de cerveza. Corona 12oz. Modelo 12oz. Pacifico 12oz. Tecate 12oz.
+Barra dos.
+Pozo uno. Tito's 750. Bacardi 750. Patron Silver 750. Tanqueray 750.
+Nevera de cerveza. Corona 12oz. Modelo 12oz. Heineken 12oz.
+Barra trasera. Casamigos 750. Don Julio 750.

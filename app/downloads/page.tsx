@@ -150,7 +150,7 @@ export default function DownloadsPage() {
         <OptimizedPicture
           webpSrc="/images/bartop.webp"
           fallbackSrc="/images/bartop.png"
-          alt="Overhead view of dark wood bar top with copper jigger"
+          alt="Overhead view of dark wood bar top with copper jigger for free inventory system downloads"
           className="absolute inset-0 h-full w-full object-cover object-center"
           priority
         />
@@ -186,14 +186,14 @@ export default function DownloadsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
               <p className="text-[11px] tracking-[0.3em] uppercase text-patina-light mb-3">
-                Version 1.0 · July 4, 7:30 PM
+                Version 1.5 · Spanish-ready notes
               </p>
               <h2 className="font-serif text-2xl md:text-3xl text-cream mb-2">
                 Ready to install the Chrome program?
               </h2>
               <p className="text-text-muted text-sm leading-relaxed max-w-xl">
-                Mac and Windows installers, release-list signup, and early-production
-                notes live on the download page.
+                Mac and Windows installers for v1.5 — mobile counting, POS, multi-venue,
+                Spanish walk/count notes, and more. Join the release list on the download page.
               </p>
             </div>
             <Link
@@ -425,46 +425,45 @@ export default function DownloadsPage() {
             </span>
           </h2>
           <p className="text-text-muted mb-16 max-w-lg">
-            The public page is moving away from standalone downloads and toward
-            one Chrome-side application with an admin panel, weekly inputs, and
-            guided inventory intelligence.
+            v1.5 ships the Chrome program feature set. Next: full Spanish UI and
+            the Intelligent Hospitality Systems restaurant package.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <PhaseCard
               number="I"
-              title="Foundation"
-              timing="Weeks 1–2"
+              title="Shipped · v1.0–v1.5"
+              timing="July 2026"
               status="active"
               items={[
-                "Full baseline inventory count",
-                "Master spreadsheet with live data",
-                "Quick count template",
-                "Product categorization system",
+                "Walk · count · process core",
+                "Mobile count + camera barcode",
+                "POS import, smart orders, receiving",
+                "Spanish-ready inventory notes (MX)",
               ]}
             />
             <PhaseCard
               number="II"
-              title="Intelligence"
-              timing="Week 3"
+              title="Next Friday"
+              timing="July 17 · 6pm ET"
               status="next"
               items={[
-                "Variance calculator + POS matching",
-                "Product database (500+ items)",
-                "Reorder point formulas",
-                "Category-level cost analysis",
+                "Full Spanish program UI",
+                "Intelligent Hospitality Systems teaser",
+                "Restaurant inventory package",
+                "Community feedback loop",
               ]}
             />
             <PhaseCard
               number="III"
-              title="Automation"
-              timing="Post-Launch"
+              title="Beyond"
+              timing="Post–July 17"
               status="planned"
               items={[
-                "Wine cooler video walk (optional AI)",
-      "Mobile counting view",
-                "POS data import tools",
-                "Multi-location support",
+                "PWA / installable mobile shell",
+                "Expanded bottle-weights seed",
+                "Food / retail / supplies (paid tier)",
+                "Keg tools & larger product DB",
               ]}
             />
           </div>
@@ -509,6 +508,22 @@ export default function DownloadsPage() {
           </div>
         </div>
       </section>
+
+      {/* Image structured data for SEO - backend only */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ImageObject",
+            "contentUrl": "https://opensourcebarware.com/images/bartop.webp",
+            "name": "Overhead view of dark wood bar top with copper jigger for free inventory system downloads",
+            "description": "Hero image showing tools for the best free bar inventory system. Download the free inventory system program and resources.",
+            "width": "1200",
+            "height": "630"
+          })
+        }}
+      />
     </>
   );
 }

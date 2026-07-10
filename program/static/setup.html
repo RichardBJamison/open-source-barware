@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="/static/css/app.css" />
 </head>
 <body data-app="setup">
-  <div class="demo-ribbon">The Open Source Bar Program · Live demo — field-tested at Agave &amp; Rye</div>
+  <div class="demo-ribbon">The Open Source Bar Program · Live demo — field-tested at Your Bar 1</div>
   <div class="shell setup-shell">
     <header class="header setup-header">
       <div class="setup-eyebrow">First-Time Setup</div>
@@ -150,6 +150,7 @@
         <span class="coaching-pass-badge">Pass 1</span>
         <div class="coaching-step-copy">
           <p><strong>What we need from you:</strong> Upload your walk notes <em>or</em> build the map manually here — your choice. If you upload, start each bar with <strong>Bar 1</strong>, <strong>Bar 2</strong>, <strong>Bar 3</strong>, then stations: "Well one," "Well two," "Back bar," "Beer cooler." Bottle names and sizes only — no levels yet.</p>
+          <p><strong>English or Spanish notes:</strong> Walk and count notes may be in English or Mexican Spanish (or mixed). Station words like <em>barra / pozo / barra trasera / nevera de cerveza</em> and levels like <em>lleno / vacío / medio</em> are recognized. UI stays English in v1.5.</p>
           <p><strong>What happens next:</strong> We draft stations and a placement map from your notes. You review names and sizes, rename your bars at reconciliation, then continue.</p>
         </div>
       </div>
@@ -183,6 +184,13 @@
               Back bar top shelf. Patron Silver 750, Don Julio 1942 750. Beer cooler. Corona 12oz…"
             </p>
           </div>
+          <div class="example-box">
+            <p class="box-label">Ejemplo en español (MX)</p>
+            <p class="example-text">
+              "Barra uno. Pozo uno fila uno. Tito's 750. Ketel One litro. Tanqueray 750.
+              Pozo dos. Espolon Blanco litro. Barra trasera. Patrón Silver 750. Nevera de cerveza. Corona 12oz…"
+            </p>
+          </div>
         </div>
         <div class="info-box parse-expect-box">
           <p class="info-title">What happens when you parse</p>
@@ -197,7 +205,7 @@
             every cycle. Upload is the starting line, not the finish.
           </p>
         </div>
-        <textarea id="voiceNotes" placeholder="Or paste your voice notes here…"></textarea>
+        <textarea id="voiceNotes" placeholder="Paste walk notes here (English or Spanish)…"></textarea>
         <div class="actions walk-actions">
           <button class="btn btn-ghost" id="btnToggleManual" type="button">Or build the whole map manually</button>
           <div class="upload-notes-wrap">
@@ -246,6 +254,9 @@
           <div id="walkReviewScreen" class="walk-review-panel" role="tabpanel">
             <div class="walk-review-toolbar">
               <span id="walkReviewProgress" class="walk-review-progress"></span>
+              <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; color:#a8784f;">
+                <input id="setupWeighToggle" type="checkbox" /> Enable weighing mode (V1.5 optional — for scale users)
+              </label>
               <button class="btn btn-ghost btn-sm" id="btnMarkSizesReviewed" type="button">I've checked every size</button>
             </div>
             <div class="walk-review-table-wrap scroll-panel">
@@ -257,6 +268,7 @@
                     <th>Product name</th>
                     <th>Station</th>
                     <th>Size</th>
+                    <th>Weight (oz) V1.5</th>
                     <th>OK?</th>
                     <th></th>
                   </tr>
@@ -524,8 +536,8 @@
             <p class="info-body" style="margin-top:10px;">
               Or paste your verbal count directly in the box.
               <strong>Call out the station, then each bottle with its level.</strong>
-              Full bottles as <code>one</code> or <code>2</code>. Open bottles as tenths:
-              <code>point five</code>, <code>0.5</code>, or <code>half</code>.
+              Full bottles as <code>one</code> or <code>2</code> (or Spanish <code>uno</code> / <code>lleno</code>).
+              Open bottles as tenths: <code>point five</code>, <code>0.5</code>, <code>half</code>, or Spanish <code>medio</code> / <code>vacío</code>.
             </p>
             <div class="example-box">
               <p class="box-label">Example</p>
@@ -533,6 +545,13 @@
                 "Well one. Tito's one. Ketel One point five. Tanqueray one. Bacardi zero.
                 Row two. Espolon one. Evan Williams point three.
                 Back bar top shelf. Patron one. Don Julio point eight…"
+              </p>
+            </div>
+            <div class="example-box">
+              <p class="box-label">Ejemplo en español</p>
+              <p class="example-text">
+                "Pozo uno. Tito's uno. Ketel One punto cinco. Tanqueray lleno. Bacardi vacío.
+                Fila dos. Espolon uno. Barra trasera. Patrón uno. Don Julio punto ocho…"
               </p>
             </div>
           </div>
@@ -544,7 +563,7 @@
               reconcile surprises before you lock the baseline.
             </p>
           </div>
-          <textarea id="countNotes" placeholder="Or paste your count notes here…"></textarea>
+          <textarea id="countNotes" placeholder="Paste count notes here (English or Spanish)…"></textarea>
           <div class="actions walk-actions">
             <div class="upload-notes-wrap">
               <button class="btn btn-ghost" id="btnUploadCount" type="button">Upload files</button>

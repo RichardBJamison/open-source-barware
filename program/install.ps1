@@ -152,6 +152,12 @@ foreach ($rel in $staticFiles) {
         Copy-Item -Path $src -Destination (Join-Path $InstallDir $rel) -Force
     }
 }
+# Bottle weight seed for optional weight mode (do not overwrite customer edits)
+$weightsSrc = Join-Path $SourceDir "data\bottle-weights.json"
+$weightsDst = Join-Path $InstallDir "data\bottle-weights.json"
+if ((Test-Path $weightsSrc) -and -not (Test-Path $weightsDst)) {
+    Copy-Item -Path $weightsSrc -Destination $weightsDst -Force
+}
 $scriptsDir = Join-Path $SourceDir "scripts"
 if (Test-Path $scriptsDir) {
     $destScripts = Join-Path $InstallDir "scripts"

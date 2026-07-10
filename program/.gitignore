@@ -6,3 +6,5 @@ localhost+1.pem
 localhost+1-key.pem
 .DS_Store
 .vercel
+.stress-sandbox/
+data/_stress-reports/

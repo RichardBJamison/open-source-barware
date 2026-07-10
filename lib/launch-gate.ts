@@ -1,6 +1,11 @@
 export const LAUNCH_MS = new Date("2026-07-04T22:00:00-04:00").getTime();
-export const LAUNCH_OVERLAY_END_MS = new Date("2026-07-13T23:59:59-04:00").getTime();
+/** v1.5 announcement overlay — through the next-Friday drop weekend */
+export const LAUNCH_OVERLAY_END_MS = new Date("2026-07-18T23:59:59-04:00").getTime();
 export const LAUNCH_LABEL = "July 4 at 10pm";
+
+/** Next drop: full Spanish UI + Intelligent Hospitality Systems teaser */
+export const NEXT_DROP_MS = new Date("2026-07-17T18:00:00-04:00").getTime();
+export const NEXT_DROP_LABEL = "Friday, July 17 at 6pm Eastern";
 
 /** Richard flips this off in env when installers are ready to ship. */
 export function isManualDownloadLockOn() {
@@ -27,7 +32,7 @@ export function isLaunched(now = Date.now(), opts: LaunchOptions = {}) {
   return now >= LAUNCH_MS;
 }
 
-/** Post-launch thank-you overlay — through first week (+7 days after ship). */
+/** Post-launch announcement overlay — through next-drop weekend. */
 export function shouldShowPostLaunchOverlay(
   now = Date.now(),
   opts: LaunchOptions = {},
@@ -69,8 +74,8 @@ export function getDownloadLockMessage() {
   return `Downloads open ${LAUNCH_LABEL} Eastern.`;
 }
 
-export function getLaunchCountdown(now = Date.now()) {
-  const remaining = Math.max(LAUNCH_MS - now, 0);
+function countdownParts(targetMs: number, now = Date.now()) {
+  const remaining = Math.max(targetMs - now, 0);
   const totalSeconds = Math.floor(remaining / 1000);
   const days = Math.floor(totalSeconds / 86400);
   const hours = Math.floor((totalSeconds % 86400) / 3600);
@@ -85,4 +90,14 @@ export function getLaunchCountdown(now = Date.now()) {
     seconds,
     finished: remaining === 0,
   };
+}
+
+/** Legacy July 4 launch countdown (pre-launch only). */
+export function getLaunchCountdown(now = Date.now()) {
+  return countdownParts(LAUNCH_MS, now);
+}
+
+/** Countdown to Friday July 17 · 6pm Eastern drop. */
+export function getNextDropCountdown(now = Date.now()) {
+  return countdownParts(NEXT_DROP_MS, now);
 }

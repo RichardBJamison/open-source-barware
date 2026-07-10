@@ -1,25 +1,30 @@
 "use client";
 
-import Image from "next/image";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import FireworksCanvas from "@/components/FireworksCanvas";
 import {
-  LAUNCH_LABEL,
-  getLaunchCountdown,
+  NEXT_DROP_LABEL,
+  getNextDropCountdown,
   shouldShowPostLaunchOverlay,
   shouldShowPreLaunchOverlay,
 } from "@/lib/launch-gate";
 
-// Bumped to v8 so the week-one popup shows again after the Salle deploy removed it.
-const STORAGE_KEY = "osb-july4-launch-v8-weekone";
+// Bumped so returning visitors see the clean v1.5 modal (not the fireworks shell).
+const STORAGE_KEY = "osb-announce-v10-v15-clean";
 
-const PARTY_SHOTS = [
-  { src: "/images/hero.png", alt: "Bartender behind the bar" },
-  { src: "/images/hands.png", alt: "Hands on the pour" },
-  { src: "/images/bartop.png", alt: "The bar top" },
-  { src: "/images/workshop.jpg", alt: "The workshop" },
+const V15_FEATURES = [
+  "Spanish + English inventory notes",
+  "Mobile counting experience",
+  "Barcode scanning via camera",
+  "Visual par alerts (green/yellow/red)",
+  "Recipe & cocktail costing",
+  "POS import (Toast, Square, CSV)",
+  "Smart order suggestions",
+  "Multi-venue + receiving workflow",
 ];
+
+const GITHUB_URL = "https://github.com/RichardBJamison/open-source-barware";
 
 export default function JulyFourthLaunchOverlay() {
   const pathname = usePathname();
@@ -34,20 +39,22 @@ export default function JulyFourthLaunchOverlay() {
   const forceOverlay = process.env.NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY === "true";
   const previewParam =
     searchParams.get("preview") === "july4" ||
-    searchParams.get("july4") === "1";
-  // Manual preview of the post-launch thank-you before 10pm: ?thankyou=1
-  const forceThankYou = searchParams.get("thankyou") === "1";
+    searchParams.get("july4") === "1" ||
+    searchParams.get("preview") === "v15" ||
+    searchParams.get("announce") === "1";
 
-  const dismissToHome = useCallback(() => {
+  const enterSite = useCallback(() => {
     setDismissed(true);
-    setTimeout(() => setVisible(false), 500);
-    if (!previewParam && !forceOverlay && !forceThankYou) {
+    setTimeout(() => setVisible(false), 280);
+    if (!previewParam && !forceOverlay) {
       localStorage.setItem(STORAGE_KEY, "1");
     }
-    router.push("/");
-  }, [previewParam, forceOverlay, forceThankYou, router]);
+    // Stay on current path if already browsing; default home when forced.
+    if (pathname === "/" || !pathname) {
+      router.push("/");
+    }
+  }, [previewParam, forceOverlay, pathname, router]);
 
-  // Tick every second so the countdown updates and flips to the thank-you at 10pm.
   useEffect(() => {
     if (!visible || dismissed) return;
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -56,30 +63,24 @@ export default function JulyFourthLaunchOverlay() {
 
   useEffect(() => {
     if (pathname?.startsWith("/inventory")) return;
-    const now = Date.now();
+    const t = Date.now();
     const eligible =
       previewParam ||
       forceOverlay ||
-      forceThankYou ||
-      shouldShowPreLaunchOverlay(now, { preview: previewParam, forceOverlay }) ||
-      shouldShowPostLaunchOverlay(now, { preview: previewParam, forceOverlay });
+      shouldShowPreLaunchOverlay(t, { preview: previewParam, forceOverlay }) ||
+      shouldShowPostLaunchOverlay(t, { preview: previewParam, forceOverlay });
     if (!eligible) return;
-    if (
-      !previewParam &&
-      !forceOverlay &&
-      !forceThankYou &&
-      localStorage.getItem(STORAGE_KEY)
-    ) {
+    if (!previewParam && !forceOverlay && localStorage.getItem(STORAGE_KEY)) {
       return;
     }
-    const timer = setTimeout(() => setVisible(true), 600);
+    const timer = setTimeout(() => setVisible(true), 500);
     return () => clearTimeout(timer);
-  }, [pathname, forceOverlay, previewParam, forceThankYou]);
+  }, [pathname, forceOverlay, previewParam]);
 
   useEffect(() => {
     if (!visible || dismissed) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") dismissToHome();
+      if (e.key === "Escape") enterSite();
     };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
@@ -87,313 +88,192 @@ export default function JulyFourthLaunchOverlay() {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
     };
-  }, [visible, dismissed, dismissToHome]);
+  }, [visible, dismissed, enterSite]);
 
   if (!visible) return null;
 
-  const countdown = getLaunchCountdown(now);
-  const launched = forceThankYou || countdown.finished;
+  const countdown = getNextDropCountdown(now);
+  const dropLive = countdown.finished;
 
   return (
     <div
-      className={`july4-overlay fixed inset-0 z-[200] transition-opacity duration-500 ${
+      className={`announce-overlay fixed inset-0 z-[200] transition-opacity duration-300 ${
         dismissed ? "pointer-events-none opacity-0" : "opacity-100"
       }`}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="july4-headline"
+      aria-labelledby="announce-headline"
     >
-      <FireworksCanvas />
-
+      {/* Dim only — home site stays visible underneath */}
       <div
-        className="july4-backdrop absolute inset-0"
-        onClick={dismissToHome}
+        className="announce-backdrop absolute inset-0"
+        onClick={enterSite}
         aria-hidden="true"
       />
 
-      <div className="july4-stars absolute inset-0 pointer-events-none" />
-
-      <div className="july4-confetti pointer-events-none absolute inset-0 overflow-hidden">
-        {Array.from({ length: 32 }).map((_, i) => (
-          <span
-            key={i}
-            className="july4-confetti-piece"
-            style={{
-              left: `${(i * 3.1) % 100}%`,
-              animationDelay: `${i * 0.28}s`,
-              animationDuration: `${3.5 + (i % 6)}s`,
-              background:
-                i % 3 === 0 ? "#bf0a30" : i % 3 === 1 ? "#ffffff" : "#002868",
-            }}
-          />
-        ))}
-      </div>
-
-      <div
-        className="july4-scroll relative z-[205] mx-auto flex h-full max-h-screen w-full max-w-4xl flex-col items-center justify-center overflow-y-auto px-5 py-20 text-center sm:px-8"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {launched ? (
-          <LaunchThankYou onDismissToHome={dismissToHome} />
-        ) : (
-          <PreLaunchCountdown countdown={countdown} onDismissToHome={dismissToHome} />
-        )}
-
-        <div className="july4-bunting mt-10 flex justify-center gap-1 opacity-90">
-          {Array.from({ length: 11 }).map((_, i) => (
-            <span
-              key={i}
-              className="july4-bunting-flag"
-              style={{
-                background:
-                  i % 3 === 0
-                    ? "#bf0a30"
-                    : i % 3 === 1
-                      ? "#ffffff"
-                      : "#002868",
-              }}
-            />
-          ))}
-        </div>
-
-        <p className="mt-6 text-[11px] tracking-[0.25em] text-white/40 uppercase">
-          opensourcebarware.com
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function PartyStrip() {
-  return (
-    <div className="mb-8 flex justify-center gap-2 sm:gap-3">
-      {PARTY_SHOTS.map((shot, i) => (
+      <div className="relative z-[205] flex h-full max-h-screen w-full items-start justify-center overflow-y-auto overscroll-contain px-4 py-8 sm:items-center sm:px-6 sm:py-10">
         <div
-          key={shot.src}
-          className="july4-photo-frame july4-photo-pop"
-          style={{ animationDelay: `${i * 0.12}s` }}
+          className="announce-card panel rivets relative w-full max-w-lg px-6 py-7 text-center sm:max-w-xl sm:px-9 sm:py-9"
+          onClick={(e) => e.stopPropagation()}
         >
-          <div className="relative h-16 w-12 overflow-hidden sm:h-24 sm:w-[4.5rem]">
-            <Image
-              src={shot.src}
-              alt={shot.alt}
-              fill
-              className="object-cover"
-              sizes="80px"
-            />
-            <div className="july4-photo-stripe absolute inset-0" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function PreLaunchCountdown({
-  countdown,
-  onDismissToHome,
-}: {
-  countdown: ReturnType<typeof getLaunchCountdown>;
-  onDismissToHome: () => void;
-}) {
-  return (
-    <>
-      <p className="july4-badge mb-6">🎆 You&rsquo;re early! 🎆</p>
-
-      <PartyStrip />
-
-      <h1
-        id="july4-headline"
-        className="july4-headline font-serif text-5xl leading-[0.95] sm:text-6xl md:text-7xl"
-      >
-        Almost there.
-      </h1>
-
-      <p className="mt-4 text-sm uppercase tracking-[0.3em] text-white/70">
-        Thanks for stopping by early &mdash; go enjoy the fireworks
-      </p>
-
-      <div className="july4-party-card panel rivets mx-auto mt-8 w-full max-w-lg px-6 py-8 sm:px-10 sm:py-9">
-        <p className="font-serif text-2xl italic leading-snug text-cream sm:text-3xl">
-          Thank you. Go enjoy the fireworks.
-        </p>
-
-        <p className="mt-5 text-base leading-relaxed text-text-muted sm:text-lg">
-          The site is open now so you can click around, explore the pages, and
-          see how the program works. Wander the workshop, read the process, and
-          try the inventory sandbox.
-        </p>
-
-        <p className="mt-4 text-base leading-relaxed text-cream/90">
-          We open the doors for downloads at {LAUNCH_LABEL} Eastern. Program
-          files stay locked until the timer hits zero.
-        </p>
-
-        <div className="mt-6 rounded-sm border border-white/10 bg-black/25 px-4 py-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-copper-bright">
-            Launch timer
-          </p>
-          <div className="mt-3 grid grid-cols-4 gap-2 text-center">
-            <TimeBlock value={countdown.days} label="Days" />
-            <TimeBlock value={countdown.hours} label="Hours" />
-            <TimeBlock value={countdown.minutes} label="Mins" />
-            <TimeBlock value={countdown.seconds} label="Secs" />
-          </div>
-          <p className="mt-3 text-xs uppercase tracking-[0.2em] text-text-light">
-            10pm Eastern. Then the doors open.
-          </p>
-        </div>
-
-        <p className="mt-6 font-serif text-xl italic text-copper-bright">
-          Come back at 10pm to grab the program. ✨
-        </p>
-
-        <button
-          onClick={onDismissToHome}
-          className="july4-cta-primary mt-8 w-full py-4 text-sm font-black uppercase tracking-[0.18em]"
-        >
-          Okay, let me explore
-        </button>
-
-        <button
-          onClick={onDismissToHome}
-          className="mt-3 w-full py-2 text-xs uppercase tracking-[0.22em] text-text-light transition-colors hover:text-copper"
-        >
-          or click anywhere &middot; we&rsquo;re not keeping you
-        </button>
-      </div>
-    </>
-  );
-}
-
-function LaunchThankYou({
-  onDismissToHome,
-}: {
-  onDismissToHome: () => void;
-}) {
-  return (
-    <>
-      <p className="july4-badge mb-6">🎆 Week one &middot; we shipped July 4th 🎆</p>
-
-      <PartyStrip />
-
-      <h1
-        id="july4-headline"
-        className="july4-headline font-serif text-5xl leading-[0.95] sm:text-6xl md:text-7xl"
-      >
-        The doors are open.
-      </h1>
-
-      <p className="mt-4 text-sm uppercase tracking-[0.3em] text-white/70">
-        Free bar inventory for the whole world &mdash; and we&rsquo;re just getting started
-      </p>
-
-      <div className="july4-party-card panel rivets mx-auto mt-8 w-full max-w-xl px-6 py-8 sm:px-10 sm:py-9">
-        <p className="font-serif text-2xl italic leading-snug text-cream sm:text-3xl">
-          Thank you for being here in our first week.
-        </p>
-
-        <div className="mt-5 space-y-4 text-base leading-relaxed text-text-muted sm:text-lg">
-          <p>
-            If you&rsquo;re a first-timer reading this: hey, and welcome. We
-            released Open Source Barware on July 4th &mdash; a free,
-            self-contained bar inventory program that runs on your laptop. No
-            subscription, no cloud, no AI required. We&rsquo;re in week one now.
-          </p>
-          <p>
-            It took roughly <strong className="text-cream">a hundred hours</strong>{" "}
-            of coffee, late nights, and carefully brain-numbing work to get this
-            thing off the ground &mdash; and I am immensely proud of it. I expect
-            a few tiny glitches in the first week; that&rsquo;s just me being
-            honest. Nothing major &mdash; everything works fine. So go kick it
-            around and have fun. I&rsquo;m on the fast fixes.
-          </p>
-        </div>
-
-        <div className="mt-6 rounded-sm border border-white/10 bg-black/25 px-4 py-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-copper-bright">
-            Coming this Friday &mdash; new build dropping
-          </p>
-          <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-left text-[0.8rem] text-cream">
-            {[
-              "Mobile counting experience",
-              "Barcode scanning via camera",
-              "Visual par alerts (green/yellow/red)",
-              "Recipe & cocktail costing",
-              "POS import (Toast, Square, CSV)",
-              "Smart order suggestions",
-              "Multi-venue switching & transfers",
-              "Receiving workflow (PO \u2192 scan \u2192 verify)",
-            ].map((feature) => (
-              <li key={feature} className="flex items-start gap-1.5 leading-snug">
-                <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-copper/40 bg-copper/20 text-[10px] text-copper-bright">
-                  &#x2713;
-                </span>
-                {feature}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-center text-[0.8rem] text-text-muted">
-            <strong className="text-copper-bright">Check back Friday</strong> for the
-            next build &mdash; same download page, fresh features, zero cost.
-          </p>
-        </div>
-
-        <div className="mt-5 space-y-4 text-base leading-relaxed text-text-muted sm:text-lg">
-          <p className="text-cream/90">
-            Keep in touch for updates &mdash; we push new builds every few days.
-            Come build it with us: star the repo and open issues on{" "}
-            <strong className="text-cream">GitHub</strong>, and a{" "}
-            <strong className="text-cream">Discord</strong> is on the way.
-            There&rsquo;s a lot more coming.
-          </p>
-        </div>
-
-        <div className="mt-7 flex flex-col gap-3">
+          {/* Close X */}
           <button
             type="button"
-            onClick={onDismissToHome}
-            className="july4-cta-primary w-full py-4 text-sm font-black uppercase tracking-[0.18em]"
+            onClick={enterSite}
+            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-sm border border-white/10 text-text-light transition-colors hover:border-copper/50 hover:text-copper"
+            aria-label="Close and enter the site"
           >
-            Download Program &mdash; grab the program 🍹
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path
+                d="M1 1l12 12M13 1L1 13"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
-          <div className="flex flex-col gap-3 sm:flex-row">
+
+          <p className="announce-badge mb-4">v1.5 &middot; now shipping</p>
+
+          <h1
+            id="announce-headline"
+            className="font-serif text-3xl leading-[1.1] text-cream sm:text-4xl"
+          >
+            Welcome in.
+          </h1>
+
+          <p className="mt-3 text-sm uppercase tracking-[0.22em] text-text-light">
+            Free bar inventory &mdash; open to the world
+          </p>
+
+          <div className="mt-6 space-y-4 text-left text-[0.95rem] leading-relaxed text-text-muted sm:text-base">
+            <p>
+              If this is your first time:{" "}
+              <strong className="text-cream">welcome</strong>. We released Open
+              Source Barware to the world on{" "}
+              <strong className="text-cream">July 4th</strong>
+              {" "}&mdash; free, local, no subscription, no cloud tax.
+            </p>
+            <p>
+              The response has been wonderful. We saw{" "}
+              <strong className="text-cream">over 3,000 impressions</strong> on
+              the site in the last week alone. Thank you for showing up, starring
+              the repo, and putting the program on real bars.
+            </p>
+            <p>
+              <strong className="text-cream">v1.5 is here</strong>
+              {" "}&mdash; more than we planned for this cycle. Spanish-ready
+              walk and count notes for bilingual floors, plus the full feature
+              set we promised after launch.
+            </p>
+          </div>
+
+          <div className="mt-5 rounded-sm border border-white/10 bg-black/30 px-4 py-4 text-left">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-copper-bright">
+              In this package &mdash; v1.5
+            </p>
+            <ul className="mt-3 grid grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
+              {V15_FEATURES.map((feature) => (
+                <li
+                  key={feature}
+                  className="flex items-start gap-1.5 text-[0.8rem] leading-snug text-cream"
+                >
+                  <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-copper/40 bg-copper/20 text-[10px] text-copper-bright">
+                    &#x2713;
+                  </span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-4 rounded-sm border border-copper/35 bg-copper/10 px-4 py-4 text-left">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-copper-bright">
+              Next drop &mdash; {NEXT_DROP_LABEL}
+            </p>
+            {!dropLive ? (
+              <>
+                <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+                  <TimeBlock value={countdown.days} label="Days" />
+                  <TimeBlock value={countdown.hours} label="Hours" />
+                  <TimeBlock value={countdown.minutes} label="Mins" />
+                  <TimeBlock value={countdown.seconds} label="Secs" />
+                </div>
+                <p className="mt-3 text-center text-[11px] uppercase tracking-[0.18em] text-text-light">
+                  Drops at 6pm Eastern
+                </p>
+              </>
+            ) : (
+              <p className="mt-3 text-sm text-cream">
+                The Friday drop window is open &mdash; check Download for the
+                latest package.
+              </p>
+            )}
+            <p className="mt-3 text-[0.85rem] leading-relaxed text-cream">
+              <strong>Full Spanish program UI</strong> (Mexican Spanish)
+              {" "}&mdash; not just notes, the whole experience.
+            </p>
+            <p className="mt-2 text-[0.85rem] leading-relaxed text-cream">
+              Plus a first look at{" "}
+              <strong>Intelligent Hospitality Systems</strong>
+              {" "}&mdash; full restaurant inventory (food, retail, supplies,
+              and the bells and whistles).
+            </p>
+          </div>
+
+          <p className="mt-5 text-sm leading-relaxed text-text-muted">
+            Join us on social media and on{" "}
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-copper underline-offset-2 transition-colors hover:text-copper-bright hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              GitHub
+            </a>
+            . Star the repo, open issues, tell a bar manager. We build in public.
+          </p>
+
+          <div className="mt-6 flex flex-col gap-2.5">
+            <Link
+              href="/download"
+              onClick={() => {
+                if (!previewParam && !forceOverlay) {
+                  localStorage.setItem(STORAGE_KEY, "1");
+                }
+                setDismissed(true);
+                setTimeout(() => setVisible(false), 280);
+              }}
+              className="announce-cta-primary block w-full py-3.5 text-center text-sm font-black uppercase tracking-[0.16em]"
+            >
+              Download v1.5
+            </Link>
             <button
               type="button"
-              onClick={onDismissToHome}
-              className="flex-1 border border-white/20 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-cream/90 transition-colors hover:border-copper hover:text-copper"
+              onClick={enterSite}
+              className="w-full border border-white/15 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-cream/90 transition-colors hover:border-copper hover:text-copper"
             >
-              Join us on GitHub
-            </button>
-            <button
-              type="button"
-              onClick={onDismissToHome}
-              className="flex-1 border border-white/20 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-cream/90 transition-colors hover:border-copper hover:text-copper"
-            >
-              See how it works
+              Enter the site
             </button>
           </div>
+
+          <p className="mt-4 font-serif text-lg italic text-copper-bright">
+            Gracias &mdash; go count something.
+          </p>
+          <p className="mt-2 text-[11px] tracking-[0.2em] text-text-light/70 uppercase">
+            opensourcebarware.com
+          </p>
         </div>
-
-        <p className="mt-6 font-serif text-xl italic text-copper-bright">
-          This one&rsquo;s our gift to the industry. Go count something. ✨
-        </p>
-
-        <button
-          onClick={onDismissToHome}
-          className="mt-4 w-full py-2 text-xs uppercase tracking-[0.22em] text-text-light transition-colors hover:text-copper"
-        >
-          or click anywhere to come in
-        </button>
       </div>
-    </>
+    </div>
   );
 }
 
 function TimeBlock({ value, label }: { value: number; label: string }) {
   return (
-    <div className="rounded-sm border border-white/8 bg-white/5 px-2 py-3">
-      <div className="font-serif text-2xl leading-none text-cream">
+    <div className="rounded-sm border border-white/10 bg-black/35 px-2 py-2.5">
+      <div className="font-serif text-2xl leading-none text-cream tabular-nums">
         {value.toString().padStart(2, "0")}
       </div>
       <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-text-light">
