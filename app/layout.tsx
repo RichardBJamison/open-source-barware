@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { Caveat, Inter, Playfair_Display } from "next/font/google";
 import Script from "next/script";
-import { Suspense } from "react";
 import "./globals.css";
 import ConditionalSiteChrome from "@/components/ConditionalSiteChrome";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import JulyFourthLaunchOverlay from "@/components/JulyFourthLaunchOverlay";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 
 const GA_MEASUREMENT_ID = "G-ZM3BBYW5PY";
@@ -131,8 +129,20 @@ export default function RootLayout({
           `}
         </Script>
         <Script src="/osb-analytics.js" strategy="afterInteractive" />
+        {/* Bing Webmaster Tools verification */}
+        <meta name="msvalidate.01" content="0F0DF97AF304FF08B8E12E092B2CEEAF" />
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased">
+        {/* Critical theme so a failed stylesheet never leaves raw unstyled HTML */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              html,body{background:#0d0b09;color:#e8dfd4;margin:0;min-height:100%;}
+              body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+              a{color:#a8784f;}
+            `,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -142,11 +152,6 @@ export default function RootLayout({
         <ConditionalSiteChrome>
           <Footer />
         </ConditionalSiteChrome>
-        <Suspense fallback={null}>
-          <ConditionalSiteChrome>
-            <JulyFourthLaunchOverlay />
-          </ConditionalSiteChrome>
-        </Suspense>
       </body>
     </html>
   );
