@@ -94,10 +94,10 @@ export default function ProgramDownloadPanel() {
       <div className="panel rivets rounded-sm p-8 md:p-10 relative grain border border-copper/20">
         <div className="flex items-center gap-3 mb-5">
           <span className="text-[10px] tracking-[0.3em] uppercase text-patina-light">
-            Version 1.0
+            Free launch build
           </span>
           <span className="text-[10px] tracking-[0.2em] uppercase text-text-light">
-            July 4 · 7:30 PM Eastern
+            Not v1.5 yet · v1.5 tonight 7pm ET
           </span>
         </div>
         <h2 className="font-serif text-2xl md:text-3xl copper-text mb-4">
@@ -270,7 +270,7 @@ export default function ProgramDownloadPanel() {
           Install
         </p>
         <h2 className="font-serif text-3xl text-cream mb-6">
-          Download the Chrome program
+          Download the free program (not v1.5 yet)
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">

@@ -186,15 +186,15 @@ export default function DownloadsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
               <p className="text-[11px] tracking-[0.3em] uppercase text-patina-light mb-3">
-                Free program now · v1.5 Friday July 17 · 7pm ET
+                Free program now · v1.5 tonight 7pm ET
               </p>
               <h2 className="font-serif text-2xl md:text-3xl text-cream mb-2">
                 Ready to install the Chrome program?
               </h2>
               <p className="text-text-muted text-sm leading-relaxed max-w-xl">
-                Mac and Windows installers for the free launch build. Version 1.5 is not
-                out yet — it drops Friday, July 17 at 7pm Eastern. Join the release list
-                on the download page.
+                Mac and Windows installers for the free launch build — not v1.5 yet.
+                Version 1.5 drops tonight at 7pm Eastern. Join the release list on the
+                download page.
               </p>
             </div>
             <Link
@@ -427,7 +427,7 @@ export default function DownloadsPage() {
           </h2>
           <p className="text-text-muted mb-16 max-w-lg">
             Free launch build is live. Version 1.5 is not out yet — it drops
-            Friday, July 17 at 7pm Eastern with the expanded feature set.
+            tonight at 7pm Eastern with the expanded feature set.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -446,7 +446,7 @@ export default function DownloadsPage() {
             <PhaseCard
               number="II"
               title="v1.5 drop"
-              timing="July 17 · 7pm ET"
+              timing="Tonight · 7pm ET"
               status="next"
               items={[
                 "Spanish-ready inventory notes",
@@ -458,7 +458,7 @@ export default function DownloadsPage() {
             <PhaseCard
               number="III"
               title="Beyond"
-              timing="Post–July 17"
+              timing="After v1.5"
               status="planned"
               items={[
                 "Full Spanish program UI",

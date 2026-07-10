@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "Download — Open Source Barware",
   description:
-    "Download the free Open Source Barware Chrome program. Local bar inventory — no subscription, no cloud tax. v1.5 drops Friday July 17 at 7pm Eastern.",
+    "Download the free Open Source Barware Chrome program. Local bar inventory — no subscription, no cloud tax. v1.5 drops tonight at 7pm Eastern.",
   path: "/download",
 });
 
@@ -34,19 +34,19 @@ export default function DownloadPage() {
               Free program
             </span>
             <span className="text-[10px] tracking-[0.2em] uppercase text-patina-light border border-patina/30 px-2 py-0.5">
-              v1.5 · Friday July 17 · 7pm ET
+              v1.5 · tonight 7pm ET
             </span>
           </div>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-2xl mb-6">
             <span className="copper-text">Download</span>
             <br />
-            the program.
+            the free program.
           </h1>
           <p className="text-text-muted text-lg max-w-xl leading-relaxed">
             Free, local bar inventory on your laptop. No subscription. No cloud
-            tax. Version 1.5 is not out yet &mdash; it drops Friday, July 17 at
-            7pm Eastern. Grab the free launch build now and check back for the
-            upgrade.
+            tax. This is the free launch build —{" "}
+            <strong className="text-cream">not v1.5 yet</strong>. Version 1.5
+            drops tonight at 7pm Eastern.
           </p>
         </div>
       </section>

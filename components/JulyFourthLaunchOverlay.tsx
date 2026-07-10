@@ -11,7 +11,7 @@ import {
 } from "@/lib/launch-gate";
 
 // Bumped when timer/copy changes so returning visitors see the update.
-const STORAGE_KEY = "osb-announce-v11-v15-friday-7pm";
+const STORAGE_KEY = "osb-announce-v12-v15-tonight-7pm";
 
 const V15_FEATURES = [
   "Spanish + English inventory notes",
@@ -209,7 +209,7 @@ export default function JulyFourthLaunchOverlay() {
               ))}
             </ul>
             <p className="mt-3 text-[0.85rem] leading-relaxed text-cream">
-              Same Friday window: first look at{" "}
+              Also in the drop: first look at{" "}
               <strong>Intelligent Hospitality Systems</strong>
               {" "}&mdash; full restaurant inventory for houses that outgrow
               bar-only.
@@ -242,7 +242,7 @@ export default function JulyFourthLaunchOverlay() {
               }}
               className="announce-cta-primary block w-full py-3.5 text-center text-sm font-black uppercase tracking-[0.16em]"
             >
-              {dropLive ? "Download v1.5" : "Download free program"}
+              {dropLive ? "Download the program" : "Download free program (not v1.5 yet)"}
             </Link>
             <button
               type="button"
