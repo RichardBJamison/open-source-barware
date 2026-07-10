@@ -210,13 +210,13 @@ export default function ManifestoPage() {
               href="https://ko-fi.com/W2J022HCH2"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_24px_rgba(168,120,79,0.25)]"
+              className="inline-block bg-copper hover:bg-copper-bright text-cream font-semibold px-8 py-3 text-sm tracking-wide transition-all hover:shadow-[0_0_24px_rgba(168,120,79,0.25)]"
             >
               Buy Us a Drink
             </a>
             <Link
               href="/about"
-              className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-3 text-sm tracking-wide transition-all"
+              className="inline-block border border-gear-border text-cream hover:text-copper hover:border-copper/50 px-8 py-3 text-sm tracking-wide transition-all"
             >
               Read the Full Story
             </Link>
@@ -238,16 +238,19 @@ export default function ManifestoPage() {
               href="/liquor-inventory"
               title="Free Liquor Inventory"
               body="How the program handles your highest-cost, highest-risk category."
+              cta="Open liquor inventory"
             />
             <ManifestoLink
               href="/wine-inventory"
               title="Free Wine Inventory"
               body="Vintages, bins, and bottle-level tracking for your wine program."
+              cta="Open wine inventory"
             />
             <ManifestoLink
               href="/the-process"
               title="The Process"
               body="The kitchen-table walkthrough of how setup and weekly counts work."
+              cta="Read the process"
             />
           </div>
         </div>
@@ -268,10 +271,10 @@ export default function ManifestoPage() {
             and get to work.
           </p>
           <Link
-            href="/downloads"
-            className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
+            href="/download"
+            className="inline-block bg-copper hover:bg-copper-bright text-cream font-semibold px-10 py-4 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
           >
-            Download Program
+            Download Program — free v1.5
           </Link>
         </div>
       </section>
@@ -283,10 +286,12 @@ function ManifestoLink({
   href,
   title,
   body,
+  cta,
 }: {
   href: string;
   title: string;
   body: string;
+  cta: string;
 }) {
   return (
     <Link
@@ -296,7 +301,10 @@ function ManifestoLink({
       <h3 className="font-serif text-xl text-cream mb-3 group-hover:text-copper transition-colors">
         {title}
       </h3>
-      <p className="text-text-muted text-sm leading-relaxed">{body}</p>
+      <p className="text-text-muted text-sm leading-relaxed mb-5">{body}</p>
+      <span className="inline-block bg-copper group-hover:bg-copper-bright text-cream font-semibold px-5 py-2.5 text-xs tracking-wide transition-all">
+        {cta} →
+      </span>
     </Link>
   );
 }
