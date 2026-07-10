@@ -482,7 +482,7 @@ export default function InventorySettingsPage() {
             <h2 className="font-serif text-lg text-cream m-0">People, PINs &amp; communications</h2>
             <p className="dojo-field-hint mt-2 mb-0">
               Admin creates 6-digit PINs for bar managers locked to one outlet. Employee communications
-              is the staff board for handoffs. Full login UI lives in the installed program.
+              is where managers upload inventory notes. Full login UI lives in the installed program.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -503,8 +503,8 @@ export default function InventorySettingsPage() {
               badge="Admin"
             />
             <FeatureToggle
-              label="Employee communications / staff board"
-              hint="Sidebar handoffs. Open Employee communications in the left menu to try the sandbox board."
+              label="Employee communications / inventory notes"
+              hint="Managers upload inventory notes (paste or .txt/.md). Open Employee communications in the left menu to try it."
               flag="staffBoard"
             />
           </div>

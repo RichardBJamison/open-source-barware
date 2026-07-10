@@ -49,7 +49,7 @@ const NAV_ITEMS = [
   {
     href: "/inventory/staff",
     label: "Employee communications",
-    desc: "Handoffs · staff board",
+    desc: "Inventory notes · manager uploads",
     icon: "staff" as const,
   },
   {
