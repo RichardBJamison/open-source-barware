@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-const FALLBACK_COUNT = 27;
+// Shown only if /api/download-count is unreachable. Keep near last reconciled total.
+const FALLBACK_COUNT = 47;
 const KOFI_URL = "https://ko-fi.com/W2J022HCH2";
 
 function formatCount(value: number) {
