@@ -141,7 +141,8 @@ export default function RootLayout({
             __html: `
               html,body{background:#0d0b09;color:#e8dfd4;margin:0;min-height:100%;}
               body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
-              a{color:#a8784f;}
+              /* Do NOT set a{color} here — unlayered rules beat Tailwind @layer
+                 utilities and blank out copper buttons (text same color as bg). */
             `,
           }}
         />
