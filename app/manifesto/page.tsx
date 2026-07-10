@@ -3,18 +3,17 @@ import { Gear, GearDivider } from "@/components/SteampunkElements";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "The Open Source Bar Manifesto — Open Source Barware",
+  title: "The Open Source Bar Manifesto — Free Inventory System",
   description:
-    "Why we built a free, open source bar inventory program and gave the whole thing away. No subscriptions, no investors, no email capture — just people who were tired of paying to count bottles.",
+    "Why the best free bar inventory system exists: no subscriptions, full data ownership, built by operators tired of paying to count bottles.",
   path: "/manifesto",
   keywords: [
+    "free inventory system",
+    "best free bar inventory system",
     "open source bar inventory",
     "free bar inventory software",
     "why is open source barware free",
     "free restaurant inventory system",
-    "free liquor inventory program",
-    "bar inventory manifesto",
-    "open source hospitality software",
   ],
 });
 

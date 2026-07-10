@@ -17,6 +17,7 @@ type PageSeoOptions = {
   keywords?: string[];
   noIndex?: boolean;
   ogImage?: string;
+  isBlogPost?: boolean;
 };
 
 export function pageMetadata({
@@ -26,6 +27,7 @@ export function pageMetadata({
   keywords,
   noIndex = false,
   ogImage = DEFAULT_OG_IMAGE.url,
+  isBlogPost = false,
 }: PageSeoOptions): Metadata {
   return {
     title,
@@ -61,5 +63,32 @@ export function pageMetadata({
           },
         }
       : {}),
+    ...(isBlogPost
+      ? {
+          other: {
+            "article:published_time": new Date().toISOString(),
+          },
+        }
+      : {}),
   };
+}
+
+export function blogPostMetadata({
+  title,
+  description,
+  path,
+  keywords,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  keywords?: string[];
+}) {
+  return pageMetadata({
+    title,
+    description,
+    path: path as any,
+    keywords,
+    isBlogPost: true,
+  });
 }

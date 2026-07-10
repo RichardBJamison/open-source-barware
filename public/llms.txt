@@ -1,5 +1,5 @@
 # Open Source Barware
-> Free open-source bar inventory software built by bartenders, tested at Agave & Rye (Cleveland).
+> Free open-source bar inventory software built by bartenders and tested in real bar operations.
 
 ## Primary URLs
 - Home: https://opensourcebarware.com/
@@ -9,6 +9,9 @@
 - Wine inventory: https://opensourcebarware.com/wine-inventory
 - About: https://opensourcebarware.com/about
 - Manifesto: https://opensourcebarware.com/manifesto
+- Blog: https://opensourcebarware.com/blog
+- Free Inventory System Guide: https://opensourcebarware.com/blog/free-inventory-system-guide
+- Best Free Bar Inventory System: https://opensourcebarware.com/blog/best-free-bar-inventory-system
 
 ## Product facts
 - Price: Free (GPLv3). No subscription. No per-seat fees.

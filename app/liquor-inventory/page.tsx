@@ -66,7 +66,7 @@ export default function LiquorInventoryPage() {
         <OptimizedPicture
           webpSrc="/images/copper-glass.webp"
           fallbackSrc="/images/copper-glass.png"
-          alt="Copper still and glassware behind a liquor-focused bar setup"
+          alt="Copper still and glassware behind a liquor-focused bar setup for free liquor inventory system"
           className="absolute inset-0 h-full w-full object-cover object-center"
           priority
         />
@@ -234,6 +234,22 @@ export default function LiquorInventoryPage() {
           </Link>
         </div>
       </section>
+
+      {/* Image structured data for SEO - backend only */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ImageObject",
+            "contentUrl": "https://opensourcebarware.com/images/copper-glass.webp",
+            "name": "Copper still and glassware behind a liquor-focused bar setup for free liquor inventory system",
+            "description": "Image of copper still and glassware for the free liquor inventory system - part of the best free bar inventory system.",
+            "width": "1200",
+            "height": "630"
+          })
+        }}
+      />
     </>
   );
 }

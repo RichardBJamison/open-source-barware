@@ -1,4 +1,4 @@
 1.5.0
-V1.5 Phase 4.4 — Spanish walk/count structure (MX) + people
+V1.5 Public Release — Spanish-ready notes + full bar toolkit
 Release: July 10, 2026
-Build: EN/ES inventory notes · Spanish station/level synonyms · PIN logins · staff board
+Build: EN/ES inventory notes · Spanish walk/count synonyms · Employee communications · PIN logins · mobile count · barcode · POS · recipes · multi-venue · coming-soon roadmap

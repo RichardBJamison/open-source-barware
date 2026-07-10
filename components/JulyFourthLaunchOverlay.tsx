@@ -5,13 +5,12 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
   NEXT_DROP_LABEL,
-  getNextDropCountdown,
   shouldShowPostLaunchOverlay,
   shouldShowPreLaunchOverlay,
 } from "@/lib/launch-gate";
 
 // Bumped when timer/copy changes so returning visitors see the update.
-const STORAGE_KEY = "osb-announce-v12-v15-tonight-7pm";
+const STORAGE_KEY = "osb-announce-v13-v15-live";
 
 const V15_FEATURES = [
   "Spanish + English inventory notes",
@@ -22,6 +21,8 @@ const V15_FEATURES = [
   "POS import (Toast, Square, CSV)",
   "Smart order suggestions",
   "Multi-venue + receiving workflow",
+  "Employee communications board",
+  "Team PIN logins",
 ];
 
 const GITHUB_URL = "https://github.com/RichardBJamison/open-source-barware";
@@ -31,13 +32,9 @@ export default function JulyFourthLaunchOverlay() {
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [now, setNow] = useState(() =>
-    typeof window !== "undefined" ? Date.now() : 0,
-  );
 
-  // Manual preview only. Auto-popup disabled — it locked body scroll and
-  // blocked the site. Re-enable later by flipping AUTO_ANNOUNCE_POPUP.
-  const AUTO_ANNOUNCE_POPUP = false;
+  // Live v1.5 release popup — once per browser until storage key changes.
+  const AUTO_ANNOUNCE_POPUP = true;
   const previewParam =
     searchParams.get("preview") === "july4" ||
     searchParams.get("july4") === "1" ||
@@ -58,14 +55,7 @@ export default function JulyFourthLaunchOverlay() {
   }, []);
 
   useEffect(() => {
-    if (!visible || dismissed) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, [visible, dismissed]);
-
-  useEffect(() => {
     if (pathname?.startsWith("/inventory")) return;
-    // Hard gate: nothing shows unless preview query (or AUTO re-enabled).
     const forceEnv = process.env.NEXT_PUBLIC_FORCE_LAUNCH_OVERLAY === "true";
     const eligible =
       previewParam ||
@@ -107,9 +97,6 @@ export default function JulyFourthLaunchOverlay() {
 
   if (!visible || dismissed) return null;
 
-  const countdown = getNextDropCountdown(now);
-  const dropLive = countdown.finished;
-
   return (
     <div
       className={`announce-overlay fixed inset-0 z-[200] transition-opacity duration-300 ${
@@ -119,7 +106,6 @@ export default function JulyFourthLaunchOverlay() {
       aria-modal="true"
       aria-labelledby="announce-headline"
     >
-      {/* Dim only — home site stays visible underneath */}
       <div
         className="announce-backdrop absolute inset-0"
         onClick={enterSite}
@@ -131,7 +117,6 @@ export default function JulyFourthLaunchOverlay() {
           className="announce-card panel rivets relative w-full max-w-lg px-6 py-7 text-center sm:max-w-xl sm:px-9 sm:py-9"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close X */}
           <button
             type="button"
             onClick={enterSite}
@@ -148,9 +133,7 @@ export default function JulyFourthLaunchOverlay() {
             </svg>
           </button>
 
-          <p className="announce-badge mb-4">
-            {dropLive ? "v1.5 · live" : "v1.5 · not yet — timer below"}
-          </p>
+          <p className="announce-badge mb-4">v1.5 · live</p>
 
           <h1
             id="announce-headline"
@@ -178,37 +161,24 @@ export default function JulyFourthLaunchOverlay() {
               the repo, and putting the program on real bars.
             </p>
             <p>
-              <strong className="text-cream">v1.5 is not out yet.</strong>{" "}
-              The free program you can download today is the open launch build.
-              Version 1.5 drops on the timer below &mdash; Spanish-ready notes,
-              mobile counting, POS, multi-venue, and the rest of the feature set
-              we promised after the Fourth.
+              <strong className="text-cream">v1.5 is live now.</strong>{" "}
+              Download it on the Download page — Spanish-ready inventory notes
+              (English + Spanish walks and counts), mobile counting, POS,
+              multi-venue, employee communications, and the rest of the feature
+              set we promised after the Fourth.
             </p>
           </div>
 
           <div className="mt-4 rounded-sm border border-copper/35 bg-copper/10 px-4 py-4 text-left">
             <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-copper-bright">
-              v1.5 drop &mdash; {NEXT_DROP_LABEL}
+              v1.5 public release &mdash; {NEXT_DROP_LABEL}
             </p>
-            {!dropLive ? (
-              <>
-                <div className="mt-3 grid grid-cols-4 gap-2 text-center">
-                  <TimeBlock value={countdown.days} label="Days" />
-                  <TimeBlock value={countdown.hours} label="Hours" />
-                  <TimeBlock value={countdown.minutes} label="Mins" />
-                  <TimeBlock value={countdown.seconds} label="Secs" />
-                </div>
-                <p className="mt-3 text-center text-[11px] uppercase tracking-[0.18em] text-text-light">
-                  Drops at 7pm Eastern
-                </p>
-              </>
-            ) : (
-              <p className="mt-3 text-sm text-cream">
-                v1.5 is live &mdash; grab it on the Download page.
-              </p>
-            )}
+            <p className="mt-3 text-sm text-cream">
+              Installers for Mac and Windows are ready. Grab them, bookmark
+              localhost:5052, and walk your bar.
+            </p>
             <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-copper-bright">
-              What lands in v1.5
+              What&rsquo;s in v1.5
             </p>
             <ul className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
               {V15_FEATURES.map((feature) => (
@@ -224,10 +194,11 @@ export default function JulyFourthLaunchOverlay() {
               ))}
             </ul>
             <p className="mt-3 text-[0.85rem] leading-relaxed text-cream">
-              Also in the drop: first look at{" "}
+              Next up:{" "}
+              <strong>full Spanish program UI</strong> and a first look at{" "}
               <strong>Intelligent Hospitality Systems</strong>
-              {" "}&mdash; full restaurant inventory for houses that outgrow
-              bar-only.
+              {" "}&mdash; restaurant inventory for houses that outgrow
+              bar-only. Watch the Coming soon panel inside the program.
             </p>
           </div>
 
@@ -262,7 +233,7 @@ export default function JulyFourthLaunchOverlay() {
               }}
               className="announce-cta-primary block w-full py-3.5 text-center text-sm font-black uppercase tracking-[0.16em]"
             >
-              {dropLive ? "Download the program" : "Download free program (not v1.5 yet)"}
+              Download v1.5 now
             </Link>
             <button
               type="button"
@@ -280,19 +251,6 @@ export default function JulyFourthLaunchOverlay() {
             opensourcebarware.com
           </p>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function TimeBlock({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="rounded-sm border border-white/10 bg-black/35 px-2 py-2.5">
-      <div className="font-serif text-2xl leading-none text-cream tabular-nums">
-        {value.toString().padStart(2, "0")}
-      </div>
-      <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-text-light">
-        {label}
       </div>
     </div>
   );

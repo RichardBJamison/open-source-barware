@@ -33,19 +33,22 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
 
   return (
     <div
-      className="salle-welcome-overlay fixed inset-0 z-[180] flex items-center justify-center p-3 sm:p-6"
+      className="salle-welcome-overlay fixed inset-0 z-[180] overflow-y-auto overscroll-contain p-3 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="salle-welcome-title"
       aria-describedby="salle-welcome-desc"
     >
       <div
-        className="salle-welcome-backdrop absolute inset-0 bg-black/90 backdrop-blur-sm"
+        className="salle-welcome-backdrop fixed inset-0 bg-black/90 backdrop-blur-sm"
         aria-hidden="true"
       />
 
+      {/* min-h-full + flex center keeps short content centered; tall content
+          scrolls from the top instead of clipping under the viewport edge. */}
+      <div className="relative z-10 flex min-h-full items-center justify-center py-4">
       <div
-        className="salle-sign-popup relative z-10 w-full max-w-[380px]"
+        className="salle-sign-popup w-full max-w-[380px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="salle-sign-glow" aria-hidden="true" />
@@ -92,6 +95,7 @@ export default function DojoWelcomeModal({ open, onClose }: DojoWelcomeModalProp
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

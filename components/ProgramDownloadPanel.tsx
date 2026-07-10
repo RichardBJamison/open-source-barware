@@ -90,39 +90,38 @@ export default function ProgramDownloadPanel() {
 
   return (
     <div className="space-y-10">
-      {/* Honest launch note */}
+      {/* Honest release note */}
       <div className="panel rivets rounded-sm p-8 md:p-10 relative grain border border-copper/20">
         <div className="flex items-center gap-3 mb-5">
           <span className="text-[10px] tracking-[0.3em] uppercase text-patina-light">
-            Free launch build
+            v1.5 public release
           </span>
           <span className="text-[10px] tracking-[0.2em] uppercase text-text-light">
-            Not v1.5 yet · v1.5 tonight 7pm ET
+            Live · July 10, 2026
           </span>
         </div>
         <h2 className="font-serif text-2xl md:text-3xl copper-text mb-4">
-          Blistering work. Real bar software. Early production.
+          Blistering work. Real bar software. Spanish-ready notes.
         </h2>
         <div className="space-y-4 text-text-muted text-sm md:text-base leading-relaxed max-w-3xl">
           <p>
-            This program was built with over a hundred hours of focused work —
-            and honestly, too much coffee to fully explain. We are proud of what
-            shipped July 4th, and we are not pretending it is finished.
+            This is the <strong className="text-cream">v1.5</strong> install —
+            walks and counts understand English and Spanish station words,
+            mobile counting, barcode, POS import, smart orders, recipes,
+            multi-venue, employee communications, and PIN logins. Built with
+            over a hundred hours of focused work — and too much coffee to fully
+            explain.
           </p>
           <p>
-            Expect bugs and glitches in the first week or two of production. We
-            will be pushing updates about every <strong className="text-cream">three days</strong> as
-            we learn from real bars.
+            Expect bugs and glitches as real bars put it through hell. We push
+            updates about every <strong className="text-cream">three days</strong>{" "}
+            as we learn. Full Spanish UI and the restaurant package are next —
+            watch Coming soon inside the program.
           </p>
           <p>
             <strong className="text-cream">Leave your email</strong> and we will
             tell you when a new build is ready — no marketing blasts, just
             release notes when something actually ships.
-          </p>
-          <p>
-            Join the release list below and we will email when the next build
-            ships. We read every message we get and fold fixes into the next
-            build.
           </p>
         </div>
       </div>
@@ -270,7 +269,7 @@ export default function ProgramDownloadPanel() {
           Install
         </p>
         <h2 className="font-serif text-3xl text-cream mb-6">
-          Download the free program (not v1.5 yet)
+          Download Open Source Barware v1.5
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
@@ -349,7 +348,7 @@ export default function ProgramDownloadPanel() {
               <strong className="text-cream">Email us</strong> when something
               confuses you or breaks —{" "}
               <a
-                href={`mailto:${FEEDBACK_EMAIL}?subject=Open%20Source%20Barware%20v1.0%20feedback`}
+                href={`mailto:${FEEDBACK_EMAIL}?subject=Open%20Source%20Barware%20v1.5%20feedback`}
                 className="text-copper hover:text-copper-bright underline underline-offset-4"
               >
                 {FEEDBACK_EMAIL}
@@ -392,7 +391,7 @@ export default function ProgramDownloadPanel() {
             GitHub Discussions
           </a>
           <a
-            href={`mailto:${FEEDBACK_EMAIL}?subject=Open%20Source%20Barware%20v1.0%20feedback`}
+            href={`mailto:${FEEDBACK_EMAIL}?subject=Open%20Source%20Barware%20v1.5%20feedback`}
             className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-8 py-3.5 text-sm tracking-wide transition-all"
           >
             Email feedback

@@ -2,7 +2,7 @@
 
 **Production URL:** https://open-source-bar-program.vercel.app
 
-Share this link with anyone who needs to walk through setup (Agave & Rye field demo).
+Share this link with anyone who needs to walk through setup (Your Bar 1 field demo).
 
 ## Redeploy (after code changes)
 

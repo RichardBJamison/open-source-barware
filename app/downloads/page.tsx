@@ -186,15 +186,15 @@ export default function DownloadsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
               <p className="text-[11px] tracking-[0.3em] uppercase text-patina-light mb-3">
-                Free program now · v1.5 tonight 7pm ET
+                v1.5 · live now
               </p>
               <h2 className="font-serif text-2xl md:text-3xl text-cream mb-2">
                 Ready to install the Chrome program?
               </h2>
               <p className="text-text-muted text-sm leading-relaxed max-w-xl">
-                Mac and Windows installers for the free launch build — not v1.5 yet.
-                Version 1.5 drops tonight at 7pm Eastern. Join the release list on the
-                download page.
+                Mac and Windows installers for Open Source Barware v1.5 —
+                Spanish-ready inventory notes, mobile count, POS, multi-venue.
+                Join the release list on the download page for future builds.
               </p>
             </div>
             <Link
@@ -426,8 +426,9 @@ export default function DownloadsPage() {
             </span>
           </h2>
           <p className="text-text-muted mb-16 max-w-lg">
-            Free launch build is live. Version 1.5 is not out yet — it drops
-            tonight at 7pm Eastern with the expanded feature set.
+            Free launch shipped July 4. Version 1.5 is live now — Spanish-ready
+            inventory notes and the expanded feature set. Full Spanish UI and
+            restaurant tools are next.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -445,20 +446,20 @@ export default function DownloadsPage() {
             />
             <PhaseCard
               number="II"
-              title="v1.5 drop"
-              timing="Tonight · 7pm ET"
-              status="next"
+              title="v1.5 · live"
+              timing="July 10, 2026"
+              status="active"
               items={[
                 "Spanish-ready inventory notes",
                 "Mobile count + barcode + POS",
                 "Multi-venue + receiving",
-                "IHS restaurant package teaser",
+                "Employee communications board",
               ]}
             />
             <PhaseCard
               number="III"
               title="Beyond"
-              timing="After v1.5"
+              timing="Next"
               status="planned"
               items={[
                 "Full Spanish program UI",

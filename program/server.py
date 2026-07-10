@@ -26,7 +26,7 @@ from typing import Any
 
 from flask import Flask, Response, jsonify, redirect, request, send_from_directory, session
 
-VERSION = "1.5.0-v1.5-phase4-es-notes-2026-07-10"  # V1.5 Phase 4.4 Spanish walk/count structure
+VERSION = "1.5.0-v1.5-public-2026-07-10"  # V1.5 public release — Spanish-ready notes + full toolkit
 PORT = int(os.environ.get("PORT", "5052"))
 DEMO_MODE = os.environ.get("OSB_DEMO_MODE", "1") != "0"
 
@@ -2989,13 +2989,18 @@ def api_staff_board_post():
     body = request.get_json(force=True) or {}
     text = (body.get("text") or body.get("body") or "").strip()
     if not text:
-        return jsonify({"error": "Write a short note first"}), 400
-    if len(text) > 2000:
-        text = text[:2000]
+        return jsonify({"error": "Paste or upload inventory notes first"}), 400
+    # Walks/counts can run long — allow up to 20k (was 2k staff handoffs)
+    if len(text) > 20000:
+        text = text[:20000]
     venue_id = (body.get("venue_id") or "").strip() or None
     if user.get("role") == "manager":
         venue_id = user.get("venue_id")  # locked to their house
     pin = bool(body.get("pinned")) and user.get("role") == "admin"
+    source = (body.get("source") or "paste").strip().lower()
+    if source not in ("paste", "file"):
+        source = "paste"
+    file_name = (body.get("file_name") or body.get("filename") or "").strip()[:200] or None
 
     post = {
         "id": _uid("post-"),
@@ -3005,6 +3010,8 @@ def api_staff_board_post():
         "author_role": user.get("role") or "admin",
         "venue_id": venue_id,
         "pinned": pin,
+        "source": source,
+        "file_name": file_name,
         "created_at": _now(),
     }
     board = _load_staff_board()

@@ -75,7 +75,7 @@ export default function HeroVideo() {
         <source srcSet="/images/hero-poster.jpg" type="image/jpeg" />
         <img
           src="/images/hero-poster.jpg"
-          alt=""
+          alt="Bartender behind the bar demonstrating the free bar inventory system"
           className="h-full w-full object-cover object-center"
           fetchPriority="high"
           decoding="async"

@@ -92,7 +92,7 @@ export default function OpenSourceCompliancePage() {
             Source Offer
           </a>
           <a
-            href="https://github.com/RichardBJamiosn/open-source-barware"
+            href="https://github.com/RichardBJamison/open-source-barware"
             className="border border-gear-border px-5 py-4 text-sm text-text-muted transition-colors hover:border-copper/50 hover:text-copper"
           >
             GitHub Repository

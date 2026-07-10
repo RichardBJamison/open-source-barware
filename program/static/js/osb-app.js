@@ -402,11 +402,17 @@ const OSB = {
     return r.json();
   },
 
-  async postStaffBoard({ text, venueId, pinned }) {
+  async postStaffBoard({ text, venueId, pinned, source, fileName }) {
     const r = await fetch("/api/staff-board", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, venue_id: venueId || "", pinned: !!pinned }),
+      body: JSON.stringify({
+        text,
+        venue_id: venueId || "",
+        pinned: !!pinned,
+        source: source || "paste",
+        file_name: fileName || "",
+      }),
     });
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(data.error || "Could not post");
@@ -7228,7 +7234,7 @@ const PEOPLE_PERM_KEYS = [
   ["recipes", "Recipes"],
   ["smart_orders", "Smart orders / PO"],
   ["transfers", "Transfers"],
-  ["staff_board", "Staff board"],
+  ["staff_board", "Employee communications"],
   ["settings", "Settings"],
 ];
 
@@ -7364,21 +7370,29 @@ async function loadStaffBoard() {
     const data = await OSB.listStaffBoard();
     const posts = data.posts || [];
     if (!posts.length) {
-      list.innerHTML = `<p class="field-hint">No notes yet. Post a handoff for the next shift.</p>`;
+      list.innerHTML = `<p class="field-hint">No inventory notes yet. Managers upload walks and mid-week catches above.</p>`;
       return;
     }
     const venueName = (id) => bars.find((b) => b.id === id)?.name || "Company";
-    list.innerHTML = posts.map((p) => `
+    list.innerHTML = posts.map((p) => {
+      const fileBit =
+        p.source === "file" && p.file_name
+          ? ` · ${escapeHtml(p.file_name)}`
+          : p.source === "file"
+            ? " · file"
+            : "";
+      return `
       <div class="staff-post${p.pinned ? " staff-post--pinned" : ""}">
         <div class="staff-post-meta">
           <strong>${escapeHtml(p.author_name || "Staff")}</strong>
           <span class="field-hint">${escapeHtml((p.created_at || "").slice(0, 16).replace("T", " "))}
             · ${p.venue_id ? escapeHtml(venueName(p.venue_id)) : "Company-wide"}
-            ${p.pinned ? " · pinned" : ""}</span>
+            ${p.pinned ? " · pinned" : ""}${fileBit}</span>
         </div>
         <p class="staff-post-body">${escapeHtml(p.text || "")}</p>
         <button type="button" class="btn btn-ghost btn-sm" data-del-post="${escapeHtml(p.id)}">Remove</button>
-      </div>`).join("");
+      </div>`;
+    }).join("");
     list.querySelectorAll("[data-del-post]").forEach((btn) => {
       btn.onclick = async () => {
         try {
@@ -7722,14 +7736,75 @@ async function initHome() {
       setStatus(e.message, "peopleStatus");
     }
   });
+  // Employee communications — inventory notes upload (Salle parity)
+  window.__staffNotesFileName = "";
+  document.getElementById("staffNotesFile")?.addEventListener("change", async (ev) => {
+    const file = ev.target.files?.[0];
+    const hint = document.getElementById("staffFileHint");
+    if (!file) return;
+    const lower = (file.name || "").toLowerCase();
+    if (
+      !lower.endsWith(".txt") &&
+      !lower.endsWith(".md") &&
+      !lower.endsWith(".markdown") &&
+      !lower.endsWith(".rtf") &&
+      !(file.type || "").startsWith("text/")
+    ) {
+      setStatus("Use a .txt or .md file (phone Notes export works best).", "staffBoardStatus");
+      ev.target.value = "";
+      return;
+    }
+    try {
+      const content = await file.text();
+      if (!content.trim()) {
+        setStatus("That file was empty.", "staffBoardStatus");
+        return;
+      }
+      const ta = document.getElementById("staffPostText");
+      if (ta) ta.value = content;
+      window.__staffNotesFileName = file.name;
+      if (hint) {
+        hint.textContent = `Loaded ${file.name} (${Math.round(file.size / 1024) || 1} KB) — review below, then save.`;
+      }
+      setStatus(`Loaded ${file.name} — review and click Save inventory notes.`, "staffBoardStatus");
+    } catch {
+      setStatus("Could not read that file.", "staffBoardStatus");
+    }
+    ev.target.value = "";
+  });
+  document.getElementById("btnStaffClear")?.addEventListener("click", () => {
+    const ta = document.getElementById("staffPostText");
+    if (ta) ta.value = "";
+    window.__staffNotesFileName = "";
+    const hint = document.getElementById("staffFileHint");
+    if (hint) hint.textContent = "";
+    setStatus("", "staffBoardStatus");
+  });
   document.getElementById("btnStaffPost")?.addEventListener("click", async () => {
     const text = document.getElementById("staffPostText")?.value?.trim();
     const venueId = document.getElementById("staffPostVenue")?.value || "";
     const pinned = !!document.getElementById("staffPostPin")?.checked;
+    const fileName = window.__staffNotesFileName || "";
+    if (!text) {
+      setStatus("Paste or upload inventory notes first.", "staffBoardStatus");
+      return;
+    }
     try {
-      await OSB.postStaffBoard({ text, venueId, pinned });
+      await OSB.postStaffBoard({
+        text,
+        venueId,
+        pinned,
+        source: fileName ? "file" : "paste",
+        fileName,
+      });
       document.getElementById("staffPostText").value = "";
-      setStatus("Posted.", "staffBoardStatus");
+      window.__staffNotesFileName = "";
+      const hint = document.getElementById("staffFileHint");
+      if (hint) hint.textContent = "";
+      setStatus(
+        fileName ? `Uploaded ${fileName} — stays on this machine.` : "Inventory notes saved — stays on this machine.",
+        "staffBoardStatus",
+      );
       await loadStaffBoard();
     } catch (e) {
       setStatus(e.message, "staffBoardStatus");

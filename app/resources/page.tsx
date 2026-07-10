@@ -4,10 +4,16 @@ import { Gear, GearDivider } from "@/components/SteampunkElements";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Free Bartender Resources & Community — Open Source Barware",
+  title: "Free Bartender Resources & Free Inventory System — Open Source Barware",
   description:
-    "Free bartender resources, bartender community links, free cocktail recipes, and the open source bar inventory program built for bar professionals.",
+    "Free bartender resources and the best free bar inventory system. Tools, guides, and the open source program for operators.",
   path: "/resources",
+  keywords: [
+    "free inventory system",
+    "free bar inventory system",
+    "best bar inventory system",
+    "free bartender resources",
+  ],
 });
 
 export default function ResourcesPage() {
@@ -18,7 +24,7 @@ export default function ResourcesPage() {
         <OptimizedPicture
           webpSrc="/images/shelf.webp"
           fallbackSrc="/images/shelf.png"
-          alt="Backbar shelf lined with bottles"
+          alt="Backbar shelf lined with bottles for free bar inventory system"
           className="absolute inset-0 h-full w-full object-cover object-center"
           priority
         />
@@ -196,8 +202,8 @@ export default function ResourcesPage() {
           </h2>
           <p className="text-text-muted text-lg mb-4 max-w-md mx-auto">
             Inventory sheets, variance calculators, bottle counters &mdash; all
-            inside one free program, no signup required. Built and tested at
-            Agave &amp; Rye.
+            inside one free program, no signup required. Built by bartenders
+            for the trade.
           </p>
           <p className="text-text-muted text-sm mb-10 max-w-md mx-auto">
             Know a feature bartenders should have? Let us know.
@@ -218,6 +224,22 @@ export default function ResourcesPage() {
           </div>
         </div>
       </section>
+
+      {/* Image structured data for SEO - backend only */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ImageObject",
+            "contentUrl": "https://opensourcebarware.com/images/shelf.webp",
+            "name": "Backbar shelf lined with bottles for free bar inventory system",
+            "description": "Backbar shelf with bottles demonstrating the free bar inventory system in a real bar setting. The best free inventory system.",
+            "width": "1200",
+            "height": "630"
+          })
+        }}
+      />
     </>
   );
 }

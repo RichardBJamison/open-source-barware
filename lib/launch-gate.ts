@@ -1,11 +1,11 @@
 export const LAUNCH_MS = new Date("2026-07-04T22:00:00-04:00").getTime();
-/** v1.5 announcement overlay — through the next-Friday drop weekend */
+/** v1.5 announcement overlay — keep welcome through next weekend */
 export const LAUNCH_OVERLAY_END_MS = new Date("2026-07-18T23:59:59-04:00").getTime();
 export const LAUNCH_LABEL = "July 4 at 10pm";
 
-/** v1.5 drop — tonight (about one hour from the 5:56pm ET request) */
-export const NEXT_DROP_MS = new Date("2026-07-10T19:00:00-04:00").getTime();
-export const NEXT_DROP_LABEL = "Tonight · July 10 at 7pm Eastern";
+/** v1.5 public release — live as of July 10, 2026 */
+export const NEXT_DROP_MS = new Date("2026-07-10T12:00:00-04:00").getTime();
+export const NEXT_DROP_LABEL = "Live now · July 10, 2026";
 
 /** Richard flips this off in env when installers are ready to ship. */
 export function isManualDownloadLockOn() {
@@ -97,7 +97,7 @@ export function getLaunchCountdown(now = Date.now()) {
   return countdownParts(LAUNCH_MS, now);
 }
 
-/** Countdown to v1.5 drop (Tonight · 7pm Eastern). */
+/** Countdown to v1.5 drop — finished = live. */
 export function getNextDropCountdown(now = Date.now()) {
   return countdownParts(NEXT_DROP_MS, now);
 }

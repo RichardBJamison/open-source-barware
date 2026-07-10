@@ -24,7 +24,7 @@ function InventorySheetMockup() {
       {/* Title bar */}
       <div style={{ background: "rgba(168,120,79,0.12)", borderBottom: "1px solid rgba(168,120,79,0.2)", padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ color: "#a8784f", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Bar Inventory Master Sheet</span>
-        <span style={{ color: "#a8784f", fontSize: 10, opacity: 0.7 }}>Agave &amp; Rye · Week 23</span>
+        <span style={{ color: "#a8784f", fontSize: 10, opacity: 0.7 }}>Your Bar 1 · Week 23</span>
       </div>
       {/* Stats row */}
       <div style={{ display: "flex", gap: 0, borderBottom: "1px solid rgba(168,120,79,0.15)" }}>
@@ -294,7 +294,7 @@ export default function DownloadPreviewModal({
                 <circle cx="8" cy="11.5" r="0.7" fill="#c7a76b" />
               </svg>
               <div>
-                <div className="text-[10px] font-semibold text-[#c7a76b] tracking-[0.15em] uppercase mb-1">Live Testing at Agave &amp; Rye</div>
+                <div className="text-[10px] font-semibold text-[#c7a76b] tracking-[0.15em] uppercase mb-1">Live Testing at Your Bar 1</div>
                 <p className="text-xs text-text-muted leading-relaxed">
                   This program is being tested in a real bar right now. You&rsquo;re getting an early build.
                   It works — we&rsquo;re just still counting bottles to prove it. Feedback welcome.

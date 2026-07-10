@@ -69,43 +69,43 @@ export default function FireworksCanvas() {
 
     function launchRocket() {
       rockets.push({
-        x: rand(width * 0.15, width * 0.85),
+        x: rand(width * 0.12, width * 0.88),
         y: height + 10,
-        vy: rand(-11, -8),
+        vy: rand(-12, -9),
         color: pickColor(),
         exploded: false,
       });
     }
 
     function explode(x: number, y: number, color: string) {
-      const count = Math.floor(rand(40, 70));
+      const count = Math.floor(rand(60, 105));
       for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 * i) / count + rand(-0.2, 0.2);
-        const speed = rand(2, 7);
+        const angle = (Math.PI * 2 * i) / count + rand(-0.25, 0.25);
+        const speed = rand(2.5, 9.5);
         particles.push({
           x,
           y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
           life: 1,
-          maxLife: rand(60, 100),
+          maxLife: rand(70, 120),
           color,
-          size: rand(1.5, 3),
-          trail: Math.random() > 0.6,
+          size: rand(2, 4),
+          trail: Math.random() > 0.5,
         });
       }
-      const ringCount = 12;
+      const ringCount = 16;
       for (let i = 0; i < ringCount; i++) {
         const angle = (Math.PI * 2 * i) / ringCount;
         particles.push({
           x,
           y,
-          vx: Math.cos(angle) * 3,
-          vy: Math.sin(angle) * 3,
+          vx: Math.cos(angle) * 4,
+          vy: Math.sin(angle) * 4,
           life: 1,
-          maxLife: 40,
+          maxLife: 48,
           color: "#ffffff",
-          size: 2,
+          size: 2.75,
           trail: false,
         });
       }
@@ -115,9 +115,9 @@ export default function FireworksCanvas() {
       ctx.fillStyle = "rgba(0, 0, 0, 0.12)";
       ctx.fillRect(0, 0, width, height);
 
-      if (timestamp - lastLaunch > rand(400, 900)) {
+      if (timestamp - lastLaunch > rand(325, 750)) {
         launchRocket();
-        if (Math.random() > 0.5) launchRocket();
+        if (Math.random() > 0.25) launchRocket();
         lastLaunch = timestamp;
       }
 
@@ -127,15 +127,15 @@ export default function FireworksCanvas() {
         r.vy *= 0.98;
 
         ctx.beginPath();
-        ctx.arc(r.x, r.y, 2.5, 0, Math.PI * 2);
+        ctx.arc(r.x, r.y, 3, 0, Math.PI * 2);
         ctx.fillStyle = r.color;
         ctx.fill();
 
         ctx.beginPath();
         ctx.moveTo(r.x, r.y);
-        ctx.lineTo(r.x, r.y + 18);
+        ctx.lineTo(r.x, r.y + 23);
         ctx.strokeStyle = `${r.color}88`;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
         if (r.vy >= -1 || r.y < height * rand(0.2, 0.45)) {

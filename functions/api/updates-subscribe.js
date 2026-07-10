@@ -1,14 +1,15 @@
 // Open Source Barware — release-list signup
-// Collects an email at signup and delivers it to the owner's mailbox via
-// Forward Email. No CRM / no GHL. The owner's inbox IS the list.
+// Collects emails for the release list (stored in KV under OSB_SIGNUPS).
+// No immediate welcome email is sent to the subscriber.
+// Owner still receives a notification email (via Forward Email).
+// When a release is ready, pull the list from KV and send manually.
 //
-// Required Cloudflare Pages env:
-//   FORWARD_EMAIL_USER  — a Forward Email alias with a generated password
-//                         (e.g. richard@opensourcebarware.com)
-//   FORWARD_EMAIL_PASS  — that alias's Forward Email mailbox password
+// Required Cloudflare Pages env (for owner notifications):
+//   FORWARD_EMAIL_USER
+//   FORWARD_EMAIL_PASS
 // Optional:
-//   NOTIFY_EMAIL        — where signup alerts are delivered (use Gmail, not Yahoo)
-//   FORWARD_EMAIL_FROM  — From address (default: branded noreply@opensourcebarware.com)
+//   NOTIFY_EMAIL        — owner alert destination (Gmail recommended)
+//   FORWARD_EMAIL_FROM  — From address (default: noreply@...)
 
 const FORWARD_EMAIL_API = "https://api.forwardemail.net/v1/emails";
 const SITE_URL = "https://opensourcebarware.com";
@@ -123,51 +124,6 @@ function ownerNotifyContent(details) {
   return { text, html };
 }
 
-function subscriberWelcomeContent(details) {
-  const lines = ["Thanks for signing up for Open Source Barware.", ""];
-  if (details.programUpdates) {
-    lines.push(
-      "You are on the release list. We only email when a new build ships."
-    );
-  }
-  if (details.hiddenBarTour) {
-    lines.push(
-      "You are also on the Hidden Bar Tour invite list for your city."
-    );
-  }
-  lines.push(
-    "",
-    "Open Source Barware is free, open-source bar inventory software.",
-    "No subscription. No cloud lock-in.",
-    "",
-    SITE_URL,
-    "",
-    "— Open Source Barware"
-  );
-
-  const text = lines.join("\n");
-  const html = `
-    <div style="font-family:Georgia,serif;color:#1c1815;max-width:560px;line-height:1.6">
-      <p style="margin:0 0 16px;font-size:20px;color:#a8784f">You are on the list.</p>
-      ${
-        details.programUpdates
-          ? "<p>We will email you when a new Open Source Barware build ships.</p>"
-          : ""
-      }
-      ${
-        details.hiddenBarTour
-          ? "<p>We will also invite you to Hidden Bar Tour discovery runs in your city.</p>"
-          : ""
-      }
-      <p>Open Source Barware is free, open-source bar inventory software. No subscription. No cloud lock-in.</p>
-      <p><a href="${SITE_URL}" style="color:#a8784f">${SITE_URL}</a></p>
-      <p style="margin-top:24px;font-size:13px;color:#7a6e62">— Open Source Barware</p>
-    </div>
-  `.trim();
-
-  return { text, html };
-}
-
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
@@ -272,24 +228,17 @@ export async function onRequestPost(context) {
     );
   }
 
-  if (mailConfigured) {
-    await sendForwardEmail(env, {
-      to: email,
-      subject: "You're on the Open Source Barware release list",
-      text: welcomeContent.text,
-      html: welcomeContent.html,
-    }).catch(() => {});
-  }
+  // No immediate welcome email is sent to the subscriber.
+  // We store the signup in KV. You'll email the list manually when ready.
 
-  let message = "You are on the list.";
+  let message = "Thanks — you're on the release list. We'll email you when a release is ready.";
   if (programUpdates && hiddenBarTour) {
     message =
-      "You are on the release list and the Hidden Bar Tour invite list for your city.";
+      "You're on the release list and the Hidden Bar Tour invite list for your city. We'll email when ready.";
   } else if (hiddenBarTour) {
-    message =
-      "We will email you when World Hidden Bar Tours go online and invite you to your city's discovery run.";
+    message = "You're on the Hidden Bar Tour invite list for your city. We'll email when ready.";
   } else {
-    message = "You are on the release list. We only email when new additions ship.";
+    message = "You're on the release list. We'll email you when the next build ships.";
   }
 
   return jsonResponse({ ok: true, message });

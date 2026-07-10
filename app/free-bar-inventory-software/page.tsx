@@ -4,19 +4,18 @@ import { Gear, GearDivider } from "@/components/SteampunkElements";
 import { pageMetadata, SITE_URL } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Free Bar Inventory Software — Open Source Barware",
+  title: "Free Bar Inventory Software — Best Free Inventory System",
   description:
-    "Free bar inventory software built by bartenders and tested in a real restaurant. Bottle-level counts, pour cost, variance, and location mapping. No subscription. Download and run tonight.",
+    "The best free bar inventory system. Free inventory software built by bartenders. Full bottle-level counts, variance, and no subscription. Download tonight.",
   path: "/free-bar-inventory-software",
   keywords: [
+    "free inventory system",
+    "best free bar inventory system",
     "free bar inventory software",
     "bar inventory software free",
     "free bar inventory system",
+    "best bar inventory system",
     "open source bar inventory",
-    "free liquor inventory software",
-    "bar inventory app free",
-    "restaurant bar inventory software",
-    "beverage inventory software free",
   ],
 });
 
@@ -86,7 +85,7 @@ const faqs = [
   },
   {
     q: "Who built this?",
-    a: "Bartenders and operators — tested at Agave & Rye in downtown Cleveland. Open Source Barware is a Richard B. Jamison project under Intelligent Hospitality Systems.",
+    a: "Bartenders and operators. Open Source Barware is a Richard B. Jamison project under Intelligent Hospitality Systems.",
   },
   {
     q: "Does it work for liquor and wine only?",
@@ -139,7 +138,7 @@ export default function FreeBarInventorySoftwarePage() {
         <OptimizedPicture
           webpSrc="/images/bartop.webp"
           fallbackSrc="/images/bartop.png"
-          alt="Bartop with bottles ready for inventory count"
+          alt="Bartop with bottles ready for free bar inventory count"
           className="absolute inset-0 h-full w-full object-cover object-center"
           priority
         />
@@ -315,6 +314,22 @@ export default function FreeBarInventorySoftwarePage() {
           </Link>
         </div>
       </section>
+
+      {/* Image structured data for SEO - at bottom, backend only */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ImageObject",
+            "contentUrl": "https://opensourcebarware.com/images/bartop.webp",
+            "name": "Bartop with bottles ready for free bar inventory count",
+            "description": "Dark wood bartop with bottles ready for free bar inventory system count. Part of the best free inventory system for bars.",
+            "width": "1200",
+            "height": "630"
+          })
+        }}
+      />
     </>
   );
 }

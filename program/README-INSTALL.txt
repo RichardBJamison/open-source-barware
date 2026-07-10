@@ -1,6 +1,6 @@
-Open Source Barware — Chrome Program v1.0
+Open Source Barware — Chrome Program v1.5
 ==========================================
-July 4, 2026 release · Free · GPL-3.0-or-later
+July 10, 2026 public release · Free · GPL-3.0-or-later
 
 WHAT YOU DOWNLOADED
 -------------------
@@ -10,6 +10,23 @@ at http://localhost:5052/ — no subscription, no cloud account required.
 Voice walks, counts, spreadsheets, PAR levels, and weekly Process all work
 without AI. Optional AI (in setup or Settings) is only for reading invoice
 photos from your phone — you can always type numbers yourself.
+
+NEW IN V1.5 (public drop)
+-------------------------
+• Spanish + English inventory notes — walks and counts understand Spanish
+  station and level words (e.g. barra, pozo, fila, medio, tres cuartos)
+  alongside English. Notes can be mixed EN/ES; full Spanish UI is next.
+• Employee communications — managers upload or paste walks and inventory
+  notes for the house (local-only staff board; works with PIN managers)
+• Mobile count view — large taps, presets, optional weigh, camera barcode
+• Smart orders → purchase orders (copy, email, CSV, receive workflow)
+• POS import with review step — sales feed variance and reorder suggestions
+• Recipe builder + menu costing
+• Shift reports — plain-English weekly story + export
+• Multi-venue + stock transfers
+• Team PIN logins (optional — open until you create the first admin PIN)
+• Coming soon panel (Settings) — full Spanish UI, restaurant package, 2.0
+• Bottle-weight table for optional scale weighing mode
 
 LICENSE: GNU GPL v3 or later. See LICENSE.txt in this folder.
 
@@ -56,6 +73,10 @@ The welcome screen walks you through mapping your bar. AI connection is
 optional — skip it and use the full program immediately. Add AI later in
 Settings only if you want invoice photos read automatically.
 
+Language tip: speak or type the walk in English, Spanish, or mixed. Station
+words (barra / bar, pozo / well, fila / row) and levels (lleno, medio, vacío)
+are recognized in inventory notes today. The full Spanish interface ships next.
+
 
 DAILY USE
 ---------
@@ -73,7 +94,7 @@ Stop:
 VERIFY IT WORKS
 ---------------
 Open in your browser: http://localhost:5052/ping
-You should see JSON with "status": "ok"
+You should see JSON with "status": "ok" and version "1.5.0-…"
 
 If not, check the log:
   Mac:     ~/osb-program/data/osb_server.log
@@ -108,7 +129,7 @@ UNINSTALL
 
 UPDATES
 -------
-Check https://opensourcebarware.com/download every few weeks for v1.1+.
+Check https://opensourcebarware.com/download every few weeks for updates.
 Join the release list on the download page for email when new builds ship.
 Re-run Install.command or Install.bat over your existing install — your
 bar data in the data/ folder is preserved.

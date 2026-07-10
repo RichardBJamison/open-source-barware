@@ -5,7 +5,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![GitHub Stars](https://img.shields.io/github/stars/RichardBJamison/open-source-barware?style=social)](https://github.com/RichardBJamison/open-source-barware/stargazers)
 
-> Free, open-source bar inventory tools — built by bartenders, tested at Agave & Rye.
+> Free, open-source bar inventory tools — built by bartenders for the trade.
 
 Open Source Barware is a free, open-source bar inventory project for hospitality teams. It includes the public Next.js site, browser-based inventory sandbox, downloadable spreadsheet/prompt assets, and the in-progress local Chrome-side program under `program/`.
 
