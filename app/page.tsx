@@ -10,9 +10,9 @@ import OptimizedPicture from "@/components/OptimizedPicture";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Open Source Barware — Free Inventory System for Bars | Best Free Bar Inventory",
+  title: "Free Bar Inventory Software (Open Source) | Open Source Barware",
   description:
-    "The best free inventory system for bars. Self-contained bar inventory program that runs on your laptop — no subscription, no cloud, no lock-in. Built by operators who count bottles for a living.",
+    "Free, open-source bar inventory that runs on your laptop. Counts, variance, pour cost—no subscription, no cloud lock-in. Built by operators.",
   path: "/",
   keywords: [
     "free inventory system",

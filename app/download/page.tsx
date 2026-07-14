@@ -6,9 +6,9 @@ import { Gear, GearDivider } from "@/components/SteampunkElements";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Download — Open Source Barware",
+  title: "Download Free Bar Inventory Program v1.5 | Open Source Barware",
   description:
-    "Download Open Source Barware v1.5 — free local bar inventory. Spanish-ready notes, mobile count, POS, multi-venue. No subscription, no cloud tax.",
+    "Download Open Source Barware free. Local counts, Spanish-ready notes, POS inputs, multi-venue. No signup required to run.",
   path: "/download",
 });
 

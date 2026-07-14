@@ -4,9 +4,9 @@ import { Gear, GearDivider } from "@/components/SteampunkElements";
 import { pageMetadata, SITE_URL } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Free Bar Inventory Software — Best Free Inventory System",
+  title: "Free Bar Inventory Software — Bottle-Level Variance | OSBW",
   description:
-    "The best free bar inventory system. Free inventory software built by bartenders. Full bottle-level counts, variance, and no subscription. Download tonight.",
+    "Free bar inventory software with bottle-level variance—download tonight, no monthly fee.",
   path: "/free-bar-inventory-software",
   keywords: [
     "free inventory system",
@@ -168,6 +168,12 @@ export default function FreeBarInventorySoftwarePage() {
               className="inline-block bg-copper hover:bg-copper-bright text-bg font-semibold px-8 py-3.5 text-sm tracking-wide transition-all hover:shadow-[0_0_30px_rgba(168,120,79,0.25)]"
             >
               Download Free
+            </Link>
+            <Link
+              href="/bar-inventory-software-comparison"
+              className="inline-block border border-copper/40 text-copper hover:bg-copper/10 px-8 py-3.5 text-sm tracking-wide transition-colors"
+            >
+              Compare vs paid apps
             </Link>
             <Link
               href="/the-process"

@@ -4,9 +4,9 @@ import { Gear, GearDivider, BottleIcon } from "@/components/SteampunkElements";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Free Liquor Inventory Software — Open Source Barware",
+  title: "Free Liquor Inventory Tracking for Bars | Open Source Barware",
   description:
-    "Free liquor inventory tracking for bars, restaurants, and liquor rooms. Bottle-level counts, cost, and variance by category, bottle, and shift. One open-source program, no subscription.",
+    "Bottle-level liquor inventory, cost, and variance by category and shift. Free and open source.",
   path: "/liquor-inventory",
   keywords: [
     "free liquor inventory",
