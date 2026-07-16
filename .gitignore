@@ -22,7 +22,10 @@
 
 # misc
 .DS_Store
+**/.DS_Store
 *.pem
+*-key.pem
+localhost*.pem
 
 # debug
 npm-debug.log*
@@ -30,11 +33,19 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env / secrets — never commit
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
 
-# vercel
+# vercel / cloudflare local state — never commit
 .vercel
+**/.vercel
+.wrangler
+**/.wrangler
 
 # typescript
 *.tsbuildinfo
@@ -42,7 +53,24 @@ next-env.d.ts
 
 # python
 __pycache__/
+**/__pycache__/
 *.pyc
-
-# Python virtual env (local run)
 .venv/
+**/.venv/
+program/.venv/
+
+# program runtime / local install state
+program/data/
+program/osb_config.json
+program/.stress-sandbox/
+program/data/_stress-reports/
+program/**/session_secret.txt
+program/**/ai_secrets.json
+**/session_secret.txt
+**/ai_secrets.json
+
+# editor / OS
+.idea/
+.vscode/
+*.swp
+*~
