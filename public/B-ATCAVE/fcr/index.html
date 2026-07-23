@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Doodle Bug — Real Estate Capital Resources</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #17233f;
+      --navy-2: #202d4d;
+      --teal: #177e89;
+      --aqua: #67c7c0;
+      --coral: #f47c6b;
+      --peach: #f6b26b;
+      --cream: #fff6e8;
+      --cream-2: #ffefd7;
+      --gold: #d7aa4b;
+      --gold-soft: #f6e9c4;
+      --iris: #8979d8;
+      --iris-soft: #eeeaff;
+      --ink: #202238;
+      --muted: #59627a;
+      --line: rgba(23, 35, 63, .16);
+      --shadow: 0 18px 44px rgba(23, 35, 63, .13);
+      --shadow-soft: 0 8px 24px rgba(23, 35, 63, .09);
+      --radius: 24px;
+      --max: 1480px;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 92% 8%, rgba(103, 199, 192, .22), transparent 25rem),
+        radial-gradient(circle at 8% 84%, rgba(244, 124, 107, .13), transparent 24rem),
+        var(--cream);
+      font: 500 18px/1.55 "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      content: "";
+      opacity: .26;
+      background-image: linear-gradient(90deg, transparent 49.8%, rgba(23, 35, 63, .04) 50%, transparent 50.2%);
+      background-size: 88px 100%;
+    }
+    body.text-large { font-size: 20px; }
+    body.high-contrast { --ink: #11182c; --muted: #37415c; --line: rgba(17, 24, 44, .3); --cream: #fff8ec; }
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .62; }
+    :focus-visible { outline: 4px solid var(--gold); outline-offset: 4px; }
+    .skip-link {
+      position: fixed; left: 16px; top: 12px; z-index: 200; transform: translateY(-160%);
+      padding: 12px 18px; border-radius: 12px; background: var(--navy); color: var(--cream); font-weight: 800;
+    }
+    .skip-link:focus { transform: none; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+    .app-shell { min-height: 100vh; }
+    .topbar {
+      position: sticky; top: 0; z-index: 30; border-bottom: 2px solid var(--navy);
+      background: var(--cream); box-shadow: 0 4px 0 rgba(23, 35, 63, .06);
+    }
+    .topbar-inner {
+      display: grid; grid-template-columns: minmax(230px, 1fr) auto minmax(230px, 1fr); gap: 18px;
+      align-items: center; max-width: var(--max); min-height: 96px; margin: 0 auto; padding: 14px 30px;
+    }
+    .brand {
+      display: inline-flex; align-items: center; gap: 13px; width: fit-content; color: var(--navy); text-align: left;
+      background: transparent; border: 0; padding: 0; min-height: 56px;
+    }
+    .brand-mark {
+      position: relative; display: grid; place-items: center; width: 58px; height: 58px; flex: 0 0 58px;
+      border: 3px solid var(--navy); border-radius: 50%; background: var(--aqua); box-shadow: 5px 5px 0 var(--coral);
+      color: var(--navy); font-size: 14px; font-weight: 900; letter-spacing: .08em;
+    }
+    .brand-mark::before, .brand-mark::after { position: absolute; top: 12px; width: 9px; height: 23px; content: ""; border: 2px solid var(--navy); border-radius: 50%; }
+    .brand-mark::before { left: -9px; transform: rotate(-34deg); }
+    .brand-mark::after { right: -9px; transform: rotate(34deg); }
+    .brand-copy { display: grid; gap: 1px; }
+    .brand-copy strong { font-size: 22px; line-height: 1.05; letter-spacing: .04em; }
+    .brand-copy span { font-size: 13px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
+
+    .primary-nav { display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .nav-link, .home-button, .help-button, .notification-button {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 12px 18px;
+      border: 2px solid transparent; border-radius: 14px; color: var(--navy); font-size: 16px; font-weight: 800;
+      letter-spacing: .04em; text-transform: uppercase; transition: background .18s ease, transform .18s ease, border-color .18s ease;
+    }
+    .nav-link:hover, .nav-link.active { background: var(--cream-2); border-color: var(--navy); transform: translateY(-2px); }
+    .nav-link[data-panel="communications"]:hover, .nav-link[data-panel="communications"].active { background: #ffd9d1; border-color: var(--coral); }
+    .nav-link[data-panel="build-out-box"]:hover, .nav-link[data-panel="build-out-box"].active { background: #d4f0ed; border-color: var(--teal); }
+    .nav-link[data-panel="see-progress"]:hover, .nav-link[data-panel="see-progress"].active { background: var(--gold-soft); border-color: var(--gold); }
+    .nav-link.website { border-color: var(--iris); background: var(--iris-soft); }
+    .nav-link.website:hover { background: #dfd9ff; border-color: var(--iris); transform: translateY(-2px); }
+    .top-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+    .home-button { border-color: var(--navy); background: var(--navy); color: var(--cream); min-width: 112px; }
+    .home-button:hover { background: var(--navy-2); transform: translateY(-2px); }
+    .help-button { border-color: var(--coral); background: var(--coral); color: var(--navy); min-width: 104px; }
+    .help-button:hover { background: #ff927f; transform: translateY(-2px); }
+    .notification-button { border-color: var(--line); background: var(--cream); min-width: 56px; padding-inline: 14px; }
+    .notification-button:hover { background: var(--cream-2); transform: translateY(-2px); }
+    .notification-button .status-dot { width: 12px; height: 12px; margin-right: 8px; border-radius: 50%; background: var(--coral); }
+
+    main { max-width: var(--max); margin: 0 auto; padding: 42px 30px 64px; }
+    .panel { display: none; }
+    .panel.active { display: block; animation: fade-in .22s ease both; }
+    .panel.home-panel.active { display: flex; }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+    .section-kicker { margin: 0 0 10px; color: var(--teal); font-size: 14px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+    h1, h2, h3, h4, p { margin: 0; }
+    h1, h2, h3, h4 { color: var(--navy); }
+    h1 { font-size: clamp(38px, 4.3vw, 68px); line-height: 1.03; letter-spacing: -.045em; }
+    h2 { font-size: clamp(31px, 3vw, 52px); line-height: 1.06; letter-spacing: -.04em; }
+    h3 { font-size: 25px; line-height: 1.15; letter-spacing: -.02em; }
+    h4 { font-size: 20px; line-height: 1.2; }
+    .section-intro { display: flex; justify-content: space-between; align-items: flex-end; gap: 22px; margin-bottom: 32px; }
+    .section-intro p { max-width: 700px; color: var(--muted); font-size: 20px; }
+    .section-intro .current-note { max-width: 300px; padding: 15px 18px; border-left: 5px solid var(--gold); background: var(--gold-soft); color: var(--navy); font-weight: 800; }
+    .sun-line { display: flex; align-items: center; gap: 12px; margin: 24px 0; color: var(--gold); }
+    .sun-line::before, .sun-line::after { height: 2px; flex: 1; content: ""; background: currentColor; opacity: .65; }
+    .sun-line span { width: 14px; height: 14px; border: 2px solid currentColor; border-radius: 50%; }
+
+    /* Home */
+    .home-panel { min-height: calc(100vh - 200px); flex-direction: column; justify-content: center; }
+    .home-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 25px; margin-bottom: 28px; }
+    .home-hero-copy { max-width: 800px; }
+    .home-hero-copy p { margin-top: 13px; color: var(--muted); font-size: 21px; }
+    .home-meta { display: grid; justify-items: end; gap: 8px; color: var(--navy); text-align: right; }
+    .home-meta .date { font-size: 18px; font-weight: 800; }
+    .availability { display: inline-flex; align-items: center; gap: 9px; padding: 10px 14px; border: 2px solid var(--teal); background: #d4f0ed; color: var(--navy); font-size: 16px; font-weight: 800; }
+    .availability::before { width: 10px; height: 10px; content: ""; border-radius: 50%; background: var(--teal); }
+    .door-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+    .door {
+      position: relative; display: flex; flex-direction: column; gap: 13px; min-width: 0; padding: 18px;
+      border: 3px solid var(--navy); border-radius: 28px; box-shadow: 8px 8px 0 var(--navy); background: #fffaf1;
+    }
+    .door.coral { background: #fff0ec; border-color: var(--coral); box-shadow: 8px 8px 0 var(--coral); }
+    .door.teal { background: #edf9f7; border-color: var(--teal); box-shadow: 8px 8px 0 var(--teal); }
+    .door.gold { background: #fff9e9; border-color: var(--gold); box-shadow: 8px 8px 0 var(--gold); }
+    .door.iris { background: var(--iris-soft); border-color: var(--iris); box-shadow: 8px 8px 0 var(--iris); }
+    .door-top { display: flex; align-items: center; gap: 14px; min-height: 58px; }
+    .door-icon { display: grid; place-items: center; width: 54px; height: 54px; flex: 0 0 54px; border: 2px solid var(--navy); border-radius: 18px; background: var(--cream); color: var(--navy); font-size: 26px; font-weight: 900; }
+    .door.coral .door-icon { background: var(--coral); }
+    .door.teal .door-icon { background: var(--aqua); }
+    .door.gold .door-icon { background: var(--peach); }
+    .door.iris .door-icon { background: var(--iris); }
+    .door h3 { font-size: 25px; text-transform: uppercase; }
+    .door-support { min-height: 57px; color: var(--muted); font-size: 18px; }
+    .door-cta {
+      display: flex; flex: 1; flex-direction: column; align-items: flex-start; justify-content: center; gap: 9px; width: 100%; min-height: 178px;
+      padding: 21px 23px; border: 2px solid var(--navy); border-radius: 20px; background: var(--cream); color: var(--navy); text-align: left;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    .door.coral .door-cta { background: var(--coral); }
+    .door.teal .door-cta { background: var(--aqua); }
+    .door.gold .door-cta { background: var(--peach); }
+    .door.iris .door-cta { background: var(--iris); }
+    .door-cta:hover { transform: translateY(-4px); box-shadow: 0 9px 0 rgba(23, 35, 63, .22); }
+    .door-cta strong { font-size: clamp(25px, 2vw, 34px); line-height: 1.05; letter-spacing: -.035em; }
+    .door-cta span { font-size: 17px; font-weight: 800; }
+    .door-cta .arrow { align-self: flex-end; font-size: 28px; line-height: 1; }
+    .today-strip { margin-top: 28px; padding: 18px 22px 22px; border: 2px solid var(--navy); border-radius: 22px; background: rgba(255, 246, 232, .86); box-shadow: var(--shadow-soft); }
+    .today-strip-header { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 13px; }
+    .today-strip-header h3 { font-size: 19px; text-transform: uppercase; letter-spacing: .08em; }
+    .today-strip-header span { color: var(--muted); font-size: 16px; font-weight: 700; }
+    .today-items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .today-item { min-height: 72px; padding: 13px 15px; border-left: 5px solid var(--gold); background: #fffaf1; }
+    .today-item:nth-child(1) { border-color: var(--coral); }
+    .today-item:nth-child(2) { border-color: var(--teal); }
+    .today-item strong { display: block; margin-bottom: 2px; color: var(--navy); font-size: 13px; letter-spacing: .09em; text-transform: uppercase; }
+    .today-item span { color: var(--muted); font-size: 17px; }
+
+    /* Shared cards */
+    .card { border: 2px solid var(--line); border-radius: var(--radius); background: rgba(255, 250, 241, .88); box-shadow: var(--shadow-soft); }
+    .card.pad { padding: 26px; }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    .card-header p { margin-top: 5px; color: var(--muted); font-size: 17px; }
+    .status-label { display: inline-flex; align-items: center; min-height: 38px; padding: 7px 12px; border: 2px solid var(--teal); border-radius: 10px; background: #d4f0ed; color: var(--navy); font-size: 14px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+    .status-label.coral { border-color: var(--coral); background: #ffd9d1; }
+    .status-label.gold { border-color: var(--gold); background: var(--gold-soft); }
+    .action-link { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 12px 18px; border: 2px solid var(--navy); border-radius: 12px; background: var(--navy); color: var(--cream); font-size: 16px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+    .action-link:hover { background: var(--navy-2); }
+    .quiet-button { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 12px 18px; border: 2px solid var(--line); border-radius: 12px; background: var(--cream); color: var(--navy); font-size: 16px; font-weight: 800; }
+    .quiet-button:hover { border-color: var(--navy); background: var(--cream-2); }
+    .empty-state { padding: 22px; border: 2px dashed var(--line); border-radius: 16px; background: var(--cream-2); color: var(--muted); }
+    .empty-state strong { display: block; margin-bottom: 4px; color: var(--navy); }
+
+    /* Build Out Box */
+    .build-hero { padding: 28px 30px; border: 3px solid var(--teal); border-radius: 28px; background: #e9f8f5; box-shadow: 8px 8px 0 var(--teal); }
+    .build-hero p { margin-top: 11px; max-width: 760px; color: var(--muted); font-size: 21px; }
+    .timeline-wrap { margin: 36px 0; }
+    .timeline-title { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+    .timeline-title h3 { text-transform: uppercase; letter-spacing: .08em; }
+    .timeline-title span { color: var(--teal); font-weight: 900; }
+    .timeline { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 2px solid var(--navy); border-radius: 20px; overflow: hidden; background: var(--cream); }
+    .timeline-step { position: relative; min-height: 143px; padding: 17px 13px; border-right: 1px solid var(--line); background: #fffaf1; }
+    .timeline-step:last-child { border-right: 0; }
+    .timeline-step.current { background: var(--teal); color: var(--cream); }
+    .timeline-step.future { opacity: .66; }
+    .timeline-step .week { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .timeline-step strong { display: block; color: var(--navy); font-size: 16px; line-height: 1.2; }
+    .timeline-step.current strong, .timeline-step.current .week { color: var(--cream); }
+    .timeline-step .check { display: grid; place-items: center; width: 27px; height: 27px; margin-bottom: 10px; border: 2px solid var(--navy); border-radius: 50%; background: var(--cream); color: var(--navy); font-weight: 900; }
+    .timeline-step.current .check { border-color: var(--cream); background: var(--cream); }
+    .build-areas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .build-area { display: flex; flex-direction: column; min-height: 260px; padding: 24px; border: 2px solid var(--line); border-radius: 20px; background: #fffaf1; box-shadow: var(--shadow-soft); }
+    .build-area .area-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 17px; }
+    .build-area .area-title h3 { font-size: 24px; }
+    .area-detail { display: grid; gap: 11px; margin-bottom: 20px; }
+    .area-detail dt { color: var(--muted); font-size: 13px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .area-detail dd { margin: 0; color: var(--navy); font-size: 18px; }
+    .build-area .action-link { align-self: flex-start; margin-top: auto; }
+    .decision-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px; margin: 28px 0; padding: 22px 24px; border: 3px solid var(--coral); border-radius: 22px; background: #fff0ec; box-shadow: 7px 7px 0 var(--coral); }
+    .decision-mark { display: grid; place-items: center; width: 58px; height: 58px; border: 2px solid var(--navy); border-radius: 50%; background: var(--coral); color: var(--navy); font-size: 24px; font-weight: 900; }
+    .decision-card h3 { margin-bottom: 4px; font-size: 23px; }
+    .decision-card p { color: var(--muted); font-size: 18px; }
+
+    /* Progress */
+    .progress-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 22px; }
+    .progress-card { min-height: 250px; padding: 24px; }
+    .progress-card.website { border-color: var(--teal); }
+    .progress-card.marketing { border-color: var(--coral); }
+    .progress-card.build { border-color: var(--gold); }
+    .progress-card h3 { margin-bottom: 8px; }
+    .progress-card > p { min-height: 57px; color: var(--muted); font-size: 17px; }
+    .metric-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 19px; }
+    .metric { padding: 12px; border: 1px solid var(--line); background: var(--cream); }
+    .metric strong { display: block; color: var(--navy); font-size: 27px; line-height: 1.1; }
+    .metric span { display: block; margin-top: 3px; color: var(--muted); font-size: 14px; font-weight: 700; }
+    .interpretation { margin-top: 18px; padding: 13px 15px; border-left: 5px solid var(--gold); background: var(--gold-soft); color: var(--navy); font-size: 16px; font-weight: 800; }
+    .analytics-empty { display: flex; align-items: center; gap: 20px; margin-bottom: 22px; padding: 25px; border: 3px solid var(--teal); border-radius: 20px; background: #e9f8f5; }
+    .analytics-empty-mark { display: grid; place-items: center; width: 62px; height: 62px; flex: 0 0 62px; border: 2px solid var(--navy); border-radius: 50%; background: var(--aqua); color: var(--navy); font-size: 26px; font-weight: 900; }
+    .analytics-empty h3 { margin-bottom: 5px; }
+    .analytics-empty p { color: var(--muted); font-size: 18px; }
+    .chart-card { padding: 24px; }
+    .chart-frame { min-height: 270px; margin-top: 18px; padding: 14px; border: 2px solid var(--line); background: var(--cream); }
+    #trafficChart { display: block; width: 100%; height: 240px; }
+    .chart-note { margin-top: 10px; color: var(--muted); font-size: 17px; font-weight: 700; }
+    .progress-meter { height: 18px; margin: 23px 0 11px; border: 2px solid var(--navy); border-radius: 99px; overflow: hidden; background: var(--cream); }
+    .progress-meter i { display: block; width: 8%; height: 100%; background: var(--gold); }
+    .progress-meter-row { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 16px; font-weight: 800; }
+    .progress-activity { margin-top: 22px; }
+    .activity-item { display: grid; grid-template-columns: 14px 1fr; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+    .activity-item:last-child { border-bottom: 0; }
+    .activity-item .dot { width: 12px; height: 12px; margin-top: 7px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 4px #d4f0ed; }
+    .activity-item strong { color: var(--navy); }
+    .activity-item .when { margin-top: 2px; color: var(--muted); font-size: 15px; }
+
+    /* Talk to Richard */
+    .comms-layout { display: grid; grid-template-columns: minmax(0, 1.95fr) minmax(350px, 1fr); gap: 22px; align-items: stretch; }
+    .chat-shell, .documents-shell { min-width: 0; border: 2px solid var(--coral); border-radius: 24px; background: #fffaf1; box-shadow: var(--shadow); }
+    .chat-shell { display: flex; flex-direction: column; min-height: 740px; overflow: hidden; }
+    .chat-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 23px 25px; border-bottom: 2px solid var(--line); background: #fff0ec; }
+    .chat-head p { margin-top: 5px; color: var(--muted); font-size: 17px; }
+    .chat-stream { display: flex; flex: 1; flex-direction: column; gap: 17px; min-height: 380px; max-height: 620px; overflow-y: auto; padding: 25px; background: linear-gradient(180deg, #fffaf1, #fffdf8); }
+    .bubble { max-width: min(78%, 760px); padding: 17px 19px; border: 2px solid var(--navy); border-radius: 19px; background: #e9f8f5; color: var(--ink); line-height: 1.58; word-break: break-word; }
+    .bubble.bill { align-self: flex-end; border-color: var(--coral); background: var(--coral); color: var(--navy); border-bottom-right-radius: 6px; }
+    .bubble.richard { align-self: flex-start; border-color: var(--teal); border-bottom-left-radius: 6px; }
+    .bubble .meta { margin-bottom: 8px; color: var(--navy); font-size: 15px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+    .bubble .bubble-body { white-space: pre-wrap; }
+    .atts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .att { display: inline-flex; align-items: center; min-height: 48px; padding: 9px 12px; border: 2px solid var(--navy); border-radius: 10px; background: var(--cream); color: var(--navy); font-size: 15px; font-weight: 800; }
+    .chat-compose { padding: 20px 25px 24px; border-top: 2px solid var(--line); background: #fff0ec; }
+    .compose-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
+    .compose-top label { color: var(--navy); font-size: 15px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+    .compose-who { display: flex; gap: 7px; flex-wrap: wrap; }
+    .compose-who button { min-height: 42px; padding: 7px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--cream); color: var(--muted); font-size: 14px; font-weight: 800; }
+    .compose-who button.active { border-color: var(--coral); background: var(--coral); color: var(--navy); }
+    .compose-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: stretch; }
+    .compose-row textarea { width: 100%; min-height: 112px; max-height: 250px; resize: vertical; padding: 15px 17px; border: 2px solid var(--navy); border-radius: 14px; outline: 0; background: var(--cream); color: var(--ink); }
+    .compose-row textarea:focus { box-shadow: 0 0 0 5px rgba(215, 170, 75, .35); }
+    .compose-hint { margin-top: 8px; color: var(--muted); font-size: 15px; }
+    .compose-actions { display: flex; flex-direction: column; gap: 9px; }
+    .btn-send, .btn-attach, .btn-cab-upload { min-width: 170px; min-height: 66px; padding: 12px 17px; border: 2px solid var(--navy); border-radius: 12px; font-size: 16px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+    .btn-send { background: var(--navy); color: var(--cream); }
+    .btn-send:hover { background: var(--navy-2); }
+    .btn-attach { background: var(--peach); color: var(--navy); }
+    .btn-attach:hover { background: #ffc183; }
+    .pending-files { min-height: 25px; margin-top: 8px; color: var(--muted); font-size: 15px; }
+    .documents-shell { padding: 23px; border-color: var(--navy); }
+    .documents-shell > header { margin-bottom: 18px; }
+    .documents-shell > header p { margin-top: 5px; color: var(--muted); font-size: 17px; }
+    .btn-cab-upload { width: 100%; min-height: 60px; margin-bottom: 23px; background: var(--cream); color: var(--navy); }
+    .btn-cab-upload:hover { background: var(--cream-2); }
+    .file-group { margin-top: 22px; }
+    .file-group h4 { margin-bottom: 9px; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; }
+    .file-row { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; padding: 15px 0; border-top: 1px solid var(--line); }
+    .file-kind { display: grid; place-items: center; width: 54px; height: 54px; border: 2px solid var(--navy); border-radius: 13px; background: var(--gold-soft); color: var(--navy); font-size: 13px; font-weight: 900; }
+    .file-row strong { display: block; color: var(--navy); font-size: 17px; line-height: 1.28; overflow-wrap: anywhere; }
+    .file-meta { margin-top: 4px; color: var(--muted); font-size: 14px; }
+    .file-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .file-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 9px 12px; border: 2px solid var(--navy); border-radius: 9px; background: var(--navy); color: var(--cream); font-size: 14px; font-weight: 900; letter-spacing: .03em; text-transform: uppercase; }
+    .file-actions a.download { background: var(--cream); color: var(--navy); }
+
+    /* Help and settings */
+    .modal { display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center; padding: 24px; background: rgba(23, 35, 63, .76); }
+    .modal.open { display: flex; }
+    .modal-panel { width: min(760px, 100%); max-height: min(88vh, 820px); overflow-y: auto; padding: 32px; border: 3px solid var(--navy); border-radius: 28px; background: var(--cream); box-shadow: 12px 12px 0 var(--coral); }
+    .modal-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 21px; }
+    .modal-panel > header p { margin-top: 6px; color: var(--muted); font-size: 18px; }
+    .close-button { display: inline-grid; place-items: center; width: 56px; height: 56px; border: 2px solid var(--navy); border-radius: 12px; background: var(--cream); color: var(--navy); font-size: 24px; font-weight: 900; }
+    .help-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .help-option { display: flex; align-items: center; min-height: 88px; padding: 17px; border: 2px solid var(--navy); border-radius: 14px; background: #fffaf1; color: var(--navy); font-size: 19px; font-weight: 900; text-align: left; }
+    .help-option:hover { background: var(--cream-2); transform: translateY(-2px); }
+    .help-option.accent { background: var(--coral); }
+    .help-explanation { display: none; margin-top: 18px; padding: 18px; border-left: 5px solid var(--teal); background: #e9f8f5; color: var(--muted); }
+    .help-explanation.open { display: block; }
+    .help-explanation strong { display: block; margin-bottom: 4px; color: var(--navy); }
+    .secondary-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 2px solid var(--line); }
+    .secondary-actions button { min-height: 56px; padding: 12px 15px; border: 2px solid var(--navy); border-radius: 11px; background: var(--cream); color: var(--navy); font-size: 16px; font-weight: 800; }
+    .tour-step { padding: 26px; border: 3px solid var(--teal); border-radius: 18px; background: #e9f8f5; }
+    .tour-step .tour-number { color: var(--teal); font-size: 16px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .tour-step h3 { margin: 8px 0; font-size: 32px; }
+    .tour-step p { color: var(--muted); font-size: 20px; }
+    .tour-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 20px; }
+    .settings-grid { display: grid; gap: 12px; }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 68px; padding: 13px 15px; border: 2px solid var(--line); border-radius: 12px; background: #fffaf1; }
+    .setting-row span { color: var(--muted); font-size: 16px; }
+    .setting-row label { color: var(--navy); font-size: 18px; font-weight: 900; }
+    .setting-row select { min-height: 48px; padding: 7px 10px; border: 2px solid var(--navy); border-radius: 9px; background: var(--cream); color: var(--navy); }
+    .setting-row input { width: 25px; height: 25px; accent-color: var(--teal); }
+
+    .footer-note { margin-top: 38px; color: var(--muted); font-size: 15px; text-align: center; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+    @media (max-width: 1200px) {
+      .topbar-inner { grid-template-columns: 1fr auto; }
+      .primary-nav { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; order: 3; overflow-x: auto; padding-bottom: 2px; }
+      .top-actions { grid-column: 2; grid-row: 1; }
+      .door-grid { gap: 16px; }
+      .door-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .door { padding: 15px; }
+      .door h3 { font-size: 21px; }
+      .door-cta { min-height: 155px; padding: 18px; }
+      .comms-layout { grid-template-columns: minmax(0, 1.6fr) minmax(310px, 1fr); }
+    }
+    @media (max-width: 900px) {
+      body { font-size: 17px; }
+      main { padding: 30px 20px 50px; }
+      .topbar-inner { padding: 12px 20px; }
+      .home-hero, .section-intro { align-items: flex-start; flex-direction: column; }
+      .home-meta { justify-items: start; text-align: left; }
+      .door-grid, .progress-grid, .build-areas { grid-template-columns: 1fr; }
+      .door { min-height: 0; }
+      .today-items { grid-template-columns: 1fr; }
+      .timeline { grid-template-columns: 1fr; }
+      .timeline-step { min-height: 0; border-right: 0; border-bottom: 1px solid var(--line); }
+      .timeline-step:last-child { border-bottom: 0; }
+      .decision-card { grid-template-columns: auto 1fr; }
+      .decision-card .action-link { grid-column: 1 / -1; justify-self: start; }
+      .comms-layout { grid-template-columns: 1fr; }
+      .chat-shell { min-height: 680px; }
+    }
+    @media (max-width: 620px) {
+      .topbar-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+      .brand { flex: 1 1 100%; }
+      .primary-nav { order: 3; width: 100%; justify-content: flex-start; }
+      .top-actions { margin-left: auto; }
+      .nav-link { padding-inline: 13px; font-size: 14px; }
+      .home-button, .help-button { min-width: 0; padding-inline: 14px; }
+      main { padding: 25px 14px 42px; }
+      h1 { font-size: 42px; }
+      .home-hero-copy p, .section-intro p, .build-hero p { font-size: 18px; }
+      .door { box-shadow: 5px 5px 0 var(--coral); }
+      .door.teal { box-shadow: 5px 5px 0 var(--teal); }
+      .door.gold { box-shadow: 5px 5px 0 var(--gold); }
+      .door.iris { box-shadow: 5px 5px 0 var(--iris); }
+      .door-cta { min-height: 170px; }
+      .today-strip { padding: 16px; }
+      .card.pad, .build-area, .progress-card, .chart-card, .documents-shell { padding: 19px; }
+      .decision-card { padding: 18px; }
+      .chat-head, .chat-compose, .chat-stream { padding-inline: 17px; }
+      .chat-shell { min-height: 620px; }
+      .bubble { max-width: 92%; }
+      .compose-top { align-items: flex-start; flex-direction: column; }
+      .compose-row { grid-template-columns: 1fr; }
+      .compose-actions { display: grid; grid-template-columns: 1fr 1fr; }
+      .btn-send, .btn-attach { min-width: 0; min-height: 60px; }
+      .help-options { grid-template-columns: 1fr; }
+      .modal { padding: 12px; }
+      .modal-panel { padding: 22px 17px; box-shadow: 6px 6px 0 var(--coral); }
+      .setting-row { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Skip to main content</a>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <button class="brand" type="button" data-panel="dashboard" aria-label="Doodle Bug home">
+          <span class="brand-mark" aria-hidden="true">DB</span>
+          <span class="brand-copy"><strong>Doodle Bug</strong><span>Mi Protocol Nexus · RECR</span></span>
+        </button>
+        <nav class="primary-nav" aria-label="Main areas">
+          <button type="button" class="nav-link" data-panel="communications">Talk to Richard</button>
+          <button type="button" class="nav-link" data-panel="build-out-box">Build Out Box</button>
+          <button type="button" class="nav-link" data-panel="see-progress">See Our Progress</button>
+          <a class="nav-link website" href="https://richardbjamison.github.io/faber-capital-resources/" target="_blank" rel="noopener">Open Website</a>
+        </nav>
+        <div class="top-actions">
+          <button type="button" class="notification-button" id="notificationButton" aria-label="Open latest notification"><span class="status-dot" aria-hidden="true"></span><span class="sr-only" id="notificationText">No new messages</span><span aria-hidden="true" id="notificationCount">0</span></button>
+          <button type="button" class="help-button" id="helpButton">HELP</button>
+          <button type="button" class="home-button" data-panel="dashboard">HOME</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="mainContent">
+      <section class="panel home-panel active" id="panel-dashboard" aria-labelledby="homeTitle">
+        <div class="home-hero">
+          <div class="home-hero-copy">
+            <p class="section-kicker">Doodle Bug · RECR build console</p>
+            <h1 id="homeTitle">Good morning, Bill.</h1>
+            <p>Everything we are building together is right here.</p>
+          </div>
+          <div class="home-meta">
+            <div class="date" id="todayDate">Today</div>
+            <div class="availability" id="availabilityStatus">Richard is available</div>
+          </div>
+        </div>
+        <div class="sun-line" aria-hidden="true"><span></span></div>
+        <div class="door-grid" aria-label="Choose a destination">
+          <article class="door coral">
+            <div class="door-top"><div class="door-icon" aria-hidden="true">↗</div><h3>Talk to Richard</h3></div>
+            <p class="door-support">Messages, questions and shared documents</p>
+            <button type="button" class="door-cta" data-panel="communications"><strong>OPEN OUR CONVERSATION</strong><span id="talkStatus">Loading messages…</span><span class="arrow" aria-hidden="true">→</span></button>
+          </article>
+          <article class="door teal">
+            <div class="door-top"><div class="door-icon" aria-hidden="true">□</div><h3>Build Out Box</h3></div>
+            <p class="door-support">Follow the Real Estate Capital Resources build</p>
+            <button type="button" class="door-cta" data-panel="build-out-box"><strong>OPEN THE BUILD</strong><span>Week 1 · Discovery and Foundation</span><span class="arrow" aria-hidden="true">→</span></button>
+          </article>
+          <article class="door gold">
+            <div class="door-top"><div class="door-icon" aria-hidden="true">↗</div><h3>See Our Progress</h3></div>
+            <p class="door-support">Website growth, marketing and completed work</p>
+            <button type="button" class="door-cta" data-panel="see-progress"><strong>SEE OUR PROGRESS</strong><span id="progressStatus">Tracking is active</span><span class="arrow" aria-hidden="true">→</span></button>
+          </article>
+          <article class="door iris">
+            <div class="door-top"><div class="door-icon" aria-hidden="true">↗</div><h3>Faber Capital Resources</h3></div>
+            <p class="door-support">The canvas where we build our web design</p>
+            <a class="door-cta" href="https://richardbjamison.github.io/faber-capital-resources/" target="_blank" rel="noopener" aria-label="Open the Faber Capital Resources website"><strong>OPEN THE WEBSITE</strong><span>The canvas where we build our web design</span><span class="arrow" aria-hidden="true">→</span></a>
+          </article>
+        </div>
+        <section class="today-strip" aria-labelledby="todayTitle">
+          <div class="today-strip-header"><h3 id="todayTitle">Today</h3><span id="todayReassurance">Your next steps are close at hand.</span></div>
+          <div class="today-items">
+            <div class="today-item"><strong>Latest message</strong><span id="todayMessage">Loading your conversation…</span></div>
+            <div class="today-item"><strong>Next decision</strong><span>Review the website questions Richard sent.</span></div>
+            <div class="today-item"><strong>Most recent milestone</strong><span>RECR discovery and foundation are ready to begin.</span></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel" id="panel-communications" aria-labelledby="communicationsTitle">
+        <div class="section-intro">
+          <div><p class="section-kicker">Talk to Richard</p><h2 id="communicationsTitle">One clear conversation.</h2><p>Ask a question, reply to Richard, or share a document. This is your working room for RECR.</p></div>
+          <div class="current-note" id="communicationsNote">Your conversation is loading now.</div>
+        </div>
+        <div class="comms-layout">
+          <section class="chat-shell" aria-label="Conversation with Richard">
+            <header class="chat-head">
+              <div><h3>Richard ↔ Bill</h3><p>Shared conversation for Real Estate Capital Resources</p></div>
+              <span class="status-label" id="chatStatus" aria-live="polite">Connecting…</span>
+            </header>
+            <div class="chat-stream" id="chatStream" aria-live="polite"><div class="empty-state"><strong>Loading your conversation</strong>Richard’s messages will appear here.</div></div>
+            <div class="chat-compose">
+              <div class="compose-top"><label for="chatInput">Write to Richard</label><div class="compose-who" id="composeWho" aria-label="Message sender"><button type="button" data-who="fcr" class="active">Bill</button><button type="button" data-who="richard">Richard (admin)</button></div></div>
+              <div class="compose-row"><textarea id="chatInput" placeholder="Write a message to Richard…" rows="4" aria-describedby="composeHint"></textarea><div class="compose-actions"><button type="button" class="btn-send" id="chatSend">SEND MESSAGE</button><button type="button" class="btn-attach" id="chatAttach">ADD A FILE</button></div></div>
+              <p class="compose-hint" id="composeHint">Press Enter to send. Press Shift + Enter for a new line.</p>
+              <input type="file" id="chatFile" multiple hidden />
+              <div class="pending-files" id="pendingFiles" aria-live="polite"></div>
+            </div>
+          </section>
+          <aside class="documents-shell" aria-labelledby="documentsTitle">
+            <header><h3 id="documentsTitle">Shared Documents</h3><p>Files Richard has shared with you, kept in one calm place.</p></header>
+            <button type="button" class="btn-cab-upload" id="cabUpload">ADD A FILE</button>
+            <input type="file" id="cabFile" multiple hidden />
+            <div id="fileCabinet"><div class="empty-state"><strong>Loading documents</strong>Shared files will appear here.</div></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-build-out-box" aria-labelledby="buildTitle">
+        <div class="build-hero"><p class="section-kicker">Build Out Box</p><h2 id="buildTitle">REAL ESTATE CAPITAL RESOURCES</h2><p>Your brokerage is being built from the foundation up.</p></div>
+        <div class="timeline-wrap">
+          <div class="timeline-title"><h3>The six-week build path</h3><span>Current: Week 1</span></div>
+          <div class="timeline" aria-label="RECR six-week build path">
+            <div class="timeline-step current"><span class="check" aria-hidden="true">•</span><span class="week">Week 1</span><strong>Discovery and Foundation</strong></div>
+            <div class="timeline-step future"><span class="check" aria-hidden="true">2</span><span class="week">Week 2</span><strong>Agency Blueprint</strong></div>
+            <div class="timeline-step future"><span class="check" aria-hidden="true">3</span><span class="week">Week 3</span><strong>Core Build</strong></div>
+            <div class="timeline-step future"><span class="check" aria-hidden="true">4</span><span class="week">Week 4</span><strong>Connections and Marketing</strong></div>
+            <div class="timeline-step future"><span class="check" aria-hidden="true">5</span><span class="week">Week 5</span><strong>Testing and Refinement</strong></div>
+            <div class="timeline-step future"><span class="check" aria-hidden="true">6</span><span class="week">Week 6</span><strong>Training and Launch Preparation</strong></div>
+            <div class="timeline-step future"><span class="check" aria-hidden="true">↗</span><span class="week">Day 1, Week 7</span><strong>Launch</strong></div>
+          </div>
+        </div>
+        <div class="decision-card"><div class="decision-mark" aria-hidden="true">?</div><div><h3>BILL — WE NEED YOUR DECISION</h3><p>When you are ready, reply to Richard’s website questions in your conversation so the build can keep moving.</p></div><button type="button" class="action-link" data-panel="communications">OPEN THE QUESTION</button></div>
+        <div class="build-areas">
+          <article class="build-area"><div class="area-title"><h3>Brokerage System</h3><span class="status-label">Discovery</span></div><dl class="area-detail"><div><dt>Richard is working on</dt><dd>Mapping how RECR operates, from relationships to handoffs.</dd></div><div><dt>Completed</dt><dd>The first working path and six-week plan are in place.</dd></div></dl><button type="button" class="action-link detail-button" data-detail="Brokerage System">VIEW DETAILS</button></article>
+          <article class="build-area"><div class="area-title"><h3>Website</h3><span class="status-label teal">Foundation</span></div><dl class="area-detail"><div><dt>Richard is working on</dt><dd>Preparing the public-facing RECR website foundation.</dd></div><div><dt>Completed</dt><dd>The current Faber Capital Resources website remains available.</dd></div></dl><div><a class="quiet-button" href="https://richardbjamison.github.io/faber-capital-resources/" target="_blank" rel="noopener">VIEW CURRENT WEBSITE</a><button type="button" class="action-link detail-button" data-detail="Website" style="margin:10px 0 0 7px;">VIEW DETAILS</button></div></article>
+          <article class="build-area"><div class="area-title"><h3>Communications</h3><span class="status-label">Ready</span></div><dl class="area-detail"><div><dt>Richard is working on</dt><dd>Keeping your shared conversation and documents together.</dd></div><div><dt>Completed</dt><dd>Chat history, message sending, and file sharing are connected.</dd></div></dl><button type="button" class="action-link detail-button" data-detail="Communications">VIEW DETAILS</button></article>
+          <article class="build-area"><div class="area-title"><h3>Marketing</h3><span class="status-label gold">Planning</span></div><dl class="area-detail"><div><dt>Richard is working on</dt><dd>Connecting the build to the right future marketing activity.</dd></div><div><dt>Completed</dt><dd>The marketing workstream has a place in the launch path.</dd></div></dl><button type="button" class="action-link detail-button" data-detail="Marketing">VIEW DETAILS</button></article>
+          <article class="build-area"><div class="area-title"><h3>Search Visibility</h3><span class="status-label gold">Planning</span></div><dl class="area-detail"><div><dt>Richard is working on</dt><dd>Clarifying how people will find RECR when the public site is ready.</dd></div><div><dt>Completed</dt><dd>Search and measurement are included in the build map.</dd></div></dl><button type="button" class="action-link detail-button" data-detail="Search Visibility">VIEW DETAILS</button></article>
+          <article class="build-area"><div class="area-title"><h3>Google and Business Tools</h3><span class="status-label gold">Coming next</span></div><dl class="area-detail"><div><dt>Richard is working on</dt><dd>Preparing the connected tools RECR will use after the foundation is agreed.</dd></div><div><dt>Completed</dt><dd>The connected environment is named in the launch plan.</dd></div></dl><button type="button" class="action-link detail-button" data-detail="Google and Business Tools">VIEW DETAILS</button></article>
+          <article class="build-area"><div class="area-title"><h3>Training and Launch</h3><span class="status-label gold">Future week</span></div><dl class="area-detail"><div><dt>Richard is working on</dt><dd>Making the final handoff simple enough to use with confidence.</dd></div><div><dt>Completed</dt><dd>Training and launch preparation have their own week in the path.</dd></div></dl><button type="button" class="action-link detail-button" data-detail="Training and Launch">VIEW DETAILS</button></article>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-see-progress" aria-labelledby="progressTitle">
+        <div class="section-intro"><div><p class="section-kicker">See Our Progress</p><h2 id="progressTitle">A simple read on the work.</h2><p>Website growth, marketing activity, and completed build work — explained in plain English.</p></div><div class="current-note" id="progressNote">Tracking is installed; visitor information will begin appearing after the new website launches.</div></div>
+        <div class="analytics-empty" id="analyticsEmpty"><div class="analytics-empty-mark" aria-hidden="true">↗</div><div><h3>Tracking is ready.</h3><p>Visitor information will begin appearing after the new website launches. Until then, there is nothing for you to interpret.</p></div></div>
+        <div class="progress-grid">
+          <article class="progress-card card website"><h3>Website</h3><p>How people are finding and using the public website.</p><div class="metric-list"><div class="metric"><strong id="waVisitors">0</strong><span>Visitors</span></div><div class="metric"><strong id="waInquiries">0</strong><span>Inquiries</span></div><div class="metric"><strong id="waTopPage">—</strong><span>Most viewed page</span></div><div class="metric"><strong id="waTracking">Ready</strong><span>Tracking status</span></div></div><div class="interpretation" id="websiteInterpretation">Tracking is active; the public campaign has not started.</div></article>
+          <article class="progress-card card marketing"><h3>Marketing and Search</h3><p>What is ready to help the right people discover RECR.</p><div class="metric-list"><div class="metric"><strong>Included</strong><span>Search work</span></div><div class="metric"><strong id="marketingCampaign">Planning</strong><span>Campaign status</span></div><div class="metric"><strong id="marketingLeads">0</strong><span>Leads generated</span></div><div class="metric"><strong>Foundation</strong><span>Current focus</span></div></div><div class="interpretation" id="marketingInterpretation">Search planning is part of the build; public campaigns begin after launch preparation.</div></article>
+          <article class="progress-card card build"><h3>Build Progress</h3><p>The current place in the six-week RECR path.</p><div class="metric-list"><div class="metric"><strong>8%</strong><span>Overall starting line</span></div><div class="metric"><strong>Week 1</strong><span>Current week</span></div><div class="metric"><strong>0</strong><span>Weeks completed</span></div><div class="metric"><strong>Discovery</strong><span>Next milestone</span></div></div><div class="progress-meter" aria-label="Build progress 8 percent"><i></i></div><div class="progress-meter-row"><span>Discovery and Foundation</span><span>8%</span></div></article>
+        </div>
+        <div class="chart-card card" id="progressChartWrap" hidden><div class="card-header"><div><h3>Website visitors</h3><p>A small view of how website visits are changing.</p></div><span class="status-label gold">Live data</span></div><div class="chart-frame"><svg id="trafficChart" viewBox="0 0 900 240" role="img" aria-label="Website visitor trend"></svg><p class="chart-note" id="chartNote">Traffic trend.</p></div></div>
+        <div class="card pad progress-activity"><div class="card-header"><div><h3>Completed work and recent activity</h3><p>Only meaningful project movement appears here.</p></div><span class="status-label" id="livePresence">No visitors right now</span></div><div id="activityList"><div class="empty-state"><strong>Build work is at the discovery starting line.</strong>The next major milestone is mapping the RECR agency foundation.</div></div></div>
+      </section>
+
+      <section class="panel" id="panel-settings" aria-labelledby="settingsTitle">
+        <div class="section-intro"><div><p class="section-kicker">Secondary tools</p><h2 id="settingsTitle">Workspace settings</h2><p>Only the choices you may reasonably want for a long, comfortable session.</p></div></div>
+        <div class="card pad settings-grid"><div class="setting-row"><div><label for="textSize">Text size</label><span>Choose a comfortable reading size.</span></div><select id="textSize"><option value="normal">Standard</option><option value="large">Large</option></select></div><div class="setting-row"><div><label for="contrastToggle">Higher contrast</label><span>Strengthen borders and text contrast.</span></div><input type="checkbox" id="contrastToggle" /></div><div class="setting-row"><div><label for="soundToggle">Sound</label><span>Keep notification sounds on or off.</span></div><input type="checkbox" id="soundToggle" /></div><div class="setting-row"><div><label>Guided tour</label><span>Take the four-step tour again whenever you want.</span></div><button type="button" class="quiet-button" id="restartTour">SHOW ME AROUND</button></div><div class="setting-row"><div><label>Full screen</label><span>Use the whole monitor without trapping the browser.</span></div><button type="button" class="quiet-button" id="fullscreenButton">FULL SCREEN</button></div><div class="setting-row"><div><label for="notificationToggle">Notifications</label><span>Keep meaningful message and decision notices visible.</span></div><input type="checkbox" id="notificationToggle" checked /></div></div>
+      </section>
+
+      <p class="footer-note">Doodle Bug is Bill’s RECR workspace inside the Mi Protocol Nexus.</p>
+    </main>
+  </div>
+
+  <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" aria-hidden="true">
+    <div class="modal-panel"><header><div><p class="section-kicker">A calm place to start</p><h2 id="helpTitle">How can I help?</h2><p>Choose one clear next step. You can always return HOME.</p></div><button type="button" class="close-button" data-close-modal="helpModal" aria-label="Close help">×</button></header><div class="help-options"><button type="button" class="help-option accent" data-help-action="tour">SHOW ME AROUND</button><button type="button" class="help-option" data-help-action="explain">WHAT AM I LOOKING AT?</button><button type="button" class="help-option" data-help-action="question">SEND RICHARD A QUESTION</button><button type="button" class="help-option" data-help-action="home">RETURN HOME</button></div><div class="help-explanation" id="helpExplanation"><strong>Doodle Bug has three doors.</strong><span>Talk to Richard is your conversation and shared documents. Build Out Box is the RECR plan and current work. See Our Progress is the plain-English view of website growth and completed milestones.</span></div><div class="secondary-actions"><button type="button" data-help-action="settings">WORKSPACE SETTINGS</button><button type="button" data-close-modal="helpModal">CLOSE HELP</button></div></div>
+  </div>
+  <div class="modal" id="tourModal" role="dialog" aria-modal="true" aria-labelledby="tourTitle" aria-hidden="true">
+    <div class="modal-panel"><header><div><p class="section-kicker">Optional guided tour</p><h2 id="tourTitle">Four simple steps.</h2><p>Skip now or take the tour again from Help whenever you like.</p></div><button type="button" class="close-button" id="tourClose" aria-label="Skip tour">×</button></header><div class="tour-step"><div class="tour-number" id="tourNumber">Step 1 of 4</div><h3 id="tourStepTitle">Talk to Richard</h3><p id="tourStepBody">Start here for messages, questions, replies, and shared documents.</p></div><div class="tour-actions"><button type="button" class="quiet-button" id="tourSkip">SKIP TOUR</button><button type="button" class="action-link" id="tourNext">NEXT</button></div></div>
+  </div>
+
+  <script>
+    window.ROBOT_CHAT_CONFIG = { robotSrc: "./robot/chatbot-robot.png" };
+  </script>
+  <script src="./robot/robot-chat.js" defer></script>
+
+  <script>
+    (function () {
+      "use strict";
+      var API = "https://opensourcebarware.com/api/nexus-stats";
+      var SITE = "fcr-funding";
+      var COMMS = "https://opensourcebarware.com/api/fcr-comms";
+      var period = "7d";
+      var latestMsgId = "";
+      var chatAuthor = "FCR / Bill";
+      var chatRole = "fcr";
+      var pending = [];
+      var currentPanel = "dashboard";
+      var lastAnalytics = null;
+      var READ_KEY = "fcr_comms_last_read_id";
+      var TOUR_KEY = "doodle-bug-tour-complete-v1";
+      var TOUR_STEPS = [
+        { title: "Talk to Richard", body: "Start here for messages, questions, replies, and shared documents." },
+        { title: "Follow the build", body: "Build Out Box shows what is being created for Real Estate Capital Resources and what comes next." },
+        { title: "See progress", body: "See Our Progress explains website growth, marketing activity, and completed build work." },
+        { title: "Return home anytime", body: "The HOME button stays in the top-right corner, no matter where you are." }
+      ];
+      var tourIndex = 0;
+
+      function byId(id) { return document.getElementById(id); }
+      function esc(value) {
+        return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function setText(id, value) { var el = byId(id); if (el) el.textContent = value; }
+      function fmtNumber(value) { return Number(value || 0).toLocaleString(); }
+      function fmtWhen(ts) {
+        if (!ts) return "";
+        var date = new Date(ts);
+        if (isNaN(date.getTime())) return "";
+        var now = new Date();
+        var sameDay = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+        var time = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        return sameDay ? "Today at " + time : date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) + " at " + time;
+      }
+      function fmtBytes(n) {
+        n = Number(n) || 0;
+        if (n < 1024) return n + " B";
+        if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+        return (n / (1024 * 1024)).toFixed(1) + " MB";
+      }
+      function humanFileLabel(name) {
+        var s = String(name || "file");
+        if (/FCR_New_Hero_Carousel/i.test(s)) return "Website hero carousel package";
+        if (/FCR_Preliminary_Website_Build_Market_Analysis/i.test(s)) return "Website build market analysis";
+        if (/Confidentiality_Agreement/i.test(s)) return "Mi Protocol confidentiality agreement";
+        if (/Invoice_and_Connected_Build_Agreement/i.test(s) || /invoice-signed/i.test(s)) return "Connected build agreement and invoice";
+        return s.replace(/[_-]+/g, " ").replace(/\.[^.]+$/, "").replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+      }
+      function fileKind(name, mime) {
+        var n = String(name || "").toLowerCase();
+        if ((mime || "").indexOf("pdf") >= 0 || n.slice(-4) === ".pdf") return "PDF";
+        if (n.slice(-4) === ".zip") return "ZIP";
+        if ((mime || "").indexOf("image/") === 0) return "IMAGE";
+        return "FILE";
+      }
+      function absFileUrl(url) {
+        if (!url) return "#";
+        if (/^https?:\/\//i.test(url)) return url;
+        if (url.indexOf("/B-ATCAVE/") === 0 || url.indexOf("/api/") === 0) return "https://opensourcebarware.com" + url;
+        return url.replace(/^\.\//, "");
+      }
+      function canonicalPanel(id) {
+        var aliases = { dashboard: "dashboard", communications: "communications", "build-out-box": "build-out-box", "ghl-build": "build-out-box", "see-progress": "see-progress", "website-analytics": "see-progress", "seo-marketing": "see-progress", settings: "settings" };
+        return aliases[id] || "dashboard";
+      }
+      function panelMeta(id) {
+        var meta = {
+          dashboard: { title: "Good morning, Bill.", sub: "Everything we are building together is right here." },
+          communications: { title: "Talk to Richard", sub: "Messages, questions, replies, and shared documents." },
+          "build-out-box": { title: "Build Out Box", sub: "Real Estate Capital Resources is being built from the foundation up." },
+          "see-progress": { title: "See Our Progress", sub: "Website growth, marketing activity, and completed build work." },
+          settings: { title: "Workspace settings", sub: "Comfort and session preferences for Doodle Bug." }
+        };
+        return meta[id] || meta.dashboard;
+      }
+      function showPanel(id, updateHash) {
+        var target = canonicalPanel(id);
+        currentPanel = target;
+        document.querySelectorAll(".panel").forEach(function (panel) { panel.classList.toggle("active", panel.id === "panel-" + target); });
+        document.querySelectorAll("[data-panel]").forEach(function (item) { item.classList.toggle("active", canonicalPanel(item.getAttribute("data-panel")) === target); });
+        if (updateHash !== false) window.history.replaceState(null, "", "#" + target);
+        if (target === "communications") {
+          markCommsRead();
+          setTimeout(function () { var stream = byId("chatStream"); if (stream) stream.scrollTop = stream.scrollHeight; var input = byId("chatInput"); if (input) input.focus(); }, 80);
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      function closeModal(id) {
+        var modal = byId(id); if (!modal) return;
+        modal.classList.remove("open"); modal.setAttribute("aria-hidden", "true");
+      }
+      function openModal(id) {
+        var modal = byId(id); if (!modal) return;
+        modal.classList.add("open"); modal.setAttribute("aria-hidden", "false");
+        var close = modal.querySelector(".close-button"); if (close) close.focus();
+      }
+      function updateDate() { setText("todayDate", new Date().toLocaleDateString([], { weekday: "long", month: "long", day: "numeric", year: "numeric" })); }
+
+      function readId() { try { return localStorage.getItem(READ_KEY) || ""; } catch (e) { return ""; } }
+      function updateNotification(messages, alerts) {
+        var list = messages || [];
+        var last = list.length ? list[list.length - 1] : null;
+        var unread = !!(last && last.id && last.id !== readId());
+        var count = unread ? 1 : 0;
+        var alertCount = (alerts || []).length;
+        count += alertCount;
+        var countText = count ? String(count) : "0";
+        setText("notificationCount", countText);
+        var label = unread ? "1 new message" : (alertCount ? String(alertCount) + " item needs your attention" : "No new messages");
+        setText("notificationText", label);
+        var button = byId("notificationButton"); if (button) button.setAttribute("aria-label", label + ". Open Talk to Richard.");
+        setText("talkStatus", unread ? "1 new message" : (last ? "Richard replied recently" : "No messages yet"));
+        setText("availabilityStatus", unread ? "1 new message from Richard" : "Richard is available");
+      }
+      function updateCommsPeek(messages) {
+        var list = messages || [];
+        if (!list.length) { latestMsgId = ""; setText("todayMessage", "You are all caught up."); setText("communicationsNote", "No messages yet. Start the conversation whenever you are ready."); updateNotification([], []); return; }
+        var saved = readId(); var target = list[list.length - 1];
+        latestMsgId = target.id || "";
+        var preview = String(target.text || "").trim().replace(/\s+/g, " ");
+        if (preview.length > 112) preview = preview.slice(0, 109) + "…";
+        setText("todayMessage", (target.author === "Richard" ? "Richard: " : "") + (preview || "Document shared"));
+        setText("communicationsNote", target.role === "richard" && target.id !== saved ? "Richard has a new message waiting for you." : "Your conversation is up to date.");
+      }
+      function markCommsRead() {
+        if (!latestMsgId) return;
+        try { localStorage.setItem(READ_KEY, latestMsgId); } catch (e) {}
+        setText("communicationsNote", "Your conversation is up to date.");
+        setText("talkStatus", "Richard replied recently");
+        updateNotification(lastCommsMessages || [], lastAnalytics && lastAnalytics.alerts);
+      }
+      var lastCommsMessages = [];
+
+      function renderMessages(messages) {
+        var el = byId("chatStream"); if (!el) return;
+        if (!messages || !messages.length) { el.innerHTML = '<div class="empty-state"><strong>No messages yet.</strong>Write to Richard below when you are ready.</div>'; return; }
+        el.innerHTML = messages.map(function (m) {
+          var isRichard = m.role === "richard";
+          var name = isRichard ? "Richard" : "Bill";
+          var atts = (m.attachments || []).map(function (a) {
+            var href = absFileUrl(a.url);
+            return '<a class="att" href="' + esc(href) + '" target="_blank" rel="noopener" download>OPEN FILE · ' + esc(humanFileLabel(a.name || "file")) + (a.size ? " · " + esc(fmtBytes(a.size)) : "") + "</a>";
+          }).join("");
+          return '<article class="bubble ' + (isRichard ? "richard" : "bill") + '"><div class="meta">' + esc(name) + " · " + esc(fmtWhen(m.ts)) + '</div><div class="bubble-body">' + esc(m.text || "Document shared") + "</div>" + (atts ? '<div class="atts">' + atts + "</div>" : "") + "</article>";
+        }).join("");
+        el.scrollTop = el.scrollHeight;
+      }
+      function renderFile(f) {
+        var href = absFileUrl(f.url); var name = f.name || "file"; var label = f.label || humanFileLabel(name); var who = f.uploaded_by || "Richard";
+        return '<div class="file-row"><div class="file-kind" aria-hidden="true">' + esc(fileKind(name, f.mime)) + '</div><div><strong>' + esc(label) + '</strong><div class="file-meta">' + esc(who) + " · " + esc(fmtWhen(f.ts)) + (f.size ? " · " + esc(fmtBytes(f.size)) : "") + '</div><div class="file-actions"><a href="' + esc(href) + '" target="_blank" rel="noopener">OPEN</a><a class="download" href="' + esc(href) + '" target="_blank" rel="noopener" download="' + esc(name) + '">DOWNLOAD</a></div></div></div>';
+      }
+      function renderFileGroup(title, files, emptyText) {
+        if (!files || !files.length) return '<section class="file-group"><h4>' + esc(title) + '</h4><div class="empty-state">' + esc(emptyText) + '</div></section>';
+        return '<section class="file-group"><h4>' + esc(title) + '</h4>' + files.map(renderFile).join("") + '</section>';
+      }
+      function renderCabinet(files) {
+        var el = byId("fileCabinet"); if (!el) return;
+        if (!files || !files.length) { el.innerHTML = '<div class="empty-state"><strong>No documents yet.</strong>Add a file here or attach one to a message.</div>'; return; }
+        var attention = files.filter(function (f) { return f && (f.needs_attention === true || f.attention === true); });
+        var recent = files.slice(0, Math.min(3, files.length));
+        el.innerHTML = renderFileGroup("Needs Your Attention", attention, "Nothing is marked for your attention right now.") + renderFileGroup("Recent Documents", recent, "Your recent shared documents will appear here.") + renderFileGroup("All Documents", files, "No documents yet.");
+      }
+      async function loadComms() {
+        var status = byId("chatStatus");
+        try {
+          var r = await fetch(COMMS + "?_=" + Date.now(), { cache: "no-store", mode: "cors" });
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          var d = await r.json();
+          lastCommsMessages = d.messages || [];
+          renderMessages(lastCommsMessages); renderCabinet(d.files || []); updateCommsPeek(lastCommsMessages); updateNotification(lastCommsMessages, lastAnalytics && lastAnalytics.alerts);
+          if (status) { status.textContent = "Live"; status.className = "status-label"; }
+        } catch (e) {
+          if (status) { status.textContent = "Offline"; status.className = "status-label coral"; }
+          var stream = byId("chatStream"); if (stream && !stream.dataset.error) { stream.dataset.error = "1"; stream.innerHTML = '<div class="empty-state"><strong>We could not reach the conversation just now.</strong>Check the connection and try again. Your existing messages are safe.</div>'; }
+          setText("communicationsNote", "The conversation is temporarily offline. Try again in a moment.");
+        }
+      }
+      function fileToBase64(file) {
+        return new Promise(function (resolve, reject) { var reader = new FileReader(); reader.onload = function () { var res = String(reader.result || ""); var i = res.indexOf(","); resolve(i >= 0 ? res.slice(i + 1) : res); }; reader.onerror = reject; reader.readAsDataURL(file); });
+      }
+      async function uploadFile(file) {
+        if (file.size > 650000) throw new Error(file.name + " is too large (max ~650KB for now). Share larger files via Drive/email.");
+        var b64 = await fileToBase64(file);
+        var r = await fetch(COMMS, { method: "POST", headers: { "Content-Type": "application/json" }, mode: "cors", body: JSON.stringify({ action: "upload", name: file.name, mime: file.type || "application/octet-stream", size: file.size, data_base64: b64, author: chatAuthor }) });
+        var d = await r.json(); if (!r.ok || !d.ok) throw new Error(d.error || "upload failed"); return d.file;
+      }
+      async function sendChat() {
+        var input = byId("chatInput"); var text = (input && input.value || "").trim(); if (!text && !pending.length) return;
+        var send = byId("chatSend"); if (send) { send.disabled = true; send.textContent = "SENDING…"; }
+        try {
+          var attachments = []; for (var i = 0; i < pending.length; i++) attachments.push(await uploadFile(pending[i]));
+          var r = await fetch(COMMS, { method: "POST", headers: { "Content-Type": "application/json" }, mode: "cors", body: JSON.stringify({ action: "send", author: chatAuthor, role: chatRole, text: text, attachments: attachments }) });
+          var d = await r.json(); if (!r.ok || !d.ok) throw new Error(d.error || "send failed");
+          if (input) input.value = ""; pending = []; setText("pendingFiles", ""); await loadComms();
+        } catch (e) { window.alert("Could not send: " + (e.message || e)); }
+        finally { if (send) { send.disabled = false; send.textContent = "SEND MESSAGE"; } }
+      }
+
+      function fcrOnly(data) {
+        var filterSite = function (rows) { return (rows || []).filter(function (x) { return !x.site || x.site === SITE; }); };
+        var o = Object.assign({}, data.overview || {});
+        var siteHit = (data.topSites || []).find(function (s) { return s.name === SITE || s.id === SITE; });
+        if (siteHit && siteHit.count != null) o.pageviews = siteHit.count;
+        return { overview: o, dailyTrend: data.dailyTrend || [], journeys: filterSite(data.journeys), live: filterSite(data.live), recent: filterSite(data.recent), live_count: filterSite(data.live).length, alerts: filterSite(data.alerts), period: data.period, topPages: filterSite(data.topPages) };
+      }
+      function drawTrafficChart(trend) {
+        var svg = byId("trafficChart"); if (!svg) return;
+        var values = (trend || []).map(function (t) { return Number(t.pageviews || 0); }); var max = Math.max.apply(null, values.concat([1])); var w = 900; var h = 240; var pad = 28;
+        function points() { return values.map(function (v, i) { var x = pad + i * (w - pad * 2) / Math.max(values.length - 1, 1); var y = h - pad - (v / max) * (h - pad * 2); return x + "," + y; }).join(" "); }
+        svg.innerHTML = '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#17233f" stroke-width="2" />' + '<polyline fill="none" stroke="#177e89" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="' + points() + '" />' + values.map(function (v, i) { var x = pad + i * (w - pad * 2) / Math.max(values.length - 1, 1); var y = h - pad - (v / max) * (h - pad * 2); return '<circle cx="' + x + '" cy="' + y + '" r="6" fill="#f47c6b" stroke="#17233f" stroke-width="2" />'; }).join("");
+      }
+      function renderActivity(d) {
+        var el = byId("activityList"); if (!el) return; var items = (d.live || []).concat(d.journeys || d.recent || []).slice(0, 8);
+        if (!items.length) { el.innerHTML = '<div class="empty-state"><strong>Build work is at the discovery starting line.</strong>The next major milestone is mapping the RECR agency foundation.</div>'; return; }
+        el.innerHTML = items.map(function (row) { var when = row.last_ts || row.ts; return '<div class="activity-item"><div class="dot"></div><div><strong>' + esc(row.path || row.land || "Website activity") + '</strong><div class="when">' + esc(when ? fmtWhen(when) : "Recently") + (row.refDomain ? " · via " + esc(row.refDomain) : "") + "</div></div></div>"; }).join("");
+      }
+      async function loadAnalytics() {
+        try {
+          var r = await fetch(API + "?period=" + encodeURIComponent(period) + "&_=" + Date.now(), { mode: "cors", cache: "no-store" }); if (!r.ok) throw new Error("API " + r.status);
+          var raw = await r.json(); var d = fcrOnly(raw); lastAnalytics = d; var o = d.overview || {}; var hasData = Number(o.pageviews || 0) > 0 || Number(o.sessions || 0) > 0 || Number(o.uniques || 0) > 0;
+          setText("waVisitors", fmtNumber(o.sessions)); setText("waInquiries", fmtNumber(o.convert)); setText("waTopPage", d.topPages && d.topPages[0] ? (d.topPages[0].path || d.topPages[0].title || "Website page") : "—"); setText("waTracking", "Ready"); setText("marketingLeads", fmtNumber(o.convert));
+          var empty = byId("analyticsEmpty"); var chart = byId("progressChartWrap"); if (empty) empty.hidden = hasData; if (chart) chart.hidden = !hasData;
+          setText("progressStatus", hasData ? "Website activity is live" : "Tracking is active"); setText("progressNote", hasData ? "Website activity is now being measured." : "Tracking is installed; visitor information will begin appearing after the new website launches.");
+          setText("websiteInterpretation", hasData ? "Traffic is now being measured. This view will explain the trend as more visits arrive." : "Tracking is active; the public campaign has not started.");
+          setText("marketingCampaign", hasData ? "Measuring" : "Planning"); setText("marketingInterpretation", hasData ? "Website activity is being measured; Richard will add campaign context as the public work begins." : "Search planning is part of the build; public campaigns begin after launch preparation.");
+          if (hasData) { drawTrafficChart(d.dailyTrend); setText("chartNote", "This line shows daily website visits for the selected period."); }
+          renderActivity(d); setText("livePresence", d.live_count ? String(d.live_count) + " visitor" + (d.live_count === 1 ? "" : "s") + " right now" : "No visitors right now"); updateNotification(lastCommsMessages, d.alerts);
+        } catch (e) {
+          lastAnalytics = { alerts: [] }; setText("progressNote", "The website tracking feed is temporarily offline. Try again later; nothing has been changed."); setText("progressStatus", "Tracking feed offline"); var empty = byId("analyticsEmpty"); if (empty) empty.hidden = false;
+        }
+      }
+
+      function renderTour() { var step = TOUR_STEPS[tourIndex]; setText("tourNumber", "Step " + (tourIndex + 1) + " of " + TOUR_STEPS.length); setText("tourStepTitle", step.title); setText("tourStepBody", step.body); setText("tourNext", tourIndex === TOUR_STEPS.length - 1 ? "DONE" : "NEXT"); }
+      function finishTour() { try { localStorage.setItem(TOUR_KEY, "1"); } catch (e) {} closeModal("tourModal"); showPanel("dashboard"); }
+      function startTour() { closeModal("helpModal"); tourIndex = 0; renderTour(); openModal("tourModal"); }
+      function handleHelp(action) {
+        var explanation = byId("helpExplanation");
+        if (action === "tour") return startTour();
+        if (action === "explain") { if (explanation) explanation.classList.toggle("open"); return; }
+        if (action === "question") { closeModal("helpModal"); showPanel("communications"); return; }
+        if (action === "home") { closeModal("helpModal"); showPanel("dashboard"); return; }
+        if (action === "settings") { closeModal("helpModal"); showPanel("settings"); }
+      }
+
+      document.querySelectorAll("[data-panel]").forEach(function (item) { item.addEventListener("click", function () { showPanel(item.getAttribute("data-panel")); }); });
+      byId("notificationButton").addEventListener("click", function () { showPanel("communications"); });
+      byId("helpButton").addEventListener("click", function () { openModal("helpModal"); });
+      document.querySelectorAll("[data-close-modal]").forEach(function (item) { item.addEventListener("click", function () { closeModal(item.getAttribute("data-close-modal")); }); });
+      document.querySelectorAll("[data-help-action]").forEach(function (item) { item.addEventListener("click", function () { handleHelp(item.getAttribute("data-help-action")); }); });
+      ["helpModal", "tourModal"].forEach(function (id) { byId(id).addEventListener("click", function (e) { if (e.target === byId(id)) closeModal(id); }); });
+      byId("tourNext").addEventListener("click", function () { if (tourIndex >= TOUR_STEPS.length - 1) finishTour(); else { tourIndex += 1; renderTour(); } });
+      byId("tourSkip").addEventListener("click", finishTour); byId("tourClose").addEventListener("click", finishTour);
+      byId("restartTour").addEventListener("click", startTour);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeModal("helpModal"); closeModal("tourModal"); } });
+
+      byId("composeWho").addEventListener("click", function (e) { var btn = e.target.closest("button[data-who]"); if (!btn) return; document.querySelectorAll("#composeWho button").forEach(function (b) { b.classList.remove("active"); }); btn.classList.add("active"); if (btn.getAttribute("data-who") === "richard") { chatAuthor = "Richard"; chatRole = "richard"; } else { chatAuthor = "FCR / Bill"; chatRole = "fcr"; } });
+      byId("chatSend").addEventListener("click", sendChat);
+      byId("chatInput").addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } });
+      byId("chatAttach").addEventListener("click", function () { byId("chatFile").click(); });
+      byId("chatFile").addEventListener("change", function () { var files = Array.prototype.slice.call(this.files || []); pending = pending.concat(files); setText("pendingFiles", pending.length ? "Ready to send: " + pending.map(function (f) { return f.name; }).join(", ") : ""); this.value = ""; });
+      byId("cabUpload").addEventListener("click", function () { byId("cabFile").click(); });
+      byId("cabFile").addEventListener("change", async function () { var files = Array.prototype.slice.call(this.files || []); this.value = ""; if (!files.length) return; var btn = byId("cabUpload"); if (btn) { btn.disabled = true; btn.textContent = "UPLOADING…"; } try { for (var i = 0; i < files.length; i++) await uploadFile(files[i]); await loadComms(); } catch (e) { window.alert("Upload failed: " + (e.message || e)); } finally { if (btn) { btn.disabled = false; btn.textContent = "ADD A FILE"; } } });
+
+      function bindSettings() {
+        var savedSize = "normal"; try { savedSize = localStorage.getItem("doodle-bug-text-size") || "normal"; } catch (e) {}
+        byId("textSize").value = savedSize; document.body.classList.toggle("text-large", savedSize === "large");
+        byId("textSize").addEventListener("change", function () { document.body.classList.toggle("text-large", this.value === "large"); try { localStorage.setItem("doodle-bug-text-size", this.value); } catch (e) {} });
+        byId("contrastToggle").addEventListener("change", function () { document.body.classList.toggle("high-contrast", this.checked); try { localStorage.setItem("doodle-bug-contrast", this.checked ? "1" : "0"); } catch (e) {} });
+        try { byId("contrastToggle").checked = localStorage.getItem("doodle-bug-contrast") === "1"; document.body.classList.toggle("high-contrast", byId("contrastToggle").checked); } catch (e) {}
+        byId("fullscreenButton").addEventListener("click", async function () { try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); } catch (e) { window.alert("Full screen is not available in this browser. You can use the browser’s own full-screen control."); } });
+        document.addEventListener("fullscreenchange", function () { setText("fullscreenButton", document.fullscreenElement ? "EXIT FULL SCREEN" : "FULL SCREEN"); });
+      }
+
+      updateDate(); bindSettings();
+      var initial = canonicalPanel((window.location.hash || "#dashboard").slice(1)); showPanel(initial, false);
+      loadAnalytics(); loadComms(); setInterval(loadAnalytics, 15000); setInterval(loadComms, 8000);
+
+      /* Stable compatibility hooks for the existing staged assistant and any old in-page links. */
+      window.fcrNexusOpenLiveChat = function () { showPanel("communications"); };
+      window.fcrNexusOpenProjectChat = function () { showPanel("communications"); };
+    })();
+  </script>
+</body>
+</html>
