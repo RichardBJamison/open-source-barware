@@ -4,15 +4,16 @@ import { Gear, GearDivider } from "@/components/SteampunkElements";
 import { pageMetadata, SITE_URL } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Free Bar Inventory Software — Bottle-Level Variance | Open Source Barware",
+  title: "Bar Inventory Software — Free, Local-First | Open Source Barware",
   description:
-    "Free bar inventory software with bottle-level variance—download tonight, no monthly fee. Open source, local-first, no subscription.",
+    "Bar inventory software that is free and local-first—download tonight, no monthly fee. Open source, no subscription, no account required to run.",
   path: "/free-bar-inventory-software",
   keywords: [
-    "free inventory system",
-    "best free bar inventory system",
+    "bar inventory software",
     "free bar inventory software",
     "bar inventory software free",
+    "free inventory system",
+    "best free bar inventory system",
     "free bar inventory system",
     "best bar inventory system",
     "open source bar inventory",
@@ -154,13 +155,14 @@ export default function FreeBarInventorySoftwarePage() {
             </span>
           </div>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.08] max-w-3xl mb-6">
-            <span className="copper-text">The free bar inventory program</span>{" "}
-            that beats what most places pay for.
+            <span className="copper-text">Bar inventory software</span>{" "}
+            that runs free on your laptop.
           </h1>
           <p className="text-text-muted text-lg max-w-2xl leading-relaxed mb-8">
-            Open Source Barware is bar inventory software you download once and
-            run on your own machines — bottle maps, pour cost, variance, and
-            weekly counts without a monthly invoice.
+            Bar inventory software without a cloud seat: download Open Source
+            Barware, count bottles, track variance and pour cost on your own
+            machine. No account required to run. Free stays free — not a
+            freemium tier.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
