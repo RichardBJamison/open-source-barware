@@ -9,6 +9,30 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "liquor-inventory-spreadsheet",
+    title: "The Liquor Inventory Spreadsheet Problem",
+    date: "2026-08-06",
+    excerpt: "Almost every bar starts with a spreadsheet, and for a while it is the right call. Where it breaks — tenths, date windows, version drift — and how to fix it.",
+    category: "Guide",
+    keywords: ["liquor inventory spreadsheet", "bar inventory spreadsheet", "liquor inventory excel template"],
+  },
+  {
+    slug: "wine-bar-software",
+    title: "Wine Bar Software Is a Different Problem",
+    date: "2026-08-06",
+    excerpt: "Wine breaks the assumptions spirits software is built on: bottles sell two ways, open bottles decay, vintages look identical. What a wine program actually needs.",
+    category: "Guide",
+    keywords: ["wine bar software", "wine inventory software", "free wine inventory software"],
+  },
+  {
+    slug: "free-liquor-inventory-app",
+    title: "Free Liquor Inventory App: What \u201cFree\u201d Usually Means",
+    date: "2026-08-06",
+    excerpt: "Trial, freemium ceiling, your-data-is-the-product, or genuinely free. Five questions to ask before you commit a season of counts.",
+    category: "Comparison",
+    keywords: ["free liquor inventory app", "liquor inventory app free", "free bar inventory app"],
+  },
+  {
     slug: "free-inventory-system-guide",
     title: "Free Inventory System for Bars: Setup in One Night",
     date: "2026-07-08",
