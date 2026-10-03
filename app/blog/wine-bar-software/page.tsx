@@ -71,7 +71,7 @@ export default function WineBarSoftware() {
 
           <h2>A free option worth trying</h2>
           <p>
-            Open Source Barware is a free, MIT-licensed inventory program, and its wine handling isn&rsquo;t behind a paywall because there isn&rsquo;t one:
+            Open Source Barware is a free, GPLv3-licensed inventory program, and its wine handling isn&rsquo;t behind a paywall because there isn&rsquo;t one:
           </p>
           <ul>
             <li><strong>Tenths counting throughout</strong>, so by-the-glass depletion is real rather than rounded.</li>

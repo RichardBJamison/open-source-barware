@@ -90,7 +90,7 @@ export default function LiquorInventorySpreadsheet() {
             <li><strong>It forces the date window</strong> — you can&rsquo;t calculate usage until the POS and invoice periods match. That single constraint eliminates most bad variance numbers.</li>
             <li><strong>Permanent history</strong> — every count is kept, so trends are visible instead of overwritten.</li>
             <li><strong>Your data stays yours</strong> — readable files on your own machine, exportable to CSV. No login, no subscription, nothing held hostage.</li>
-            <li><strong>Genuinely free</strong> — MIT licensed, no paid tier hiding the variance report you actually need.</li>
+            <li><strong>Genuinely free</strong> — GPLv3 licensed, no paid tier hiding the variance report you actually need.</li>
           </ul>
           <p>
             And if you want to keep your spreadsheet alongside it, that&rsquo;s fine. Exports are plain CSV.

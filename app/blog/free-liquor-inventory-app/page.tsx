@@ -62,7 +62,7 @@ export default function FreeLiquorInventoryApp() {
 
           <h2>Why we built ours the way we did</h2>
           <p>
-            Open Source Barware is free in the fourth sense. It is MIT licensed, which means the permission is legally granted rather than offered — nobody can revoke it later, including us.
+            Open Source Barware is free in the fourth sense. It is licensed under the GPL (v3), which means the permission is legally granted rather than offered — nobody can revoke it later, including us. The GPL goes further than a permissive licence: anyone who redistributes a modified version has to keep it open too, so it cannot quietly become somebody&rsquo;s paid product.
           </p>
           <ul>
             <li><strong>No tiers.</strong> The version you download is the entire program. Variance, POS reconciliation, count sheets, history — all of it.</li>
