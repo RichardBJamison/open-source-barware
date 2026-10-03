@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { blogPosts } from "@/lib/blog";
 
 export const dynamic = "force-static";
 
@@ -107,35 +108,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.7,
     },
-    {
-      url: `${baseUrl}/blog/free-inventory-system-guide`,
-      lastModified: blogGuide,
-      changeFrequency: "monthly",
+    // Blog posts are generated from lib/blog.ts — the same registry the blog
+    // index renders from. These used to be hardcoded here, which meant a new
+    // post was invisible to Google until someone remembered to hand-edit this
+    // file. Three posts shipped in August were missing for ~2 months for
+    // exactly that reason. One registry, one source of truth.
+    ...blogPosts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(`${post.date}T00:00:00.000Z`),
+      changeFrequency: "monthly" as const,
       priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/blog/best-free-bar-inventory-system`,
-      lastModified: blogGuide,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/blog/variance-tracking-that-works`,
-      lastModified: blogGuide,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/blog/pos-integration-free-inventory`,
-      lastModified: blogGuide,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/blog/when-inventory-meets-the-front-of-house`,
-      lastModified: blogFoh,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
+    })),
   ];
 }
