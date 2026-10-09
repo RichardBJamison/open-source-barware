@@ -151,7 +151,10 @@ foreach ($rel in $copyList) {
 foreach ($rel in $staticFiles) {
     $src = Join-Path $SourceDir $rel
     if (Test-Path $src) {
-        Copy-Item -Path $src -Destination (Join-Path $InstallDir $rel) -Force
+        $dest = Join-Path $InstallDir $rel
+        $destDir = Split-Path $dest -Parent
+        New-Item -ItemType Directory -Force -Path $destDir | Out-Null
+        Copy-Item -Path $src -Destination $dest -Force
     }
 }
 # Bottle weight seed for optional weight mode (do not overwrite customer edits)
