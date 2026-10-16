@@ -4,7 +4,7 @@ function MartiniGlass({ size = "md" }: { size?: "md" | "sm" }) {
   const w = size === "sm" ? 48 : 58;
   const h = size === "sm" ? 56 : 68;
   return (
-    <svg width={w} height={h} viewBox="0 0 52 62" fill="none" aria-hidden="true">
+    <svg className="brand-glass" width={w} height={h} viewBox="0 0 52 62" fill="none" aria-hidden="true">
       <path
         d="M4 6 L48 6 L26 38 Z"
         stroke={LOGO_COPPER}
@@ -27,11 +27,11 @@ export default function BrandLogo({ size = "md" }: { size?: "md" | "sm" }) {
   const tagSize = size === "sm" ? "0.62rem" : "0.7rem";
 
   return (
-    <div className="flex items-center gap-3.5 py-1.5 px-2">
+    <div className="brand-logo flex items-center gap-3.5 py-1.5 px-2">
       <MartiniGlass size={size} />
       <div className="flex flex-col gap-1">
         <div
-          className="flex items-center gap-1.5"
+          className="brand-title flex items-center gap-1.5"
           style={{
             fontFamily: "var(--font-inter)",
             fontWeight: 700,
@@ -45,6 +45,7 @@ export default function BrandLogo({ size = "md" }: { size?: "md" | "sm" }) {
           <span>BARWARE</span>
         </div>
         <span
+          className="brand-tag"
           style={{
             fontFamily: "var(--font-inter)",
             fontSize: tagSize,

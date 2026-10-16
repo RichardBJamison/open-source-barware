@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
 import SignMarqueeLights from "@/components/SignMarqueeLights";
 
@@ -13,15 +13,25 @@ export default function Header() {
 
   const logo = <BrandLogo />;
 
+  // Phones: freeze the page behind the open menu so it scrolls the menu, not the page.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [menuOpen]);
+
   return (
-    <header className="bg-bg border-b border-gear-border">
+    <header className="site-header bg-bg border-b border-gear-border">
       <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="group opacity-100 hover:opacity-90 transition-opacity">
+        <Link href="/" className="site-header-brand group opacity-100 hover:opacity-90 transition-opacity">
           {isDojo ? <SignMarqueeLights>{logo}</SignMarqueeLights> : logo}
         </Link>
 
         {/* Desktop */}
-        <div className="hidden md:flex items-center gap-8 text-sm">
+        <div className="site-header-links hidden md:flex items-center gap-8 text-sm">
           <Link href="/" className="text-text-muted hover:text-copper transition-colors tracking-wide">Home</Link>
           <Link href="/the-process" className="text-text-muted hover:text-copper transition-colors tracking-wide">The Process</Link>
           <Link href="/about" className="text-text-muted hover:text-copper transition-colors tracking-wide">About</Link>
@@ -42,9 +52,10 @@ export default function Header() {
 
         {/* Mobile */}
         <button
-          className="md:hidden text-copper"
+          className="site-header-toggle md:hidden text-copper"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
+          aria-expanded={menuOpen}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             {menuOpen ? <path d="M18 6L6 18M6 6l12 12" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
@@ -53,7 +64,7 @@ export default function Header() {
       </nav>
 
       {menuOpen && (
-        <div className="md:hidden border-t border-gear-border px-6 py-6 bg-bg-warm flex flex-col gap-4 text-sm">
+        <div className="site-header-menu md:hidden border-t border-gear-border px-6 py-6 bg-bg-warm flex flex-col gap-4 text-sm">
           <Link href="/" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">Home</Link>
           <Link href="/the-process" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">The Process</Link>
           <Link href="/about" onClick={() => setMenuOpen(false)} className="text-text-muted hover:text-copper transition-colors py-1">About</Link>

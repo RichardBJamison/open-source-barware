@@ -4,7 +4,7 @@ import { Gear } from "./SteampunkElements";
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-gear-border mt-auto overflow-hidden">
+    <footer className="site-footer relative border-t border-gear-border mt-auto overflow-hidden">
       {/* Decorative gears */}
       <div className="absolute -right-10 -bottom-10 text-copper">
         <Gear size={120} className="gear-spin-slow opacity-30" />
@@ -35,7 +35,7 @@ export default function Footer() {
             <span className="text-[10px] text-text-light tracking-[0.3em] uppercase block mb-4">
               Navigate
             </span>
-            <div className="flex flex-col gap-3">
+            <div className="footer-links flex flex-col gap-3">
               <Link href="/" className="text-sm text-text-muted hover:text-copper transition-colors">Home</Link>
               <Link href="/the-process" className="text-sm text-text-muted hover:text-copper transition-colors">The Process</Link>
               <Link href="/about" className="text-sm text-text-muted hover:text-copper transition-colors">About</Link>
@@ -55,7 +55,7 @@ export default function Footer() {
             <span className="text-[10px] text-text-light tracking-[0.3em] uppercase block mb-4">
               Free Inventory
             </span>
-            <div className="flex flex-col gap-3 mb-8">
+            <div className="footer-links flex flex-col gap-3 mb-8">
               <Link href="/free-bar-inventory-software" className="text-sm text-text-muted hover:text-copper transition-colors">Bar Inventory Software</Link>
               <Link href="/liquor-inventory" className="text-sm text-text-muted hover:text-copper transition-colors">Liquor Inventory</Link>
               <Link href="/wine-inventory" className="text-sm text-text-muted hover:text-copper transition-colors">Wine Inventory</Link>

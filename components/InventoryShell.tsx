@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import DojoWelcomeModal from "@/components/DojoWelcomeModal";
 import SidebarNavIcon from "@/components/dojo/SidebarNavIcon";
 import { CocktailIcon } from "@/components/SteampunkElements";
@@ -86,6 +86,34 @@ export default function InventoryShell({
   const hydrated = useHydrated();
   const needsWelcome = useNeedsWelcome();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [laptopNoteDismissed, setLaptopNoteDismissed] = useState(true);
+
+  // Phones only: one-time "best on a laptop" note; remembered once dismissed.
+  useEffect(() => {
+    let seen = false;
+    try {
+      seen = localStorage.getItem("osb-demo-laptop-note") === "dismissed";
+    } catch {}
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLaptopNoteDismissed(seen || !window.matchMedia("(max-width: 767px)").matches);
+  }, []);
+
+  const dismissLaptopNote = () => {
+    setLaptopNoteDismissed(true);
+    try {
+      localStorage.setItem("osb-demo-laptop-note", "dismissed");
+    } catch {}
+  };
+
+  // Phones/tablets: freeze the page while the sidebar drawer is open.
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [sidebarOpen]);
 
   const bar = hydrated ? getBar() : null;
   const settings = hydrated ? getInventorySettings() : null;
@@ -211,6 +239,18 @@ export default function InventoryShell({
             <span className="admin-mobile-title">Salle d&apos;Armes — Live Demo</span>
             <span className="salle-sandbox-pill">Sandbox</span>
           </div>
+
+          {!laptopNoteDismissed && (
+            <div className="demo-laptop-note" role="note">
+              <span>
+                <strong>Best on a laptop.</strong> The real program runs in Chrome on your laptop —
+                this demo works here so you can look around.
+              </span>
+              <button type="button" onClick={dismissLaptopNote} aria-label="Dismiss note">
+                Got it
+              </button>
+            </div>
+          )}
 
           <div className="admin-main-inner flex-1">{children}</div>
         </div>

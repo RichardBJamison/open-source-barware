@@ -64,10 +64,10 @@ export default function Home() {
   return (
     <>
       {/* ── HERO ── */}
-      <section className="relative min-h-[50vh] flex items-center overflow-hidden grain">
+      <section className="home-hero relative min-h-[50vh] flex items-center overflow-hidden grain">
         {/* Hero video */}
         <HeroVideo />
-        <div className="absolute inset-0 bg-gradient-to-r from-bg/90 via-bg/60 to-bg/30" />
+        <div className="home-hero-shade absolute inset-0 bg-gradient-to-r from-bg/90 via-bg/60 to-bg/30" />
         <div className="absolute right-[-80px] top-[-40px] text-copper">
           <Gear size={300} className="gear-spin opacity-40" />
         </div>
@@ -144,7 +144,7 @@ export default function Home() {
       </section>
 
       {/* ── THE PROBLEM ── */}
-      <section className="bg-black px-6 py-14 md:py-20">
+      <section className="bg-black px-6 py-14 md:py-20 max-lg:overflow-x-clip">
         <div className="mx-auto max-w-2xl text-center">
           <div className="flex flex-col items-center">
             <p className="mb-5 text-[10px] uppercase tracking-[0.32em] text-text-light/80">
@@ -196,7 +196,7 @@ export default function Home() {
         </div>
         <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-4 max-w-2xl">
           <span className="copper-text">Precision instruments</span>
-          <span className="whitespace-nowrap"> for the craft.</span>
+          <span className="whitespace-nowrap max-sm:whitespace-normal"> for the craft.</span>
         </h2>
         <p className="text-text-muted mb-12 max-w-lg">
           We provide one simple system. Here you will find the free program

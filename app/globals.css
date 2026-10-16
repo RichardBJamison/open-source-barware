@@ -2144,3 +2144,293 @@ body { background: var(--bg); color: var(--text); }
     transform: rotateX(180deg) !important;
   }
 }
+
+/* ── Mobile pass 2026-10-14 (phones ≤767px; tablet only where noted).
+   Desktop (≥1024px) is untouched: every rule below sits inside a max-width query. ── */
+
+/* Tablet 768–1023: desktop nav row was 836px wide at 768 — tighten it to fit. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .site-header nav {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .site-header-links {
+    gap: 1rem;
+    font-size: 0.8rem;
+  }
+
+  .site-header-links a:last-child {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
+
+  .site-header .brand-tag {
+    display: none;
+  }
+
+  .site-header .brand-glass {
+    width: 44px;
+    height: 52px;
+  }
+
+  .site-header .brand-title {
+    font-size: 0.95rem !important;
+    letter-spacing: 0.06em !important;
+    white-space: nowrap;
+  }
+
+  .site-header-links a {
+    white-space: nowrap;
+  }
+
+  /* The logo already links home; drop the duplicate so the row fits. */
+  .site-header-links a:first-child {
+    display: none;
+  }
+}
+
+/* Demo sidebar: the base rule's position: relative beat Tailwind's `fixed`, so on
+   anything narrower than lg the hidden drawer still took 268px of the row. */
+@media (max-width: 1023px) {
+  .inventory-app .admin-sidebar {
+    position: fixed;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Header */
+  .site-header nav {
+    padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .site-header-brand {
+    min-width: 0;
+  }
+
+  .site-header .brand-logo {
+    gap: 0.6rem;
+  }
+
+  .site-header .brand-glass {
+    width: 40px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+
+  .site-header .brand-title {
+    font-size: 1rem !important;
+    letter-spacing: 0.08em !important;
+    white-space: nowrap;
+  }
+
+  .site-header .brand-tag {
+    font-size: 0.7rem !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .site-header-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+  }
+
+  .site-header-menu {
+    max-height: calc(100vh - 66px);
+    overflow-y: auto;
+    gap: 0.25rem;
+    padding-top: 0.75rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .site-header-menu a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .site-header-menu a:last-child {
+    justify-content: center;
+    margin-top: 0.75rem;
+  }
+
+  /* Home hero: text spans the full width on phones, so darken evenly for contrast. */
+  .home-hero-shade {
+    background: linear-gradient(180deg, rgba(13, 11, 9, 0.72) 0%, rgba(13, 11, 9, 0.82) 55%, rgba(13, 11, 9, 0.9) 100%);
+  }
+
+  .home-hero p {
+    color: var(--text);
+  }
+
+  /* No phone text under 11px; body copy at 15px. */
+  .text-\[9px\],
+  .text-\[10px\] {
+    font-size: 11px;
+  }
+
+  main p.text-sm:not(.inventory-app *),
+  main li.text-sm:not(.inventory-app *) {
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  /* Footer: two-column link lists with 44px rows. */
+  .site-footer .footer-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1rem;
+  }
+
+  .site-footer .footer-links a,
+  .site-footer a.text-xs {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .site-footer .text-\[11px\] {
+    font-size: 12px;
+  }
+
+  .site-footer .brand-tag {
+    font-size: 0.7rem !important;
+  }
+
+  .inventory-app .sidebar-bar-label,
+  .inventory-app .sidebar-foot-tag,
+  .inventory-app .view-eyebrow {
+    font-size: 11px;
+  }
+
+  /* ── Live demo ── */
+  .inventory-app .admin-main-inner {
+    padding: 16px 14px 32px;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .inventory-app .admin-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: -8px 0 -8px -10px;
+  }
+
+  .inventory-app .admin-mobile-bar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding: 8px 14px;
+  }
+
+  .inventory-app .admin-mobile-title {
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .inventory-app .salle-sandbox-pill {
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .inventory-app .sidebar-link {
+    min-height: 48px;
+  }
+
+  /* Whole drawer scrolls, so every section link is reachable. */
+  .inventory-app .sidebar-nav {
+    flex: none;
+    overflow: visible;
+  }
+
+  .inventory-app .admin-sidebar {
+    padding: 20px 16px 28px;
+  }
+
+  .inventory-app .sidebar-add-bar,
+  .inventory-app .sidebar-exit-link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Wide tables scroll inside their own box instead of the page. */
+  .inventory-app table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 16px fields so iOS does not zoom on focus. */
+  .inventory-app input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  .inventory-app select,
+  .inventory-app textarea {
+    font-size: 16px;
+  }
+
+  /* Checkboxes: keep the small box, give it a 44px hit area via its label row. */
+  .inventory-app label:has(> input[type="checkbox"]),
+  .inventory-app label:has(> input[type="radio"]) {
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .inventory-app input[type="checkbox"],
+  .inventory-app input[type="radio"] {
+    width: 20px;
+    height: 20px;
+  }
+
+  .inventory-app .salle-sign-popup-dismiss {
+    min-height: 44px;
+    font-size: 0.8rem;
+  }
+
+  .demo-laptop-note {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 14px 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(168, 120, 79, 0.35);
+    background: rgba(28, 24, 21, 0.9);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+  .demo-laptop-note strong {
+    color: var(--copper-bright);
+    font-weight: 600;
+  }
+
+  .demo-laptop-note button {
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid rgba(168, 120, 79, 0.5);
+    background: none;
+    color: var(--copper-bright);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+}
+
+@media (min-width: 768px) {
+  .demo-laptop-note {
+    display: none;
+  }
+}

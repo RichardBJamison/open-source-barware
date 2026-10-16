@@ -219,12 +219,340 @@ export default function AboutMockupPage() {
           text-decoration: underline;
           text-underline-offset: 3px;
         }
+
+        /* ── Phones: live-text version of the two art plates ── */
+        .osb-about-phone {
+          display: none;
+        }
+
+        @media (max-width: 767px) {
+          body:has(.osb-about-mockup) > header,
+          body:has(.osb-about-mockup) > footer {
+            display: block;
+          }
+
+          .osb-about-mockup {
+            min-height: 0;
+          }
+
+          .osb-about-page > .osb-plate {
+            display: none;
+          }
+
+          .osb-about-phone {
+            display: block;
+            color: #e8dfd4;
+          }
+
+          .osb-about-phone img {
+            display: block;
+            width: 100%;
+            height: auto;
+          }
+
+          .osb-ap-hero {
+            position: relative;
+            border-bottom: 1px solid rgba(168, 120, 79, 0.25);
+          }
+
+          .osb-ap-hero img {
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+            object-position: 50% 40%;
+          }
+
+          .osb-ap-hero-copy {
+            padding: 1.75rem 1.25rem 2rem;
+            background: linear-gradient(180deg, #0b0a08 0%, #090807 100%);
+          }
+
+          .osb-ap-eyebrow {
+            font-family: var(--font-inter), system-ui, sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: #b88958;
+            margin: 0 0 0.75rem;
+          }
+
+          .osb-ap-hero h1 {
+            font-family: var(--font-playfair), Georgia, serif;
+            font-size: 2.35rem;
+            line-height: 1.08;
+            color: #d9a86c;
+            margin: 0 0 0.5rem;
+          }
+
+          .osb-ap-hero h1 span {
+            display: block;
+            font-size: 1.35rem;
+            line-height: 1.3;
+            color: #e8dfd4;
+            margin-top: 0.4rem;
+          }
+
+          .osb-ap-free {
+            font-family: var(--font-playfair), Georgia, serif;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: #5e9e8f;
+            margin: 0.75rem 0 0;
+          }
+
+          .osb-ap-section {
+            padding: 2.25rem 1.25rem;
+            border-bottom: 1px solid rgba(168, 120, 79, 0.18);
+          }
+
+          .osb-ap-section h2 {
+            font-family: var(--font-playfair), Georgia, serif;
+            font-size: 1.75rem;
+            line-height: 1.15;
+            color: #b88958;
+            margin: 0 0 1rem;
+          }
+
+          .osb-ap-section p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #c8b9a4;
+            margin: 0 0 1rem;
+          }
+
+          .osb-ap-section .osb-ap-photo {
+            margin: 0 0 1.25rem;
+            border: 1px solid rgba(168, 120, 79, 0.35);
+          }
+
+          .osb-ap-callout {
+            margin: 1.25rem 0 0;
+            padding: 1rem 1.1rem;
+            border: 1px solid rgba(168, 120, 79, 0.4);
+            background: rgba(28, 24, 21, 0.85);
+            font-family: var(--font-playfair), Georgia, serif;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #e8dfd4;
+          }
+
+          .osb-ap-callout strong {
+            color: #d9a86c;
+            font-weight: 400;
+          }
+
+          .osb-ap-credits {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 0.75rem;
+          }
+
+          .osb-ap-credits li {
+            padding: 0.85rem 1rem;
+            border: 1px solid rgba(168, 120, 79, 0.3);
+            font-family: var(--font-playfair), Georgia, serif;
+            font-size: 1.15rem;
+            color: #e8dfd4;
+          }
+
+          .osb-ap-credits small {
+            display: block;
+            margin-top: 0.2rem;
+            font-family: var(--font-inter), system-ui, sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #a89b8c;
+          }
+
+          .osb-ap-timeline {
+            list-style: none;
+            margin: 1.5rem 0 0;
+            padding: 0 0 0 1.1rem;
+            border-left: 1px solid rgba(168, 120, 79, 0.5);
+          }
+
+          .osb-ap-timeline li {
+            margin: 0 0 1.25rem;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #c8b9a4;
+          }
+
+          .osb-ap-timeline b {
+            display: block;
+            font-family: var(--font-inter), system-ui, sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #5e9e8f;
+            margin-bottom: 0.2rem;
+          }
+
+          .osb-ap-tours h2 span {
+            display: block;
+            color: #e86a5a;
+          }
+
+          .osb-ap-investors {
+            font-family: var(--font-playfair), Georgia, serif;
+            font-size: 1.3rem !important;
+            line-height: 1.35 !important;
+            color: #5e9e8f !important;
+          }
+
+          .osb-ap-drink {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 52px;
+            margin: 0.5rem 0 1rem;
+            border: 1px solid #e0a25a;
+            background: linear-gradient(135deg, #6f4b32, #b88958);
+            color: #0d0b09;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-decoration: none;
+          }
+
+          .osb-ap-small {
+            font-size: 0.85rem !important;
+            color: #a89b8c !important;
+          }
+
+          .osb-about-story {
+            padding: 2.5rem 1.25rem 3.5rem;
+          }
+        }
       `}</style>
 
       <main className="osb-about-page">
+        <div className="osb-about-phone">
+          <section className="osb-ap-hero" aria-labelledby="osb-ap-title">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/osb-about-phone-hero.webp" alt="Copper jigger, crystal glass and shaker on a steampunk back bar" width={482} height={450} />
+            <div className="osb-ap-hero-copy">
+              <p className="osb-ap-eyebrow">About</p>
+              <h1 id="osb-ap-title">
+                A real bar problem,
+                <span>built with the people living it.</span>
+              </h1>
+              <p className="osb-ap-free">Now it&rsquo;s free to the world.</p>
+            </div>
+          </section>
+
+          <section className="osb-ap-section" aria-labelledby="osb-ap-started">
+            <p className="osb-ap-eyebrow" id="osb-ap-started">How it started</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="osb-ap-photo" src="/images/osb-about-phone-started.webp" alt="" width={330} height={402} loading="lazy" />
+            <p>
+              If you&rsquo;ve been in charge of a bar, you know the last day of the month does not
+              just show up. It looms. Either you push inventory to the last possible minute and drag
+              yourself in early for a couple-hour count, no matter what day of the week it lands on,
+              or the system is so oversized and half-broken that a simple count turns into a two-day
+              project before anyone trusts the numbers.
+            </p>
+            <p>
+              Worse, sometimes the person asking for perfect numbers has never had to walk the room
+              themselves. They want every answer, but there is no workable process underneath the
+              demand, so the count never really gets done right. Open Source Barware is meant to
+              cure those ills: make setup clear, make the count repeatable, connect invoices and POS
+              to the same window, and give the team a home base that turns inventory from dread into
+              a rhythm.
+            </p>
+            <p className="osb-ap-callout">
+              Then AI showed up. And suddenly, building genuinely good inventory program costs{" "}
+              <strong>nothing</strong>. So we built it. And we&rsquo;re giving it away.
+            </p>
+          </section>
+
+          <section className="osb-ap-section" aria-labelledby="osb-ap-room">
+            <p className="osb-ap-eyebrow">A small credit</p>
+            <h2 id="osb-ap-room">Built with the room.</h2>
+            <p>
+              A quiet thank-you to the people who put real counts, real pressure, and real restaurant
+              feedback into the system.
+            </p>
+            <ul className="osb-ap-credits">
+              <li>Richard Jamison<small>Co-founder</small></li>
+              <li>Bill McLaughlin<small>Co-founder</small></li>
+              <li>Hirado Junior &ldquo;Nito&rdquo;<small>Lead engineer</small></li>
+            </ul>
+          </section>
+
+          <section className="osb-ap-section" aria-labelledby="osb-ap-music">
+            <p className="osb-ap-eyebrow">The long way here</p>
+            <h2 id="osb-ap-music">It started with music.</h2>
+            <p>
+              Years ago, I renovated and operated a 20,000-square-foot music venue, and at the time
+              it was truly all for the love of the music. I was a musician, and that was all I
+              thought I wanted to do with my life. But along the way, I was lucky enough to work with
+              some of the most amazing bartenders, managers, artists, and hospitality people I could
+              have ever imagined. They taught me more than I realized at the time, and they made me
+              fall in love with hospitality in a way I never expected.
+            </p>
+            <p>
+              I&rsquo;ve been lucky enough to do this all over the country, with incredible people,
+              in beautiful places, sharing laughs, stories, music, drinks, and memories.
+            </p>
+            <ul className="osb-ap-timeline">
+              <li><b>2010</b>Sold the music venue after years of running it for the love of the craft.</li>
+              <li>
+                <b>2013 – 2020 · Miami</b>Bartended at News Café on Ocean Drive, the Shore Club during
+                the legendary Sunday pool party years, and three years at The Standard on South Beach —
+                until the pandemic hit.
+              </li>
+              <li>
+                <b>Post-2020 · The seasonal circuit</b>The Hamptons, Lake Tahoe, Martha&rsquo;s
+                Vineyard, Austin, Vail, and Aspen — including Harbor View Hotel and The Wharf on
+                Martha&rsquo;s Vineyard, The Ritz-Carlton Bachelor Gulch in Vail, and the Molly Hotel
+                in Aspen with the Death &amp; Co / Gin &amp; Luck team.
+              </li>
+            </ul>
+            <p className="osb-ap-small">
+              Honestly — I should write a book on opening your bar post-apocalypse.
+            </p>
+            <p className="osb-ap-callout">
+              This project is my way of <strong>giving back.</strong>{" "}A thank-you to every bartender,
+              manager, musician, guest, cook, server, barback, door guy, dishwasher, and friend who
+              helped shape my life and gave me knowledge, joy, and love along the way. Everything
+              I&rsquo;ve learned, I want to share.
+            </p>
+          </section>
+
+          <section className="osb-ap-section osb-ap-tours" aria-labelledby="osb-ap-nights">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="osb-ap-photo" src="/images/osb-about-phone-tours.webp" alt="World's Hidden Bar Tours — Miami. The best bars aren't on maps. They're on memory." width={500} height={540} loading="lazy" />
+            <h2 id="osb-ap-nights">
+              This took a lot of nights, a lot of coffee,
+              <span>and a lot of love.</span>
+            </h2>
+            <p>
+              Open Source Barware is built for bar people, by a bar person who&rsquo;s been where you
+              are — wearing all the hats, doing the counts, and trying to build something that
+              actually helps.
+            </p>
+            <p className="osb-ap-investors">We don&rsquo;t have investors. We have you.</p>
+            <p>
+              If this tool saves you time, money, or just a little bit of your sanity, please consider
+              buying us a drink. Every donation keeps this project alive, open, and free for everyone.
+            </p>
+            <a className="osb-ap-drink" href="https://ko-fi.com/W2J022HCH2" target="_blank" rel="noopener noreferrer">
+              Buy us a drink
+            </a>
+            <p className="osb-ap-small">
+              Every dollar helps keep the lights (and the servers) on. Thank you for keeping it open.
+              As an extra thank you: when you share with the developers, we&rsquo;ll be sure to email
+              you when we come to your city to invite you on our hidden bar search rally festival.
+            </p>
+          </section>
+        </div>
+
         <section className="osb-plate" id="top" aria-label="Open Source Barware top page section">
           <Image
-            src="/images/osb-about-top-approved.png"
+            src="/images/osb-about-top-approved.webp"
             alt="Open Source Barware about page with steampunk barware hero, how it started panel, and credit section"
             width={1122}
             height={1402}
@@ -261,7 +589,7 @@ export default function AboutMockupPage() {
           aria-label="Open Source Barware story and support section"
         >
           <Image
-            src="/images/osb-about-middle-bottom-approved.png"
+            src="/images/osb-about-middle-bottom-approved.webp"
             alt="Open Source Barware story section with timeline, Miami hidden bar tours panel, and buy us a drink support panel"
             width={1024}
             height={1106}
