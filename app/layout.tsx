@@ -140,6 +140,13 @@ export default function RootLayout({
         <Script src="/osb-analytics.js" strategy="afterInteractive" />
         <Script src="/osb-ambient-cursor.js" strategy="afterInteractive" />
         {/* Bing Webmaster Tools verification */}
+        {/* ?embed=1 (or framed): hide marketing chrome for Nexus OSBW tab */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var q=new URLSearchParams(location.search);if(q.get('embed')==='1'){sessionStorage.setItem('osb-embed','1')}if(sessionStorage.getItem('osb-embed')==='1'&&window.self!==window.top){document.documentElement.setAttribute('data-embed','1')}}catch(e){}`,
+          }}
+        />
+        <style>{`html[data-embed="1"] body>header,html[data-embed="1"] body>footer{display:none!important}`}</style>
         <meta name="msvalidate.01" content="0F0DF97AF304FF08B8E12E092B2CEEAF" />
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased">

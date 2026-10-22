@@ -9,3 +9,12 @@
 
 /blog/*
   Cache-Control: public, max-age=86400
+
+# Allow the Reservation Relief Nexus demos to frame the OSBW sandbox.
+/inventory/*
+  ! X-Frame-Options
+  Content-Security-Policy: frame-ancestors 'self' https://reservationrelief.com https://*.reservationrelief.com
+
+/inventory
+  ! X-Frame-Options
+  Content-Security-Policy: frame-ancestors 'self' https://reservationrelief.com https://*.reservationrelief.com
