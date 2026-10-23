@@ -413,7 +413,7 @@ export default function AboutMockupPage() {
               to your group — not the off-the-shelf version — I would love to talk. I am a joy to
               work with, I love getting into the marketing side of it, and I take the build as
               seriously as the bar count.{" "}
-              <a href="mailto:me@richardbjamison.com">Reach out</a> and we will figure out what
+              <a href="mailto:RJamison@reservationrelief.com">Reach out</a> and we will figure out what
               your operation actually needs.
             </p>
             <p>

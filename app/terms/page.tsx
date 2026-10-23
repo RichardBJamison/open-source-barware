@@ -50,7 +50,7 @@ export default function TermsPage() {
         </div>
         <div className="mb-10">
           <h2 className="mb-3 font-serif text-2xl text-cream">Contact</h2>
-          <p className="mb-3 text-base leading-relaxed text-text-muted">Questions about these terms: me@richardbjamison.com.</p>
+          <p className="mb-3 text-base leading-relaxed text-text-muted">Questions about these terms: RJamison@reservationrelief.com.</p>
         </div>
       </section>
     </>

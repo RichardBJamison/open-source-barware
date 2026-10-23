@@ -16,7 +16,7 @@ const GITHUB =
   "https://github.com/RichardBJamison/open-source-barware";
 const GITHUB_DISCUSSIONS =
   "https://github.com/RichardBJamison/open-source-barware/discussions";
-const FEEDBACK_EMAIL = "me@richardbjamison.com";
+const FEEDBACK_EMAIL = "RJamison@reservationrelief.com";
 
 const downloadCardClass =
   "border border-gear-border bg-bg/50 p-6 text-left transition-colors hover:border-copper/50 hover:bg-bg-warm/80 block no-underline";

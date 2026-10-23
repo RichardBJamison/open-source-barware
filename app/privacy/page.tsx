@@ -35,7 +35,7 @@ export default function PrivacyPage() {
         <div className="mb-10">
           <h2 className="mb-3 font-serif text-2xl text-cream">Release-list sign-ups</h2>
           <p className="mb-3 text-base leading-relaxed text-text-muted">If you join the release list, we store the email address you submit, and any details you include, so we can send release and update notices. Notices are sent through our email delivery provider.</p>
-          <p className="mb-3 text-base leading-relaxed text-text-muted">To be removed from the list, email me@richardbjamison.com and we will delete your address.</p>
+          <p className="mb-3 text-base leading-relaxed text-text-muted">To be removed from the list, email RJamison@reservationrelief.com and we will delete your address.</p>
         </div>
         <div className="mb-10">
           <h2 className="mb-3 font-serif text-2xl text-cream">Analytics and visit counts</h2>
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
         <div className="mb-10">
           <h2 className="mb-3 font-serif text-2xl text-cream">Your choices</h2>
           <p className="mb-3 text-base leading-relaxed text-text-muted">You can block cookies or analytics scripts in your browser and still use the site and the download.</p>
-          <p className="mb-3 text-base leading-relaxed text-text-muted">Questions or deletion requests: me@richardbjamison.com.</p>
+          <p className="mb-3 text-base leading-relaxed text-text-muted">Questions or deletion requests: RJamison@reservationrelief.com.</p>
         </div>
         <div className="mb-10">
           <h2 className="mb-3 font-serif text-2xl text-cream">Changes</h2>
