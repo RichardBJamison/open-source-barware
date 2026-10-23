@@ -338,7 +338,7 @@ export default function Home() {
               Download Program
             </Link>
             <Link
-              href="/download"
+              href="/resources"
               className="inline-block border border-gear-border text-text-muted hover:text-copper hover:border-copper/50 px-10 py-4 text-sm tracking-wide transition-all"
             >
               Explore Community Resources
