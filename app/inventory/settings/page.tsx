@@ -46,6 +46,45 @@ function apiBadgeLabel(status: InventorySettings["apiConnectionStatus"]) {
   return "Not started";
 }
 
+function FeatureToggle({
+  label,
+  hint,
+  flag,
+  badge,
+  settings,
+  onToggle,
+}: {
+  label: string;
+  hint: string;
+  flag: keyof InventorySettings;
+  badge?: string;
+  settings: InventorySettings;
+  onToggle: (key: keyof InventorySettings, value: boolean) => void;
+}) {
+  const on = Boolean(settings[flag]);
+  return (
+    <label className="flex items-start gap-3 border border-gear-border bg-bg/40 p-3 rounded-sm cursor-pointer hover:border-copper/40 transition-colors">
+      <input
+        type="checkbox"
+        checked={on}
+        onChange={(e) => onToggle(flag, e.target.checked)}
+        className="mt-1 shrink-0"
+      />
+      <span className="min-w-0">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-cream font-medium">{label}</span>
+          {badge ? (
+            <span className="text-[10px] uppercase tracking-wider text-copper border border-copper/30 px-1.5 py-0.5">
+              {badge}
+            </span>
+          ) : null}
+        </span>
+        <span className="block text-xs text-text-muted mt-1 leading-relaxed">{hint}</span>
+      </span>
+    </label>
+  );
+}
+
 export default function InventorySettingsPage() {
   const hydrated = useHydrated();
   const bar = hydrated ? getBar() : null;
@@ -131,41 +170,6 @@ export default function InventorySettingsPage() {
   const toggleFeature = (key: keyof InventorySettings, value: boolean) => {
     updateSettings({ [key]: value } as Partial<InventorySettings>);
     setStatus("Preference saved in this sandbox. Full behavior ships in the downloadable program.");
-  };
-
-  const FeatureToggle = ({
-    label,
-    hint,
-    flag,
-    badge,
-  }: {
-    label: string;
-    hint: string;
-    flag: keyof InventorySettings;
-    badge?: string;
-  }) => {
-    const on = Boolean(settings[flag]);
-    return (
-      <label className="flex items-start gap-3 border border-gear-border bg-bg/40 p-3 rounded-sm cursor-pointer hover:border-copper/40 transition-colors">
-        <input
-          type="checkbox"
-          checked={on}
-          onChange={(e) => toggleFeature(flag, e.target.checked)}
-          className="mt-1 shrink-0"
-        />
-        <span className="min-w-0">
-          <span className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-cream font-medium">{label}</span>
-            {badge ? (
-              <span className="text-[10px] uppercase tracking-wider text-copper border border-copper/30 px-1.5 py-0.5">
-                {badge}
-              </span>
-            ) : null}
-          </span>
-          <span className="block text-xs text-text-muted mt-1 leading-relaxed">{hint}</span>
-        </span>
-      </label>
-    );
   };
 
   return (
@@ -423,52 +427,72 @@ export default function InventorySettingsPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Weighing mode (scale / bottle weights)"
               hint="Optional weight entry instead of tenths. Default off so classic counts stay simple."
               flag="weighEnabled"
               badge="Optional"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Mobile count — shelf-to-sheet"
               hint="Large-tap walk count for phones. Same data as the count pipeline."
               flag="mobileCountEnabled"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Barcode / camera scan"
               hint="Point at a label to increment that bottle on mobile count."
               flag="barcodeScanEnabled"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Visual par alerts"
               hint="Green / watch / order colors so low stock is obvious at a glance."
               flag="visualParAlerts"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Blueprint walk order"
               hint="Save shelf order so the next count follows the same path."
               flag="blueprintWalkOrder"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Recipes & menu costing"
               hint="Build recipes, cost per serve, cost %, profit from your bottle costs."
               flag="recipesCosting"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Smart orders → purchase order"
               hint="PAR − on hand + sales → copy / email / CSV PO, then receive."
               flag="smartOrders"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Structured POS import"
               hint="Toast / Square / CSV parse, review matches, feed variance."
               flag="posStructuredImport"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Receiving workflow"
               hint="Load from smart orders, log what arrived, flag discrepancies."
               flag="receivingWorkflow"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Advanced shift reports"
               hint="Plain-English story first, full depth tabs, CSV export."
               flag="advancedReports"
@@ -487,22 +511,30 @@ export default function InventorySettingsPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Multi-venue switching"
               hint="Several bars under one business; company roll-up in reports."
               flag="multiVenue"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Stock transfers between venues"
               hint="Move bottles Main → Patio; both inventories update; transfer log."
               flag="stockTransfers"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="People & access (6-digit PIN)"
               hint="Admin logins + bar managers. Admin can reset any PIN without the old one."
               flag="peopleAccessPin"
               badge="Admin"
             />
             <FeatureToggle
+              settings={settings}
+              onToggle={toggleFeature}
               label="Employee communications / inventory notes"
               hint="Managers upload inventory notes (paste or .txt/.md). Open Employee communications in the left menu to try it."
               flag="staffBoard"

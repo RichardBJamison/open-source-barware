@@ -87,7 +87,7 @@ export function blogPostMetadata({
   return pageMetadata({
     title,
     description,
-    path: path as any,
+    path: path as PageSeoOptions["path"],
     keywords,
     isBlogPost: true,
   });

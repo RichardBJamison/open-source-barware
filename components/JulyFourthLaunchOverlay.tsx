@@ -70,6 +70,8 @@ export default function JulyFourthLaunchOverlay() {
             forceOverlay: forceEnv,
           })));
     if (!eligible) {
+      // Route changed to a page that should not show the overlay: close it now.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVisible(false);
       if (typeof document !== "undefined") document.body.style.overflow = "";
       return;

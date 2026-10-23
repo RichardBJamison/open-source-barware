@@ -1,0 +1,19 @@
+{
+  "note": "V1.5 seed: common bar bottle full and empty weights in oz. Use for weight-based level calculation. User can override per bottle. Add more as needed.",
+  "weights": {
+    "Tito's": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "Ketel One": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "Tanqueray": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "Bacardi": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "Captain Morgan": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "Espolon": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "Jameson": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "Hendrick's": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "Casamigos": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "Don Julio": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "Clase Azul": { "full_oz": 25.36, "empty_oz": 10.0, "size": "750ml" },
+    "default-750ml": { "full_oz": 25.36, "empty_oz": 8.5, "size": "750ml" },
+    "default-1L": { "full_oz": 33.81, "empty_oz": 11.0, "size": "1L" },
+    "default-1.75L": { "full_oz": 59.17, "empty_oz": 18.0, "size": "1.75L" }
+  }
+}

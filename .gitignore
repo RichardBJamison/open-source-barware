@@ -60,7 +60,8 @@ __pycache__/
 program/.venv/
 
 # program runtime / local install state
-program/data/
+program/data/*
+!program/data/bottle-weights.json
 program/osb_config.json
 program/.stress-sandbox/
 program/data/_stress-reports/

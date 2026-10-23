@@ -469,7 +469,7 @@ export default function TheProcess() {
               way you would explain it to a person (or walk it), and the system
               gives you a cleaner version to review. Starts simple and fast for
               the average bartender — but scales and pinpoint measurements are
-              built in and ready when you need them. It's scalable; all there for you.
+              built in and ready when you need them. It&apos;s scalable; all there for you.
             </p>
           </div>
 
@@ -583,7 +583,7 @@ export default function TheProcess() {
                 connect your own AI key so the program can read a photo of a
                 vendor invoice instead of you typing the line items. That is the
                 whole pitch. No upsell hiding behind it. The most encompassing
-                best program that's out there.
+                best program that&apos;s out there.
               </p>
             </div>
 
@@ -635,7 +635,7 @@ export default function TheProcess() {
               The only thing that ever reaches out is the optional AI key — and
               only when you ask it to read an invoice photo. Skip it and the
               whole system still does its job, start to finish. Far better than
-              the others and we're learning things they're not even doing.
+              the others and we&apos;re learning things they&apos;re not even doing.
             </p>
           </div>
           <div>

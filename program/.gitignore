@@ -1,5 +1,6 @@
 osb_config.json
-data/
+data/*
+!data/bottle-weights.json
 __pycache__/
 *.pyc
 localhost+1.pem
