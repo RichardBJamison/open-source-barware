@@ -1,20 +1,18 @@
 // Open Source Barware — release-list signup
-// Collects emails for the release list (stored in KV under OSB_SIGNUPS).
-// No immediate welcome email is sent to the subscriber.
-// Owner still receives a notification email (via Forward Email).
-// When a release is ready, pull the list from KV and send manually.
+// Collects emails for the release list (stored in KV under OSB_SIGNUPS),
+// emails the owner a notification, and sends the subscriber one short
+// thank-you from yourfriends@ (once per address).
 //
-// Required Cloudflare Pages env (for owner notifications):
-//   FORWARD_EMAIL_USER
-//   FORWARD_EMAIL_PASS
+// Mail goes out through Migadu SMTP as yourfriends@ — see
+// functions/_shared/smtp.js (needs the SMTP_PASS Pages secret).
 // Optional:
-//   NOTIFY_EMAIL        — owner alert destination (Gmail recommended)
-//   FORWARD_EMAIL_FROM  — From address (default: noreply@...)
+//   NOTIFY_EMAIL — owner alert destination (default rjamison@opensourcebarware.com)
 
-const FORWARD_EMAIL_API = "https://api.forwardemail.net/v1/emails";
+import { sendMail } from "../_shared/smtp.js";
+
 const SITE_URL = "https://opensourcebarware.com";
-// Gmail inbox avoids Yahoo spam-folder issues for owner alerts.
-const DEFAULT_NOTIFY = "rbjpholdings@gmail.com";
+const DEFAULT_NOTIFY = "rjamison@opensourcebarware.com";
+const OWNER_REPLY_TO = "Richard Jamison <rjamison@opensourcebarware.com>";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -40,56 +38,7 @@ function escapeHtml(value) {
 }
 
 function brandedFrom(env) {
-  const address =
-    env.FORWARD_EMAIL_FROM ||
-    env.FORWARD_EMAIL_USER ||
-    "noreply@opensourcebarware.com";
-  return `Open Source Barware <${address}>`;
-}
-
-async function sendForwardEmail(env, { to, subject, text, html, replyTo }) {
-  const user = env.FORWARD_EMAIL_USER;
-  const pass = env.FORWARD_EMAIL_PASS;
-  if (!user || !pass) {
-    return { ok: false, status: 0, detail: "mail-not-configured" };
-  }
-
-  const auth = btoa(`${user}:${pass}`);
-  const fromAddress = env.FORWARD_EMAIL_FROM || user;
-  const payload = {
-    from: brandedFrom(env),
-    to,
-    subject,
-    text,
-    replyTo: replyTo || fromAddress,
-    headers: {
-      "X-Auto-Response-Suppress": "All",
-      "List-Id": "Open Source Barware <opensourcebarware.com>",
-    },
-  };
-  if (html) payload.html = html;
-
-  try {
-    const res = await fetch(FORWARD_EMAIL_API, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${auth}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const detail = await res.text().catch(() => "");
-      return { ok: false, status: res.status, detail };
-    }
-    return { ok: true, status: res.status };
-  } catch (error) {
-    return {
-      ok: false,
-      status: 0,
-      detail: error instanceof Error ? error.message : "unknown",
-    };
-  }
+  return `Open Source Barware <${env.SMTP_USER || "yourfriends@opensourcebarware.com"}>`;
 }
 
 function ownerNotifyContent(details) {
@@ -122,6 +71,63 @@ function ownerNotifyContent(details) {
   `.trim();
 
   return { text, html };
+}
+
+function subscriberWelcomeContent() {
+  const inventoryUrl = `${SITE_URL}/free-bar-inventory-software`;
+  const reservationsUrl = "https://www.reservationrelief.com";
+  const text = [
+    "Hi there,",
+    "",
+    "Thank you for signing up and giving Open Source Barware a try. It genuinely means a lot to us.",
+    "",
+    "When you have a minute, we'd love for you to check out our free bar inventory software and our reservation software:",
+    "",
+    `Free bar inventory software: ${inventoryUrl}`,
+    `Reservation software: ${reservationsUrl}`,
+    "",
+    "If you have a question or something isn't working right, just reply to this email. A real person reads every one.",
+    "",
+    "Cheers,",
+    "Richard Jamison",
+    "Open Source Barware",
+  ].join("\n");
+
+  const html = `
+    <div style="font-family:Georgia,serif;color:#1c1815;max-width:560px;line-height:1.6;font-size:16px">
+      <p style="margin:0 0 14px">Hi there,</p>
+      <p style="margin:0 0 14px">Thank you for signing up and giving Open Source Barware a try. It genuinely means a lot to us.</p>
+      <p style="margin:0 0 14px">When you have a minute, we'd love for you to check out our
+        <a href="${inventoryUrl}" style="color:#a8784f">free bar inventory software</a> and our
+        <a href="${reservationsUrl}" style="color:#a8784f">reservation software</a>.</p>
+      <p style="margin:0 0 14px">If you have a question or something isn't working right, just reply to this email. A real person reads every one.</p>
+      <p style="margin:0">Cheers,<br>Richard Jamison<br>Open Source Barware</p>
+    </div>
+  `.trim();
+
+  return { text, html };
+}
+
+// Sends the thank-you once per address; retried signups and repeat
+// downloads do not send it again.
+async function sendWelcomeOnce(env, email) {
+  const key = `thanked:${email}`;
+  if (env.OSB_SIGNUPS && (await env.OSB_SIGNUPS.get(key))) return { ok: true, skipped: true };
+  const content = subscriberWelcomeContent();
+  const result = await sendMail(env, {
+    from: brandedFrom(env),
+    to: email,
+    subject: "Thank you from Open Source Barware",
+    text: content.text,
+    html: content.html,
+    replyTo: OWNER_REPLY_TO,
+    headers: {
+      "List-Unsubscribe": "<mailto:rjamison@opensourcebarware.com?subject=unsubscribe>",
+    },
+  });
+  if (result.ok && env.OSB_SIGNUPS) await env.OSB_SIGNUPS.put(key, new Date().toISOString());
+  if (!result.ok) console.error("welcome mail failed", result.detail);
+  return result;
 }
 
 export async function onRequestOptions() {
@@ -200,20 +206,16 @@ export async function onRequestPost(context) {
   const persisted = await persistSignup(env, details);
   const notifyTo = env.NOTIFY_EMAIL || DEFAULT_NOTIFY;
   const ownerContent = ownerNotifyContent(details);
-  const welcomeContent = subscriberWelcomeContent(details);
 
-  const mailConfigured = Boolean(
-    env.FORWARD_EMAIL_USER && env.FORWARD_EMAIL_PASS
-  );
-  const ownerResult = mailConfigured
-    ? await sendForwardEmail(env, {
-        to: notifyTo,
-        subject: "[Open Source Barware] New release-list signup",
-        text: ownerContent.text,
-        html: ownerContent.html,
-        replyTo: email,
-      })
-    : { ok: false, status: 0, detail: "mail-not-configured" };
+  const ownerResult = await sendMail(env, {
+    from: brandedFrom(env),
+    to: notifyTo,
+    subject: "[Open Source Barware] New release-list signup",
+    text: ownerContent.text,
+    html: ownerContent.html,
+    replyTo: email,
+  });
+  if (!ownerResult.ok) console.error("owner notify failed", ownerResult.detail);
 
   if (!persisted.stored && !ownerResult.ok) {
     return jsonResponse(
@@ -228,8 +230,7 @@ export async function onRequestPost(context) {
     );
   }
 
-  // No immediate welcome email is sent to the subscriber.
-  // We store the signup in KV. You'll email the list manually when ready.
+  context.waitUntil(sendWelcomeOnce(env, email));
 
   let message = "Thanks — you're on the release list. We'll email you when a release is ready.";
   if (programUpdates && hiddenBarTour) {
