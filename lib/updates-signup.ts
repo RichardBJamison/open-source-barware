@@ -104,6 +104,18 @@ function getSubscribeUrl(): string {
   return "/api/updates-subscribe";
 }
 
+// Thank-you mail is sent by a separate endpoint because the subscribe path is
+// answered by the comms-lead-router Worker on the live domain.
+function sendSignupThanks(email: string): void {
+  const url = getSubscribeUrl().replace("/api/updates-subscribe", "/api/signup-thanks");
+  void fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+    keepalive: true,
+  }).catch(() => {});
+}
+
 const PENDING_KEY = "osb_pending_signups";
 
 type PendingSignup = {
@@ -210,6 +222,7 @@ export async function submitUpdatesSignup(
     }
 
     setUpdatesSignupStatus("subscribed");
+    sendSignupThanks(body.email);
     return {
       ok: true,
       message: data.message || "You are on the list. We only email when new releases ship.",
